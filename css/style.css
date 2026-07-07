@@ -7,3 +7,162 @@
     display:block;
     border-radius:12px;
 }
+/* ============================= */
+/* WIKI SKILL DANCE - V6 */
+/* ============================= */
+
+.wiki-section {
+  padding: 80px 48px;
+  background:
+    radial-gradient(circle at top, rgba(87, 91, 255, 0.22), transparent 35%),
+    linear-gradient(180deg, #05051a 0%, #08081f 100%);
+}
+
+.wiki-search-box {
+  width: min(760px, 100%);
+  margin: 36px auto 34px;
+  position: relative;
+}
+
+.wiki-search-box::before {
+  content: "🔍";
+  position: absolute;
+  left: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  z-index: 2;
+}
+
+#wikiSearch {
+  width: 100%;
+  padding: 20px 24px 20px 58px;
+  border-radius: 999px;
+  border: 1px solid rgba(94, 220, 255, 0.6);
+  outline: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow:
+    0 0 22px rgba(50, 210, 255, 0.28),
+    inset 0 0 18px rgba(255, 255, 255, 0.05);
+}
+
+#wikiSearch::placeholder {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+#wikiSearch:focus {
+  border-color: #ff4dff;
+  box-shadow:
+    0 0 30px rgba(255, 70, 255, 0.45),
+    0 0 55px rgba(56, 214, 255, 0.25);
+}
+
+.wiki-results {
+  width: min(1050px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.wiki-item {
+  position: relative;
+  padding: 26px;
+  border-radius: 26px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+  border: 1px solid rgba(99, 222, 255, 0.32);
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.35),
+    0 0 26px rgba(95, 220, 255, 0.12);
+  overflow: hidden;
+  transition: 0.28s ease;
+}
+
+.wiki-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(255, 53, 255, 0.22), transparent 42%, rgba(55, 218, 255, 0.2));
+  opacity: 0;
+  transition: 0.28s ease;
+}
+
+.wiki-item:hover {
+  transform: translateY(-8px);
+  border-color: rgba(255, 79, 255, 0.65);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.42),
+    0 0 38px rgba(255, 72, 255, 0.22);
+}
+
+.wiki-item:hover::before {
+  opacity: 1;
+}
+
+.wiki-item h3,
+.wiki-item p,
+.wiki-meta,
+.wiki-tag {
+  position: relative;
+  z-index: 2;
+}
+
+.wiki-item h3 {
+  margin: 0 0 12px;
+  color: #ffffff;
+  font-size: 22px;
+  text-shadow:
+    0 0 10px rgba(255,255,255,0.6),
+    0 0 22px rgba(96, 220, 255, 0.55);
+}
+
+.wiki-item p {
+  margin: 0 0 16px;
+  color: rgba(255, 255, 255, 0.84);
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+.wiki-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wiki-tag {
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(95, 220, 255, 0.13);
+  border: 1px solid rgba(95, 220, 255, 0.28);
+  color: #bff5ff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.wiki-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 36px;
+  border-radius: 24px;
+  border: 1px dashed rgba(255, 255, 255, 0.28);
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .wiki-section {
+    padding: 60px 22px;
+  }
+
+  .wiki-results {
+    grid-template-columns: 1fr;
+  }
+
+  .wiki-item {
+    padding: 22px;
+  }
+}
