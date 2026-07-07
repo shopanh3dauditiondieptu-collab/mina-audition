@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin V10A | Mina Audition</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #070817;
+      color: #fff;
+    }
+
+    .admin {
+      max-width: 1100px;
+      margin: auto;
+      padding: 24px;
+    }
+
+    h1 {
+      color: #7df9ff;
+      margin-bottom: 6px;
+    }
+
+    .note {
+      color: #b7b7c9;
+      margin-bottom: 24px;
+    }
+
+    .box {
+      background: #11142b;
+      border: 1px solid rgba(125,249,255,.25);
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 22px;
+      box-shadow: 0 0 25px rgba(0,0,0,.35);
+    }
+
+    label {
+      display: block;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      font-weight: bold;
+      color: #f5f5ff;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #333856;
+      background: #070817;
+      color: #fff;
+      font-size: 15px;
+    }
+
+    textarea {
+      min-height: 180px;
+      resize: vertical;
+    }
+
+    button {
+      border: none;
+      padding: 12px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 14px;
+      margin-right: 8px;
+    }
+
+    .save { background: #7df9ff; color: #050713; }
+    .danger { background: #ff4d6d; color: #fff; }
+    .edit { background: #ffd166; color: #111; }
+    .copy { background: #9b5cff; color: #fff; }
+
+    .post-card {
+      background: #070817;
+      border: 1px solid #2c3152;
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 14px;
+    }
+
+    .post-card img {
+      width: 100%;
+      max-height: 220px;
+      object-fit: cover;
+      border-radius: 14px;
+      margin-bottom: 10px;
+    }
+
+    .post-title {
+      font-size: 20px;
+      color: #7df9ff;
+      margin-bottom: 6px;
+      font-weight: 800;
+    }
+
+    .tag {
+      display: inline-block;
+      background: rgba(125,249,255,.12);
+      color: #7df9ff;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      background: #050613;
+      border: 1px solid #2c3152;
+      border-radius: 14px;
+      padding: 14px;
+      max-height: 300px;
+      overflow: auto;
+      color: #cfcfff;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="admin">
+    <h1>Admin V10A - Mina Audition</h1>
+    <p class="note">Quản lý bài viết: Share Skill, Edit Video, Ảnh 3D Audition, Câu lệnh AI.</p>
+
+    <section class="box">
+      <h2>Thêm / Sửa bài viết</h2>
+
+      <input type="hidden" id="editIndex" value="-1">
+
+      <label>Tiêu đề bài viết</label>
+      <input id="title" placeholder="Ví dụ: Share bảng skill Poppin D8 đẹp nhất Audition VTC">
+
+      <label>Danh mục</label>
+      <select id="category">
+        <option>Share Skill</option>
+        <option>Hướng dẫn edit video</option>
+        <option>Hướng dẫn làm ảnh 3D Audition</option>
+        <option>Câu lệnh tạo ảnh AI</option>
+        <option>Tin tức Mina Audition</option>
+      </select>
+
+      <label>Link ảnh đại diện</label>
+      <input id="image" placeholder="Ví dụ: images/bang-skill-poppin.jpg">
+
+      <label>Mô tả ngắn</label>
+      <textarea id="desc" placeholder="Viết mô tả ngắn để hiển thị ngoài trang chủ..."></textarea>
+
+      <label>Nội dung bài viết</label>
+      <textarea id="content" placeholder="Viết nội dung bài chia sẻ tại đây..."></textarea>
+
+      <label>Link YouTube / Facebook / TikTok nếu có</label>
+      <input id="link" placeholder="Dán link video hoặc bài viết liên quan">
+
+      <button class="save" onclick="savePost()">Lưu bài viết</button>
+      <button class="danger" onclick="clearForm()">Xóa form</button>
+    </section>
+
+    <section class="box">
+      <h2>Danh sách bài viết</h2>
+      <div id="postList"></div>
+    </section>
+
+    <section class="box">
+      <h2>Dữ liệu bài viết để đưa lên website</h2>
+      <p class="note">Bấm copy rồi gửi cho mình, mình sẽ giúp bạn gắn ra trang chủ / blog.</p>
+      <button class="copy" onclick="copyData()">Copy dữ liệu bài viết</button>
+      <pre id="dataOutput"></pre>
+    </section>
+  </main>
+
+  <script>
+    let posts = JSON.parse(localStorage.getItem("mina_posts_v10a")) || [];
+
+    function savePost() {
+      const post = {
+        title: document.getElementById("title").value.trim(),
+        category: document.getElementById("category").value,
+        image: document.getElementById("image").value.trim(),
+        desc: document.getElementById("desc").value.trim(),
+        content: document.getElementById("content").value.trim(),
+        link: document.getElementById("link").value.trim(),
+        date: new Date().toLocaleDateString("vi-VN")
+      };
+
+      if (!post.title || !post.desc || !post.content) {
+        alert("Bạn cần nhập tiêu đề, mô tả và nội dung bài viết.");
+        return;
+      }
+
+      const editIndex = Number(document.getElementById("editIndex").value);
+
+      if (editIndex >= 0) {
+        posts[editIndex] = post;
+      } else {
+        posts.unshift(post);
+      }
+
+      localStorage.setItem("mina_posts_v10a", JSON.stringify(posts));
+      clearForm();
+      renderPosts();
+    }
+
+    function renderPosts() {
+      const postList = document.getElementById("postList");
+      const dataOutput = document.getElementById("dataOutput");
+
+      postList.innerHTML = "";
+
+      if (posts.length === 0) {
+        postList.innerHTML = "<p>Chưa có bài viết nào.</p>";
+      }
+
+      posts.forEach((post, index) => {
+        postList.innerHTML += `
+          <div class="post-card">
+            ${post.image ? `<img src="${post.image}" alt="${post.title}">` : ""}
+            <div class="tag">${post.category}</div>
+            <div class="post-title">${post.title}</div>
+            <p>${post.desc}</p>
+            <small>Ngày đăng: ${post.date}</small><br>
+            <button class="edit" onclick="editPost(${index})">Sửa</button>
+            <button class="danger" onclick="deletePost(${index})">Xóa</button>
+          </div>
+        `;
+      });
+
+      dataOutput.textContent = JSON.stringify(posts, null, 2);
+    }
+
+    function editPost(index) {
+      const post = posts[index];
+
+      document.getElementById("editIndex").value = index;
+      document.getElementById("title").value = post.title;
+      document.getElementById("category").value = post.category;
+      document.getElementById("image").value = post.image;
+      document.getElementById("desc").value = post.desc;
+      document.getElementById("content").value = post.content;
+      document.getElementById("link").value = post.link;
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function deletePost(index) {
+      if (confirm("Bạn có chắc muốn xóa bài viết này không?")) {
+        posts.splice(index, 1);
+        localStorage.setItem("mina_posts_v10a", JSON.stringify(posts));
+        renderPosts();
+      }
+    }
+
+    function clearForm() {
+      document.getElementById("editIndex").value = -1;
+      document.getElementById("title").value = "";
+      document.getElementById("category").value = "Share Skill";
+      document.getElementById("image").value = "";
+      document.getElementById("desc").value = "";
+      document.getElementById("content").value = "";
+      document.getElementById("link").value = "";
+    }
+
+    function copyData() {
+      const data = JSON.stringify(posts, null, 2);
+      navigator.clipboard.writeText(data);
+      alert("Đã copy dữ liệu bài viết!");
+    }
+
+    renderPosts();
+  </script>
+</body>
+</html>
