@@ -1,320 +1,302 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=Pacifico&display=swap');
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#191919;color:#fff;font-family:'Inter',Arial,sans-serif}.site-shell{width:min(1220px,100%);margin:0 auto;background:#040416;min-height:100vh;box-shadow:0 0 70px rgba(0,0,0,.85);overflow:hidden}a{color:inherit;text-decoration:none}.nav{height:86px;padding:0 36px;display:flex;align-items:center;justify-content:space-between;gap:22px;background:rgba(5,5,22,.94);border-bottom:1px solid rgba(117,55,255,.38);position:sticky;top:0;z-index:50}.logo{width:118px;height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(129,43,255,.38),rgba(3,5,28,.55));clip-path:polygon(0 0,100% 0,86% 100%,0 100%)}.logo span{font-family:'Pacifico',cursive;font-size:31px;line-height:.8;background:linear-gradient(90deg,#ff62e7,#8feaff);-webkit-background-clip:text;color:transparent;text-shadow:0 0 14px rgba(255,79,216,.72)}.logo small{font-weight:900;font-size:12px;letter-spacing:1.4px}.menu{display:flex;align-items:center;gap:26px;font-size:13px;font-weight:900;text-transform:uppercase}.menu a{opacity:.95;position:relative}.menu a:after{content:"";position:absolute;left:0;right:0;bottom:-15px;height:3px;background:linear-gradient(90deg,#f44dff,#00d5ff);border-radius:20px;opacity:0;transform:scaleX(.25);transition:.25s}.menu a:hover:after,.menu .active:after{opacity:1;transform:scaleX(1)}.follow-btn{font-weight:900;padding:16px 25px;border-radius:999px;background:linear-gradient(100deg,#754dff,#00a6ff);box-shadow:0 0 25px rgba(0,157,255,.45);border:1px solid rgba(139,229,255,.75)}.hero{position:relative;min-height:690px;padding:78px 70px 0;background-image:linear-gradient(90deg,rgba(2,3,16,.72) 0%,rgba(3,4,20,.55) 38%,rgba(27,5,60,.18) 68%,rgba(2,3,16,.65) 100%),url('../images/hero-bg.webp.png');background-size:cover;background-position:center top}.hero-overlay{position:absolute;inset:0;background:radial-gradient(circle at 58% 48%,rgba(156,50,255,.32),transparent 35%),linear-gradient(180deg,transparent 0%,rgba(4,4,22,.15) 64%,#040416 100%);pointer-events:none}.hero-copy{position:relative;z-index:2;width:56%;max-width:650px}.kicker{margin:0 0 4px;font-family:'Pacifico',cursive;font-size:45px;color:#8df4ff;text-shadow:0 0 8px #6feaff,0 0 22px #257eff}h1{margin:0 0 20px;font-size:clamp(73px,7.7vw,126px);line-height:.82;letter-spacing:2px;font-weight:900;font-style:italic;text-transform:uppercase;filter:drop-shadow(0 0 18px rgba(0,200,255,.75)) drop-shadow(0 0 28px rgba(131,57,255,.75))}h1 span{display:block;background:linear-gradient(180deg,#fff 0%,#e9fbff 28%,#68ddff 54%,#395eff 75%,#a540ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.9)}.badge{display:inline-flex;align-items:center;margin-bottom:28px;padding:13px 25px;border-radius:999px;font-weight:900;text-transform:uppercase;background:linear-gradient(90deg,rgba(108,42,224,.92),rgba(0,153,226,.92));border:1px solid #26d8ff;box-shadow:0 0 18px rgba(0,198,255,.5)}.intro{max-width:540px;font-size:16px;line-height:1.75;font-weight:800;text-shadow:0 2px 8px rgba(0,0,0,.75);margin:0 0 34px}.cta{display:inline-flex;padding:19px 30px;border-radius:13px;background:linear-gradient(90deg,#ec4cff,#168cff);font-weight:900;text-transform:uppercase;box-shadow:0 0 24px rgba(43,137,255,.65)}.hero-character{position:absolute;z-index:2;right:98px;bottom:-18px;width:345px;filter:drop-shadow(0 0 32px rgba(177,58,255,.9))}.hero-character img{width:100%;display:block}.social-panel{position:relative;z-index:4;margin:-22px auto 30px;width:86%;display:grid;grid-template-columns:repeat(3,1fr);border:1px solid rgba(165,75,255,.75);border-radius:14px;background:rgba(7,7,31,.88);backdrop-filter:blur(10px);overflow:hidden}.social-card{display:flex;align-items:center;justify-content:center;gap:24px;min-height:118px;border-right:1px solid rgba(101,80,200,.45)}.social-card:last-child{border-right:0}.social-card strong{width:55px;height:45px;border-radius:10px;display:grid;place-items:center;font-size:30px}.youtube strong{background:#ff1100}.facebook strong{background:#2879e6}.tiktok strong{background:#071022;text-shadow:2px 1px #ff2bd6,-2px -1px #00e7ff}.social-card h3{margin:0 0 4px;text-transform:uppercase;font-size:18px}.social-card p{margin:0 0 11px;font-size:13px;font-weight:700}.social-card span{display:inline-block;padding:8px 16px;border:1px solid #16c5ff;border-radius:7px;font-weight:800;font-size:12px}.stats{width:86%;margin:0 auto 44px;display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #009eff;border-radius:12px;background:rgba(5,14,52,.92);box-shadow:0 0 25px rgba(0,113,255,.25);overflow:hidden}.stats div{min-height:82px;display:flex;align-items:center;justify-content:center;gap:13px;flex-wrap:wrap;border-right:1px solid rgba(101,80,200,.45)}.stats div:last-child{border-right:0}.stats b{font-size:27px}.stats strong{font-size:29px;text-transform:uppercase;text-shadow:0 0 15px #b454ff}.stats span{display:block;width:100%;text-align:center;margin-top:-18px;text-transform:uppercase;font-size:11px;font-weight:900}.content-section{padding:0 48px 48px}.section-title{text-align:center;margin-bottom:26px}.section-title span{color:#69dfff;text-shadow:0 0 14px #764cff}.section-title h2{margin:8px 0;font-size:32px;text-transform:uppercase;text-shadow:0 0 15px #9d58ff}.section-title p{margin:0;color:#c9d3ff}.content-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.content-grid article{border:1px solid rgba(163,48,255,.7);background:rgba(8,8,35,.86);border-radius:14px;padding:12px 12px 20px;box-shadow:0 0 18px rgba(122,43,255,.25)}.thumb{height:145px;border-radius:12px;display:grid;place-items:center;font-size:48px;margin-bottom:15px;background-size:cover}.gradient-1{background:linear-gradient(135deg,#1737ff,#c63aff)}.gradient-2{background:linear-gradient(135deg,#4b0a80,#00c8ff)}.gradient-3{background:linear-gradient(135deg,#151529,#a042ff)}.gradient-4{background:linear-gradient(135deg,#10225d,#ff4fd8)}.content-grid h3{text-transform:uppercase;color:#ff72fb;margin:0 0 10px}.content-grid p{margin:0;color:#d8ddff;font-size:13px;line-height:1.55}.video-section{padding:10px 48px 55px;display:grid;grid-template-columns:1fr 1.25fr;gap:28px;align-items:center}.video-section h2{font-size:31px;text-transform:uppercase}.video-section p{color:#cdd5ff}.video-card{position:relative;display:block;border:1px solid rgba(0,199,255,.8);border-radius:16px;overflow:hidden;box-shadow:0 0 25px rgba(0,157,255,.28)}.video-card img{width:100%;display:block}.video-card span{position:absolute;inset:0;margin:auto;width:80px;height:80px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.55);font-size:32px}.footer{padding:45px 55px;display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:38px;background:#06071b;border-top:1px solid rgba(117,55,255,.4)}.footer p,.footer a{display:block;color:#cbd3ff;font-size:14px;line-height:1.8}.footer h3{margin-top:0;text-transform:uppercase}.footer-logo{margin-bottom:14px}.top-btn{position:fixed;right:28px;bottom:28px;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#5b0b77;border:1px solid #ff5cff;box-shadow:0 0 16px rgba(212,52,255,.5);z-index:60}@media(max-width:900px){.site-shell{width:100%}.nav{height:auto;padding:18px;flex-wrap:wrap}.menu{order:3;width:100%;justify-content:center;flex-wrap:wrap;gap:16px}.follow-btn{padding:12px 16px}.hero{min-height:auto;padding:45px 25px 0}.hero-copy{width:100%;max-width:none}.kicker{font-size:34px}h1{font-size:65px}.hero-character{position:relative;right:auto;bottom:auto;margin:10px auto 0;width:min(330px,90%)}.social-panel,.stats{width:92%;grid-template-columns:1fr}.social-card,.stats div{border-right:0;border-bottom:1px solid rgba(101,80,200,.45)}.content-grid,.video-section,.footer{grid-template-columns:1fr}.content-section,.video-section,.footer{padding-left:24px;padding-right:24px}}
-.thumb img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
-    border-radius:12px;
+* {
+  box-sizing: border-box;
 }
-/* ============================= */
-/* WIKI SKILL DANCE - V6 */
-/* ============================= */
 
-.wiki-section {
-  padding: 80px 48px;
+:root {
+  --bg: #070817;
+  --panel: #11142b;
+  --panel-2: #171b38;
+  --text: #ffffff;
+  --muted: #b9bdd8;
+  --cyan: #7df9ff;
+  --pink: #ff4fd8;
+  --line: rgba(125, 249, 255, 0.2);
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
   background:
-    radial-gradient(circle at top, rgba(87, 91, 255, 0.22), transparent 35%),
-    linear-gradient(180deg, #05051a 0%, #08081f 100%);
+    radial-gradient(circle at top left, rgba(255,79,216,.20), transparent 32%),
+    radial-gradient(circle at top right, rgba(125,249,255,.18), transparent 30%),
+    var(--bg);
+  color: var(--text);
 }
 
-.wiki-search-box {
-  width: min(760px, 100%);
-  margin: 36px auto 34px;
-  position: relative;
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-.wiki-search-box::before {
-  content: "🔍";
-  position: absolute;
-  left: 22px;
-  top: 50%;
-  transform: translateY(-50%);
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 7%;
+  background: rgba(7, 8, 23, .84);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--line);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 900;
   font-size: 20px;
-  z-index: 2;
 }
 
-#wikiSearch {
-  width: 100%;
-  padding: 20px 24px 20px 58px;
-  border-radius: 999px;
-  border: 1px solid rgba(94, 220, 255, 0.6);
-  outline: none;
-  background: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 700;
-  box-shadow:
-    0 0 22px rgba(50, 210, 255, 0.28),
-    inset 0 0 18px rgba(255, 255, 255, 0.05);
-}
-
-#wikiSearch::placeholder {
-  color: rgba(255, 255, 255, 0.62);
-}
-
-#wikiSearch:focus {
-  border-color: #ff4dff;
-  box-shadow:
-    0 0 30px rgba(255, 70, 255, 0.45),
-    0 0 55px rgba(56, 214, 255, 0.25);
-}
-
-.wiki-results {
-  width: min(1050px, 100%);
-  margin: 0 auto;
+.logo span {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 22px;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--cyan), var(--pink));
+  color: #050613;
 }
 
-.wiki-item {
-  position: relative;
-  padding: 26px;
-  border-radius: 26px;
-  background:
-    linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
-  border: 1px solid rgba(99, 222, 255, 0.32);
-  box-shadow:
-    0 18px 44px rgba(0, 0, 0, 0.35),
-    0 0 26px rgba(95, 220, 255, 0.12);
-  overflow: hidden;
-  transition: 0.28s ease;
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  color: var(--muted);
 }
 
-.wiki-item::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, rgba(255, 53, 255, 0.22), transparent 42%, rgba(55, 218, 255, 0.2));
-  opacity: 0;
-  transition: 0.28s ease;
+.nav a:hover {
+  color: var(--cyan);
 }
 
-.wiki-item:hover {
-  transform: translateY(-8px);
-  border-color: rgba(255, 79, 255, 0.65);
-  box-shadow:
-    0 24px 60px rgba(0, 0, 0, 0.42),
-    0 0 38px rgba(255, 72, 255, 0.22);
+.admin-link {
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
 }
 
-.wiki-item:hover::before {
-  opacity: 1;
+.hero {
+  min-height: 78vh;
+  display: grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 34px;
+  align-items: center;
+  padding: 80px 7%;
 }
 
-.wiki-item h3,
-.wiki-item p,
-.wiki-meta,
-.wiki-tag {
-  position: relative;
-  z-index: 2;
+.eyebrow {
+  color: var(--cyan);
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-size: 13px;
 }
 
-.wiki-item h3 {
-  margin: 0 0 12px;
-  color: #ffffff;
-  font-size: 22px;
-  text-shadow:
-    0 0 10px rgba(255,255,255,0.6),
-    0 0 22px rgba(96, 220, 255, 0.55);
+.hero h1 {
+  font-size: clamp(48px, 8vw, 96px);
+  line-height: .95;
+  margin: 8px 0 18px;
 }
 
-.wiki-item p {
-  margin: 0 0 16px;
-  color: rgba(255, 255, 255, 0.84);
-  line-height: 1.6;
-  font-weight: 600;
+.hero-text {
+  max-width: 660px;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1.7;
 }
 
-.wiki-meta {
+.hero-actions,
+.social-links,
+.actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 12px;
+  margin-top: 24px;
 }
 
-.wiki-tag {
-  padding: 7px 11px;
+.btn,
+.social-links a,
+.section-head a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 999px;
-  background: rgba(95, 220, 255, 0.13);
-  border: 1px solid rgba(95, 220, 255, 0.28);
-  color: #bff5ff;
+  padding: 12px 18px;
+  font-weight: 800;
+}
+
+.primary {
+  background: var(--cyan);
+  color: #050613;
+}
+
+.ghost,
+.social-links a,
+.section-head a {
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+.hero-card {
+  padding: 28px;
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(125,249,255,.13), rgba(255,79,216,.12));
+  border: 1px solid var(--line);
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  box-shadow: 0 30px 80px rgba(0,0,0,.35);
+}
+
+.hero-card h2 {
+  font-size: 34px;
+  margin: 0 0 8px;
+}
+
+.hero-card p,
+.muted {
+  color: var(--muted);
+}
+
+.section,
+.page {
+  padding: 64px 7%;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.section-head h1,
+.section-head h2 {
+  margin: 6px 0;
+  font-size: clamp(30px, 4vw, 50px);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.post-card {
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.post-card img {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  background: #0b0d1c;
+}
+
+.post-body {
+  padding: 18px;
+}
+
+.tag {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: var(--cyan);
+  background: rgba(125,249,255,.10);
   font-size: 13px;
   font-weight: 800;
 }
 
-.wiki-empty {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 36px;
-  border-radius: 24px;
-  border: 1px dashed rgba(255, 255, 255, 0.28);
-  color: rgba(255, 255, 255, 0.72);
-  font-weight: 700;
+.post-body h3 {
+  margin: 12px 0 8px;
+  font-size: 22px;
 }
 
-@media (max-width: 900px) {
-  .wiki-section {
-    padding: 60px 22px;
-  }
-
-  .wiki-results {
-    grid-template-columns: 1fr;
-  }
-
-  .wiki-item {
-    padding: 22px;
-  }
-}
-/* ============================= */
-/* WIKI V8 BUTTON + DETAIL PAGE */
-/* ============================= */
-
-.wiki-actions {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 18px;
+.post-body p {
+  color: var(--muted);
+  line-height: 1.55;
 }
 
-.wiki-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 14px;
-  border-radius: 999px;
-  text-decoration: none;
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 900;
-  background: linear-gradient(135deg, #ff4dff, #4fdcff);
-  box-shadow: 0 0 18px rgba(79, 220, 255, 0.28);
-}
-
-.wiki-btn-alt {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(95, 220, 255, 0.35);
-}
-
-.wiki-detail-page {
-  padding: 70px 48px 90px;
-  min-height: 80vh;
-  background:
-    radial-gradient(circle at top, rgba(95, 220, 255, 0.18), transparent 35%),
-    linear-gradient(180deg, #05051a 0%, #08081f 100%);
-}
-
-.back-link {
-  display: inline-block;
-  margin-bottom: 26px;
-  color: #bff5ff;
-  text-decoration: none;
-  font-weight: 900;
-}
-
-.wiki-detail-card {
-  border-radius: 32px;
-  padding: 36px;
-  background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
-  border: 1px solid rgba(95, 220, 255, 0.35);
-  box-shadow: 0 0 42px rgba(95, 220, 255, 0.16);
-}
-
-.wiki-label {
-  display: inline-block;
-  padding: 8px 14px;
-  border-radius: 999px;
-  background: rgba(95, 220, 255, 0.12);
-  border: 1px solid rgba(95, 220, 255, 0.35);
-  color: #bff5ff;
-  font-size: 13px;
-  font-weight: 900;
-  margin-bottom: 14px;
-}
-
-.wiki-detail-header h1 {
-  margin: 0 0 12px;
-  font-size: clamp(32px, 5vw, 62px);
-  line-height: 1;
-  color: #ffffff;
-  text-shadow:
-    0 0 12px rgba(255,255,255,.6),
-    0 0 28px rgba(255,79,255,.45);
-}
-
-.wiki-detail-header p {
-  max-width: 850px;
-  color: rgba(255,255,255,.82);
-  font-weight: 700;
-  line-height: 1.7;
-}
-
-.wiki-detail-grid {
-  display: grid;
-  grid-template-columns: 1.25fr 0.75fr;
-  gap: 26px;
-  margin-top: 30px;
-}
-
-.wiki-video-box {
-  aspect-ratio: 16 / 9;
-  border-radius: 24px;
+.video-box {
   overflow: hidden;
-  border: 1px solid rgba(95, 220, 255, 0.4);
-  background: #000;
-  box-shadow: 0 0 28px rgba(95, 220, 255, 0.16);
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  aspect-ratio: 16 / 9;
 }
 
-.wiki-video-box iframe {
+.video-box iframe {
   width: 100%;
   height: 100%;
+  border: 0;
 }
 
-.video-placeholder {
-  height: 100%;
+.social {
+  text-align: center;
+}
+
+.social-links {
+  justify-content: center;
+}
+
+.filter-bar {
   display: grid;
-  place-items: center;
-  color: rgba(255,255,255,.7);
-  font-weight: 900;
+  grid-template-columns: 1fr 260px;
+  gap: 12px;
+  margin-bottom: 22px;
 }
 
-.wiki-info-box,
-.wiki-extra-box {
-  padding: 26px;
-  border-radius: 24px;
-  background: rgba(0, 0, 0, 0.24);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 13px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(7,8,23,.8);
+  color: var(--text);
+  font-size: 15px;
 }
 
-.wiki-info-box h2,
-.wiki-extra-box h2 {
-  margin-top: 0;
-  color: #ffffff;
+.footer {
+  padding: 28px 7%;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  text-align: center;
 }
 
-.wiki-info-box p,
-.wiki-extra-box p {
-  color: rgba(255,255,255,.82);
-  font-weight: 700;
-  line-height: 1.6;
-}
-
-.wiki-extra-box {
-  margin-top: 26px;
-}
-
-@media (max-width: 900px) {
-  .wiki-detail-page {
-    padding: 50px 20px 70px;
+@media (max-width: 860px) {
+  .site-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .wiki-detail-card {
-    padding: 22px;
+  .nav {
+    flex-wrap: wrap;
   }
 
-  .wiki-detail-grid {
+  .hero {
     grid-template-columns: 1fr;
+    padding-top: 44px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .section-head {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
