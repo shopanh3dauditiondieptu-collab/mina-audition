@@ -1,4 +1,10 @@
-import { db } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 import {
   collection,
   addDoc,
@@ -14,6 +20,15 @@ import {
 let posts = [];
 let editId = null;
 
+const loginBox = document.getElementById("loginBox");
+const adminBox = document.getElementById("adminBox");
+const adminEmail = document.getElementById("adminEmail");
+const adminPassword = document.getElementById("adminPassword");
+const loginBtn = document.getElementById("loginBtn");
+const createAdminBtn = document.getElementById("createAdminBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const statusText = document.getElementById("statusText");
+
 const fields = {
   title: document.getElementById("title"),
   category: document.getElementById("category"),
@@ -26,15 +41,40 @@ const fields = {
   output: document.getElementById("output")
 };
 
+function setStatus(message) {
+  if (statusText) statusText.textContent = message || "";
+}
+
+async function loginAdmin() {
+  const email = adminEmail.value.trim();
+  const password = adminPassword.value.trim();
+  if (!email || !password) return setStatus("Bạn cần nhập email và mật khẩu.");
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    setStatus("Đăng nhập thành công.");
+  } catch (error) {
+    setStatus("Đăng nhập chưa được: " + error.message);
+  }
+}
+
+async function createFirstAdmin() {
+  const email = adminEmail.value.trim();
+  const password = adminPassword.value.trim();
+  if (!email || !password) return setStatus("Nhập email và mật khẩu muốn tạo admin đầu tiên.");
+  if (password.length < 6) return setStatus("Mật khẩu cần ít nhất 6 ký tự.");
+  try {
+    await createUserWithEmailAndPassword(auth, email, password);
+    setStatus("Đã tạo tài khoản admin đầu tiên và đăng nhập.");
+  } catch (error) {
+    setStatus("Không tạo được tài khoản: " + error.message);
+  }
+}
+
 async function loadPosts() {
+  fields.list.innerHTML = "<p class='muted'>Đang tải bài viết...</p>";
   const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
   const snapshot = await getDocs(q);
-
-  posts = snapshot.docs.map(docSnap => ({
-    id: docSnap.id,
-    ...docSnap.data()
-  }));
-
+  posts = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
   renderAdmin();
 }
 
@@ -47,7 +87,8 @@ async function savePost() {
     content: fields.content.value.trim(),
     link: fields.link.value.trim(),
     featured: fields.featured.checked,
-    date: new Date().toLocaleDateString("vi-VN")
+    date: new Date().toLocaleDateString("vi-VN"),
+    updatedAt: serverTimestamp()
   };
 
   if (!post.title || !post.desc || !post.content) {
@@ -55,17 +96,19 @@ async function savePost() {
     return;
   }
 
-  if (editId) {
-    await updateDoc(doc(db, "posts", editId), post);
-  } else {
-    await addDoc(collection(db, "posts"), {
-      ...post,
-      createdAt: serverTimestamp()
-    });
+  try {
+    if (editId) {
+      await updateDoc(doc(db, "posts", editId), post);
+      alert("Đã cập nhật bài viết.");
+    } else {
+      await addDoc(collection(db, "posts"), { ...post, createdAt: serverTimestamp() });
+      alert("Đã lưu bài viết lên Firebase.");
+    }
+    clearForm();
+    await loadPosts();
+  } catch (error) {
+    alert("Lỗi lưu bài viết: " + error.message);
   }
-
-  clearForm();
-  await loadPosts();
 }
 
 function renderAdmin() {
@@ -75,7 +118,7 @@ function renderAdmin() {
     fields.list.innerHTML = posts.map(post => `
       <div class="post-item">
         <span class="tag">${post.category || ""}</span>
-        ${post.featured ? `<span class="tag">Bài ghim</span>` : ""}
+        ${post.featured ? `<span class="tag hot">Bài ghim</span>` : ""}
         <h3>${post.title || ""}</h3>
         <p>${post.desc || ""}</p>
         <button onclick="editPost('${post.id}')">Sửa</button>
@@ -83,14 +126,12 @@ function renderAdmin() {
       </div>
     `).join("");
   }
-
   fields.output.textContent = JSON.stringify(posts, null, 2);
 }
 
 window.editPost = function(id) {
   const post = posts.find(item => item.id === id);
   if (!post) return;
-
   editId = id;
   fields.title.value = post.title || "";
   fields.category.value = post.category || "Share Skill";
@@ -99,15 +140,17 @@ window.editPost = function(id) {
   fields.content.value = post.content || "";
   fields.link.value = post.link || "";
   fields.featured.checked = Boolean(post.featured);
-
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 window.deletePost = async function(id) {
   if (!confirm("Bạn có chắc muốn xóa bài viết này không?")) return;
-
-  await deleteDoc(doc(db, "posts", id));
-  await loadPosts();
+  try {
+    await deleteDoc(doc(db, "posts", id));
+    await loadPosts();
+  } catch (error) {
+    alert("Lỗi xóa bài viết: " + error.message);
+  }
 };
 
 function clearForm() {
@@ -123,11 +166,24 @@ function clearForm() {
 
 function copyData() {
   navigator.clipboard.writeText(JSON.stringify(posts, null, 2));
-  alert("Đã copy dữ liệu.");
+  alert("Đã copy dữ liệu hiện tại.");
 }
 
-document.getElementById("saveBtn").addEventListener("click", savePost);
-document.getElementById("clearBtn").addEventListener("click", clearForm);
-document.getElementById("copyBtn").addEventListener("click", copyData);
+loginBtn?.addEventListener("click", loginAdmin);
+createAdminBtn?.addEventListener("click", createFirstAdmin);
+logoutBtn?.addEventListener("click", () => signOut(auth));
+document.getElementById("saveBtn")?.addEventListener("click", savePost);
+document.getElementById("clearBtn")?.addEventListener("click", clearForm);
+document.getElementById("copyBtn")?.addEventListener("click", copyData);
 
-loadPosts();
+onAuthStateChanged(auth, user => {
+  if (user) {
+    loginBox.style.display = "none";
+    adminBox.style.display = "block";
+    setStatus("");
+    loadPosts();
+  } else {
+    loginBox.style.display = "block";
+    adminBox.style.display = "none";
+  }
+});
