@@ -95,7 +95,7 @@ img{max-width:100%;display:block}
             rgba(5,5,20,.38),
             rgba(5,5,20,.88)
         ),
-        url("../images/hero-bg.webp") center center/cover no-repeat;
+        url("../images/hero-bg1.webp") center center/cover no-repeat;
 }
   border-bottom:1px solid rgba(95,244,255,.25);
 }
