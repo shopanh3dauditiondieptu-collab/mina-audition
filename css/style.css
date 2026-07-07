@@ -155,3 +155,37 @@ body::before{
   object-position:center top !important;
   display:block !important;
 }
+/* ===== VIDEO MỚI NHẤT ===== */
+
+.video-section{
+    width:min(1100px,92%);
+    margin:80px auto;
+    text-align:center;
+}
+
+.video-section h2{
+    color:#fff;
+    font-size:36px;
+    margin-bottom:20px;
+}
+
+.video-section p{
+    color:#b9c5d6;
+    line-height:1.8;
+    margin-bottom:30px;
+}
+
+.youtube-frame{
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.45);
+    border:1px solid rgba(255,255,255,.08);
+}
+
+.youtube-frame iframe{
+    width:100%;
+    aspect-ratio:16/9;
+    border:0;
+    display:block;
+    height:auto;
+}
