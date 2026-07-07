@@ -1,7 +1,20 @@
-let posts = JSON.parse(localStorage.getItem("mina_v2_posts")) || [];
+import { db } from "./firebase-config.js";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc,
+  query,
+  orderBy,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+let posts = [];
+let editId = null;
 
 const fields = {
-  editIndex: document.getElementById("editIndex"),
   title: document.getElementById("title"),
   category: document.getElementById("category"),
   image: document.getElementById("image"),
@@ -13,7 +26,19 @@ const fields = {
   output: document.getElementById("output")
 };
 
-function savePost() {
+async function loadPosts() {
+  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+  const snapshot = await getDocs(q);
+
+  posts = snapshot.docs.map(docSnap => ({
+    id: docSnap.id,
+    ...docSnap.data()
+  }));
+
+  renderAdmin();
+}
+
+async function savePost() {
   const post = {
     title: fields.title.value.trim(),
     category: fields.category.value,
@@ -30,31 +55,31 @@ function savePost() {
     return;
   }
 
-  const editIndex = Number(fields.editIndex.value);
-
-  if (editIndex >= 0) {
-    posts[editIndex] = post;
+  if (editId) {
+    await updateDoc(doc(db, "posts", editId), post);
   } else {
-    posts.unshift(post);
+    await addDoc(collection(db, "posts"), {
+      ...post,
+      createdAt: serverTimestamp()
+    });
   }
 
-  localStorage.setItem("mina_v2_posts", JSON.stringify(posts));
   clearForm();
-  renderAdmin();
+  await loadPosts();
 }
 
 function renderAdmin() {
   if (!posts.length) {
     fields.list.innerHTML = "<p class='muted'>Chưa có bài viết nào.</p>";
   } else {
-    fields.list.innerHTML = posts.map((post, index) => `
+    fields.list.innerHTML = posts.map(post => `
       <div class="post-item">
-        <span class="tag">${post.category}</span>
+        <span class="tag">${post.category || ""}</span>
         ${post.featured ? `<span class="tag">Bài ghim</span>` : ""}
-        <h3>${post.title}</h3>
-        <p>${post.desc}</p>
-        <button onclick="editPost(${index})">Sửa</button>
-        <button class="danger" onclick="deletePost(${index})">Xóa</button>
+        <h3>${post.title || ""}</h3>
+        <p>${post.desc || ""}</p>
+        <button onclick="editPost('${post.id}')">Sửa</button>
+        <button class="danger" onclick="deletePost('${post.id}')">Xóa</button>
       </div>
     `).join("");
   }
@@ -62,31 +87,31 @@ function renderAdmin() {
   fields.output.textContent = JSON.stringify(posts, null, 2);
 }
 
-function editPost(index) {
-  const post = posts[index];
+window.editPost = function(id) {
+  const post = posts.find(item => item.id === id);
+  if (!post) return;
 
-  fields.editIndex.value = index;
-  fields.title.value = post.title;
-  fields.category.value = post.category;
-  fields.image.value = post.image;
-  fields.desc.value = post.desc;
-  fields.content.value = post.content;
-  fields.link.value = post.link;
+  editId = id;
+  fields.title.value = post.title || "";
+  fields.category.value = post.category || "Share Skill";
+  fields.image.value = post.image || "";
+  fields.desc.value = post.desc || "";
+  fields.content.value = post.content || "";
+  fields.link.value = post.link || "";
   fields.featured.checked = Boolean(post.featured);
 
   window.scrollTo({ top: 0, behavior: "smooth" });
-}
+};
 
-function deletePost(index) {
+window.deletePost = async function(id) {
   if (!confirm("Bạn có chắc muốn xóa bài viết này không?")) return;
 
-  posts.splice(index, 1);
-  localStorage.setItem("mina_v2_posts", JSON.stringify(posts));
-  renderAdmin();
-}
+  await deleteDoc(doc(db, "posts", id));
+  await loadPosts();
+};
 
 function clearForm() {
-  fields.editIndex.value = -1;
+  editId = null;
   fields.title.value = "";
   fields.category.value = "Share Skill";
   fields.image.value = "";
@@ -98,11 +123,11 @@ function clearForm() {
 
 function copyData() {
   navigator.clipboard.writeText(JSON.stringify(posts, null, 2));
-  alert("Đã copy dữ liệu. Bạn dán vào file data/posts.json nhé!");
+  alert("Đã copy dữ liệu.");
 }
 
 document.getElementById("saveBtn").addEventListener("click", savePost);
 document.getElementById("clearBtn").addEventListener("click", clearForm);
 document.getElementById("copyBtn").addEventListener("click", copyData);
 
-renderAdmin();
+loadPosts();
