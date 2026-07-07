@@ -604,3 +604,156 @@ img{max-width:100%;display:block}
     text-align: left;
   }
 }
+.video-showcase {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 64px;
+  align-items: center;
+  padding: 82px 54px;
+  min-height: 640px;
+}
+
+.video-title {
+  margin: 22px 0 18px;
+  font-size: clamp(54px, 5.4vw, 82px);
+  line-height: .92;
+  letter-spacing: -2px;
+  color: #fff;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 8px #fff,
+    0 0 24px rgba(95,244,255,.65),
+    0 0 46px rgba(255,79,227,.28);
+}
+
+.video-title span {
+  font-size: .82em;
+}
+
+.video-desc {
+  max-width: 410px;
+  color: #dfe3ff;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.video-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 22px 0 30px;
+}
+
+.video-mini-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 11px 16px;
+  border-radius: 999px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 900;
+  border: 1px solid rgba(95,244,255,.28);
+  background: rgba(255,255,255,.06);
+}
+
+.video-mini-btn:hover,
+.video-watch-btn:hover {
+  transform: translateY(-2px);
+}
+
+.video-comments {
+  margin-top: 26px;
+}
+
+.video-comments h3 {
+  margin-bottom: 14px;
+  color: #fff;
+  font-size: 19px;
+}
+
+.comment-card {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 13px;
+  padding: 15px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(95,244,255,.22);
+}
+
+.comment-avatar {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #ff4fe3, #5ff4ff);
+  box-shadow: 0 0 18px rgba(95,244,255,.35);
+}
+
+.comment-card strong {
+  color: #5ff4ff;
+  font-size: 14px;
+}
+
+.comment-card p {
+  margin: 5px 0 5px;
+  color: #eef0ff;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.comment-card span {
+  color: #ffb8f4;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.video-main {
+  display: flex;
+  justify-content: center;
+}
+
+.video-box {
+  width: min(100%, 780px);
+  aspect-ratio: 16 / 9;
+}
+
+.video-box iframe {
+  object-fit: cover;
+}
+
+@media (max-width: 900px) {
+  .video-showcase {
+    grid-template-columns: 1fr;
+    padding: 58px 22px;
+    gap: 34px;
+  }
+
+  .video-left {
+    text-align: center;
+  }
+
+  .video-desc {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .video-actions,
+  .video-meta {
+    justify-content: center;
+  }
+
+  .video-comments {
+    text-align: left;
+  }
+
+  .video-title {
+    font-size: 52px;
+  }
+}
