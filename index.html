@@ -3,17 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Mina Audition | Dance • Poppin • Audition VTC</title>
-  <meta name="description" content="Mina Audition - Dance Performance, Poppin D8, Audition VTC, share skill, edit video và ảnh 3D Audition." />
+  <meta name="description" content="Mina Audition - website chia sẻ video Dance Performance, Review Skill, Poppin D8, hướng dẫn edit video và ảnh 3D Audition." />
+
   <link rel="stylesheet" href="css/style.css" />
 </head>
+
 <body>
   <header class="site-header">
-    <a class="logo" href="index.html"><span>M</span>Mina Audition</a>
+    <a class="logo" href="index.html">
+      <span>M</span>
+      Mina Audition
+    </a>
+
     <nav class="nav">
       <a href="index.html">Trang chủ</a>
       <a href="blog.html">Bài viết</a>
-      <a href="wiki.html">Wikipedia D8</a>
       <a href="#videos">Video</a>
       <a href="#social">Liên hệ</a>
       <a class="admin-link" href="admin.html">Admin</a>
@@ -22,53 +28,71 @@
 
   <main>
     <section class="hero">
-      <div>
-        <p class="eyebrow">Dance • Poppin • Audition VTC</p>
+      <div class="hero-content">
+        <p class="eyebrow">Audition VTC • Poppin • D8</p>
         <h1>Mina Audition</h1>
-        <p>Website chia sẻ Dance Performance, bảng skill Poppin D8, hướng dẫn dựng video CapCut, câu lệnh làm ảnh 3D Audition và nội dung cho cộng đồng Audition.</p>
+        <p class="hero-text">
+          Nơi chia sẻ video Dance Performance, Review Skill, bảng skill đẹp,
+          hướng dẫn cắt dựng video và làm ảnh 3D Audition.
+        </p>
+
         <div class="hero-actions">
           <a class="btn primary" href="blog.html">Xem bài viết</a>
-          <a class="btn ghost" href="wiki.html">Wikipedia D8</a>
+          <a class="btn ghost" href="#videos">Xem video</a>
         </div>
       </div>
+
       <div class="hero-card">
-        <img src="images/default-post.svg" alt="Mina Audition" />
+        <h2>Wikipedia D8 Audition</h2>
+        <p>Share skill • Edit video • Ảnh 3D • Prompt AI</p>
       </div>
     </section>
 
-    <section class="section">
+    <section class="section" id="blogPreview">
       <div class="section-head">
         <div>
-          <p class="eyebrow">Nội dung nổi bật</p>
-          <h2>Bài viết mới từ Firebase</h2>
+          <p class="eyebrow">Bài viết mới</p>
+          <h2>Chia sẻ dành cho người chơi Audition</h2>
         </div>
-        <a class="btn ghost" href="blog.html">Xem tất cả</a>
+        <a href="blog.html">Xem tất cả</a>
       </div>
-      <div id="homePosts" class="grid"><p class="muted">Đang tải bài viết...</p></div>
+
+      <div class="grid" id="homePosts"></div>
     </section>
 
-    <section id="videos" class="section">
+    <section class="section" id="videos">
       <div class="section-head">
         <div>
-          <p class="eyebrow">Mina Format</p>
-          <h2>Công thức video ngắn</h2>
+          <p class="eyebrow">Video nổi bật</p>
+          <h2>Dance Performance & Review Skill</h2>
         </div>
       </div>
-      <div class="features">
-        <div class="feature"><h3>1. Hook</h3><p class="muted">Đưa khoảnh khắc đẹp hoặc câu hỏi gây tò mò trong 2 giây đầu.</p></div>
-        <div class="feature"><h3>2. Skill đẹp</h3><p class="muted">Chọn move rõ, sáng, dễ nhìn và hợp beat.</p></div>
-        <div class="feature"><h3>3. Zoom beat drop</h3><p class="muted">Zoom 115–125% ở điểm rơi nhạc để tăng lực.</p></div>
-        <div class="feature"><h3>4. CTA</h3><p class="muted">Kêu gọi chấm điểm, bình luận hoặc xem full video.</p></div>
+
+      <div class="video-box">
+        <iframe
+          src="https://www.youtube.com/embed?listType=user_uploads&list=MinaAudition"
+          title="Mina Audition YouTube"
+          allowfullscreen>
+        </iframe>
       </div>
     </section>
 
-    <section id="social" class="section">
-      <h2>Theo dõi Mina</h2>
-      <p class="muted">Thêm link YouTube, Facebook, TikTok của bạn vào phần này khi cần.</p>
+    <section class="section social" id="social">
+      <p class="eyebrow">Theo dõi Mina</p>
+      <h2>Kết nối cùng Mina Audition</h2>
+
+      <div class="social-links">
+        <a href="#" target="_blank">YouTube</a>
+        <a href="#" target="_blank">Facebook</a>
+        <a href="#" target="_blank">TikTok</a>
+      </div>
     </section>
   </main>
 
-  <footer class="footer">© MinaAudition.vn</footer>
-  <script type="module" src="js/main.js"></script>
+  <footer class="footer">
+    © 2026 Mina Audition. All rights reserved.
+  </footer>
+
+  <script src="js/main.js"></script>
 </body>
 </html>
