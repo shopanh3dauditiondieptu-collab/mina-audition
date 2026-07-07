@@ -757,3 +757,85 @@ img{max-width:100%;display:block}
     font-size: 52px;
   }
 }
+.video-actions{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin:24px 0 30px;
+}
+
+.social-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    min-width:120px;
+    height:48px;
+
+    padding:0 22px;
+
+    border-radius:999px;
+
+    text-decoration:none;
+
+    font-weight:800;
+
+    transition:.25s;
+
+    border:1px solid rgba(255,255,255,.12);
+
+    color:#fff;
+
+    box-shadow:
+    0 0 18px rgba(95,244,255,.12);
+}
+
+.youtube-btn{
+
+    background:
+    linear-gradient(90deg,#ff4fe3,#5ff4ff);
+
+}
+
+.facebook-btn{
+
+    background:
+    rgba(255,255,255,.06);
+
+}
+
+.tiktok-btn{
+
+    background:
+    rgba(255,255,255,.06);
+
+}
+
+.social-btn:hover{
+
+    transform:
+    translateY(-3px);
+
+    box-shadow:
+    0 0 25px rgba(95,244,255,.35);
+
+}
+
+.facebook-btn:hover{
+
+    background:#1877F2;
+
+}
+
+.tiktok-btn:hover{
+
+    background:#111;
+
+}
+
+.youtube-btn:hover{
+
+    transform:
+    translateY(-3px) scale(1.03);
+
+}
