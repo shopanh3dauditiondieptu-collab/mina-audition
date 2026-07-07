@@ -158,8 +158,9 @@ body::before{
 /* ===== VIDEO MỚI NHẤT ===== */
 
 .video-section{
-    width:min(1100px,92%);
+    max-width:1000px;
     margin:80px auto;
+    padding:0 20px;
     text-align:center;
 }
 
@@ -176,10 +177,13 @@ body::before{
 }
 
 .youtube-frame{
+    max-width:900px;
+    margin:40px auto;
     border-radius:20px;
     overflow:hidden;
     box-shadow:0 20px 60px rgba(0,0,0,.45);
     border:1px solid rgba(255,255,255,.08);
+    background:#000;
 }
 
 .youtube-frame iframe{
