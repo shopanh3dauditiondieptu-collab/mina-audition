@@ -3,276 +3,165 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Admin V10A | Mina Audition</title>
 
-  <style>
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #070817;
-      color: #fff;
-    }
-
-    .admin {
-      max-width: 1100px;
-      margin: auto;
-      padding: 24px;
-    }
-
-    h1 {
-      color: #7df9ff;
-      margin-bottom: 6px;
-    }
-
-    .note {
-      color: #b7b7c9;
-      margin-bottom: 24px;
-    }
-
-    .box {
-      background: #11142b;
-      border: 1px solid rgba(125,249,255,.25);
-      border-radius: 18px;
-      padding: 20px;
-      margin-bottom: 22px;
-      box-shadow: 0 0 25px rgba(0,0,0,.35);
-    }
-
-    label {
-      display: block;
-      margin-top: 14px;
-      margin-bottom: 6px;
-      font-weight: bold;
-      color: #f5f5ff;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid #333856;
-      background: #070817;
-      color: #fff;
-      font-size: 15px;
-    }
-
-    textarea {
-      min-height: 180px;
-      resize: vertical;
-    }
-
-    button {
-      border: none;
-      padding: 12px 18px;
-      border-radius: 999px;
-      cursor: pointer;
-      font-weight: bold;
-      margin-top: 14px;
-      margin-right: 8px;
-    }
-
-    .save { background: #7df9ff; color: #050713; }
-    .danger { background: #ff4d6d; color: #fff; }
-    .edit { background: #ffd166; color: #111; }
-    .copy { background: #9b5cff; color: #fff; }
-
-    .post-card {
-      background: #070817;
-      border: 1px solid #2c3152;
-      border-radius: 16px;
-      padding: 16px;
-      margin-top: 14px;
-    }
-
-    .post-card img {
-      width: 100%;
-      max-height: 220px;
-      object-fit: cover;
-      border-radius: 14px;
-      margin-bottom: 10px;
-    }
-
-    .post-title {
-      font-size: 20px;
-      color: #7df9ff;
-      margin-bottom: 6px;
-      font-weight: 800;
-    }
-
-    .tag {
-      display: inline-block;
-      background: rgba(125,249,255,.12);
-      color: #7df9ff;
-      padding: 5px 10px;
-      border-radius: 999px;
-      font-size: 13px;
-      margin-bottom: 8px;
-    }
-
-    pre {
-      white-space: pre-wrap;
-      background: #050613;
-      border: 1px solid #2c3152;
-      border-radius: 14px;
-      padding: 14px;
-      max-height: 300px;
-      overflow: auto;
-      color: #cfcfff;
-    }
-  </style>
+  <link rel="stylesheet" href="css/admin.css" />
 </head>
 
 <body>
-  <main class="admin">
-    <h1>Admin V10A - Mina Audition</h1>
-    <p class="note">Quản lý bài viết: Share Skill, Edit Video, Ảnh 3D Audition, Câu lệnh AI.</p>
+  <div class="admin-shell">
 
-    <section class="box">
-      <h2>Thêm / Sửa bài viết</h2>
+    <aside class="admin-sidebar">
+      <div class="admin-logo">
+        <div class="logo-icon">M</div>
+        <div>
+          <h1>Mina Admin</h1>
+          <p>Version V10A</p>
+        </div>
+      </div>
 
-      <input type="hidden" id="editIndex" value="-1">
+      <nav class="admin-menu">
+        <button class="menu-btn active" data-section="dashboard">Tổng quan</button>
+        <button class="menu-btn" data-section="posts">Bài viết</button>
+        <button class="menu-btn" data-section="settings">Cài đặt web</button>
+        <button class="menu-btn" data-section="data">Dữ liệu</button>
+      </nav>
+    </aside>
 
-      <label>Tiêu đề bài viết</label>
-      <input id="title" placeholder="Ví dụ: Share bảng skill Poppin D8 đẹp nhất Audition VTC">
+    <main class="admin-main">
 
-      <label>Danh mục</label>
-      <select id="category">
-        <option>Share Skill</option>
-        <option>Hướng dẫn edit video</option>
-        <option>Hướng dẫn làm ảnh 3D Audition</option>
-        <option>Câu lệnh tạo ảnh AI</option>
-        <option>Tin tức Mina Audition</option>
-      </select>
+      <section class="admin-header">
+        <div>
+          <h2>Admin V10A</h2>
+          <p>Quản lý nội dung MinaAudition.vn</p>
+        </div>
 
-      <label>Link ảnh đại diện</label>
-      <input id="image" placeholder="Ví dụ: images/bang-skill-poppin.jpg">
+        <a class="view-site" href="index.html" target="_blank">
+          Xem website
+        </a>
+      </section>
 
-      <label>Mô tả ngắn</label>
-      <textarea id="desc" placeholder="Viết mô tả ngắn để hiển thị ngoài trang chủ..."></textarea>
-
-      <label>Nội dung bài viết</label>
-      <textarea id="content" placeholder="Viết nội dung bài chia sẻ tại đây..."></textarea>
-
-      <label>Link YouTube / Facebook / TikTok nếu có</label>
-      <input id="link" placeholder="Dán link video hoặc bài viết liên quan">
-
-      <button class="save" onclick="savePost()">Lưu bài viết</button>
-      <button class="danger" onclick="clearForm()">Xóa form</button>
-    </section>
-
-    <section class="box">
-      <h2>Danh sách bài viết</h2>
-      <div id="postList"></div>
-    </section>
-
-    <section class="box">
-      <h2>Dữ liệu bài viết để đưa lên website</h2>
-      <p class="note">Bấm copy rồi gửi cho mình, mình sẽ giúp bạn gắn ra trang chủ / blog.</p>
-      <button class="copy" onclick="copyData()">Copy dữ liệu bài viết</button>
-      <pre id="dataOutput"></pre>
-    </section>
-  </main>
-
-  <script>
-    let posts = JSON.parse(localStorage.getItem("mina_posts_v10a")) || [];
-
-    function savePost() {
-      const post = {
-        title: document.getElementById("title").value.trim(),
-        category: document.getElementById("category").value,
-        image: document.getElementById("image").value.trim(),
-        desc: document.getElementById("desc").value.trim(),
-        content: document.getElementById("content").value.trim(),
-        link: document.getElementById("link").value.trim(),
-        date: new Date().toLocaleDateString("vi-VN")
-      };
-
-      if (!post.title || !post.desc || !post.content) {
-        alert("Bạn cần nhập tiêu đề, mô tả và nội dung bài viết.");
-        return;
-      }
-
-      const editIndex = Number(document.getElementById("editIndex").value);
-
-      if (editIndex >= 0) {
-        posts[editIndex] = post;
-      } else {
-        posts.unshift(post);
-      }
-
-      localStorage.setItem("mina_posts_v10a", JSON.stringify(posts));
-      clearForm();
-      renderPosts();
-    }
-
-    function renderPosts() {
-      const postList = document.getElementById("postList");
-      const dataOutput = document.getElementById("dataOutput");
-
-      postList.innerHTML = "";
-
-      if (posts.length === 0) {
-        postList.innerHTML = "<p>Chưa có bài viết nào.</p>";
-      }
-
-      posts.forEach((post, index) => {
-        postList.innerHTML += `
-          <div class="post-card">
-            ${post.image ? `<img src="${post.image}" alt="${post.title}">` : ""}
-            <div class="tag">${post.category}</div>
-            <div class="post-title">${post.title}</div>
-            <p>${post.desc}</p>
-            <small>Ngày đăng: ${post.date}</small><br>
-            <button class="edit" onclick="editPost(${index})">Sửa</button>
-            <button class="danger" onclick="deletePost(${index})">Xóa</button>
+      <section id="dashboard" class="admin-section active">
+        <div class="cards">
+          <div class="card">
+            <span>Tổng bài viết</span>
+            <strong id="totalPosts">0</strong>
           </div>
-        `;
-      });
 
-      dataOutput.textContent = JSON.stringify(posts, null, 2);
-    }
+          <div class="card">
+            <span>Bài ghim</span>
+            <strong id="featuredPosts">0</strong>
+          </div>
 
-    function editPost(index) {
-      const post = posts[index];
+          <div class="card">
+            <span>Danh mục</span>
+            <strong>5</strong>
+          </div>
+        </div>
 
-      document.getElementById("editIndex").value = index;
-      document.getElementById("title").value = post.title;
-      document.getElementById("category").value = post.category;
-      document.getElementById("image").value = post.image;
-      document.getElementById("desc").value = post.desc;
-      document.getElementById("content").value = post.content;
-      document.getElementById("link").value = post.link;
+        <div class="panel">
+          <h3>Gợi ý nội dung nên đăng</h3>
+          <ul>
+            <li>Share bảng skill Poppin D8 đẹp nhất.</li>
+            <li>Hướng dẫn cắt dựng video Audition bằng CapCut.</li>
+            <li>Cách làm ảnh 3D Audition để đăng Facebook / TikTok.</li>
+            <li>Câu lệnh tạo ảnh nhân vật Audition đẹp.</li>
+            <li>Review skill hot để kéo người chơi vào website.</li>
+          </ul>
+        </div>
+      </section>
 
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+      <section id="posts" class="admin-section">
+        <div class="panel">
+          <h3>Thêm / sửa bài viết</h3>
 
-    function deletePost(index) {
-      if (confirm("Bạn có chắc muốn xóa bài viết này không?")) {
-        posts.splice(index, 1);
-        localStorage.setItem("mina_posts_v10a", JSON.stringify(posts));
-        renderPosts();
-      }
-    }
+          <input type="hidden" id="editIndex" value="-1" />
 
-    function clearForm() {
-      document.getElementById("editIndex").value = -1;
-      document.getElementById("title").value = "";
-      document.getElementById("category").value = "Share Skill";
-      document.getElementById("image").value = "";
-      document.getElementById("desc").value = "";
-      document.getElementById("content").value = "";
-      document.getElementById("link").value = "";
-    }
+          <label>Tiêu đề bài viết</label>
+          <input id="postTitle" type="text" placeholder="Ví dụ: Share bảng skill Poppin D8 đẹp nhất" />
 
-    function copyData() {
-      const data = JSON.stringify(posts, null, 2);
-      navigator.clipboard.writeText(data);
-      alert("Đã copy dữ liệu bài viết!");
-    }
+          <label>Danh mục</label>
+          <select id="postCategory">
+            <option value="Share Skill">Share Skill</option>
+            <option value="Edit Video">Edit Video</option>
+            <option value="Ảnh 3D Audition">Ảnh 3D Audition</option>
+            <option value="Câu lệnh AI">Câu lệnh AI</option>
+            <option value="Tin tức Mina">Tin tức Mina</option>
+          </select>
 
-    renderPosts();
-  </script>
+          <label>Ảnh đại diện bài viết</label>
+          <input id="postImage" type="text" placeholder="Ví dụ: images/bang-skill-poppin.jpg" />
+
+          <label>Mô tả ngắn</label>
+          <textarea id="postDesc" placeholder="Viết mô tả ngắn hiển thị ngoài trang blog..."></textarea>
+
+          <label>Nội dung bài viết</label>
+          <textarea id="postContent" placeholder="Viết nội dung chia sẻ tại đây..."></textarea>
+
+          <label>Link YouTube / Facebook / TikTok nếu có</label>
+          <input id="postLink" type="text" placeholder="Dán link video hoặc bài viết liên quan" />
+
+          <label class="checkbox-line">
+            <input id="postFeatured" type="checkbox" />
+            Ghim bài viết nổi bật
+          </label>
+
+          <div class="actions">
+            <button class="btn primary" id="savePostBtn">Lưu bài viết</button>
+            <button class="btn ghost" id="clearFormBtn">Xóa form</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Danh sách bài viết</h3>
+
+          <input id="searchPost" type="text" placeholder="Tìm bài viết..." />
+
+          <div id="postList" class="post-list"></div>
+        </div>
+      </section>
+
+      <section id="settings" class="admin-section">
+        <div class="panel">
+          <h3>Cài đặt website</h3>
+
+          <label>Tên website</label>
+          <input id="siteName" type="text" value="Mina Audition" />
+
+          <label>Slogan</label>
+          <input id="siteSlogan" type="text" value="Dance Performance • Poppin • Audition VTC" />
+
+          <label>Link YouTube</label>
+          <input id="youtubeLink" type="text" placeholder="Dán link kênh YouTube" />
+
+          <label>Link Facebook</label>
+          <input id="facebookLink" type="text" placeholder="Dán link Facebook" />
+
+          <label>Link TikTok</label>
+          <input id="tiktokLink" type="text" placeholder="Dán link TikTok" />
+
+          <button class="btn primary" id="saveSettingsBtn">Lưu cài đặt</button>
+        </div>
+      </section>
+
+      <section id="data" class="admin-section">
+        <div class="panel">
+          <h3>Xuất dữ liệu bài viết</h3>
+          <p class="muted">
+            Sau khi tạo bài viết, bấm copy dữ liệu rồi gửi mình. Mình sẽ giúp bạn gắn ra trang chủ và trang blog.
+          </p>
+
+          <button class="btn copy" id="copyDataBtn">Copy dữ liệu</button>
+          <button class="btn danger" id="resetDataBtn">Xóa toàn bộ dữ liệu</button>
+
+          <pre id="dataOutput"></pre>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="js/admin.js"></script>
 </body>
 </html>
