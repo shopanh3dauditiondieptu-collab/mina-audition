@@ -3,23 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>Bài viết | Mina Audition</title>
-  <meta name="description" content="Bài viết chia sẻ skill Audition, edit video, ảnh 3D Audition và câu lệnh AI của Mina Audition." />
-
+  <meta name="description" content="Bài viết share skill Audition, edit video, ảnh 3D Audition và câu lệnh AI của Mina Audition." />
   <link rel="stylesheet" href="css/style.css" />
 </head>
-
 <body>
   <header class="site-header">
-    <a class="logo" href="index.html">
-      <span>M</span>
-      Mina Audition
-    </a>
-
+    <a class="logo" href="index.html"><span>M</span>Mina Audition</a>
     <nav class="nav">
       <a href="index.html">Trang chủ</a>
       <a href="blog.html">Bài viết</a>
+      <a href="wiki.html">Wikipedia D8</a>
       <a class="admin-link" href="admin.html">Admin</a>
     </nav>
   </header>
@@ -28,32 +22,17 @@
     <section class="section">
       <div class="section-head">
         <div>
-          <p class="eyebrow">Blog Mina Audition</p>
-          <h1>Bài viết chia sẻ</h1>
-          <p class="muted">Share skill, edit video, ảnh 3D Audition và prompt AI.</p>
+          <p class="eyebrow">Blog Mina</p>
+          <h2>Bài viết chia sẻ</h2>
+          <p class="muted">Dữ liệu được đọc trực tiếp từ Firebase Firestore.</p>
         </div>
+        <input id="blogSearch" class="search" placeholder="Tìm bài viết..." />
       </div>
-
-      <div class="filter-bar">
-        <input id="searchInput" type="text" placeholder="Tìm bài viết..." />
-        <select id="categoryFilter">
-          <option value="all">Tất cả danh mục</option>
-          <option value="Share Skill">Share Skill</option>
-          <option value="Edit Video">Edit Video</option>
-          <option value="Ảnh 3D Audition">Ảnh 3D Audition</option>
-          <option value="Câu lệnh AI">Câu lệnh AI</option>
-          <option value="Tin tức Mina">Tin tức Mina</option>
-        </select>
-      </div>
-
-      <div class="grid" id="blogPosts"></div>
+      <div id="blogPosts"><p class="muted">Đang tải bài viết...</p></div>
     </section>
   </main>
 
-  <footer class="footer">
-    © 2026 Mina Audition.
-  </footer>
-
-  <script src="js/blog.js"></script>
+  <footer class="footer">© MinaAudition.vn</footer>
+  <script type="module" src="js/blog.js"></script>
 </body>
 </html>
