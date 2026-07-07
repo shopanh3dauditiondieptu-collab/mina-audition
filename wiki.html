@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Wiki Skill Dance | Mina Audition</title>
+
+  <meta name="description" content="Chi tiết Wiki Skill Dance Audition VTC - Mina Audition." />
+  <meta name="theme-color" content="#07071b" />
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <div class="site-shell">
+
+    <header class="nav">
+      <a class="logo" href="index.html">
+        <span>Mina</span>
+        <small>AUDITION</small>
+      </a>
+
+      <nav class="menu">
+        <a href="index.html">Trang chủ</a>
+        <a href="index.html#wiki">Wiki Skill</a>
+        <a href="https://www.youtube.com/@mina.audition" target="_blank" rel="noopener">YouTube</a>
+        <a href="https://www.facebook.com/mina.audition/" target="_blank" rel="noopener">Facebook</a>
+      </nav>
+    </header>
+
+    <main class="wiki-detail-page">
+      <a class="back-link" href="index.html#wiki">← Quay lại Wiki Skill</a>
+
+      <section id="wikiDetail" class="wiki-detail-card">
+        <h1>Đang tải dữ liệu skill...</h1>
+      </section>
+    </main>
+
+  </div>
+
+  <script>
+    async function loadWikiDetail() {
+      const box = document.getElementById("wikiDetail");
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
+
+      if (!id) {
+        box.innerHTML = "<h1>Không tìm thấy ID Skill</h1><p>Vui lòng quay lại trang chủ và chọn skill cần xem.</p>";
+        return;
+      }
+
+      try {
+        const response = await fetch("data/skills.json");
+        const skills = await response.json();
+
+        const skill = skills.find(item => item.id === id);
+
+        if (!skill) {
+          box.innerHTML = "<h1>Không tìm thấy Skill</h1><p>Skill này chưa có trong dữ liệu Wiki.</p>";
+          return;
+        }
+
+        const youtubeId = getYoutubeId(skill.video);
+
+        box.innerHTML = `
+          <div class="wiki-detail-header">
+            <span class="wiki-label">Wikipedia Skill Dance</span>
+            <h1>${skill.id} - ${skill.name}</h1>
+            <p>${skill.desc}</p>
+          </div>
+
+          <div class="wiki-detail-grid">
+            <div class="wiki-video-box">
+              ${youtubeId ? `
+                <iframe 
+                  src="https://www.youtube.com/embed/${youtubeId}" 
+                  title="${skill.name}"
+                  frameborder="0"
+                  allowfullscreen>
+                </iframe>
+              ` : `
+                <div class="video-placeholder">Video đang cập nhật</div>
+              `}
+            </div>
+
+            <div class="wiki-info-box">
+              <h2>Thông tin Skill</h2>
+
+              <p><strong>ID Skill:</strong> ${skill.id}</p>
+              <p><strong>Tên Skill:</strong> ${skill.name}</p>
+              <p><strong>Style:</strong> ${skill.style}</p>
+              <p><strong>Level:</strong> ${skill.level}</p>
+              <p><strong>Phím:</strong> ${skill.key}</p>
+              <p><strong>Độ hiếm:</strong> ${skill.rank}</p>
+              <p><strong>BPM đẹp:</strong> ${skill.bpm}</p>
+              <p><strong>Bài nhạc đề xuất:</strong> ${skill.song}</p>
+
+              <a class="cta" href="${skill.video}" target="_blank" rel="noopener">
+                ▶ Xem video trên YouTube
+              </a>
+            </div>
+          </div>
+
+          <div class="wiki-extra-box">
+            <h2>Gợi ý nội dung</h2>
+            <p>Skill này có thể dùng để làm video Review Skill, Dance Performance, Shorts, Facebook Reels hoặc TikTok.</p>
+          </div>
+        `;
+      } catch (error) {
+        box.innerHTML = "<h1>Lỗi tải dữ liệu</h1><p>Vui lòng kiểm tra file data/skills.json.</p>";
+      }
+    }
+
+    function getYoutubeId(url) {
+      if (!url) return "";
+
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+      const match = url.match(regExp);
+
+      return match && match[2].length === 11 ? match[2] : "";
+    }
+
+    loadWikiDetail();
+  </script>
+</body>
+</html>
