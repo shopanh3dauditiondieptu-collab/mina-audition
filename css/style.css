@@ -254,3 +254,14 @@ body::before{
   color:#fff !important;
   text-shadow:0 0 25px rgba(0,0,0,.8) !important;
 }
+/* ===== FORCE AVATAR SIZE ===== */
+.hero-card .avatar{
+  width:180px !important;
+  height:180px !important;
+}
+
+.hero-card .avatar img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:cover !important;
+}
