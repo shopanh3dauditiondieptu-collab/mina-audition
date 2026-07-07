@@ -1,42 +1,28 @@
 // =============================
-// WIKI SKILL DANCE - V6
+// WIKI SKILL DANCE - V8
 // =============================
-
-const wikiSkills = [
-  {
-    id: "49421",
-    name: "Best Move Poppin",
-    style: "Poppin",
-    level: "LV9",
-    key: "8K",
-    rank: "S+",
-    bpm: "120 BPM",
-    desc: "Skill Poppin đẹp, mạnh, rất hợp làm video review và dance performance."
-  },
-  {
-    id: "47767",
-    name: "Best Walk Poppin",
-    style: "Poppin",
-    level: "LV9",
-    key: "8K",
-    rank: "S+",
-    bpm: "110 - 130 BPM",
-    desc: "Dáng walk mượt, sang, phù hợp quay short video và review skill."
-  },
-  {
-    id: "6284642",
-    name: "Poppin Skill Review",
-    style: "Poppin",
-    level: "LV8",
-    key: "4K",
-    rank: "S",
-    bpm: "90 - 120 BPM",
-    desc: "Skill Poppin đẹp mắt, chuyển động mềm và dễ tạo nội dung viral."
-  }
-];
 
 const wikiSearch = document.getElementById("wikiSearch");
 const wikiResults = document.getElementById("wikiResults");
+
+let wikiSkills = [];
+
+async function loadWikiSkills() {
+  if (!wikiSearch || !wikiResults) return;
+
+  try {
+    const response = await fetch("data/skills.json");
+    wikiSkills = await response.json();
+
+    renderWikiSkills(wikiSkills);
+  } catch (error) {
+    wikiResults.innerHTML = `
+      <div class="wiki-empty">
+        Không tải được dữ liệu Wiki. Hãy kiểm tra file data/skills.json.
+      </div>
+    `;
+  }
+}
 
 function renderWikiSkills(list) {
   if (!wikiResults) return;
@@ -44,7 +30,7 @@ function renderWikiSkills(list) {
   if (list.length === 0) {
     wikiResults.innerHTML = `
       <div class="wiki-empty">
-        Không tìm thấy skill phù hợp. Hãy thử nhập ID, Poppin, BPM hoặc Style khác.
+        Không tìm thấy skill phù hợp. Hãy thử nhập ID, tên bài, Poppin, BPM hoặc Style khác.
       </div>
     `;
     return;
@@ -53,6 +39,7 @@ function renderWikiSkills(list) {
   wikiResults.innerHTML = list.map(skill => `
     <div class="wiki-item">
       <h3>${skill.id} - ${skill.style}</h3>
+
       <p><strong>${skill.name}</strong></p>
       <p>${skill.desc}</p>
 
@@ -61,14 +48,18 @@ function renderWikiSkills(list) {
         <span class="wiki-tag">${skill.key}</span>
         <span class="wiki-tag">${skill.rank}</span>
         <span class="wiki-tag">${skill.bpm}</span>
+        <span class="wiki-tag">${skill.song}</span>
+      </div>
+
+      <div class="wiki-actions">
+        <a href="${skill.detail}" class="wiki-btn">Chi tiết skill</a>
+        <a href="${skill.video}" class="wiki-btn wiki-btn-alt" target="_blank" rel="noopener">Xem video</a>
       </div>
     </div>
   `).join("");
 }
 
 if (wikiSearch && wikiResults) {
-  renderWikiSkills(wikiSkills);
-
   wikiSearch.addEventListener("input", function () {
     const keyword = this.value.toLowerCase().trim();
 
@@ -81,10 +72,13 @@ if (wikiSearch && wikiResults) {
         skill.key.toLowerCase().includes(keyword) ||
         skill.rank.toLowerCase().includes(keyword) ||
         skill.bpm.toLowerCase().includes(keyword) ||
+        skill.song.toLowerCase().includes(keyword) ||
         skill.desc.toLowerCase().includes(keyword)
       );
     });
 
     renderWikiSkills(filtered);
   });
+
+  loadWikiSkills();
 }
