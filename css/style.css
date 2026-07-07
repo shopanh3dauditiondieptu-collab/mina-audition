@@ -86,8 +86,8 @@ img{max-width:100%;display:block}
 /* HERO */
 .hero{
   position:relative;
-  min-height:790px;
-  padding:95px 7% 35px;
+  min-height:auto;
+  padding:95px 7% 60px;
   background:
     linear-gradient(90deg,rgba(5,5,20,.78),rgba(5,5,20,.38),rgba(5,5,20,.88)),
     url("../images/hero-bg.jpg") center/cover no-repeat;
@@ -165,13 +165,14 @@ img{max-width:100%;display:block}
 
 /* SOCIAL */
 .social-box{
-  position:absolute;
-  left:9%;
-  right:9%;
-  bottom:28px;
+  position:relative;
+  left:auto;
+  right:auto;
+  bottom:auto;
   z-index:4;
   display:grid;
   grid-template-columns:repeat(3,1fr);
+  margin:30px 9% 0;
   border:1px solid rgba(255,79,227,.5);
   border-radius:16px;
   overflow:hidden;
