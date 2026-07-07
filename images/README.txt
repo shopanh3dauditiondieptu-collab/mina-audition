@@ -1,0 +1,1 @@
+Đặt ảnh banner/thumbnail tại đây nếu muốn thay sau.
