@@ -193,3 +193,28 @@ body::before{
     display:block;
     height:auto;
 }
+.video-card{
+  position:relative;
+  display:block;
+  max-width:760px;
+  margin:30px auto 0;
+  border-radius:22px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 20px 60px rgba(0,0,0,.45);
+}
+
+.video-card img{
+  width:100%;
+  display:block;
+}
+
+.play-btn{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  font-size:58px;
+  color:#fff;
+  text-shadow:0 0 25px rgba(0,0,0,.8);
+}
