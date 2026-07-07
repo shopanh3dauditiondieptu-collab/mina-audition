@@ -85,12 +85,18 @@ img{max-width:100%;display:block}
 
 /* HERO */
 .hero{
-  position:relative;
-  min-height:auto;
-  padding:95px 7% 60px;
-  background:
-    linear-gradient(90deg,rgba(5,5,20,.78),rgba(5,5,20,.38),rgba(5,5,20,.88)),
-    url("../images/hero-bg.jpg") center/cover no-repeat;
+    position:relative;
+    min-height:790px;
+    padding:95px 7% 35px;
+    background:
+        linear-gradient(
+            90deg,
+            rgba(5,5,20,.78),
+            rgba(5,5,20,.38),
+            rgba(5,5,20,.88)
+        ),
+        url("../images/hero-bg.webp") center center/cover no-repeat;
+}
   border-bottom:1px solid rgba(95,244,255,.25);
 }
 .hero::before{
