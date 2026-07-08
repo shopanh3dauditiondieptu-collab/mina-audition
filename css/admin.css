@@ -663,3 +663,94 @@ textarea#desc{
     transform:none;
   }
 }
+
+
+/* ===== MINA CMS V2 - BLOCK EDITOR ===== */
+
+.block-editor{
+  border:1px solid rgba(125,249,255,.24);
+  background:rgba(7,8,23,.38);
+  border-radius:18px;
+  padding:16px;
+}
+
+.block-toolbar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+
+.block-toolbar button{
+  padding:10px 14px;
+}
+
+.content-blocks{
+  display:grid;
+  gap:14px;
+  margin-top:14px;
+}
+
+.content-block{
+  border:1px solid rgba(125,249,255,.22);
+  background:rgba(7,8,23,.66);
+  border-radius:18px;
+  padding:14px;
+}
+
+.block-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:10px;
+}
+
+.block-type{
+  color:#7df9ff;
+  font-weight:900;
+  letter-spacing:.3px;
+}
+
+.block-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.block-actions button{
+  padding:8px 11px;
+  font-size:13px;
+}
+
+.content-block textarea{
+  min-height:120px;
+}
+
+.block-image-preview{
+  display:none;
+  max-width:240px;
+  width:100%;
+  margin-top:12px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.15);
+}
+
+.block-note{
+  margin:8px 0 0;
+  color:#c9ccef;
+  font-size:13px;
+  line-height:1.5;
+}
+
+@media(max-width:720px){
+  .block-toolbar button,
+  .block-actions button{
+    width:100%;
+  }
+
+  .block-head{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+}
