@@ -952,3 +952,61 @@ justify-content:center;
 width:100%;
 
 }
+/*=============================
+  SOCIAL ICON FOOTER
+=============================*/
+
+.footer a{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:#fff;
+    text-decoration:none;
+    font-weight:600;
+    margin:14px 0;
+    transition:.25s;
+}
+
+.footer a:hover{
+    color:#5fdcff;
+    transform:translateX(4px);
+}
+
+.social-icon{
+    width:22px;
+    text-align:center;
+    font-size:22px;
+    transition:.25s;
+}
+
+.youtube{
+    color:#FF0000;
+}
+
+.facebook{
+    color:#1877F2;
+}
+
+.tiktok{
+    color:#ffffff;
+}
+
+.instagram{
+    color:#E4405F;
+}
+
+.footer a:hover .youtube{
+    color:#ff5a5a;
+}
+
+.footer a:hover .facebook{
+    color:#4fa0ff;
+}
+
+.footer a:hover .tiktok{
+    color:#5fdcff;
+}
+
+.footer a:hover .instagram{
+    color:#ff73c6;
+}
