@@ -2301,3 +2301,13 @@ figcaption {
   transform:none;
   overflow:hidden;
 }
+.social-wrapper{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    margin:40px 0;
+}
+
+.social-wrapper .social-box{
+    width:min(1100px,92%);
+}
