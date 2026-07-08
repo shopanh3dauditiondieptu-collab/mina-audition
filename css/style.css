@@ -453,18 +453,30 @@ img{max-width:100%;display:block}
     max-width: 520px;
 }
 
-.video-badge {
-    display: inline-flex;
-    padding: 10px 22px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,79,227,.85);
-    color: #fff;
-    font-size: 16px;
-    font-weight: 900;
-    background: linear-gradient(90deg, rgba(255,79,227,.42), rgba(95,244,255,.24));
-    box-shadow: 0 0 26px rgba(255,79,227,.42);
-}
+.video-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
 
+    padding:12px 24px;
+
+    border-radius:999px;
+
+    background:linear-gradient(135deg,#8d2cff,#ff4fd3);
+
+    border:1px solid rgba(255,255,255,.25);
+
+    color:#fff;
+
+    font-size:17px;
+
+    font-weight:900;
+
+    letter-spacing:.5px;
+
+    box-shadow:
+        0 0 24px rgba(255,79,227,.45);
+}
 .video-left h2,
 .video-title{
     margin:18px 0 22px;
@@ -475,9 +487,10 @@ img{max-width:100%;display:block}
     color:#fff;
     text-transform:uppercase;
     text-shadow:
-        0 0 12px rgba(255,255,255,.95),
-        0 0 30px rgba(95,244,255,.55),
-        0 0 60px rgba(255,79,227,.28);
+    0 0 8px #ffffff,
+    0 0 20px rgba(95,244,255,.8),
+    0 0 40px rgba(123,77,255,.45),
+    0 0 70px rgba(255,79,227,.25);
 }
 .video-title span{
     display:block;
