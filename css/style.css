@@ -1107,3 +1107,24 @@ width:100%;
   color:#fff !important;
   text-decoration:none !important;
 }
+footer .contact-row{
+  display:grid !important;
+  grid-template-columns:24px auto !important;
+  align-items:center !important;
+  column-gap:10px !important;
+  margin:14px 0 !important;
+  white-space:nowrap !important;
+}
+
+footer .contact-row i{
+  width:24px !important;
+  text-align:center !important;
+  font-size:15px !important;
+  color:#ff4fe3 !important;
+  line-height:1 !important;
+}
+
+footer .contact-row a{
+  color:#fff !important;
+  text-decoration:none !important;
+}
