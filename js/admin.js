@@ -983,3 +983,128 @@ if (resetBtn) {
     resetEditor();
   });
 }
+/* =====================================================
+   MINA CMS V3.1 - DRAG, AUTOSAVE, FILTER
+===================================================== */
+
+let minaDraggedBlockId = null;
+
+function minaV3EnableDragDrop() {
+  document.querySelectorAll(".mina-block-card").forEach(card => {
+    card.setAttribute("draggable", "true");
+
+    card.addEventListener("dragstart", () => {
+      minaDraggedBlockId = card.dataset.id;
+      card.classList.add("mina-dragging");
+    });
+
+    card.addEventListener("dragend", () => {
+      minaDraggedBlockId = null;
+      card.classList.remove("mina-dragging");
+    });
+
+    card.addEventListener("dragover", e => {
+      e.preventDefault();
+      card.classList.add("mina-drag-over");
+    });
+
+    card.addEventListener("dragleave", () => {
+      card.classList.remove("mina-drag-over");
+    });
+
+    card.addEventListener("drop", e => {
+      e.preventDefault();
+      card.classList.remove("mina-drag-over");
+
+      const targetId = card.dataset.id;
+      if (!minaDraggedBlockId || minaDraggedBlockId === targetId) return;
+
+      const fromIndex = contentBlocks.findIndex(b => b.id === minaDraggedBlockId);
+      const toIndex = contentBlocks.findIndex(b => b.id === targetId);
+
+      if (fromIndex < 0 || toIndex < 0) return;
+
+      const [moved] = contentBlocks.splice(fromIndex, 1);
+      contentBlocks.splice(toIndex, 0, moved);
+
+      renderBlocks();
+      setTimeout(minaV3EnableDragDrop, 80);
+    });
+  });
+}
+
+setInterval(minaV3EnableDragDrop, 800);
+
+/* Auto save bản đang soạn vào trình duyệt */
+function minaV3AutoSaveDraft() {
+  if (!form || !titleInput) return;
+
+  const draft = {
+    title: titleInput.value || "",
+    category: categoryInput.value || "",
+    image: imageInput.value || "",
+    desc: descInput.value || "",
+    link: linkInput.value || "",
+    featured: featuredInput ? featuredInput.checked : false,
+    status: statusInput ? statusInput.value : "draft",
+    contentBlocks,
+    savedAt: new Date().toLocaleString("vi-VN")
+  };
+
+  localStorage.setItem("minaCmsV3Draft", JSON.stringify(draft));
+}
+
+setInterval(minaV3AutoSaveDraft, 5000);
+
+/* Nút khôi phục bản đang soạn */
+function minaV3CreateRestoreButton() {
+  if (document.getElementById("minaRestoreDraftBtn")) return;
+
+  const actions = form?.querySelector(".actions");
+  if (!actions) return;
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.id = "minaRestoreDraftBtn";
+  btn.className = "secondary-btn";
+  btn.textContent = "Khôi phục bản tạm";
+
+  btn.addEventListener("click", () => {
+    const raw = localStorage.getItem("minaCmsV3Draft");
+    if (!raw) {
+      alert("Chưa có bản tạm nào để khôi phục.");
+      return;
+    }
+
+    const ok = confirm("Khôi phục bản đang soạn gần nhất?");
+    if (!ok) return;
+
+    const draft = JSON.parse(raw);
+
+    titleInput.value = draft.title || "";
+    categoryInput.value = draft.category || "";
+    imageInput.value = draft.image || "";
+    descInput.value = draft.desc || "";
+    linkInput.value = draft.link || "";
+
+    if (featuredInput) featuredInput.checked = !!draft.featured;
+    if (statusInput) statusInput.value = draft.status || "draft";
+
+    contentBlocks = Array.isArray(draft.contentBlocks)
+      ? draft.contentBlocks.map(b => ({
+          ...b,
+          id: uid(),
+          uploadStatus: ""
+        }))
+      : [];
+
+    if (contentBlocks.length === 0) addBlock("text");
+    renderBlocks();
+
+    alert(`Đã khôi phục bản tạm. Lưu lúc: ${draft.savedAt || "không rõ"}`);
+  });
+
+  actions.appendChild(btn);
+}
+
+setTimeout(minaV3CreateRestoreButton, 1000);
