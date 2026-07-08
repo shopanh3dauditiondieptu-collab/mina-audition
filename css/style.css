@@ -2703,3 +2703,36 @@ figcaption {
     grid-template-columns: 1fr !important;
   }
 }
+/* FIX ICON MXH - MINA */
+.social-card.facebook .social-icon i,
+.social-card.facebook .social-icon svg {
+  color: #1877f2 !important;
+  fill: #1877f2 !important;
+}
+
+.social-card.instagram .social-icon i,
+.social-card.instagram .social-icon svg {
+  color: #ff3ecf !important;
+  fill: #ff3ecf !important;
+}
+
+.social-card.instagram h3 {
+  color: #ff3ecf !important;
+}
+
+.social-card.facebook h3 {
+  color: #1877f2 !important;
+}
+
+/* Nếu icon nằm trực tiếp trong thẻ a */
+.social-card.facebook a i,
+.social-card.facebook a svg {
+  color: #1877f2 !important;
+  fill: #1877f2 !important;
+}
+
+.social-card.instagram a i,
+.social-card.instagram a svg {
+  color: #ff3ecf !important;
+  fill: #ff3ecf !important;
+}
