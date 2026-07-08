@@ -1906,352 +1906,202 @@ figcaption {
     text-align: center;
   }
 }
-/* ===== Fix logo Mina header ===== */
+/* =====================================================
+   MINA HEADER V2 - CLEAN FINAL
+   Logo trái | Menu giữa | Theo dõi phải
+===================================================== */
+
+.site-header{
+  width:100% !important;
+  max-width:1180px !important;
+  height:76px !important;
+  margin:0 auto !important;
+  padding:0 14px !important;
+
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:14px !important;
+
+  position:sticky !important;
+  top:0 !important;
+  z-index:1000 !important;
+
+  background:rgba(4,4,18,.96) !important;
+  border-bottom:1px solid rgba(95,244,255,.22) !important;
+  backdrop-filter:blur(16px) !important;
+
+  overflow:visible !important;
+  transform:none !important;
+}
+
 .brand{
-    display:flex !important;
-    align-items:center !important;
-    gap:10px !important;
-    text-decoration:none !important;
-    flex-shrink:0;
+  flex:0 0 auto !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:8px !important;
+  margin:0 !important;
+  padding:0 !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
 }
 
 .brand img{
-    width:66px !important;
-    height:66px !important;
-    object-fit:contain !important;
-    flex-shrink:0 !important;
+  width:54px !important;
+  height:54px !important;
+  object-fit:contain !important;
+  flex:0 0 auto !important;
 }
 
 .brand span{
-    font-size:22px !important;
-    font-weight:900;
-    white-space:nowrap;
-}
+  font-size:19px !important;
+  font-weight:900 !important;
+  line-height:1 !important;
+  white-space:nowrap !important;
 
-.site-header{
-    gap:18px !important;
-    padding-left:24px !important;
-    padding-right:24px !important;
+  background:linear-gradient(135deg,#fff,#9afcff,#ff8df0) !important;
+  -webkit-background-clip:text !important;
+  color:transparent !important;
 }
-.main-nav{
-  gap:24px !important;
-}
-.main-nav a {
-  padding: 10px 15px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(125, 249, 255, 0.2);
-  color: #fff;
-  text-decoration: none;
-  font-weight: 900;
-  transition: 0.25s ease;
-}
-
-.main-nav a:hover,
-.main-nav a.active {
-  background: linear-gradient(135deg, #d84fff, #3fa9ff);
-  color: #fff;
-  box-shadow: 0 0 18px rgba(125, 249, 255, 0.45);
-  border-color: rgba(125, 249, 255, 0.8);
-}
-/* ===== MENU MINA V6 ===== */
 
 .main-nav{
-    display:flex;
-    align-items:center;
-    gap:10px !important;
-    flex-wrap:nowrap;
+  flex:1 1 auto !important;
+  min-width:0 !important;
+
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+
+  white-space:nowrap !important;
+  overflow:visible !important;
 }
 
 .main-nav a{
-    padding:10px 14px;
-    font-size:15px;
-    font-weight:700;
-    line-height:1;
-    white-space:nowrap;
-    border-radius:999px;
+  flex:0 0 auto !important;
 
-    color:#fff;
-    text-decoration:none;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
 
-    background:rgba(255,255,255,.05);
-    border:1px solid rgba(255,255,255,.10);
+  height:38px !important;
+  padding:0 13px !important;
 
-    transition:.25s;
+  border-radius:999px !important;
+  background:rgba(255,255,255,.055) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+
+  color:#fff !important;
+  font-size:12.5px !important;
+  font-weight:900 !important;
+  line-height:1 !important;
+  text-decoration:none !important;
+  white-space:nowrap !important;
+
+  opacity:1 !important;
+  text-shadow:none !important;
+  transition:.25s ease !important;
+}
+
+.main-nav a::after{
+  display:none !important;
 }
 
 .main-nav a:hover,
 .main-nav a.active{
-    background:linear-gradient(135deg,#d84fff,#3fa9ff);
-    box-shadow:0 0 18px rgba(125,249,255,.45);
-    border-color:rgba(125,249,255,.55);
-}
-.site-header {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 14px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 22px;
+  background:linear-gradient(135deg,#d84fff,#3fa9ff) !important;
+  border-color:rgba(125,249,255,.65) !important;
+  box-shadow:0 0 18px rgba(125,249,255,.42) !important;
 }
 
-.brand {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 14px;
+.follow-btn{
+  flex:0 0 auto !important;
+
+  min-width:132px !important;
+  height:40px !important;
+  padding:0 14px !important;
+
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  border-radius:999px !important;
+  background:linear-gradient(135deg,#ff42df,#139dff) !important;
+  box-shadow:
+    0 0 22px rgba(95,244,255,.6),
+    inset 0 0 0 1px rgba(255,255,255,.32) !important;
+
+  color:#fff !important;
+  font-size:13px !important;
+  font-weight:900 !important;
+  line-height:1 !important;
+  text-align:center !important;
+  white-space:nowrap !important;
+  text-decoration:none !important;
 }
 
-.brand img{
-    width:60px !important;
-    height:60px !important;
+.nav-toggle{
+  display:none !important;
 }
 
-.brand span{
-    font-size:20px !important;
-}
+/* Tablet */
+@media(max-width:1100px){
+  .site-header{
+    height:auto !important;
+    min-height:76px !important;
+    padding:12px 16px !important;
+    flex-wrap:wrap !important;
+  }
 
-.main-nav {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  flex-wrap: nowrap;
-}
+  .nav-toggle{
+    display:block !important;
+    margin-left:auto !important;
+  }
 
-.main-nav a {
-  padding: 11px 17px;
-  font-size: 14px;
-  white-space: nowrap;
-}
-
-.follow-btn,
-.main-nav .follow-btn {
-  flex-shrink: 0;
-}
-/* ===== FIX HEADER TRÀN PHẢI - DỊCH SANG TRÁI ===== */
-
-.site-header{
-    max-width: 1120px !important;
-    margin: 0 auto !important;
-    padding-left: 12px !important;
-    padding-right: 12px !important;
-    gap: 14px !important;
-}
-
-.brand{
-    gap: 8px !important;
-    margin-right: 6px !important;
-}
-
-.brand img{
-    width: 58px !important;
-    height: 58px !important;
-}
-
-.brand span{
-    font-size: 19px !important;
-    margin-right: 4px !important;
-}
-
-.main-nav{
-    flex: 1 !important;
-    justify-content: flex-start !important;
-    gap: 8px !important;
-}
-
-.main-nav a{
-    padding: 10px 14px !important;
-    font-size: 13px !important;
-    white-space: nowrap !important;
-}
-/* ========= HEADER CÂN ĐỐI V2 ========= */
-
-.site-header{
-    display:flex !important;
-    align-items:center !important;
-    justify-content:space-between !important;
-
+  .main-nav{
+    order:3 !important;
     width:100% !important;
-    max-width:1400px !important;
-
-    margin:0 auto !important;
-    padding:0 16px !important;
-}
-
-/* Logo sát mép trái */
-.brand{
-    flex:0 0 auto !important;
-
-    display:flex !important;
-    align-items:center !important;
-    gap:10px !important;
-
-    margin-left:-12px !important;
-}
-
-/* Logo */
-.brand img{
-    width:60px !important;
-    height:60px !important;
-}
-
-/* Tiêu đề */
-.brand span{
-    font-size:20px !important;
-    font-weight:800;
-    white-space:nowrap;
-}
-
-/* Menu chiếm toàn bộ phần giữa */
-.main-nav{
-    flex:1 !important;
-
-    display:flex !important;
+    flex-wrap:wrap !important;
     justify-content:center !important;
-    align-items:center !important;
+    gap:10px !important;
+    margin-top:8px !important;
+  }
 
-    gap:14px !important;
-
-    margin:0 24px !important;
+  .follow-btn{
+    margin-left:0 !important;
+  }
 }
 
-/* Các nút menu */
-.main-nav a{
-    font-size:14px !important;
-    padding:10px 16px !important;
-}
+/* Mobile */
+@media(max-width:760px){
+  .site-header{
+    justify-content:center !important;
+    text-align:center !important;
+  }
 
-/* Nút Theo dõi luôn nằm bên phải */
-.follow-btn{
-    flex-shrink:0 !important;
-}
-/* FIX NÚT THEO DÕI NGAY - CANH GIỮA CHỮ */
-.follow-btn{
-  min-width: 170px !important;
-  height: 46px !important;
-  padding: 0 22px !important;
+  .brand{
+    width:100% !important;
+    justify-content:center !important;
+  }
 
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  .brand img{
+    width:56px !important;
+    height:56px !important;
+  }
 
-  font-size: 15px !important;
-  line-height: 1 !important;
-  white-space: nowrap !important;
-  text-align: center !important;
-}
-/* FIX NÚT THEO DÕI NGAY KHÔNG BỊ TRÀN */
-.site-header{
-  max-width: 1120px !important;
-  padding-left: 12px !important;
-  padding-right: 12px !important;
-}
+  .brand span{
+    font-size:20px !important;
+  }
 
-.main-nav{
-  gap: 10px !important;
-}
+  .main-nav a{
+    height:36px !important;
+    padding:0 12px !important;
+    font-size:12px !important;
+  }
 
-.main-nav a{
-  font-size: 13px !important;
-  padding: 10px 14px !important;
-}
-
-.follow-btn{
-  min-width: 145px !important;
-  height: 42px !important;
-  padding: 0 16px !important;
-
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-
-  font-size: 14px !important;
-  font-weight: 800 !important;
-  line-height: 1 !important;
-  white-space: nowrap !important;
-  text-align: center !important;
-}
-/* === MINA HEADER FINAL FIX === */
-.site-header{
-  max-width: 1180px !important;
-  height: 72px !important;
-  margin: 0 auto !important;
-  padding: 0 16px !important;
-
-  display: flex !important;
-  align-items: center !important;
-  gap: 14px !important;
-  overflow: hidden !important;
-}
-
-.brand{
-  flex: 0 0 auto !important;
-  gap: 8px !important;
-}
-
-.brand img{
-  width: 52px !important;
-  height: 52px !important;
-}
-
-.brand span{
-  font-size: 18px !important;
-  white-space: nowrap !important;
-}
-
-.main-nav{
-  flex: 1 1 auto !important;
-  display: flex !important;
-  justify-content: center !important;
-  gap: 9px !important;
-  overflow: hidden !important;
-}
-
-.main-nav a{
-  font-size: 13px !important;
-  padding: 10px 13px !important;
-  white-space: nowrap !important;
-}
-
-.follow-btn{
-  flex: 0 0 auto !important;
-  min-width: 138px !important;
-  height: 40px !important;
-  padding: 0 14px !important;
-
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-
-  font-size: 13px !important;
-  font-weight: 800 !important;
-  line-height: 1 !important;
-  white-space: nowrap !important;
-}
-/* CANH LẠI HEADER KHÔNG BỊ MẤT CHỮ */
-.site-header{
-  max-width: 1160px !important;
-  margin: 0 auto !important;
-  padding-left: 8px !important;
-  padding-right: 8px !important;
-  transform: none !important;
-}
-
-.main-nav{
-  gap: 8px !important;
-}
-
-.main-nav a{
-  font-size: 12.5px !important;
-  padding: 9px 12px !important;
-}
-
-.follow-btn{
-  min-width: 135px !important;
-  height: 39px !important;
-  font-size: 13px !important;
-  padding: 0 12px !important;
+  .follow-btn{
+    min-width:160px !important;
+    height:40px !important;
+    margin:4px auto 0 !important;
+  }
 }
