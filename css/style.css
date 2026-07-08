@@ -1302,4 +1302,36 @@ footer .contact-row a{
     line-height:1.75;
   }
 }
+/* =========================
+   FIX ẢNH TRANG CHI TIẾT BÀI VIẾT
+========================= */
 
+#postDetail .post-card.post-full img,
+#postDetail img.post-detail-image,
+#postDetail img.post-hero-image{
+    display:block !important;
+
+    width:auto !important;
+    max-width:420px !important;
+
+    height:auto !important;
+    max-height:none !important;
+
+    object-fit:contain !important;
+    object-position:center !important;
+
+    margin:0 auto 30px auto !important;
+    border-radius:18px !important;
+
+    background:transparent !important;
+    box-shadow:0 15px 40px rgba(0,0,0,.35) !important;
+}
+
+@media(max-width:768px){
+    #postDetail .post-card.post-full img,
+    #postDetail img.post-detail-image,
+    #postDetail img.post-hero-image{
+        width:100% !important;
+        max-width:100% !important;
+    }
+}
