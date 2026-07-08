@@ -69,15 +69,19 @@ async function loadPost() {
     postDetail.innerHTML = `
       <article class="post-card post-full">
         ${
-          p.image
-            ? `<img
-    src="${p.image.replace('/upload/', '/upload/f_auto,q_auto,w_700/')}"
-    alt="${p.title || 'Bài viết Mina'}"
+  p.image
+    ? `
+<figure class="mina-post-image-wrap">
+  <img
+    src="${p.image.replace('/upload/', '/upload/f_auto,q_auto,w_560/')}"
+    alt="${escapeHTML(p.title || 'Bài viết Mina')}"
     class="post-detail-image"
     loading="eager"
->`
-            : ""
-        }
+  >
+</figure>
+`
+    : ""
+}
 
         <p class="post-category">${p.category || "Bài viết"}</p>
 
