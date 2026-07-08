@@ -135,7 +135,27 @@
           <textarea id="desc" rows="3" placeholder="Viết mô tả ngắn hiển thị ngoài trang chủ"></textarea>
 
           <label>Nội dung bài viết</label>
-          <textarea id="content" rows="9" placeholder="Nhập nội dung chi tiết bài viết"></textarea>
+
+          <div class="block-editor">
+            <div class="block-toolbar">
+              <button type="button" id="addTextBlock" class="secondary-btn">+ Đoạn văn</button>
+              <button type="button" id="addImageBlock" class="secondary-btn">+ Ảnh</button>
+              <button type="button" id="addYoutubeBlock" class="secondary-btn">+ Video YouTube</button>
+              <button type="button" id="addQuoteBlock" class="secondary-btn">+ Trích dẫn</button>
+            </div>
+
+            <p class="muted small-text">
+              Bạn có thể sắp xếp bài viết theo dạng: Đoạn văn → Ảnh → Đoạn văn → Video → Đoạn văn.
+            </p>
+
+            <div id="contentBlocks" class="content-blocks"></div>
+
+            <textarea
+              id="content"
+              class="hidden"
+              rows="9"
+              placeholder="Nội dung dự phòng cho bài viết cũ"></textarea>
+          </div>
 
           <div class="form-grid">
             <div>
