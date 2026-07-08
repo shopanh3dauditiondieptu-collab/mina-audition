@@ -1,4 +1,4 @@
-import { auth, db, storage } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js";
 
 import {
   signInWithEmailAndPassword,
@@ -17,13 +17,20 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-import {
-  ref,
-  uploadBytesResumable,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
+/* =========================
+   CONFIG
+========================= */
 
 const ADMIN_EMAIL = "mina.auditionvtc@gmail.com";
+
+const CLOUDINARY_CLOUD_NAME = "rpwcnrfg";
+const CLOUDINARY_UPLOAD_PRESET = "mina-upload";
+const CLOUDINARY_UPLOAD_URL =
+  `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+
+/* =========================
+   ELEMENTS
+========================= */
 
 const loginBox = document.getElementById("loginBox");
 const adminApp = document.getElementById("adminApp");
@@ -47,6 +54,11 @@ const descInput = document.getElementById("desc");
 const contentInput = document.getElementById("content");
 const linkInput = document.getElementById("link");
 const featuredInput = document.getElementById("featured");
+const totalPosts = document.getElementById("totalPosts");
+
+/* =========================
+   UI
+========================= */
 
 function showLogin(message = "") {
   loginBox.classList.remove("hidden");
@@ -61,59 +73,67 @@ function showAdmin(user) {
   render();
 }
 
-function makeSafeFileName(fileName) {
-  return fileName
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9.-]/g, "");
+function setUploadMessage(text, color = "#7df9ff") {
+  if (!uploadMessage) return;
+  uploadMessage.textContent = text;
+  uploadMessage.style.color = color;
 }
 
-async function uploadImage(file) {
-  return new Promise((resolve, reject) => {
-    if (!file) {
-      resolve("");
-      return;
-    }
+function clearPreview() {
+  if (imagePreview) {
+    imagePreview.src = "";
+    imagePreview.style.display = "none";
+  }
 
-    if (!file.type.startsWith("image/")) {
-      reject(new Error("Vui lòng chọn đúng file hình ảnh."));
-      return;
-    }
+  if (uploadMessage) {
+    uploadMessage.textContent = "";
+  }
 
-    const safeName = makeSafeFileName(file.name);
-    const filePath = `posts/${Date.now()}-${safeName}`;
-    const imageRef = ref(storage, filePath);
+  if (imageFileInput) {
+    imageFileInput.value = "";
+  }
+}
 
-    const uploadTask = uploadBytesResumable(imageRef, file);
+/* =========================
+   CLOUDINARY UPLOAD
+========================= */
 
-    uploadMessage.textContent = "Đang upload ảnh: 0%";
-    uploadMessage.style.color = "#7df9ff";
+async function uploadImageToCloudinary(file) {
+  if (!file) return "";
 
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const percent = Math.round(
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-        );
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Vui lòng chọn đúng file hình ảnh.");
+  }
 
-        uploadMessage.textContent = `Đang upload ảnh: ${percent}%`;
-      },
-      (error) => {
-        console.error(error);
-        uploadMessage.textContent = "Upload ảnh thất bại. Hãy kiểm tra Firebase Storage Rules.";
-        uploadMessage.style.color = "#ff4fd8";
-        reject(error);
-      },
-      async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+  const maxSizeMB = 8;
+  const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
-        uploadMessage.textContent = "Upload ảnh thành công.";
-        uploadMessage.style.color = "#7df9ff";
+  if (file.size > maxSizeBytes) {
+    throw new Error(`Ảnh quá nặng. Vui lòng chọn ảnh dưới ${maxSizeMB}MB.`);
+  }
 
-        resolve(downloadURL);
-      }
-    );
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  formData.append("folder", "mina-review");
+
+  setUploadMessage("Đang upload ảnh lên Cloudinary...");
+
+  const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+    method: "POST",
+    body: formData
   });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error(data);
+    throw new Error(data.error?.message || "Upload ảnh lên Cloudinary thất bại.");
+  }
+
+  setUploadMessage("Upload ảnh thành công.");
+
+  return data.secure_url;
 }
 
 if (imageFileInput) {
@@ -122,7 +142,7 @@ if (imageFileInput) {
     if (!file) return;
 
     try {
-      const imageURL = await uploadImage(file);
+      const imageURL = await uploadImageToCloudinary(file);
 
       imageInput.value = imageURL;
 
@@ -131,10 +151,16 @@ if (imageFileInput) {
         imagePreview.style.display = "block";
       }
     } catch (error) {
-      alert("Không upload được ảnh. Hãy kiểm tra Firebase Storage.");
+      console.error(error);
+      setUploadMessage(error.message, "#ff4fd8");
+      alert(error.message);
     }
   });
 }
+
+/* =========================
+   AUTH
+========================= */
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
@@ -174,12 +200,20 @@ logoutBtn.addEventListener("click", async () => {
   showLogin("Bạn đã đăng xuất.");
 });
 
+/* =========================
+   POSTS
+========================= */
+
 async function render() {
   list.innerHTML = `<p class="muted">Đang tải bài viết...</p>`;
 
   try {
     const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
     const snapshot = await getDocs(q);
+
+    if (totalPosts) {
+      totalPosts.textContent = snapshot.size;
+    }
 
     if (snapshot.empty) {
       list.innerHTML = `<p class="muted">Chưa có bài viết nào.</p>`;
@@ -194,8 +228,15 @@ async function render() {
           <b>${p.title || "Không có tiêu đề"}</b>
           <p>${p.desc || ""}</p>
           <p class="muted">Danh mục: ${p.category || "Chưa phân loại"}</p>
-          ${p.image ? `<img src="${p.image}" alt="${p.title || ""}" style="max-width:160px;border-radius:14px;margin:10px 0;">` : ""}
+
+          ${
+            p.image
+              ? `<img src="${p.image}" alt="${p.title || ""}" style="max-width:160px;border-radius:14px;margin:10px 0;">`
+              : ""
+          }
+
           ${p.featured ? `<p>⭐ Bài nổi bật</p>` : ""}
+
           <div class="actions">
             <button type="button" onclick="deletePost('${item.id}')">Xóa</button>
           </div>
@@ -223,6 +264,10 @@ window.deletePost = async function(id) {
   }
 };
 
+/* =========================
+   SUBMIT
+========================= */
+
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -234,6 +279,7 @@ form.addEventListener("submit", async (e) => {
     content: contentInput.value.trim(),
     link: linkInput.value.trim(),
     featured: featuredInput ? featuredInput.checked : false,
+    status: document.getElementById("status")?.value || "published",
     createdAt: serverTimestamp()
   };
 
@@ -251,20 +297,12 @@ form.addEventListener("submit", async (e) => {
     await addDoc(collection(db, "posts"), post);
 
     form.reset();
-
-    if (imagePreview) {
-      imagePreview.src = "";
-      imagePreview.style.display = "none";
-    }
-
-    if (uploadMessage) {
-      uploadMessage.textContent = "";
-    }
+    clearPreview();
 
     alert("Đã đăng bài lên Firestore thành công.");
     render();
   } catch (error) {
     console.error(error);
-    alert("Đăng bài chưa thành công. Hãy kiểm tra Firebase Rules hoặc đăng nhập Admin.");
+    alert("Đăng bài chưa thành công. Hãy kiểm tra Firestore Rules hoặc đăng nhập Admin.");
   }
 });
