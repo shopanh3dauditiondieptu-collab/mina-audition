@@ -2063,3 +2063,38 @@ figcaption {
     margin:4px auto 0 !important;
   }
 }
+.hero{
+  min-height:520px;
+  padding:50px 70px 40px;
+}
+
+.hero-content{
+  width:52%;
+  max-width:620px;
+}
+
+.hero h1,
+.hero-title{
+  font-size:clamp(62px,6.5vw,105px);
+  line-height:.88;
+}
+
+.hero-character{
+  position:absolute;
+  right:44%;
+  bottom:20px;
+  z-index:2;
+}
+
+.hero-character img,
+.hero-img{
+  max-height:360px;
+}
+
+.social-section,
+.social-cards,
+.follow-section{
+  position:relative;
+  z-index:3;
+  margin-top:40px;
+}
