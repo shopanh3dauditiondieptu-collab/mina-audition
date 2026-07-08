@@ -237,7 +237,7 @@
 }
 
 .script-text{
-    font-family: "Allura", cursive;
+    font-family:"Pacifico", cursive;
     font-size:clamp(26px,3vw,44px);
     color:#ff4fc3;
     text-shadow:
