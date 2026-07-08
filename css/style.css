@@ -2311,3 +2311,143 @@ figcaption {
 .social-wrapper .social-box{
     width:min(1100px,92%);
 }
+/* ===============================
+   MINA CMS V6 - FIX CĂN LỀ BỐ CỤC
+   =============================== */
+
+/* Khung chuẩn chung cho toàn website */
+.container,
+.featured-section,
+.social-section,
+.wiki-section,
+.video-section,
+.latest-posts-section {
+  max-width: 1280px;
+  width: calc(100% - 48px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Nội dung nổi bật */
+.featured-section {
+  padding: 70px 0 80px;
+  text-align: center;
+}
+
+.featured-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.featured-card {
+  text-align: left;
+}
+
+.featured-card img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* Khung mạng xã hội */
+.social-section {
+  margin-top: 20px;
+  margin-bottom: 80px;
+}
+
+.social-box {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+}
+
+/* Wikipedia Skill Dance */
+.wiki-section {
+  padding: 70px 0;
+  text-align: center;
+}
+
+.wiki-search {
+  max-width: 520px;
+  margin: 22px auto 0;
+}
+
+/* Video mới nhất - sửa lỗi lệch trái */
+.video-section {
+  padding: 80px 0;
+}
+
+.video-layout {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 70px;
+  align-items: center;
+}
+
+.video-info {
+  max-width: 340px;
+}
+
+.video-embed {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.video-embed iframe,
+.video-embed .youtube-box {
+  max-width: 520px;
+  width: 100%;
+  border-radius: 12px;
+}
+
+/* Responsive tablet */
+@media (max-width: 1024px) {
+  .featured-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .video-layout {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    text-align: center;
+  }
+
+  .video-info {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .social-box {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+/* Responsive mobile */
+@media (max-width: 600px) {
+  .container,
+  .featured-section,
+  .social-section,
+  .wiki-section,
+  .video-section,
+  .latest-posts-section {
+    width: calc(100% - 28px);
+  }
+
+  .featured-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .featured-card img {
+    height: 180px;
+  }
+
+  .video-section {
+    padding: 60px 0;
+  }
+}
