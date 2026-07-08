@@ -1696,3 +1696,32 @@ footer .contact-row a{
 
     margin-bottom:20px;
 }
+/* ===== MINA CMS V3.1 LIGHTBOX ===== */
+
+.mina-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,.88);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.mina-lightbox img {
+  max-width: min(1100px, 96vw);
+  max-height: 88vh;
+  object-fit: contain;
+  border-radius: 20px;
+}
+
+.mina-lightbox-close {
+  position: fixed;
+  top: 18px;
+  right: 22px;
+  font-size: 34px;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+}
