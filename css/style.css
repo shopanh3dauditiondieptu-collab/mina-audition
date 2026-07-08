@@ -2233,5 +2233,5 @@ figcaption {
 }
 /* === DỜI HEADER SANG TRÁI CHO CÂN ĐỐI === */
 .site-header{
-  transform: translateX(-35px) !important;
+  transform: translateX(-45px) !important;
 }
