@@ -753,10 +753,10 @@ img{max-width:100%;display:block}
     text-align: left;
   }
 
-  .video-title{
-    font-size:52px;
+ .video-title{
+    font-size:42px;
+    line-height:1.05;
     white-space:nowrap;
-    line-height:1;
     letter-spacing:-1px;
 }
 }
