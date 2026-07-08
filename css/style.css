@@ -237,12 +237,13 @@
 }
 
 .script-text{
-  font-size:clamp(34px,3.8vw,54px);
-  color:#8ffcff;
-  text-shadow:
-    0 0 8px rgba(143,252,255,.95),
-    0 0 22px rgba(91,219,255,.75),
-    0 0 40px rgba(190,80,255,.35);
+    font-size:clamp(26px,3vw,44px);
+    color:#ff4fc3;
+    text-shadow:
+        0 0 6px rgba(255,79,195,.95),
+        0 0 16px rgba(255,79,195,.85),
+        0 0 34px rgba(255,79,195,.65),
+        0 0 58px rgba(255,79,195,.45);
 }
 
 /* Chữ chính giống demo: trắng + viền glow xanh tím */
@@ -372,8 +373,14 @@
   }
 
   .script-text{
-    font-size:clamp(38px,4.5vw,62px);
-  }
+    font-size:clamp(26px,3vw,44px);
+    color:#ff4fc3;
+    text-shadow:
+        0 0 6px rgba(255,79,195,.95),
+        0 0 16px rgba(255,79,195,.85),
+        0 0 34px rgba(255,79,195,.65),
+        0 0 58px rgba(255,79,195,.45);
+}
 
   .hero-character{
     right:65px;
