@@ -2736,3 +2736,38 @@ figcaption {
   color: #ff3ecf !important;
   fill: #ff3ecf !important;
 }
+/* ================================
+   FIX SOCIAL ICON MINA CMS V6
+================================ */
+
+.social-box .social-item i {
+  font-size: 52px;
+  margin-bottom: 18px;
+  display: block;
+}
+
+/* YouTube */
+.social-box .social-item.youtube i,
+.social-box .social-item.youtube strong {
+  color: #ff0000 !important;
+}
+
+/* Facebook */
+.social-box .social-item.facebook i,
+.social-box .social-item.facebook strong {
+  color: #1877f2 !important;
+}
+
+/* TikTok */
+.social-box .social-item.tiktok i,
+.social-box .social-item.tiktok strong {
+  color: #ffffff !important;
+}
+
+/* Instagram */
+.social-box .social-item.instagram i,
+.social-box .social-item.instagram strong {
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
