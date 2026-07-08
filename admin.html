@@ -1,1 +1,55 @@
-.admin-page{padding:60px 7%;min-height:80vh}.admin-page h1{font-size:44px}#postForm{display:grid;gap:14px;max-width:850px}#postForm input,#postForm textarea{padding:15px;border-radius:12px;border:1px solid rgba(95,244,255,.35);background:rgba(255,255,255,.08);color:#fff}#postForm textarea{min-height:120px}#postForm button{padding:16px;border:0;border-radius:999px;font-weight:900;background:linear-gradient(135deg,#ff4fe3,#5ff4ff);cursor:pointer}#postList{margin-top:28px;display:grid;gap:12px}.admin-item{padding:16px;border:1px solid rgba(95,244,255,.25);border-radius:14px;background:rgba(255,255,255,.06)}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Mina Audition</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+
+<body>
+  <main class="admin">
+    <div class="admin-header">
+      <div>
+        <div class="eyebrow">Mina Audition</div>
+        <h1>Trang quản trị</h1>
+        <p class="muted">Đăng và quản lý bài viết cho website.</p>
+      </div>
+      <a href="/">Về trang chủ</a>
+    </div>
+
+    <section class="panel">
+      <h2>Đăng bài viết</h2>
+
+      <form id="postForm">
+        <label>Tiêu đề</label>
+        <input type="text" id="title" placeholder="Nhập tiêu đề bài viết">
+
+        <label>Danh mục</label>
+        <input type="text" id="category" placeholder="Ví dụ: Review Skill">
+
+        <label>Link ảnh</label>
+        <input type="text" id="image" placeholder="images/ten-anh.png">
+
+        <label>Mô tả ngắn</label>
+        <textarea id="desc" placeholder="Nhập mô tả ngắn"></textarea>
+
+        <label>Nội dung bài viết</label>
+        <textarea id="content" placeholder="Nhập nội dung chi tiết"></textarea>
+
+        <label>Link ngoài nếu có</label>
+        <input type="text" id="link" placeholder="https://...">
+
+        <div class="actions">
+          <button type="submit">Lưu bài viết</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Danh sách bài viết</h2>
+      <div id="postList"></div>
+    </section>
+  </main>
+</body>
+</html>
