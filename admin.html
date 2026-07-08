@@ -4,13 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Mina Audition</title>
+  <link rel="icon" href="images/favicon.png">
   <link rel="stylesheet" href="css/admin.css">
 </head>
 
 <body>
+  <!-- LOGIN -->
   <section id="loginBox" class="login-box">
     <div class="login-card">
-      <div class="eyebrow">Mina Audition</div>
+      <div class="eyebrow">Mina Audition CMS</div>
       <h1>Đăng nhập Admin</h1>
       <p class="muted">Chỉ tài khoản quản trị mới có quyền đăng bài.</p>
 
@@ -28,53 +30,163 @@
     </div>
   </section>
 
+  <!-- ADMIN APP -->
   <main id="adminApp" class="admin hidden">
-    <div class="admin-header">
+
+    <!-- HEADER -->
+    <header class="admin-header">
       <div>
-        <div class="eyebrow">Mina Audition</div>
+        <div class="eyebrow">Mina Audition CMS</div>
         <h1>Trang quản trị</h1>
-        <p class="muted">Đăng và quản lý bài viết cho website.</p>
+        <p class="muted">Quản lý bài viết, hình ảnh và nội dung website Mina.</p>
         <p id="adminEmail" class="muted small-text"></p>
       </div>
 
       <div class="top-actions">
+        <a href="/" class="home-link">Về trang chủ</a>
         <button id="logoutBtn" type="button">Đăng xuất</button>
-        <a href="/">Về trang chủ</a>
       </div>
-    </div>
+    </header>
 
-    <section class="panel">
-      <h2>Đăng bài viết</h2>
-
-      <form id="postForm">
-        <label>Tiêu đề</label>
-        <input type="text" id="title" placeholder="Nhập tiêu đề bài viết">
-
-        <label>Danh mục</label>
-        <input type="text" id="category" placeholder="Ví dụ: Review Skill">
-
-        <label>Link ảnh</label>
-        <input type="text" id="image" placeholder="images/ten-anh.png">
-
-        <label>Mô tả ngắn</label>
-        <textarea id="desc" placeholder="Nhập mô tả ngắn"></textarea>
-
-        <label>Nội dung bài viết</label>
-        <textarea id="content" placeholder="Nhập nội dung chi tiết"></textarea>
-
-        <label>Link ngoài nếu có</label>
-        <input type="text" id="link" placeholder="https://...">
-
-        <div class="actions">
-          <button type="submit">Lưu bài viết</button>
+    <!-- DASHBOARD -->
+    <section class="dashboard-grid">
+      <div class="stat-card">
+        <span class="stat-icon">📝</span>
+        <div>
+          <strong id="totalPosts">0</strong>
+          <p>Bài viết</p>
         </div>
-      </form>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-icon">⭐</span>
+        <div>
+          <strong>Skill</strong>
+          <p>Nội dung review</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-icon">📌</span>
+        <div>
+          <strong>Nổi bật</strong>
+          <p>Bài ghim trang chủ</p>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-icon">👁</span>
+        <div>
+          <strong>Public</strong>
+          <p>Người dùng chỉ xem</p>
+        </div>
+      </div>
     </section>
 
-    <section class="panel">
-      <h2>Danh sách bài viết</h2>
-      <div id="postList"></div>
+    <!-- CONTENT LAYOUT -->
+    <section class="admin-layout">
+
+      <!-- FORM POST -->
+      <section class="panel post-editor">
+        <div class="panel-title">
+          <div>
+            <h2>Đăng bài viết</h2>
+            <p class="muted">Tạo nội dung mới cho website Mina Audition.</p>
+          </div>
+        </div>
+
+        <form id="postForm">
+          <input type="hidden" id="editIndex">
+
+          <div class="form-grid">
+            <div>
+              <label>Tiêu đề</label>
+              <input type="text" id="title" placeholder="Ví dụ: Review Skill Audition đẹp nhất tuần">
+            </div>
+
+            <div>
+              <label>Danh mục</label>
+              <input type="text" id="category" placeholder="Review Skill / Mix Match / D8 Team">
+            </div>
+          </div>
+
+          <label>Link ảnh đại diện</label>
+          <input type="text" id="image" placeholder="images/ten-anh.png hoặc link ảnh Firebase">
+
+          <label>Mô tả ngắn</label>
+          <textarea id="desc" rows="3" placeholder="Viết mô tả ngắn hiển thị ngoài trang chủ"></textarea>
+
+          <label>Nội dung bài viết</label>
+          <textarea id="content" rows="9" placeholder="Nhập nội dung chi tiết bài viết"></textarea>
+
+          <div class="form-grid">
+            <div>
+              <label>Link ngoài nếu có</label>
+              <input type="text" id="link" placeholder="https://youtube.com/... hoặc facebook...">
+            </div>
+
+            <div>
+              <label>Trạng thái</label>
+              <select id="status">
+                <option value="published">Đăng công khai</option>
+                <option value="draft">Lưu nháp</option>
+              </select>
+            </div>
+          </div>
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="featured">
+            <span>Ghim bài này làm bài nổi bật</span>
+          </label>
+
+          <div class="actions">
+            <button type="submit">Lưu bài viết</button>
+            <button type="button" id="resetBtn" class="secondary-btn">Làm mới</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- QUICK GUIDE -->
+      <aside class="panel side-panel">
+        <h2>Gợi ý nội dung Mina</h2>
+
+        <div class="guide-item">
+          <strong>Review Skill</strong>
+          <p>Ảnh skill rõ, tiêu đề có ID skill, thêm nhận xét đẹp/hiếm/dễ phối.</p>
+        </div>
+
+        <div class="guide-item">
+          <strong>Mix & Match</strong>
+          <p>Gợi ý outfit, tone màu, phong cách nhân vật và caption đăng mạng xã hội.</p>
+        </div>
+
+        <div class="guide-item">
+          <strong>D8 Team</strong>
+          <p>Chia sẻ video, đội hình, khoảnh khắc fam và playlist YouTube.</p>
+        </div>
+
+        <div class="guide-item">
+          <strong>Ảnh bài viết</strong>
+          <p>Nên dùng ảnh ngang hoặc vuông, dung lượng nhẹ để web tải nhanh.</p>
+        </div>
+      </aside>
+
     </section>
+
+    <!-- POST LIST -->
+    <section class="panel">
+      <div class="panel-title">
+        <div>
+          <h2>Danh sách bài viết</h2>
+          <p class="muted">Quản lý, sửa hoặc xoá bài đã đăng.</p>
+        </div>
+
+        <input type="text" id="searchPost" class="search-input" placeholder="Tìm bài viết...">
+      </div>
+
+      <div id="postList" class="post-list"></div>
+    </section>
+
   </main>
 
   <script type="module" src="js/admin.js"></script>
