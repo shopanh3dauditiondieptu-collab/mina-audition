@@ -758,84 +758,127 @@ img{max-width:100%;display:block}
   }
 }
 .video-actions{
-    display:flex;
-    gap:12px;
-    flex-wrap:wrap;
-    margin:24px 0 30px;
+
+display:flex;
+
+gap:14px;
+
+flex-wrap:wrap;
+
+margin:28px 0 34px;
+
 }
 
 .social-btn{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
 
-    min-width:120px;
-    height:48px;
+display:flex;
 
-    padding:0 22px;
+align-items:center;
 
-    border-radius:999px;
+justify-content:center;
 
-    text-decoration:none;
+gap:10px;
 
-    font-weight:800;
+min-width:145px;
 
-    transition:.25s;
+height:52px;
 
-    border:1px solid rgba(255,255,255,.12);
+padding:0 22px;
 
-    color:#fff;
+border-radius:999px;
 
-    box-shadow:
-    0 0 18px rgba(95,244,255,.12);
+text-decoration:none;
+
+font-size:15px;
+
+font-weight:800;
+
+color:#fff;
+
+transition:.28s;
+
+border:1px solid rgba(255,255,255,.12);
+
+backdrop-filter:blur(12px);
+
+}
+
+.social-btn i{
+
+font-size:19px;
+
+transition:.28s;
+
 }
 
 .youtube-btn{
 
-    background:
-    linear-gradient(90deg,#ff4fe3,#5ff4ff);
+background:linear-gradient(90deg,#ff4fe3,#5ff4ff);
+
+box-shadow:
+
+0 0 26px rgba(95,244,255,.30);
 
 }
 
 .facebook-btn{
 
-    background:
-    rgba(255,255,255,.06);
+background:rgba(255,255,255,.05);
 
 }
 
 .tiktok-btn{
 
-    background:
-    rgba(255,255,255,.06);
+background:rgba(255,255,255,.05);
 
 }
 
 .social-btn:hover{
 
-    transform:
-    translateY(-3px);
+transform:translateY(-4px);
 
-    box-shadow:
-    0 0 25px rgba(95,244,255,.35);
+box-shadow:
 
-}
-
-.facebook-btn:hover{
-
-    background:#1877F2;
-
-}
-
-.tiktok-btn:hover{
-
-    background:#111;
+0 0 35px rgba(95,244,255,.30);
 
 }
 
 .youtube-btn:hover{
 
-    transform:
-    translateY(-3px) scale(1.03);
+background:linear-gradient(90deg,#ff2ebd,#3de8ff);
+
+}
+
+.facebook-btn:hover{
+
+background:#1877F2;
+
+}
+
+.tiktok-btn:hover{
+
+background:#111;
+
+}
+
+.social-btn:hover i{
+
+transform:scale(1.15);
+
+}
+
+@media(max-width:900px){
+
+.video-actions{
+
+justify-content:center;
+
+}
+
+.social-btn{
+
+width:100%;
+
+}
 
 }
