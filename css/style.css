@@ -465,15 +465,24 @@ img{max-width:100%;display:block}
     box-shadow: 0 0 26px rgba(255,79,227,.42);
 }
 
-.video-left h2 {
-  margin: 18px 0 18px;
-  font-size: clamp(36px, 4.4vw, 58px);
-  line-height: 1;
-  color: #fff;
-  text-transform: uppercase;
-  text-shadow:
-    0 0 10px rgba(255,255,255,.5),
-    0 0 26px rgba(95,244,255,.5);
+.video-left h2,
+.video-title{
+    margin:18px 0 22px;
+    font-size:clamp(42px,4vw,58px);
+    font-weight:900;
+    line-height:.92;
+    letter-spacing:-2px;
+    color:#fff;
+    text-transform:uppercase;
+    text-shadow:
+        0 0 12px rgba(255,255,255,.95),
+        0 0 30px rgba(95,244,255,.55),
+        0 0 60px rgba(255,79,227,.28);
+}
+.video-title span{
+    display:block;
+    font-size:.82em;
+    letter-spacing:-1px;
 }
 
 .video-desc {
@@ -855,19 +864,4 @@ justify-content:center;
 
 width:100%;
 
-}
-/* Chỉnh VIDEO MỚI NHẤT nằm 1 hàng */
-.video-title{
-    font-size:34px !important;
-    line-height:1 !important;
-    white-space:nowrap !important;
-    letter-spacing:-1px !important;
-}
-
-/* Làm HOT HIT to và nổi hơn */
-.music-pill{
-    font-size:17px !important;
-    font-weight:900 !important;
-    padding:10px 24px !important;
-    border-radius:999px !important;
 }
