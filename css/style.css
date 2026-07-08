@@ -1907,3 +1907,32 @@ figcaption {
     text-align: center;
   }
 }
+/* ===== Fix logo Mina header ===== */
+.brand{
+  display:flex !important;
+  align-items:center !important;
+  gap:18px !important;
+  text-decoration:none !important;
+  flex-shrink:0;
+}
+
+.brand img{
+  width:72px !important;
+  height:72px !important;
+  object-fit:contain !important;
+  flex-shrink:0 !important;
+}
+
+.brand span{
+  font-size:26px !important;
+  font-weight:900 !important;
+  white-space:nowrap !important;
+}
+
+.site-header{
+  gap:28px !important;
+}
+
+.main-nav{
+  gap:24px !important;
+}
