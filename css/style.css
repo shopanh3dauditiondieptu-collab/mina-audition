@@ -1917,16 +1917,16 @@ figcaption {
 }
 
 .brand img{
-  width:72px !important;
-  height:72px !important;
-  object-fit:contain !important;
-  flex-shrink:0 !important;
+    width:88px !important;
+    height:88px !important;
+    object-fit:contain !important;
+    flex-shrink:0 !important;
 }
 
 .brand span{
-  font-size:26px !important;
-  font-weight:900 !important;
-  white-space:nowrap !important;
+    font-size:24px !important;
+    font-weight:900;
+    white-space:nowrap;
 }
 
 .site-header{
