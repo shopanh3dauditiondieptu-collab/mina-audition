@@ -294,3 +294,177 @@ document.addEventListener("click", (e) => {
     overlay.remove();
   });
 });
+/* ================================
+   MINA CMS V5 - POST ENHANCEMENT
+   Không phá layout cũ
+================================ */
+
+function minaEnhancePost() {
+  const article =
+    document.querySelector(".post-detail") ||
+    document.querySelector(".post-content") ||
+    document.querySelector("article") ||
+    document.getElementById("postDetail");
+
+  if (!article) return;
+
+  addBreadcrumb(article);
+  addTableOfContents(article);
+  enhanceImages(article);
+  addShareBox(article);
+  addAuthorBox(article);
+  addLightbox();
+}
+
+function addBreadcrumb(article) {
+  if (document.querySelector(".breadcrumb")) return;
+
+  const breadcrumb = document.createElement("div");
+  breadcrumb.className = "breadcrumb";
+  breadcrumb.innerHTML = `
+    <a href="index.html">Trang chủ</a>
+    <span> → </span>
+    <a href="review.html">Review Skill</a>
+    <span> → </span>
+    <span>Bài viết</span>
+  `;
+
+  article.prepend(breadcrumb);
+}
+
+function addTableOfContents(article) {
+  if (document.querySelector(".post-toc")) return;
+
+  const headings = article.querySelectorAll("h2, h3");
+
+  if (headings.length < 2) return;
+
+  const toc = document.createElement("div");
+  toc.className = "post-toc";
+  toc.innerHTML = `<h3>📌 Nội dung bài viết</h3>`;
+
+  headings.forEach((heading, index) => {
+    const id = `mina-section-${index + 1}`;
+    heading.id = id;
+
+    const link = document.createElement("a");
+    link.href = `#${id}`;
+    link.textContent = `${index + 1}. ${heading.textContent}`;
+    toc.appendChild(link);
+  });
+
+  const title = article.querySelector("h1");
+  if (title) {
+    title.insertAdjacentElement("afterend", toc);
+  } else {
+    article.prepend(toc);
+  }
+}
+
+function enhanceImages(article) {
+  const images = article.querySelectorAll("img");
+
+  images.forEach((img, index) => {
+    img.loading = "lazy";
+    img.decoding = "async";
+
+    if (!img.alt || img.alt.trim() === "") {
+      img.alt = `Ảnh minh họa Mina Audition ${index + 1}`;
+    }
+
+    img.addEventListener("click", () => {
+      openLightbox(img.src, img.alt);
+    });
+  });
+}
+
+function addLightbox() {
+  if (document.querySelector(".lightbox")) return;
+
+  const box = document.createElement("div");
+  box.className = "lightbox";
+  box.innerHTML = `
+    <span class="lightbox-close">×</span>
+    <img src="" alt="Mina Audition">
+  `;
+
+  document.body.appendChild(box);
+
+  box.addEventListener("click", () => {
+    box.classList.remove("active");
+  });
+}
+
+function openLightbox(src, alt) {
+  const box = document.querySelector(".lightbox");
+  const img = box.querySelector("img");
+
+  img.src = src;
+  img.alt = alt || "Mina Audition";
+  box.classList.add("active");
+}
+
+function addShareBox(article) {
+  if (document.querySelector(".share-box")) return;
+
+  const url = encodeURIComponent(window.location.href);
+  const title = encodeURIComponent(document.title);
+
+  const share = document.createElement("div");
+  share.className = "share-box";
+  share.innerHTML = `
+    <h3>💎 Chia sẻ bài viết</h3>
+    <div class="share-actions">
+      <a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=${url}">
+        Facebook
+      </a>
+
+      <a target="_blank" href="https://zalo.me/share?u=${url}">
+        Zalo
+      </a>
+
+      <a target="_blank" href="https://www.messenger.com/">
+        Messenger
+      </a>
+
+      <button type="button" id="copyPostLinkV5">
+        Copy Link
+      </button>
+    </div>
+  `;
+
+  article.appendChild(share);
+
+  const copyBtn = document.getElementById("copyPostLinkV5");
+  copyBtn.addEventListener("click", async () => {
+    await navigator.clipboard.writeText(window.location.href);
+    copyBtn.textContent = "Đã copy ✓";
+
+    setTimeout(() => {
+      copyBtn.textContent = "Copy Link";
+    }, 1800);
+  });
+}
+
+function addAuthorBox(article) {
+  if (document.querySelector(".post-author")) return;
+
+  const author = document.createElement("div");
+  author.className = "post-author";
+  author.innerHTML = `
+    <img class="author-avatar" src="assets/avatar.jpg" alt="Mina Audition">
+    <div>
+      <h3>Mina Audition</h3>
+      <p>
+        Review Skill Audition, chia sẻ concept ảnh 2D/3D, Mix & Match outfit
+        và nội dung dành cho cộng đồng Audition.
+      </p>
+    </div>
+  `;
+
+  article.appendChild(author);
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  setTimeout(minaEnhancePost, 500);
+});
