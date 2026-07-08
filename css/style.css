@@ -1186,3 +1186,41 @@ footer .contact-row a{
     background:#111;
     box-shadow:0 15px 45px rgba(0,0,0,.35);
 }
+/* =====================================
+   FIX KÍCH THƯỚC ẢNH BÀI VIẾT - MINA
+===================================== */
+
+.post-card.post-full img,
+.post-card.post-full .post-detail-image,
+.post-card.post-full .post-hero-image{
+
+    width:auto !important;
+    max-width:420px !important;
+
+    height:auto !important;
+    max-height:520px !important;
+
+    display:block !important;
+
+    margin:0 auto 30px auto !important;
+
+    object-fit:contain !important;
+
+    border-radius:18px;
+
+    box-shadow:0 15px 40px rgba(0,0,0,.35);
+}
+
+@media(max-width:768px){
+
+    .post-card.post-full img,
+    .post-card.post-full .post-detail-image,
+    .post-card.post-full .post-hero-image{
+
+        width:100% !important;
+        max-width:100% !important;
+        max-height:none !important;
+
+    }
+
+}
