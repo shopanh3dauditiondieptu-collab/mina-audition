@@ -753,9 +753,12 @@ img{max-width:100%;display:block}
     text-align: left;
   }
 
-  .video-title {
-    font-size: 52px;
-  }
+  .video-title{
+    font-size:52px;
+    white-space:nowrap;
+    line-height:1;
+    letter-spacing:-1px;
+}
 }
 .video-actions{
     display:flex;
@@ -853,5 +856,18 @@ justify-content:center;
 width:100%;
 
 }
+/* Chỉnh VIDEO MỚI NHẤT nằm 1 hàng */
+.video-title{
+    font-size:44px !important;
+    line-height:1 !important;
+    white-space:nowrap !important;
+    letter-spacing:-1px !important;
+}
 
+/* Làm HOT HIT to và nổi hơn */
+.music-pill{
+    font-size:17px !important;
+    font-weight:900 !important;
+    padding:10px 24px !important;
+    border-radius:999px !important;
 }
