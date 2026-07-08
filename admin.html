@@ -8,14 +8,39 @@
 </head>
 
 <body>
-  <main class="admin">
+  <section id="loginBox" class="login-box">
+    <div class="login-card">
+      <div class="eyebrow">Mina Audition</div>
+      <h1>Đăng nhập Admin</h1>
+      <p class="muted">Chỉ tài khoản quản trị mới có quyền đăng bài.</p>
+
+      <form id="loginForm">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="Nhập email admin" required>
+
+        <label>Mật khẩu</label>
+        <input type="password" id="loginPassword" placeholder="Nhập mật khẩu" required>
+
+        <button type="submit">Đăng nhập</button>
+      </form>
+
+      <p id="loginMessage" class="login-message"></p>
+    </div>
+  </section>
+
+  <main id="adminApp" class="admin hidden">
     <div class="admin-header">
       <div>
         <div class="eyebrow">Mina Audition</div>
         <h1>Trang quản trị</h1>
         <p class="muted">Đăng và quản lý bài viết cho website.</p>
+        <p id="adminEmail" class="muted small-text"></p>
       </div>
-      <a href="/">Về trang chủ</a>
+
+      <div class="top-actions">
+        <button id="logoutBtn" type="button">Đăng xuất</button>
+        <a href="/">Về trang chủ</a>
+      </div>
     </div>
 
     <section class="panel">
@@ -51,6 +76,7 @@
       <div id="postList"></div>
     </section>
   </main>
-<script type="module" src="js/admin.js"></script>
+
+  <script type="module" src="js/admin.js"></script>
 </body>
 </html>
