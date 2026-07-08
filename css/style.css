@@ -454,15 +454,15 @@ img{max-width:100%;display:block}
 }
 
 .video-badge {
-  display: inline-flex;
-  padding: 8px 16px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,79,227,.75);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 900;
-  background: linear-gradient(90deg, rgba(255,79,227,.35), rgba(95,244,255,.18));
-  box-shadow: 0 0 20px rgba(255,79,227,.28);
+    display: inline-flex;
+    padding: 10px 22px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,79,227,.85);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 900;
+    background: linear-gradient(90deg, rgba(255,79,227,.42), rgba(95,244,255,.24));
+    box-shadow: 0 0 26px rgba(255,79,227,.42);
 }
 
 .video-left h2 {
