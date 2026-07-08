@@ -73,7 +73,7 @@ async function loadPost() {
             ? `<img
   src="${p.image.replace('/upload/', '/upload/f_auto,q_auto,w_900/')}"
   alt="${p.title || "Bài viết Mina"}"
-  class="post-hero-image"
+  class="post-detail-image"
   loading="eager"
 >`
             : ""
