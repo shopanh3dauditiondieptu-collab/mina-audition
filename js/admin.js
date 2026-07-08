@@ -1108,3 +1108,312 @@ function minaV3CreateRestoreButton() {
 }
 
 setTimeout(minaV3CreateRestoreButton, 1000);
+/* =====================================================
+   MINA CMS V4 - CONTENT MANAGER
+   Category filter + advanced search + duplicate check
+===================================================== */
+
+let minaV4Posts = [];
+let minaV4State = {
+  keyword: "",
+  category: "all",
+  status: "all",
+  onlyDuplicate: false
+};
+
+function minaV4TextFromBlocks(blocks = []) {
+  if (!Array.isArray(blocks)) return "";
+
+  return blocks.map(block => {
+    if (block.type === "text" || block.type === "quote") return block.value || "";
+    if (block.type === "image") return `${block.caption || ""} ${block.url || ""}`;
+    if (block.type === "youtube") return block.url || "";
+    if (block.type === "gallery") {
+      return Array.isArray(block.images)
+        ? block.images.map(img => `${img.caption || ""} ${img.url || ""}`).join(" ")
+        : "";
+    }
+    return "";
+  }).join(" ");
+}
+
+function minaV4Normalize(text = "") {
+  return String(text)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function minaV4CreateManagerUI() {
+  if (document.getElementById("minaV4Manager")) return;
+
+  const postListPanel = list?.closest(".panel");
+  if (!postListPanel) return;
+
+  const manager = document.createElement("section");
+  manager.className = "panel mina-v4-manager";
+  manager.id = "minaV4Manager";
+
+  manager.innerHTML = `
+    <div class="panel-title">
+      <div>
+        <h2>Trung tâm quản lý nội dung</h2>
+        <p class="muted">Lọc danh mục, tìm dữ liệu đã đăng và kiểm tra bài có khả năng trùng lặp.</p>
+      </div>
+    </div>
+
+    <div class="mina-v4-tools">
+      <input id="minaV4Search" type="text" placeholder="Tìm tiêu đề, mô tả, danh mục, nội dung, link ảnh, YouTube...">
+
+      <select id="minaV4Status">
+        <option value="all">Tất cả trạng thái</option>
+        <option value="published">Công khai</option>
+        <option value="draft">Bản nháp</option>
+      </select>
+
+      <button type="button" id="minaV4DuplicateBtn" class="secondary-btn">Kiểm tra trùng lặp</button>
+      <button type="button" id="minaV4ReloadBtn" class="secondary-btn">Tải lại dữ liệu</button>
+    </div>
+
+    <div id="minaV4Categories" class="mina-v4-categories"></div>
+    <div id="minaV4Stats" class="mina-v4-stats"></div>
+    <div id="minaV4Table" class="mina-v4-table"></div>
+  `;
+
+  postListPanel.insertAdjacentElement("beforebegin", manager);
+
+  document.getElementById("minaV4Search").addEventListener("input", e => {
+    minaV4State.keyword = e.target.value.trim().toLowerCase();
+    minaV4Render();
+  });
+
+  document.getElementById("minaV4Status").addEventListener("change", e => {
+    minaV4State.status = e.target.value;
+    minaV4Render();
+  });
+
+  document.getElementById("minaV4DuplicateBtn").addEventListener("click", () => {
+    minaV4State.onlyDuplicate = !minaV4State.onlyDuplicate;
+    minaV4Render();
+  });
+
+  document.getElementById("minaV4ReloadBtn").addEventListener("click", minaV4LoadPosts);
+}
+
+async function minaV4LoadPosts() {
+  minaV4CreateManagerUI();
+
+  const table = document.getElementById("minaV4Table");
+  if (table) table.innerHTML = `<p class="muted">Đang tải dữ liệu quản lý...</p>`;
+
+  try {
+    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+
+    minaV4Posts = snapshot.docs.map(docSnap => {
+      const p = docSnap.data();
+
+      const searchable = minaV4Normalize([
+        p.title,
+        p.desc,
+        p.category,
+        p.content,
+        p.link,
+        minaV4TextFromBlocks(p.contentBlocks)
+      ].join(" "));
+
+      const titleKey = minaV4Normalize(p.title || "");
+
+      return {
+        id: docSnap.id,
+        ...p,
+        searchable,
+        titleKey
+      };
+    });
+
+    minaV4Render();
+  } catch (error) {
+    console.error(error);
+    if (table) table.innerHTML = `<p class="muted">Không tải được dữ liệu Mina CMS V4.</p>`;
+  }
+}
+
+function minaV4GetDuplicateIds() {
+  const map = new Map();
+
+  minaV4Posts.forEach(post => {
+    if (!post.titleKey) return;
+
+    if (!map.has(post.titleKey)) {
+      map.set(post.titleKey, []);
+    }
+
+    map.get(post.titleKey).push(post.id);
+  });
+
+  const duplicateIds = new Set();
+
+  map.forEach(ids => {
+    if (ids.length > 1) {
+      ids.forEach(id => duplicateIds.add(id));
+    }
+  });
+
+  return duplicateIds;
+}
+
+function minaV4RenderCategories(posts = minaV4Posts) {
+  const box = document.getElementById("minaV4Categories");
+  if (!box) return;
+
+  const categories = [...new Set(posts.map(p => p.category || "Chưa phân loại"))];
+
+  box.innerHTML = `
+    <button type="button" class="${minaV4State.category === "all" ? "active" : ""}" data-cat="all">
+      Tất cả (${posts.length})
+    </button>
+
+    ${categories.map(cat => {
+      const count = posts.filter(p => (p.category || "Chưa phân loại") === cat).length;
+
+      return `
+        <button type="button" class="${minaV4State.category === cat ? "active" : ""}" data-cat="${escapeHTML(cat)}">
+          ${escapeHTML(cat)} (${count})
+        </button>
+      `;
+    }).join("")}
+  `;
+
+  box.querySelectorAll("button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      minaV4State.category = btn.dataset.cat;
+      minaV4Render();
+    });
+  });
+}
+
+function minaV4Render() {
+  minaV4CreateManagerUI();
+
+  const statsBox = document.getElementById("minaV4Stats");
+  const table = document.getElementById("minaV4Table");
+  const duplicateBtn = document.getElementById("minaV4DuplicateBtn");
+
+  const duplicateIds = minaV4GetDuplicateIds();
+
+  let filtered = [...minaV4Posts];
+
+  if (minaV4State.category !== "all") {
+    filtered = filtered.filter(p => (p.category || "Chưa phân loại") === minaV4State.category);
+  }
+
+  if (minaV4State.status !== "all") {
+    filtered = filtered.filter(p => (p.status || "published") === minaV4State.status);
+  }
+
+  if (minaV4State.keyword) {
+    const key = minaV4Normalize(minaV4State.keyword);
+    filtered = filtered.filter(p => p.searchable.includes(key));
+  }
+
+  if (minaV4State.onlyDuplicate) {
+    filtered = filtered.filter(p => duplicateIds.has(p.id));
+  }
+
+  if (duplicateBtn) {
+    duplicateBtn.textContent = minaV4State.onlyDuplicate
+      ? "Đang xem bài trùng"
+      : "Kiểm tra trùng lặp";
+  }
+
+  minaV4RenderCategories();
+
+  if (statsBox) {
+    const total = minaV4Posts.length;
+    const drafts = minaV4Posts.filter(p => p.status === "draft").length;
+    const published = minaV4Posts.filter(p => (p.status || "published") === "published").length;
+    const featured = minaV4Posts.filter(p => p.featured).length;
+
+    statsBox.innerHTML = `
+      <div><strong>${total}</strong><span>Tổng bài</span></div>
+      <div><strong>${published}</strong><span>Công khai</span></div>
+      <div><strong>${drafts}</strong><span>Bản nháp</span></div>
+      <div><strong>${featured}</strong><span>Nổi bật</span></div>
+      <div><strong>${duplicateIds.size}</strong><span>Có thể trùng</span></div>
+    `;
+  }
+
+  if (!table) return;
+
+  if (filtered.length === 0) {
+    table.innerHTML = `<p class="muted">Không tìm thấy bài viết phù hợp.</p>`;
+    return;
+  }
+
+  table.innerHTML = `
+    <div class="mina-v4-table-head">
+      <span>Ảnh</span>
+      <span>Nội dung</span>
+      <span>Danh mục</span>
+      <span>Trạng thái</span>
+      <span>Thao tác</span>
+    </div>
+
+    ${filtered.map(p => {
+      const isDuplicate = duplicateIds.has(p.id);
+      const status = p.status === "draft" ? "Bản nháp" : "Công khai";
+
+      return `
+        <div class="mina-v4-row ${isDuplicate ? "is-duplicate" : ""}">
+          <div>
+            ${
+              p.image
+                ? `<img src="${optimizeCloudinary(p.image, 180)}" alt="${escapeHTML(p.title || "")}">`
+                : `<div class="mina-v4-no-img">No image</div>`
+            }
+          </div>
+
+          <div>
+            <strong>${escapeHTML(p.title || "Không có tiêu đề")}</strong>
+            <p>${escapeHTML(p.desc || "")}</p>
+            ${isDuplicate ? `<em>⚠ Có khả năng trùng tiêu đề</em>` : ""}
+          </div>
+
+          <div>${escapeHTML(p.category || "Chưa phân loại")}</div>
+
+          <div>
+            <span class="mina-v4-status ${p.status === "draft" ? "draft" : "published"}">
+              ${status}
+            </span>
+            ${p.featured ? `<span class="mina-v4-featured">⭐ Nổi bật</span>` : ""}
+          </div>
+
+          <div class="mina-v4-actions">
+            <a href="post.html?id=${p.id}" target="_blank" class="secondary-btn">Xem</a>
+            <button type="button" onclick="editPost('${p.id}')" class="secondary-btn">Sửa</button>
+            <button type="button" onclick="deletePost('${p.id}')">Xóa</button>
+          </div>
+        </div>
+      `;
+    }).join("")}
+  `;
+}
+
+setTimeout(minaV4LoadPosts, 1200);
+
+if (form) {
+  form.addEventListener("submit", () => {
+    setTimeout(minaV4LoadPosts, 1800);
+  });
+}
+
+const minaV4OldDeletePost = window.deletePost;
+
+window.deletePost = async function(id) {
+  await minaV4OldDeletePost(id);
+  setTimeout(minaV4LoadPosts, 800);
+};
