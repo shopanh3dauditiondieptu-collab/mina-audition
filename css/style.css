@@ -1936,3 +1936,21 @@ figcaption {
 .main-nav{
   gap:24px !important;
 }
+.main-nav a {
+  padding: 10px 15px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(125, 249, 255, 0.2);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 900;
+  transition: 0.25s ease;
+}
+
+.main-nav a:hover,
+.main-nav a.active {
+  background: linear-gradient(135deg, #d84fff, #3fa9ff);
+  color: #fff;
+  box-shadow: 0 0 18px rgba(125, 249, 255, 0.45);
+  border-color: rgba(125, 249, 255, 0.8);
+}
