@@ -1029,3 +1029,22 @@ width:100%;
 .footer a .social-icon.instagram{
   color:#e4405f !important;
 }
+/* FIX MÀU LOGO MẠNG XÃ HỘI FOOTER */
+.footer a i.fa-youtube{
+  color:#ff0000 !important;
+}
+
+.footer a i.fa-facebook{
+  color:#1877f2 !important;
+}
+
+.footer a i.fa-tiktok{
+  color:#ffffff !important;
+  text-shadow:
+    -1px -1px 0 #25f4ee,
+    1px 1px 0 #fe2c55;
+}
+
+.footer a i.fa-instagram{
+  color:#e4405f !important;
+}
