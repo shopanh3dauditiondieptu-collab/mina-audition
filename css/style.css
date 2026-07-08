@@ -14,3 +14,22 @@
 @import url("./08-hero-final.css");
 @import url("./09-layout-v6.css");
 @import url("./10-social-final.css");
+/*==============================
+  MINA CMS V6 SOCIAL SVG ICON
+==============================*/
+
+.social-logo{
+    width:72px;
+    height:72px;
+
+    display:block;
+    margin:0 auto 22px;
+
+    object-fit:contain;
+
+    transition:.35s ease;
+}
+
+.social-item:hover .social-logo{
+    transform:scale(1.08);
+}
