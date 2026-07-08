@@ -1954,3 +1954,35 @@ figcaption {
   box-shadow: 0 0 18px rgba(125, 249, 255, 0.45);
   border-color: rgba(125, 249, 255, 0.8);
 }
+/* ===== MENU MINA V6 ===== */
+
+.main-nav{
+    display:flex;
+    align-items:center;
+    gap:10px !important;
+    flex-wrap:nowrap;
+}
+
+.main-nav a{
+    padding:10px 14px;
+    font-size:15px;
+    font-weight:700;
+    line-height:1;
+    white-space:nowrap;
+    border-radius:999px;
+
+    color:#fff;
+    text-decoration:none;
+
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.10);
+
+    transition:.25s;
+}
+
+.main-nav a:hover,
+.main-nav a.active{
+    background:linear-gradient(135deg,#d84fff,#3fa9ff);
+    box-shadow:0 0 18px rgba(125,249,255,.45);
+    border-color:rgba(125,249,255,.55);
+}
