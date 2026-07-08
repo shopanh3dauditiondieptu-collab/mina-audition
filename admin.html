@@ -112,6 +112,24 @@
 
           <label>Link ảnh đại diện</label>
           <input type="text" id="image" placeholder="images/ten-anh.png hoặc link ảnh Firebase">
+          <label>Chọn ảnh từ máy tính</label>
+
+<input
+  type="file"
+  id="imageFile"
+  accept="image/*">
+
+<p id="uploadMessage" class="muted"></p>
+
+<img
+  id="imagePreview"
+  style="
+    display:none;
+    max-width:220px;
+    margin-top:12px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.15);
+  ">
 
           <label>Mô tả ngắn</label>
           <textarea id="desc" rows="3" placeholder="Viết mô tả ngắn hiển thị ngoài trang chủ"></textarea>
