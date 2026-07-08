@@ -758,15 +758,11 @@ img{max-width:100%;display:block}
   }
 }
 .video-actions{
-
-display:flex;
-
-gap:14px;
-
-flex-wrap:wrap;
-
-margin:28px 0 34px;
-
+    display:flex;
+    gap:10px;
+    flex-wrap:nowrap;
+    align-items:center;
+    margin:28px 0 34px;
 }
 
 .social-btn{
@@ -779,7 +775,7 @@ justify-content:center;
 
 gap:10px;
 
-min-width:145px;
+width:128px;
 
 height:52px;
 
@@ -815,47 +811,27 @@ transition:.28s;
     background:linear-gradient(135deg,#ff0000,#cc0000);
     border:1px solid rgba(255,255,255,.15);
     color:#fff;
-    box-shadow:0 0 20px rgba(255,0,0,.35);
-}
-
-.facebook-btn{
-
-background:rgba(255,255,255,.05);
-
-}
-
-.tiktok-btn{
-
-background:rgba(255,255,255,.05);
-
-}
-
-.social-btn:hover{
-
-transform:translateY(-4px);
-
-box-shadow:
-
-0 0 35px rgba(95,244,255,.30);
-
-}
-
-.youtube-btn:hover{
-    background:linear-gradient(135deg,#ff1a1a,#b30000);
-    transform:translateY(-3px) scale(1.03);
     box-shadow:0 0 30px rgba(255,0,0,.60);
 }
 
-.facebook-btn:hover{
-
-background:#1877F2;
-
+.facebook-btn{
+    background:linear-gradient(135deg,#1877F2,#0b5ed7);
+    border:1px solid rgba(255,255,255,.15);
+    color:#fff;
+    box-shadow:0 0 30px rgba(24,119,242,.55);
 }
 
-.tiktok-btn:hover{
+.tiktok-btn{
+    background:linear-gradient(135deg,#111,#000);
+    border:1px solid rgba(95,244,255,.45);
+    color:#fff;
+    box-shadow:
+        0 0 18px rgba(95,244,255,.35),
+        0 0 24px rgba(255,47,179,.28);
+}
 
-background:#111;
-
+.social-btn:hover{
+    transform:translateY(-3px) scale(1.04);
 }
 
 .social-btn:hover i{
