@@ -1188,3 +1188,20 @@ img.post-detail-image {
   border-radius: 18px !important;
   background: rgba(255,255,255,.05) !important;
 }
+/* FIX ảnh chi tiết bài viết - không cắt ảnh dọc Mina */
+.post-card.post-full {
+  overflow: visible !important;
+}
+
+.post-card.post-full .post-detail-image {
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  display: block !important;
+  margin: 0 auto 28px !important;
+  border-radius: 18px !important;
+}
