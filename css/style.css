@@ -1162,3 +1162,15 @@ footer .contact-row a{
   display: block;
   background: rgba(255,255,255,.04);
 }
+.post-full .post-detail-image {
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: 720px !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  display: block !important;
+  margin: 0 auto 24px !important;
+  border-radius: 18px;
+  background: rgba(255,255,255,.04);
+}
