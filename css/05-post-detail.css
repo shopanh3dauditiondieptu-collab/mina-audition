@@ -1,0 +1,441 @@
+/* =====================================================
+   05-POST-DETAIL - Mina CMS V6 modular CSS
+   Giữ nguyên thứ tự cascade từ style.css gốc
+===================================================== */
+
+/***********************
+  MINA POST DETAIL FIX
+  - Giữ ảnh bài viết nhỏ, cân đối
+  - Không ép ảnh quá lớn
+  - Không làm méo ảnh
+***********************/
+
+.page{
+  padding:70px 7%;
+  min-height:70vh;
+}
+
+#postDetail{
+  width:min(980px,100%);
+  margin:0 auto;
+}
+
+.post-card.post-full{
+  width:min(980px,100%);
+  margin:40px auto;
+  padding:34px;
+  border-radius:22px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(95,244,255,.25);
+  box-shadow:
+    0 0 35px rgba(95,244,255,.08),
+    inset 0 0 30px rgba(255,79,227,.04);
+  overflow:visible;
+}
+
+.post-card.post-full .post-category{
+  display:inline-flex;
+  margin:0 0 18px;
+  padding:9px 16px;
+  border-radius:999px;
+  color:#bffbff;
+  background:rgba(95,244,255,.13);
+  border:1px solid rgba(95,244,255,.32);
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:.5px;
+}
+
+.post-card.post-full h1{
+  margin:0 0 14px;
+  font-size:clamp(30px,4vw,50px);
+  line-height:1.12;
+  color:#fff;
+  text-shadow:
+    0 0 16px rgba(95,244,255,.35),
+    0 0 28px rgba(255,79,227,.18);
+}
+
+.post-card.post-full .muted{
+  margin:0 0 24px;
+  color:#c9ccff;
+  font-weight:800;
+}
+
+/* Ảnh chính trong trang chi tiết bài viết */
+#postDetail img,
+.post-detail img,
+.post-card.post-full img,
+.post-card.post-full img.post-detail-image,
+.post-card.post-full .post-detail-image,
+.post-card.post-full .post-hero-image{
+  display:block !important;
+  width:auto !important;
+  max-width:360px !important;
+  height:auto !important;
+  max-height:460px !important;
+  object-fit:contain !important;
+  object-position:center !important;
+  margin:0 auto 30px !important;
+  border-radius:18px !important;
+  background:rgba(255,255,255,.04) !important;
+  box-shadow:
+    0 15px 40px rgba(0,0,0,.35),
+    0 0 22px rgba(95,244,255,.12) !important;
+}
+
+.post-card.post-full .post-desc{
+  margin:0 0 24px;
+  color:#dfe3ff;
+  font-size:18px;
+  line-height:1.7;
+  font-weight:700;
+}
+
+.post-card.post-full .post-content{
+  margin-top:22px;
+  color:#eef0ff;
+  font-size:18px;
+  line-height:1.85;
+  font-weight:650;
+}
+
+.post-card.post-full .post-content p{
+  margin:0 0 18px;
+}
+
+.post-card.post-full .post-content img{
+  margin:26px auto !important;
+}
+
+/* Link ngoài nếu bài viết có */
+.post-card.post-full .post-link,
+.post-card.post-full a.post-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin-top:24px;
+  padding:14px 22px;
+  border-radius:999px;
+  color:#050514;
+  font-weight:900;
+  background:linear-gradient(135deg,#5ff4ff,#ff4fe3);
+  box-shadow:0 0 24px rgba(95,244,255,.32);
+}
+
+/* Responsive cho điện thoại */
+@media(max-width:768px){
+  .page{
+    padding:38px 16px;
+  }
+
+  .post-card.post-full{
+    margin:24px auto;
+    padding:20px;
+    border-radius:18px;
+  }
+
+  #postDetail img,
+  .post-detail img,
+  .post-card.post-full img,
+  .post-card.post-full img.post-detail-image,
+  .post-card.post-full .post-detail-image,
+  .post-card.post-full .post-hero-image{
+    width:100% !important;
+    max-width:100% !important;
+    max-height:none !important;
+  }
+
+  .post-card.post-full .post-content,
+  .post-card.post-full .post-desc{
+    font-size:16px;
+    line-height:1.75;
+  }
+}
+/* =========================
+   FIX ẢNH TRANG CHI TIẾT BÀI VIẾT
+========================= */
+
+#postDetail .post-card.post-full img,
+#postDetail img.post-detail-image,
+#postDetail img.post-hero-image{
+    display:block !important;
+
+    width:auto !important;
+    max-width:420px !important;
+
+    height:auto !important;
+    max-height:none !important;
+
+    object-fit:contain !important;
+    object-position:center !important;
+
+    margin:0 auto 30px auto !important;
+    border-radius:18px !important;
+
+    background:transparent !important;
+    box-shadow:0 15px 40px rgba(0,0,0,.35) !important;
+}
+
+@media(max-width:768px){
+    #postDetail .post-card.post-full img,
+    #postDetail img.post-detail-image,
+    #postDetail img.post-hero-image{
+        width:100% !important;
+        max-width:100% !important;
+    }
+}
+/* =========================
+   MINA POST DETAIL IMAGE FIX
+========================= */
+
+#postDetail .mina-post-image-wrap{
+  width:100%;
+  margin:0 auto 34px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+#postDetail .post-detail-image{
+  display:block !important;
+  width:auto !important;
+  max-width:min(560px, 100%) !important;
+  height:auto !important;
+  max-height:none !important;
+  object-fit:contain !important;
+  object-position:center !important;
+  border-radius:22px !important;
+  background:rgba(255,255,255,.04) !important;
+  box-shadow:
+    0 18px 45px rgba(0,0,0,.42),
+    0 0 28px rgba(95,244,255,.14) !important;
+}
+
+#postDetail .post-card.post-full{
+  max-width:920px;
+  margin:40px auto;
+  padding:36px;
+  border-radius:24px;
+}
+
+@media(max-width:768px){
+  #postDetail .post-card.post-full{
+    padding:22px;
+    margin:24px auto;
+  }
+
+  #postDetail .post-detail-image{
+    max-width:100% !important;
+    border-radius:18px !important;
+  }
+}
+/* Tinh chỉnh nhẹ trang chi tiết bài viết Mina */
+
+#postDetail .post-card.post-full{
+  max-width:860px;
+}
+
+#postDetail .mina-post-image-wrap{
+  margin-bottom:42px;
+}
+
+#postDetail .post-detail-image{
+  max-width:min(560px, 100%) !important;
+}
+
+/* ===== MINA CMS V2 - POST CONTENT ===== */
+
+.post-content{
+  line-height:1.75;
+}
+
+.post-content p{
+  margin:0 0 18px;
+}
+
+.mina-inline-image-wrap{
+  width:100%;
+  margin:22px auto;
+  text-align:center;
+}
+
+.mina-inline-image{
+  width:min(100%, 760px);
+  max-height:560px;
+  object-fit:contain;
+  border-radius:20px;
+  display:block;
+  margin:0 auto;
+  border:1px solid rgba(125,249,255,.18);
+  box-shadow:0 0 26px rgba(125,249,255,.08);
+}
+
+.mina-youtube-wrap{
+  position:relative;
+  width:min(100%, 820px);
+  aspect-ratio:16/9;
+  margin:26px auto;
+  border-radius:20px;
+  overflow:hidden;
+  border:1px solid rgba(255,79,216,.22);
+  box-shadow:0 0 28px rgba(255,79,216,.09);
+}
+
+.mina-youtube-wrap iframe{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+}
+
+.mina-post-quote{
+  margin:24px auto;
+  padding:18px 20px;
+  border-left:4px solid #ff4fd8;
+  border-radius:16px;
+  background:rgba(255,79,216,.08);
+  color:#fff;
+}
+
+.mina-post-quote p:last-child{
+  margin-bottom:0;
+}
+
+@media(max-width:720px){
+  .mina-inline-image{
+    max-height:430px;
+    border-radius:16px;
+  }
+
+  .mina-youtube-wrap{
+    border-radius:16px;
+  }
+}
+/* ===== MINA CMS V2 - POST CONTENT BLOCKS ===== */
+
+.post-content {
+  display: grid;
+  gap: 18px;
+  margin-top: 26px;
+}
+
+.post-content p {
+  margin: 0;
+  color: #e8eaff;
+  line-height: 1.8;
+  font-size: 16px;
+}
+
+.mina-content-image-wrap {
+  margin: 18px auto;
+  width: min(720px, 100%);
+  text-align: center;
+}
+
+.mina-content-image {
+  width: 100%;
+  max-height: 620px;
+  object-fit: contain;
+  border-radius: 22px;
+  border: 1px solid rgba(125, 249, 255, .22);
+  background: rgba(7, 8, 23, .55);
+  box-shadow:
+    0 0 28px rgba(125, 249, 255, .12),
+    0 0 40px rgba(255, 79, 216, .08);
+}
+
+.mina-content-image-wrap figcaption {
+  margin-top: 10px;
+  color: #c9ccef;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.mina-youtube-embed {
+  position: relative;
+  width: min(760px, 100%);
+  margin: 22px auto;
+  aspect-ratio: 16 / 9;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 79, 216, .24);
+  background: rgba(7, 8, 23, .65);
+  box-shadow:
+    0 0 28px rgba(255, 79, 216, .12),
+    0 0 34px rgba(125, 249, 255, .08);
+}
+
+.mina-youtube-embed iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.mina-post-quote {
+  margin: 22px 0;
+  padding: 18px 20px;
+  border-left: 4px solid #ff4fd8;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(255, 79, 216, .12), rgba(125, 249, 255, .06));
+  color: #fff;
+}
+
+.mina-post-quote p {
+  color: #fff;
+  font-weight: 800;
+}
+
+.post-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+
+/* Ảnh đại diện bài viết giữ nhỏ, cân đối */
+.mina-post-image-wrap {
+  margin: 0 auto 22px;
+  width: min(620px, 100%);
+  text-align: center;
+}
+
+.post-detail-image {
+  width: 100%;
+  max-height: 520px;
+  object-fit: contain;
+  border-radius: 24px;
+  border: 1px solid rgba(125, 249, 255, .22);
+  background: rgba(7, 8, 23, .55);
+}
+
+/* Mobile */
+@media (max-width: 720px) {
+  .post-content {
+    gap: 15px;
+  }
+
+  .post-content p {
+    font-size: 15px;
+    line-height: 1.75;
+  }
+
+  .mina-content-image-wrap,
+  .mina-youtube-embed,
+  .mina-post-image-wrap {
+    width: 100%;
+  }
+
+  .mina-content-image {
+    max-height: 480px;
+    border-radius: 18px;
+  }
+
+  .post-detail-image {
+    max-height: 460px;
+    border-radius: 18px;
+  }
+}

@@ -1,0 +1,204 @@
+/* =====================================================
+   07-HEADER-FINAL - Mina CMS V6 modular CSS
+   Giữ nguyên thứ tự cascade từ style.css gốc
+===================================================== */
+
+/* =====================================================
+   MINA HEADER V2 - CLEAN FINAL
+   Logo trái | Menu giữa | Theo dõi phải
+===================================================== */
+
+.site-header{
+  width:100% !important;
+  max-width:1180px !important;
+  height:76px !important;
+  margin:0 auto !important;
+  padding:0 14px !important;
+
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:14px !important;
+
+  position:sticky !important;
+  top:0 !important;
+  z-index:1000 !important;
+
+  background:rgba(4,4,18,.96) !important;
+  border-bottom:1px solid rgba(95,244,255,.22) !important;
+  backdrop-filter:blur(16px) !important;
+
+  overflow:visible !important;
+  transform:none !important;
+}
+
+.brand{
+  flex:0 0 auto !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:8px !important;
+  margin:0 !important;
+  padding:0 !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+}
+
+.brand img{
+  width:54px !important;
+  height:54px !important;
+  object-fit:contain !important;
+  flex:0 0 auto !important;
+}
+
+.brand span{
+  font-size:19px !important;
+  font-weight:900 !important;
+  line-height:1 !important;
+  white-space:nowrap !important;
+
+  background:linear-gradient(135deg,#fff,#9afcff,#ff8df0) !important;
+  -webkit-background-clip:text !important;
+  color:transparent !important;
+}
+
+.main-nav{
+  flex:1 1 auto !important;
+  min-width:0 !important;
+
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+
+  white-space:nowrap !important;
+  overflow:visible !important;
+}
+
+.main-nav a{
+  flex:0 0 auto !important;
+
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  height:38px !important;
+  padding:0 13px !important;
+
+  border-radius:999px !important;
+  background:rgba(255,255,255,.055) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+
+  color:#fff !important;
+  font-size:12.5px !important;
+  font-weight:900 !important;
+  line-height:1 !important;
+  text-decoration:none !important;
+  white-space:nowrap !important;
+
+  opacity:1 !important;
+  text-shadow:none !important;
+  transition:.25s ease !important;
+}
+
+.main-nav a::after{
+  display:none !important;
+}
+
+.main-nav a:hover,
+.main-nav a.active{
+  background:linear-gradient(135deg,#d84fff,#3fa9ff) !important;
+  border-color:rgba(125,249,255,.65) !important;
+  box-shadow:0 0 18px rgba(125,249,255,.42) !important;
+}
+
+.follow-btn{
+  flex:0 0 auto !important;
+
+  min-width:132px !important;
+  height:40px !important;
+  padding:0 14px !important;
+
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  border-radius:999px !important;
+  background:linear-gradient(135deg,#ff42df,#139dff) !important;
+  box-shadow:
+    0 0 22px rgba(95,244,255,.6),
+    inset 0 0 0 1px rgba(255,255,255,.32) !important;
+
+  color:#fff !important;
+  font-size:13px !important;
+  font-weight:900 !important;
+  line-height:1 !important;
+  text-align:center !important;
+  white-space:nowrap !important;
+  text-decoration:none !important;
+}
+
+.nav-toggle{
+  display:none !important;
+}
+
+/* Tablet */
+@media(max-width:1100px){
+  .site-header{
+    height:auto !important;
+    min-height:76px !important;
+    padding:12px 16px !important;
+    flex-wrap:wrap !important;
+  }
+
+  .nav-toggle{
+    display:block !important;
+    margin-left:auto !important;
+  }
+
+  .main-nav{
+    order:3 !important;
+    width:100% !important;
+    flex-wrap:wrap !important;
+    justify-content:center !important;
+    gap:10px !important;
+    margin-top:8px !important;
+  }
+
+  .follow-btn{
+    margin-left:0 !important;
+  }
+}
+
+/* Mobile */
+@media(max-width:760px){
+  .site-header{
+    justify-content:center !important;
+    text-align:center !important;
+  }
+
+  .brand{
+    width:100% !important;
+    justify-content:center !important;
+  }
+
+  .brand img{
+    width:56px !important;
+    height:56px !important;
+  }
+
+  .brand span{
+    font-size:20px !important;
+  }
+
+  .main-nav a{
+    height:36px !important;
+    padding:0 12px !important;
+    font-size:12px !important;
+  }
+
+  .follow-btn{
+    min-width:160px !important;
+    height:40px !important;
+    margin:4px auto 0 !important;
+  }
+}
