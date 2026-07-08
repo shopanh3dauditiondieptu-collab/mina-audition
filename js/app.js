@@ -1,3 +1,8 @@
+import {
+  auth,
+  db,
+  storage
+} from "./firebase-config.js";
 const skills = [
   {id:"49421", style:"Poppin", name:"Best Move Poppin", desc:"Skill Poppin mạnh, đẹp, rất hợp làm video review và dance performance.", tags:["LV9","8K","S+","120 BPM","Poker Face"]},
   {id:"47767", style:"Poppin", name:"Best Walk Poppin", desc:"Dáng walk mượt, sang, phù hợp quay Shorts, Reels và review skill.", tags:["LV9","8K","S+","110 - 130 BPM","Dance Performance"]},
