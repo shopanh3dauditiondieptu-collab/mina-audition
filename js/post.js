@@ -273,3 +273,24 @@ async function loadPost() {
 }
 
 loadPost();
+/* =====================================================
+   MINA CMS V3.1 - IMAGE LIGHTBOX
+===================================================== */
+
+document.addEventListener("click", (e) => {
+  const img = e.target.closest(".mina-gallery-item img, .mina-content-image");
+  if (!img) return;
+
+  const overlay = document.createElement("div");
+  overlay.className = "mina-lightbox";
+  overlay.innerHTML = `
+    <button class="mina-lightbox-close">×</button>
+    <img src="${img.src}" alt="">
+  `;
+
+  document.body.appendChild(overlay);
+
+  overlay.addEventListener("click", () => {
+    overlay.remove();
+  });
+});
