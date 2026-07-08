@@ -1063,3 +1063,24 @@ width:100%;
 .contact p:first-of-type{
   margin-top:22px;
 }
+.contact-line{
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  white-space:nowrap !important;
+}
+
+.contact-line .contact-icon{
+  display:inline-flex !important;
+  width:22px !important;
+  min-width:22px !important;
+  justify-content:center !important;
+  align-items:center !important;
+  line-height:1 !important;
+}
+
+.contact-line a{
+  display:inline !important;
+  color:#fff !important;
+  text-decoration:none !important;
+}
