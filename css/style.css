@@ -85,18 +85,13 @@ img{max-width:100%;display:block}
 
 /* HERO */
 .hero{
-    position:relative;
-    min-height:620px;
-    padding:75px 7% 40px;
-    background:
-        linear-gradient(
-            90deg,
-            rgba(5,5,20,.78),
-            rgba(5,5,20,.38),
-            rgba(5,5,20,.88)
-        ),
-        url("../images/hero-bg1.webp") center center/cover no-repeat;
-    border-bottom:1px solid rgba(95,244,255,.25);
+    position: relative;
+    min-height: 550px;      /* trước đây khoảng 850-100vh */
+    padding: 70px 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    overflow: hidden;
 }
 .hero::before{
   content:"";
