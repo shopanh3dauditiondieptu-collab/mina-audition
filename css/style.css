@@ -1084,3 +1084,26 @@ width:100%;
   color:#fff !important;
   text-decoration:none !important;
 }
+.contact-email{
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  gap:10px !important;
+  white-space:nowrap !important;
+}
+
+.contact-email i{
+  display:inline-flex !important;
+  width:20px !important;
+  min-width:20px !important;
+  justify-content:center !important;
+  align-items:center !important;
+  color:#ff4fe3 !important;
+  font-size:16px !important;
+}
+
+.contact-email a{
+  display:inline-flex !important;
+  color:#fff !important;
+  text-decoration:none !important;
+}
