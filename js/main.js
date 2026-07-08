@@ -40,11 +40,13 @@ function card(post) {
 }
 
 async function initHome() {
-  const wrap = document.getElementById("homePosts");
+  const wrap = document.getElementById("latestPosts");
   if (!wrap) return;
   const posts = await getPosts();
-  const featured = posts.filter(post => post.featured).slice(0, 3);
-  wrap.innerHTML = (featured.length ? featured : posts.slice(0, 3)).map(card).join("");
+  wrap.innerHTML = posts
+  .slice(0, 3)
+  .map(card)
+  .join("");
 }
 
 initHome();
