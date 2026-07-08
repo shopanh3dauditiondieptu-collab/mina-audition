@@ -8,6 +8,206 @@
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
   <link rel="stylesheet" href="css/style.css" />
+
+  <!-- MINA CMS V6 LAYOUT SYSTEM - FIX CANH LỀ TOÀN TRANG -->
+  <style>
+    :root {
+      --mina-container: 1280px;
+      --mina-gutter: 48px;
+      --mina-section-space: 76px;
+    }
+
+    .site-shell {
+      overflow-x: hidden;
+    }
+
+    /* Một chuẩn lề duy nhất cho toàn bộ section chính */
+    .site-header,
+    .hero,
+    main > .section,
+    main > .video-showcase,
+    .footer {
+      width: min(var(--mina-container), calc(100% - var(--mina-gutter)));
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    main > .section {
+      padding-top: var(--mina-section-space);
+      padding-bottom: var(--mina-section-space);
+    }
+
+    .section-title {
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: 34px;
+    }
+
+    .section-title h2 {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Nội dung nổi bật và bài viết mới dùng cùng grid chuẩn */
+    .feature-grid,
+    #latestPosts.feature-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 28px;
+      align-items: start;
+    }
+
+    .feature-grid article,
+    #latestPosts article {
+      min-width: 0;
+    }
+
+    .feature-grid img,
+    #latestPosts img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 12px;
+      display: block;
+    }
+
+    .feature-link {
+      display: block;
+      height: 100%;
+    }
+
+    /* Khung mạng xã hội thẳng hàng với các section khác */
+    .social-box {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: center;
+    }
+
+    /* Wikipedia Skill Dance */
+    .wiki-section {
+      text-align: center;
+    }
+
+    .search-box {
+      width: min(560px, 100%);
+      margin-left: auto;
+      margin-right: auto;
+      display: block;
+    }
+
+    /* Video mới nhất: sửa lỗi lệch trái, cân với toàn bộ layout */
+    .video-showcase {
+      padding-top: 86px;
+      padding-bottom: 86px;
+      display: grid;
+      grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+      gap: clamp(36px, 6vw, 90px);
+      align-items: center;
+    }
+
+    .video-left {
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .video-main {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .video-box {
+      width: min(520px, 100%);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .video-box iframe {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      display: block;
+      border: 0;
+      border-radius: 14px;
+    }
+
+    .video-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .video-comments {
+      width: 100%;
+    }
+
+    .comment-card {
+      width: 100%;
+    }
+
+    /* Tablet */
+    @media (max-width: 1024px) {
+      :root {
+        --mina-gutter: 36px;
+        --mina-section-space: 64px;
+      }
+
+      .feature-grid,
+      #latestPosts.feature-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .social-box {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .video-showcase {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .video-left {
+        max-width: 680px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .video-actions {
+        justify-content: center;
+      }
+    }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+      :root {
+        --mina-gutter: 28px;
+        --mina-section-space: 52px;
+      }
+
+      .feature-grid,
+      #latestPosts.feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-grid img,
+      #latestPosts img {
+        height: 180px;
+      }
+
+      .video-showcase {
+        padding-top: 60px;
+        padding-bottom: 60px;
+      }
+
+      .video-title {
+        font-size: clamp(32px, 10vw, 46px);
+      }
+    }
+  </style>
 </head>
 
 <body>
@@ -160,11 +360,11 @@
         <div class="skill-grid" id="skillGrid"></div>
       </section>
 
-      <!-- LATEST VIDEO -->
-      <section class="video-showcase" id="video-hot">
+      <!-- LATEST VIDEO - MINA CMS V6 LAYOUT SYSTEM -->
+      <section class="video-showcase" id="video-hot" aria-labelledby="video-title">
         <div class="video-left">
           <span class="video-badge">🔥 HOT HIT</span>
-          <h2 class="video-title">VIDEO MỚI NHẤT</h2>
+          <h2 class="video-title" id="video-title">VIDEO MỚI NHẤT</h2>
 
           <p class="video-desc">
             Video mới nhất từ kênh Mina Audition sẽ tự cập nhật.
