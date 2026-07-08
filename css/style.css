@@ -2259,3 +2259,45 @@ figcaption {
   transform:none;
   overflow:hidden;
 }
+/* FIX HERO: đưa MXH xuống dưới, không đè nhân vật */
+.hero{
+  min-height:520px;
+  padding:55px 70px 35px;
+  display:grid;
+  grid-template-columns: 58% 42%;
+  align-items:center;
+  gap:20px;
+}
+
+.hero-content{
+  max-width:680px;
+  z-index:3;
+}
+
+.hero-character{
+  position:absolute;
+  right:75px;
+  bottom:30px;
+  z-index:2;
+}
+
+.hero-character img,
+.hero-img{
+  max-height:430px;
+  width:auto;
+}
+
+.social-section,
+.social-cards,
+.follow-section{
+  grid-column:1 / -1;
+  width:86%;
+  max-width:1050px;
+  margin:20px auto 0;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  position:relative;
+  z-index:5;
+  transform:none;
+  overflow:hidden;
+}
