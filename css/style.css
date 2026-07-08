@@ -96,8 +96,7 @@ img{max-width:100%;display:block}
             rgba(5,5,20,.88)
         ),
         url("../images/hero-bg1.webp") center center/cover no-repeat;
-}
-  border-bottom:1px solid rgba(95,244,255,.25);
+    border-bottom:1px solid rgba(95,244,255,.25);
 }
 .hero::before{
   content:"";
@@ -952,6 +951,8 @@ justify-content:center;
 width:100%;
 
 }
+
+}
 /*=============================
   SOCIAL ICON FOOTER
 =============================*/
@@ -1152,104 +1153,153 @@ footer .contact-row a{
 .fa-phone{
     color:#ff4fe3;
 }
-.post-full .post-hero-image {
-  width: 100%;
-  max-height: none;
-  height: auto;
-  object-fit: contain;
-  object-position: center;
-  border-radius: 18px;
-  display: block;
-  background: rgba(255,255,255,.04);
+/***********************
+  MINA POST DETAIL FIX
+  - Giữ ảnh bài viết nhỏ, cân đối
+  - Không ép ảnh quá lớn
+  - Không làm méo ảnh
+***********************/
+
+.page{
+  padding:70px 7%;
+  min-height:70vh;
 }
-/* ===========================
-   Mina Post Detail
-=========================== */
+
+#postDetail{
+  width:min(980px,100%);
+  margin:0 auto;
+}
 
 .post-card.post-full{
-    max-width:980px;
-    margin:40px auto;
-    padding:34px;
-    overflow:visible;
+  width:min(980px,100%);
+  margin:40px auto;
+  padding:34px;
+  border-radius:22px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(95,244,255,.25);
+  box-shadow:
+    0 0 35px rgba(95,244,255,.08),
+    inset 0 0 30px rgba(255,79,227,.04);
+  overflow:visible;
 }
 
-.post-card.post-full img.post-detail-image{
-    display:block;
-    width:100%;
-    max-width:760px;
-    height:auto;
-    max-height:650px;
-    object-fit:contain;
-    object-position:center;
-    margin:0 auto 28px;
-    border-radius:18px;
-    background:#111;
-    box-shadow:0 15px 45px rgba(0,0,0,.35);
-}
-/* =====================================
-   FIX KÍCH THƯỚC ẢNH BÀI VIẾT - MINA
-===================================== */
-
-.post-card.post-full img,
-.post-card.post-full .post-detail-image,
-.post-card.post-full .post-hero-image{
-
-    width:auto !important;
-    max-width:420px !important;
-
-    height:auto !important;
-    max-height:520px !important;
-
-    display:block !important;
-
-    margin:0 auto 30px auto !important;
-
-    object-fit:contain !important;
-
-    border-radius:18px;
-
-    box-shadow:0 15px 40px rgba(0,0,0,.35);
+.post-card.post-full .post-category{
+  display:inline-flex;
+  margin:0 0 18px;
+  padding:9px 16px;
+  border-radius:999px;
+  color:#bffbff;
+  background:rgba(95,244,255,.13);
+  border:1px solid rgba(95,244,255,.32);
+  font-size:13px;
+  font-weight:900;
+  letter-spacing:.5px;
 }
 
-@media(max-width:768px){
-
-    .post-card.post-full img,
-    .post-card.post-full .post-detail-image,
-    .post-card.post-full .post-hero-image{
-
-        width:100% !important;
-        max-width:100% !important;
-        max-height:none !important;
-
-    }
-
+.post-card.post-full h1{
+  margin:0 0 14px;
+  font-size:clamp(30px,4vw,50px);
+  line-height:1.12;
+  color:#fff;
+  text-shadow:
+    0 0 16px rgba(95,244,255,.35),
+    0 0 28px rgba(255,79,227,.18);
 }
-/* FIX ẢNH TRANG CHI TIẾT BÀI VIẾT */
 
-.post-detail img,
+.post-card.post-full .muted{
+  margin:0 0 24px;
+  color:#c9ccff;
+  font-weight:800;
+}
+
+/* Ảnh chính trong trang chi tiết bài viết */
 #postDetail img,
+.post-detail img,
 .post-card.post-full img,
 .post-card.post-full img.post-detail-image,
+.post-card.post-full .post-detail-image,
 .post-card.post-full .post-hero-image{
-    display:block !important;
-    width:auto !important;
-    max-width:420px !important;
-    height:auto !important;
-    max-height:520px !important;
-    object-fit:contain !important;
-    margin:0 auto 30px !important;
-    border-radius:18px;
-    box-shadow:0 15px 40px rgba(0,0,0,.35);
+  display:block !important;
+  width:auto !important;
+  max-width:360px !important;
+  height:auto !important;
+  max-height:460px !important;
+  object-fit:contain !important;
+  object-position:center !important;
+  margin:0 auto 30px !important;
+  border-radius:18px !important;
+  background:rgba(255,255,255,.04) !important;
+  box-shadow:
+    0 15px 40px rgba(0,0,0,.35),
+    0 0 22px rgba(95,244,255,.12) !important;
 }
 
-@media(max-width:768px){
-    .post-detail img,
-    #postDetail img,
-    .post-card.post-full img,
-    .post-card.post-full img.post-detail-image,
-    .post-card.post-full .post-hero-image{
-        width:100% !important;
-        max-width:100% !important;
-        max-height:none !important;
-    }
+.post-card.post-full .post-desc{
+  margin:0 0 24px;
+  color:#dfe3ff;
+  font-size:18px;
+  line-height:1.7;
+  font-weight:700;
 }
+
+.post-card.post-full .post-content{
+  margin-top:22px;
+  color:#eef0ff;
+  font-size:18px;
+  line-height:1.85;
+  font-weight:650;
+}
+
+.post-card.post-full .post-content p{
+  margin:0 0 18px;
+}
+
+.post-card.post-full .post-content img{
+  margin:26px auto !important;
+}
+
+/* Link ngoài nếu bài viết có */
+.post-card.post-full .post-link,
+.post-card.post-full a.post-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  margin-top:24px;
+  padding:14px 22px;
+  border-radius:999px;
+  color:#050514;
+  font-weight:900;
+  background:linear-gradient(135deg,#5ff4ff,#ff4fe3);
+  box-shadow:0 0 24px rgba(95,244,255,.32);
+}
+
+/* Responsive cho điện thoại */
+@media(max-width:768px){
+  .page{
+    padding:38px 16px;
+  }
+
+  .post-card.post-full{
+    margin:24px auto;
+    padding:20px;
+    border-radius:18px;
+  }
+
+  #postDetail img,
+  .post-detail img,
+  .post-card.post-full img,
+  .post-card.post-full img.post-detail-image,
+  .post-card.post-full .post-detail-image,
+  .post-card.post-full .post-hero-image{
+    width:100% !important;
+    max-width:100% !important;
+    max-height:none !important;
+  }
+
+  .post-card.post-full .post-content,
+  .post-card.post-full .post-desc{
+    font-size:16px;
+    line-height:1.75;
+  }
+}
+
