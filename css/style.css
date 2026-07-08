@@ -1152,3 +1152,13 @@ footer .contact-row a{
 .fa-phone{
     color:#ff4fe3;
 }
+.post-full .post-hero-image {
+  width: 100%;
+  max-height: none;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 18px;
+  display: block;
+  background: rgba(255,255,255,.04);
+}
