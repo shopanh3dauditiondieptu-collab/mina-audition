@@ -2117,3 +2117,47 @@ figcaption {
     justify-self:center;
   }
 }
+@media (min-width: 901px){
+  .hero{
+    min-height:520px;
+    padding:50px 70px 35px;
+    display:grid;
+    grid-template-columns: 44% 20% 36%;
+    gap:18px;
+    align-items:center;
+  }
+
+  .hero-content{
+    width:100%;
+    max-width:560px;
+  }
+
+  .hero h1,
+  .hero-title{
+    font-size:clamp(58px,5.8vw,92px);
+    line-height:.88;
+  }
+
+  .hero-character{
+    position:relative;
+    right:auto;
+    bottom:auto;
+    justify-self:center;
+    z-index:4;
+  }
+
+  .hero-character img,
+  .hero-img{
+    max-height:360px;
+    width:auto;
+  }
+
+  .social-section,
+  .social-cards,
+  .follow-section{
+    position:relative;
+    z-index:2;
+    margin:0;
+    transform:none;
+  }
+}
