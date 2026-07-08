@@ -488,3 +488,178 @@ select{
     max-width:100%;
   }
 }
+/* ===== MINA ADMIN V3.1 POLISH ===== */
+
+/* Tăng khoảng thở toàn trang */
+.admin{
+  padding-top:38px;
+  padding-bottom:50px;
+}
+
+.dashboard-grid{
+  margin:30px 0 28px;
+}
+
+.panel{
+  margin-bottom:30px;
+}
+
+/* Dashboard đẹp hơn */
+.stat-card{
+  position:relative;
+  overflow:hidden;
+  transition:.25s ease;
+}
+
+.stat-card::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  background:linear-gradient(135deg,rgba(125,249,255,.18),rgba(255,79,216,.18));
+  opacity:0;
+  transition:.25s ease;
+  pointer-events:none;
+}
+
+.stat-card:hover{
+  transform:translateY(-4px);
+  box-shadow:
+    0 0 34px rgba(125,249,255,.16),
+    0 0 44px rgba(255,79,216,.12);
+}
+
+.stat-card:hover::before{
+  opacity:1;
+}
+
+.stat-icon{
+  font-size:30px;
+  box-shadow:0 0 18px rgba(125,249,255,.12);
+}
+
+/* Button nổi bật hơn */
+button,
+.home-link{
+  transition:.22s ease;
+  box-shadow:0 8px 22px rgba(255,79,216,.14);
+}
+
+button:hover,
+.home-link:hover{
+  transform:translateY(-2px);
+  box-shadow:
+    0 0 18px rgba(125,249,255,.22),
+    0 0 28px rgba(255,79,216,.18);
+}
+
+.secondary-btn:hover{
+  background:rgba(125,249,255,.12)!important;
+}
+
+/* Checkbox đẹp hơn */
+.checkbox-row{
+  cursor:pointer;
+  transition:.22s ease;
+}
+
+.checkbox-row:hover{
+  border-color:rgba(255,79,216,.45);
+  background:rgba(255,79,216,.1);
+}
+
+.checkbox-row input{
+  cursor:pointer;
+  accent-color:#ff4fd8;
+}
+
+/* Search có cảm giác chuyên nghiệp hơn */
+.search-input{
+  background:
+    linear-gradient(rgba(7,8,23,.9),rgba(7,8,23,.9)) padding-box,
+    linear-gradient(135deg,#7df9ff,#ff4fd8) border-box;
+  border:1px solid transparent;
+}
+
+/* Danh sách bài viết khi chưa có bài */
+.post-list:empty::before{
+  content:"Chưa có bài viết nào. Hãy tạo bài viết đầu tiên cho Mina Audition.";
+  display:block;
+  padding:22px;
+  border:1px dashed rgba(125,249,255,.28);
+  border-radius:18px;
+  color:#c9ccef;
+  background:rgba(7,8,23,.35);
+}
+
+/* Card bài viết đẹp hơn khi có bài */
+.admin-item{
+  position:relative;
+  overflow:hidden;
+  transition:.22s ease;
+}
+
+.admin-item:hover{
+  transform:translateY(-2px);
+  border-color:rgba(125,249,255,.42);
+  box-shadow:0 0 24px rgba(125,249,255,.1);
+}
+
+/* Gợi ý nội dung rõ hơn */
+.guide-item{
+  transition:.22s ease;
+}
+
+.guide-item:hover{
+  transform:translateY(-2px);
+  border-color:rgba(125,249,255,.38);
+}
+
+/* Textarea thoáng hơn */
+textarea#content{
+  min-height:210px;
+}
+
+textarea#desc{
+  min-height:105px;
+}
+
+/* Header nút cân hơn */
+.top-actions a,
+.top-actions button{
+  min-width:126px;
+  text-align:center;
+}
+
+/* Scrollbar đẹp hơn */
+::-webkit-scrollbar{
+  width:10px;
+}
+
+::-webkit-scrollbar-track{
+  background:#070817;
+}
+
+::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,#7df9ff,#ff4fd8);
+  border-radius:999px;
+}
+
+/* Mobile gọn hơn */
+@media(max-width:720px){
+  .admin{
+    padding:24px 16px 40px;
+  }
+
+  .top-actions a,
+  .top-actions button{
+    width:100%;
+  }
+
+  .stat-card:hover,
+  .guide-item:hover,
+  .admin-item:hover,
+  button:hover,
+  .home-link:hover{
+    transform:none;
+  }
+}
