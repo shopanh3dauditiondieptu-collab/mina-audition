@@ -356,17 +356,55 @@ img{max-width:100%;display:block}
 
 /* FOOTER */
 .footer{
-  display:grid;
-  grid-template-columns:1.2fr .7fr 1fr;
-  gap:60px;
-  padding:55px 7%;
-  background:#06061a;
-  border-top:1px solid rgba(125,73,255,.45);
+    display:grid;
+    grid-template-columns:1.25fr .85fr 1fr;
+
+    gap:48px;
+
+    padding:42px 7% 32px;
+
+    background:linear-gradient(
+        180deg,
+        #09091f 0%,
+        #060616 100%
+    );
+
+    border-top:1px solid rgba(95,244,255,.18);
+
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.05),
+        0 -20px 60px rgba(95,244,255,.05);
 }
-.footer img{width:135px;margin-bottom:22px}
-.footer p,.footer a{color:#d6d8ff;line-height:1.8}
-.footer a{display:block}
-.footer h3{margin-top:0}
+.footer img{
+    width:140px;
+    margin-bottom:18px;
+}
+
+.footer p,
+.footer a{
+    color:#dfe5ff;
+    line-height:2;
+    font-size:16px;
+    transition:.25s;
+}
+
+.footer a{
+    display:block;
+    text-decoration:none;
+}
+
+.footer a:hover{
+    color:#5ff4ff;
+    transform:translateX(6px);
+}
+
+.footer h3{
+    margin-top:0;
+    margin-bottom:18px;
+    font-size:26px;
+    font-weight:900;
+    color:#fff;
+}
 
 /* ADMIN/BLOG BASIC SUPPORT */
 .page{padding:70px 7%;min-height:70vh}
