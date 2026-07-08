@@ -458,7 +458,7 @@ img{max-width:100%;display:block}
     align-items:center;
     gap:8px;
 
-    padding:12px 24px;
+    padding:8px 18px;
 
     border-radius:999px;
 
@@ -468,7 +468,7 @@ img{max-width:100%;display:block}
 
     color:#fff;
 
-    font-size:17px;
+    font-size:15px;
 
     font-weight:900;
 
@@ -482,15 +482,15 @@ img{max-width:100%;display:block}
     margin:18px 0 22px;
     font-size:clamp(42px,4vw,58px);
     font-weight:900;
-    line-height:.92;
-    letter-spacing:-2px;
+    line-height:.88;
+    letter-spacing:-3px;
     color:#fff;
     text-transform:uppercase;
     text-shadow:
     0 0 8px #ffffff,
-    0 0 20px rgba(95,244,255,.8),
-    0 0 40px rgba(123,77,255,.45),
-    0 0 70px rgba(255,79,227,.25);
+    0 0 8px rgba(255,255,255,.95),
+    0 0 18px rgba(95,244,255,.45),
+    0 0 38px rgba(255,79,227,.18);
 }
 .video-title span{
     display:block;
@@ -614,7 +614,7 @@ img{max-width:100%;display:block}
   }
 
   .video-left {
-    max-width: 100%;
+    max-width:500px;
     text-align: center;
   }
 
@@ -653,7 +653,7 @@ img{max-width:100%;display:block}
 }
 
 .video-desc {
-  max-width: 410px;
+  max-width:500px;
   color: #dfe3ff;
   font-size: 18px;
   font-weight: 800;
