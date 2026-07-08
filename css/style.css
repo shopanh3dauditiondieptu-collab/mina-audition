@@ -2068,3 +2068,64 @@ figcaption {
     font-size: 13px !important;
     white-space: nowrap !important;
 }
+/* ========= HEADER CÂN ĐỐI V2 ========= */
+
+.site-header{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+
+    width:100% !important;
+    max-width:1400px !important;
+
+    margin:0 auto !important;
+    padding:0 16px !important;
+}
+
+/* Logo sát mép trái */
+.brand{
+    flex:0 0 auto !important;
+
+    display:flex !important;
+    align-items:center !important;
+    gap:10px !important;
+
+    margin-left:-12px !important;
+}
+
+/* Logo */
+.brand img{
+    width:60px !important;
+    height:60px !important;
+}
+
+/* Tiêu đề */
+.brand span{
+    font-size:20px !important;
+    font-weight:800;
+    white-space:nowrap;
+}
+
+/* Menu chiếm toàn bộ phần giữa */
+.main-nav{
+    flex:1 !important;
+
+    display:flex !important;
+    justify-content:center !important;
+    align-items:center !important;
+
+    gap:14px !important;
+
+    margin:0 24px !important;
+}
+
+/* Các nút menu */
+.main-nav a{
+    font-size:14px !important;
+    padding:10px 16px !important;
+}
+
+/* Nút Theo dõi luôn nằm bên phải */
+.follow-btn{
+    flex-shrink:0 !important;
+}
