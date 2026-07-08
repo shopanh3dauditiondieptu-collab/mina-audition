@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mina CMS V7 - Regression Test Checklist</title>
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    .test-page{
+      max-width:1100px;
+      margin:60px auto;
+      padding:30px;
+      color:#fff;
+    }
+
+    .test-title{
+      text-align:center;
+      margin-bottom:35px;
+    }
+
+    .test-title h1{
+      font-size:42px;
+      color:#fff;
+      text-shadow:0 0 18px #5ee7ff;
+    }
+
+    .test-title p{
+      color:#d8d8ff;
+    }
+
+    .test-card{
+      margin-bottom:22px;
+      padding:24px;
+      border-radius:22px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:0 0 25px rgba(94,231,255,.08);
+    }
+
+    .test-card h2{
+      margin-bottom:16px;
+      color:#ff5be8;
+    }
+
+    .test-item{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:10px 0;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .test-item:last-child{
+      border-bottom:0;
+    }
+
+    .test-item input{
+      margin-top:4px;
+      transform:scale(1.2);
+    }
+
+    .test-item span{
+      line-height:1.5;
+      color:#fff;
+    }
+
+    .test-actions{
+      display:flex;
+      justify-content:center;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-top:30px;
+    }
+
+    .test-actions button{
+      padding:12px 24px;
+      border:0;
+      border-radius:999px;
+      cursor:pointer;
+      color:#fff;
+      font-weight:900;
+      background:linear-gradient(135deg,#ff5be8,#5ee7ff);
+      box-shadow:0 0 22px rgba(94,231,255,.45);
+    }
+
+    .test-progress{
+      text-align:center;
+      margin:25px 0;
+      font-weight:900;
+      color:#5ee7ff;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="test-page">
+    <div class="test-title">
+      <h1>Mina CMS V7 Checklist</h1>
+      <p>Danh sách kiểm thử cố định sau mỗi lần nâng cấp website Mina.</p>
+    </div>
+
+    <div class="test-progress" id="testProgress">
+      Đã hoàn thành: 0/0
+    </div>
+
+    <div id="testChecklist"></div>
+
+    <div class="test-actions">
+      <button onclick="MinaTestChecklist.reset()">Làm lại checklist</button>
+      <button onclick="window.print()">In / Lưu PDF</button>
+    </div>
+  </main>
+
+  <script src="js/core/test-checklist.js"></script>
+
+</body>
+</html>
