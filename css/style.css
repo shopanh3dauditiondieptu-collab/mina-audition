@@ -2451,3 +2451,129 @@ figcaption {
     padding: 60px 0;
   }
 }
+/* ===============================
+   THEO DÕI MINA - GRID 4 BOX
+   =============================== */
+
+.social-section {
+  max-width: 1280px;
+  width: calc(100% - 48px);
+  margin: 0 auto;
+  padding: 90px 0 80px;
+  text-align: center;
+}
+
+.social-section .section-title {
+  margin-bottom: 42px;
+}
+
+.social-box {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  width: 100%;
+}
+
+.social-item {
+  min-height: 230px;
+  padding: 34px 22px 30px;
+  border-radius: 18px;
+  background: rgba(8, 8, 25, 0.82);
+  border: 1px solid rgba(255, 70, 220, 0.45);
+  box-shadow: 0 0 28px rgba(88, 224, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.social-item i {
+  width: 66px;
+  height: 66px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  font-size: 32px;
+  background: rgba(255,255,255,0.08);
+}
+
+.social-item strong {
+  font-size: 25px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.social-item span {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.social-item a {
+  margin-top: 4px;
+  padding: 11px 24px;
+  border-radius: 10px;
+  border: 1px solid #5df4ff;
+  color: #fff;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.social-item.youtube {
+  border-color: rgba(255, 0, 0, 0.75);
+}
+
+.social-item.youtube i,
+.social-item.youtube strong,
+.social-item.youtube a {
+  color: #ff2424;
+}
+
+.social-item.facebook {
+  border-color: rgba(24, 119, 242, 0.75);
+}
+
+.social-item.facebook i,
+.social-item.facebook strong,
+.social-item.facebook a {
+  color: #1877f2;
+}
+
+.social-item.tiktok {
+  border-color: rgba(255, 255, 255, 0.65);
+}
+
+.social-item.tiktok i,
+.social-item.tiktok strong {
+  color: #fff;
+}
+
+.social-item.instagram {
+  border-color: rgba(255, 70, 220, 0.75);
+}
+
+.social-item.instagram i,
+.social-item.instagram strong,
+.social-item.instagram a {
+  color: #ff4fdb;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .social-box {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .social-section {
+    width: calc(100% - 28px);
+    padding: 70px 0 60px;
+  }
+
+  .social-box {
+    grid-template-columns: 1fr;
+  }
+}
