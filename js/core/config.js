@@ -18,8 +18,8 @@ window.MINA_CONFIG = {
   social: {
     youtube: "https://www.youtube.com/@mina.audition",
     facebook: "https://www.facebook.com/mina.audition/",
-    tiktok: "https://www.tiktok.com/",
-    instagram: "https://www.instagram.com/"
+    tiktok: "https://www.tiktok.com/@mina.audition",
+    instagram: "https://www.instagram.com/mina.audition/"
   },
 
   footer: {
