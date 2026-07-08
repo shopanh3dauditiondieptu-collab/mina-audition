@@ -3,5 +3,55 @@ import {
   db,
   storage
 } from "./firebase-config.js";
-const form=document.getElementById("postForm");const list=document.getElementById("postList");function getPosts(){return JSON.parse(localStorage.getItem("mina_v2_posts")||"[]")}function savePosts(posts){localStorage.setItem("mina_v2_posts",JSON.stringify(posts))}function render(){const posts=getPosts();list.innerHTML=posts.map((p,i)=>`<div class="admin-item"><b>${p.title}</b><p>${p.desc||""}</p><button onclick="delPost(${i})">Xóa</button></div>`).join("")}function delPost(i){const posts=getPosts();posts.splice(i,1);savePosts(posts);render()}form.addEventListener("submit",e=>{e.preventDefault();const posts=getPosts();posts.unshift({title:title.value,category:category.value,image:image.value,desc:desc.value,content:content.value,createdAt:new Date().toISOString()});savePosts(posts);form.reset();render()});render();
-<script type="module" src="js/admin.js"></script>
+
+const form = document.getElementById("postForm");
+const list = document.getElementById("postList");
+
+function getPosts() {
+  return JSON.parse(localStorage.getItem("mina_v2_posts") || "[]");
+}
+
+function savePosts(posts) {
+  localStorage.setItem("mina_v2_posts", JSON.stringify(posts));
+}
+
+function render() {
+  const posts = getPosts();
+
+  list.innerHTML = posts.map((p, i) => `
+    <div class="admin-item">
+      <b>${p.title}</b>
+      <p>${p.desc || ""}</p>
+      <button onclick="delPost(${i})">Xóa</button>
+    </div>
+  `).join("");
+}
+
+window.delPost = function(i) {
+  const posts = getPosts();
+  posts.splice(i, 1);
+  savePosts(posts);
+  render();
+};
+
+form.addEventListener("submit", e => {
+  e.preventDefault();
+
+  const posts = getPosts();
+
+  posts.unshift({
+    title: title.value,
+    category: category.value,
+    image: image.value,
+    desc: desc.value,
+    content: content.value,
+    link: link.value,
+    createdAt: new Date().toISOString()
+  });
+
+  savePosts(posts);
+  form.reset();
+  render();
+});
+
+render();
