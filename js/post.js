@@ -70,7 +70,12 @@ async function loadPost() {
       <article class="post-card post-full">
         ${
           p.image
-            ? `<img src="${p.image}" alt="${p.title || "Bài viết Mina"}" class="post-hero-image">`
+            ? `<img
+  src="${p.image.replace('/upload/', '/upload/f_auto,q_auto,w_900/')}"
+  alt="${p.title || "Bài viết Mina"}"
+  class="post-hero-image"
+  loading="eager"
+>`
             : ""
         }
 
