@@ -1048,3 +1048,18 @@ width:100%;
 .footer a i.fa-instagram{
   color:#e4405f !important;
 }
+.footer-card p,
+.footer-contact p,
+.contact p{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:14px 0;
+  line-height:1.5;
+}
+
+.footer-card p:first-of-type,
+.footer-contact p:first-of-type,
+.contact p:first-of-type{
+  margin-top:22px;
+}
