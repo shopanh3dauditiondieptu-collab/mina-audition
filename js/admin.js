@@ -1,10 +1,21 @@
-import { auth, db, storage } from "./firebase-config.js";
+import { auth, db } from "./firebase-config.js";
 
 import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+import {
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 const ADMIN_EMAIL = "mina.auditionvtc@gmail.com";
 
@@ -19,6 +30,14 @@ const adminEmail = document.getElementById("adminEmail");
 
 const form = document.getElementById("postForm");
 const list = document.getElementById("postList");
+
+const titleInput = document.getElementById("title");
+const categoryInput = document.getElementById("category");
+const imageInput = document.getElementById("image");
+const descInput = document.getElementById("desc");
+const contentInput = document.getElementById("content");
+const linkInput = document.getElementById("link");
+const featuredInput = document.getElementById("featured");
 
 function showLogin(message = "") {
   loginBox.classList.remove("hidden");
@@ -50,7 +69,6 @@ onAuthStateChanged(auth, async (user) => {
 
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-
   loginMessage.textContent = "Đang đăng nhập...";
 
   try {
@@ -59,7 +77,6 @@ loginForm.addEventListener("submit", async (e) => {
       loginEmail.value.trim(),
       loginPassword.value
     );
-
     loginForm.reset();
   } catch (error) {
     loginMessage.textContent = "Email hoặc mật khẩu chưa đúng.";
@@ -71,56 +88,80 @@ logoutBtn.addEventListener("click", async () => {
   showLogin("Bạn đã đăng xuất.");
 });
 
-function getPosts() {
-  return JSON.parse(localStorage.getItem("mina_v2_posts") || "[]");
+async function render() {
+  list.innerHTML = `<p class="muted">Đang tải bài viết...</p>`;
+
+  try {
+    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      list.innerHTML = `<p class="muted">Chưa có bài viết nào.</p>`;
+      return;
+    }
+
+    list.innerHTML = snapshot.docs.map((item) => {
+      const p = item.data();
+
+      return `
+        <div class="admin-item">
+          <b>${p.title || "Không có tiêu đề"}</b>
+          <p>${p.desc || ""}</p>
+          <p class="muted">Danh mục: ${p.category || "Chưa phân loại"}</p>
+          ${p.featured ? `<p>⭐ Bài nổi bật</p>` : ""}
+          <div class="actions">
+            <button type="button" onclick="deletePost('${item.id}')">Xóa</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+  } catch (error) {
+    console.error(error);
+    list.innerHTML = `<p class="muted">Không tải được bài viết từ Firestore.</p>`;
+  }
 }
 
-function savePosts(posts) {
-  localStorage.setItem("mina_v2_posts", JSON.stringify(posts));
-}
+window.deletePost = async function(id) {
+  const ok = confirm("Bạn có chắc muốn xóa bài viết này không?");
+  if (!ok) return;
 
-function render() {
-  const posts = getPosts();
+  try {
+    await deleteDoc(doc(db, "posts", id));
+    alert("Đã xóa bài viết.");
+    render();
+  } catch (error) {
+    console.error(error);
+    alert("Xóa bài chưa thành công. Hãy kiểm tra Firestore Rules.");
+  }
+};
 
-  if (!posts.length) {
-    list.innerHTML = `<p class="muted">Chưa có bài viết nào.</p>`;
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const post = {
+    title: titleInput.value.trim(),
+    category: categoryInput.value.trim(),
+    image: imageInput.value.trim(),
+    desc: descInput.value.trim(),
+    content: contentInput.value.trim(),
+    link: linkInput.value.trim(),
+    featured: featuredInput ? featuredInput.checked : false,
+    createdAt: serverTimestamp()
+  };
+
+  if (!post.title) {
+    alert("Bạn cần nhập tiêu đề bài viết.");
     return;
   }
 
-  list.innerHTML = posts.map((p, i) => `
-    <div class="admin-item">
-      <b>${p.title}</b>
-      <p>${p.desc || ""}</p>
-      <button type="button" onclick="delPost(${i})">Xóa</button>
-    </div>
-  `).join("");
-}
-
-window.delPost = function(i) {
-  const posts = getPosts();
-  posts.splice(i, 1);
-  savePosts(posts);
-  render();
-};
-
-form.addEventListener("submit", e => {
-  e.preventDefault();
-
-  const posts = getPosts();
-
-  posts.unshift({
-    title: title.value,
-    category: category.value,
-    image: image.value,
-    desc: desc.value,
-    content: content.value,
-    link: link.value,
-    createdAt: new Date().toISOString()
-  });
-
-  savePosts(posts);
-  form.reset();
-  render();
-
-  alert("Đã lưu bài viết.");
+  try {
+    await addDoc(collection(db, "posts"), post);
+    form.reset();
+    alert("Đã đăng bài lên Firestore thành công.");
+    render();
+  } catch (error) {
+    console.error(error);
+    alert("Đăng bài chưa thành công. Hãy kiểm tra Firebase Rules hoặc đăng nhập Admin.");
+  }
 });
