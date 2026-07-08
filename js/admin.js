@@ -10,6 +10,8 @@ import {
   collection,
   addDoc,
   getDocs,
+  getDoc,
+  updateDoc,
   deleteDoc,
   doc,
   query,
@@ -18,7 +20,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 /* =========================
-   MINA CMS V2 CONFIG
+   MINA CMS V2 PROFESSIONAL
 ========================= */
 
 const ADMIN_EMAIL = "mina.auditionvtc@gmail.com";
@@ -57,12 +59,14 @@ const featuredInput = document.getElementById("featured");
 const totalPosts = document.getElementById("totalPosts");
 const resetBtn = document.getElementById("resetBtn");
 const searchPost = document.getElementById("searchPost");
+const statusInput = document.getElementById("status");
 
 /* =========================
    STATE
 ========================= */
 
 let contentBlocks = [];
+let editingPostId = null;
 
 /* =========================
    HELPERS
@@ -81,20 +85,10 @@ function escapeHTML(text = "") {
     .replaceAll("'", "&#039;");
 }
 
-function setUploadMessage(text, color = "#7df9ff") {
-  if (!uploadMessage) return;
-  uploadMessage.textContent = text;
-  uploadMessage.style.color = color;
-}
-
-function clearPreview() {
-  if (imagePreview) {
-    imagePreview.src = "";
-    imagePreview.style.display = "none";
-  }
-
-  if (uploadMessage) uploadMessage.textContent = "";
-  if (imageFileInput) imageFileInput.value = "";
+function optimizeCloudinary(url = "", width = 900) {
+  if (!url || !url.includes("res.cloudinary.com")) return url;
+  if (url.includes("/upload/f_auto")) return url;
+  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`);
 }
 
 function getYouTubeEmbedUrl(url = "") {
@@ -120,17 +114,27 @@ function getYouTubeEmbedUrl(url = "") {
   }
 }
 
-function optimizeCloudinary(url = "", width = 900) {
-  if (!url || !url.includes("res.cloudinary.com")) return url;
-  if (url.includes("/upload/f_auto")) return url;
-  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`);
+function setUploadMessage(text, color = "#7df9ff") {
+  if (!uploadMessage) return;
+  uploadMessage.textContent = text;
+  uploadMessage.style.color = color;
+}
+
+function clearPreview() {
+  if (imagePreview) {
+    imagePreview.src = "";
+    imagePreview.style.display = "none";
+  }
+
+  if (uploadMessage) uploadMessage.textContent = "";
+  if (imageFileInput) imageFileInput.value = "";
 }
 
 /* =========================
-   CLOUDINARY UPLOAD
+   CLOUDINARY
 ========================= */
 
-async function uploadImageToCloudinary(file) {
+async function uploadImageToCloudinary(file, onMessage) {
   if (!file) return "";
 
   if (!file.type.startsWith("image/")) {
@@ -143,6 +147,8 @@ async function uploadImageToCloudinary(file) {
   if (file.size > maxSizeBytes) {
     throw new Error(`Ảnh quá nặng. Vui lòng chọn ảnh dưới ${maxSizeMB}MB.`);
   }
+
+  if (onMessage) onMessage("Đang upload ảnh lên Cloudinary...");
 
   const formData = new FormData();
   formData.append("file", file);
@@ -161,6 +167,8 @@ async function uploadImageToCloudinary(file) {
     throw new Error(data.error?.message || "Upload ảnh lên Cloudinary thất bại.");
   }
 
+  if (onMessage) onMessage("Upload ảnh thành công.");
+
   return data.secure_url;
 }
 
@@ -170,8 +178,7 @@ if (imageFileInput) {
     if (!file) return;
 
     try {
-      setUploadMessage("Đang upload ảnh đại diện lên Cloudinary...");
-      const imageURL = await uploadImageToCloudinary(file);
+      const imageURL = await uploadImageToCloudinary(file, setUploadMessage);
 
       imageInput.value = imageURL;
 
@@ -179,8 +186,6 @@ if (imageFileInput) {
         imagePreview.src = optimizeCloudinary(imageURL, 420);
         imagePreview.style.display = "block";
       }
-
-      setUploadMessage("Upload ảnh đại diện thành công.");
     } catch (error) {
       console.error(error);
       setUploadMessage(error.message, "#ff4fd8");
@@ -190,7 +195,7 @@ if (imageFileInput) {
 }
 
 /* =========================
-   BLOCK EDITOR UI
+   BLOCK EDITOR
 ========================= */
 
 function setupBlockEditor() {
@@ -209,12 +214,13 @@ function setupBlockEditor() {
     <div class="mina-block-toolbar">
       <button type="button" data-add-block="text">+ Đoạn văn</button>
       <button type="button" data-add-block="image">+ Ảnh</button>
+      <button type="button" data-add-block="gallery">+ Gallery</button>
       <button type="button" data-add-block="youtube">+ YouTube</button>
       <button type="button" data-add-block="quote">+ Trích dẫn</button>
     </div>
 
     <p class="muted small-text">
-      Mina CMS V2: bạn có thể chèn đoạn văn, ảnh và video ở bất kỳ vị trí nào trong bài viết.
+      Mina CMS V2: soạn bài theo từng khối nội dung. Có thể chèn đoạn văn, ảnh, gallery, video YouTube và trích dẫn.
     </p>
 
     <div id="minaBlocks" class="mina-blocks"></div>
@@ -224,8 +230,13 @@ function setupBlockEditor() {
 
   wrap.addEventListener("click", handleBlockClick);
   wrap.addEventListener("input", handleBlockInput);
+  wrap.addEventListener("change", handleBlockChange);
 
-  addBlock("text");
+  if (contentBlocks.length === 0) {
+    addBlock("text");
+  } else {
+    renderBlocks();
+  }
 }
 
 function addBlock(type, data = {}) {
@@ -234,7 +245,9 @@ function addBlock(type, data = {}) {
     type,
     value: data.value || "",
     url: data.url || "",
-    caption: data.caption || ""
+    caption: data.caption || "",
+    images: Array.isArray(data.images) ? data.images : [],
+    uploadStatus: ""
   };
 
   contentBlocks.push(block);
@@ -260,6 +273,12 @@ function moveBlock(id, direction) {
   renderBlocks();
 }
 
+function updateBlock(id, field, value) {
+  const block = contentBlocks.find(item => item.id === id);
+  if (!block) return;
+  block[field] = value;
+}
+
 function renderBlocks() {
   const blocksBox = document.getElementById("minaBlocks");
   if (!blocksBox) return;
@@ -277,6 +296,7 @@ function renderBlocks() {
     const label =
       block.type === "text" ? "Đoạn văn" :
       block.type === "image" ? "Ảnh trong bài viết" :
+      block.type === "gallery" ? "Gallery ảnh" :
       block.type === "youtube" ? "Video YouTube" :
       block.type === "quote" ? "Trích dẫn" :
       "Nội dung";
@@ -307,7 +327,7 @@ function renderBlocks() {
         <input
           type="file"
           data-block-id="${block.id}"
-          data-upload-image="true"
+          data-upload-image="single"
           accept="image/*"
         >
 
@@ -320,10 +340,54 @@ function renderBlocks() {
         >
 
         ${
+          block.uploadStatus
+            ? `<p class="muted small-text">${escapeHTML(block.uploadStatus)}</p>`
+            : ""
+        }
+
+        ${
           block.url
             ? `<img class="mina-block-preview" src="${optimizeCloudinary(block.url, 500)}" alt="">`
             : ""
         }
+      `;
+    }
+
+    if (block.type === "gallery") {
+      const imagesHTML = block.images.map((img, imgIndex) => `
+        <div class="mina-gallery-admin-item">
+          <img src="${optimizeCloudinary(img.url, 260)}" alt="">
+          <input
+            type="text"
+            data-block-id="${block.id}"
+            data-gallery-caption="${imgIndex}"
+            placeholder="Chú thích ảnh"
+            value="${escapeHTML(img.caption || "")}"
+          >
+          <button type="button" data-remove-gallery-image="${block.id}" data-image-index="${imgIndex}">
+            Xóa ảnh
+          </button>
+        </div>
+      `).join("");
+
+      body = `
+        <input
+          type="file"
+          data-block-id="${block.id}"
+          data-upload-image="gallery"
+          accept="image/*"
+          multiple
+        >
+
+        ${
+          block.uploadStatus
+            ? `<p class="muted small-text">${escapeHTML(block.uploadStatus)}</p>`
+            : `<p class="muted small-text">Có thể chọn nhiều ảnh cùng lúc.</p>`
+        }
+
+        <div class="mina-gallery-admin">
+          ${imagesHTML || `<p class="muted">Gallery chưa có ảnh.</p>`}
+        </div>
       `;
     }
 
@@ -384,11 +448,14 @@ function renderBlocks() {
     `;
   }).join("");
 }
+
 async function handleBlockClick(e) {
   const addType = e.target.dataset.addBlock;
   const removeId = e.target.dataset.removeBlock;
   const moveUpId = e.target.dataset.moveUp;
   const moveDownId = e.target.dataset.moveDown;
+  const removeGalleryId = e.target.dataset.removeGalleryImage;
+  const imageIndex = e.target.dataset.imageIndex;
 
   if (addType) {
     addBlock(addType);
@@ -410,56 +477,99 @@ async function handleBlockClick(e) {
     moveBlock(moveDownId, 1);
     return;
   }
+
+  if (removeGalleryId && imageIndex !== undefined) {
+    const block = contentBlocks.find(item => item.id === removeGalleryId);
+    if (!block || !Array.isArray(block.images)) return;
+
+    block.images.splice(Number(imageIndex), 1);
+    renderBlocks();
+  }
 }
 
-async function handleBlockInput(e) {
+function handleBlockInput(e) {
   const id = e.target.dataset.blockId;
   const field = e.target.dataset.field;
 
   if (id && field) {
-    const block = contentBlocks.find(item => item.id === id);
-    if (block) block[field] = e.target.value;
+    updateBlock(id, field, e.target.value);
   }
 
-  if (e.target.dataset.uploadImage === "true") {
-    const id = e.target.dataset.blockId;
-    const file = e.target.files[0];
-    if (!id || !file) return;
+  const galleryCaptionIndex = e.target.dataset.galleryCaption;
 
+  if (id && galleryCaptionIndex !== undefined) {
     const block = contentBlocks.find(item => item.id === id);
-    if (!block) return;
+    if (!block || !Array.isArray(block.images)) return;
 
-    try {
-      e.target.disabled = true;
-      const oldPlaceholder = e.target.previousElementSibling?.placeholder;
-
-      if (e.target.previousElementSibling) {
-        e.target.previousElementSibling.placeholder = "Đang upload ảnh...";
-      }
-
-      const url = await uploadImageToCloudinary(file);
-      block.url = url;
-
-      if (e.target.previousElementSibling && oldPlaceholder) {
-        e.target.previousElementSibling.placeholder = oldPlaceholder;
-      }
-
-      alert("Upload ảnh trong bài viết thành công.");
-      renderBlocks();
-    } catch (error) {
-      console.error(error);
-      alert(error.message);
-    } finally {
-      e.target.disabled = false;
-    }
+    const img = block.images[Number(galleryCaptionIndex)];
+    if (img) img.caption = e.target.value;
   }
 }
+
+async function handleBlockChange(e) {
+  const uploadType = e.target.dataset.uploadImage;
+  const id = e.target.dataset.blockId;
+
+  if (!uploadType || !id) return;
+
+  const block = contentBlocks.find(item => item.id === id);
+  if (!block) return;
+
+  const files = Array.from(e.target.files || []);
+  if (files.length === 0) return;
+
+  try {
+    e.target.disabled = true;
+
+    if (uploadType === "single") {
+      block.uploadStatus = "Đang upload ảnh...";
+      renderBlocks();
+
+      const url = await uploadImageToCloudinary(files[0], (msg) => {
+        block.uploadStatus = msg;
+      });
+
+      block.url = url;
+      block.uploadStatus = "Upload ảnh thành công.";
+      renderBlocks();
+    }
+
+    if (uploadType === "gallery") {
+      block.uploadStatus = `Đang upload ${files.length} ảnh...`;
+      renderBlocks();
+
+      for (let i = 0; i < files.length; i++) {
+        const url = await uploadImageToCloudinary(files[i], () => {
+          block.uploadStatus = `Đang upload ảnh ${i + 1}/${files.length}...`;
+        });
+
+        block.images.push({
+          url,
+          caption: ""
+        });
+      }
+
+      block.uploadStatus = "Upload gallery thành công.";
+      renderBlocks();
+    }
+  } catch (error) {
+    console.error(error);
+    block.uploadStatus = error.message;
+    renderBlocks();
+    alert(error.message);
+  }
+}
+
+/* =========================
+   CONTENT DATA
+========================= */
 
 function syncBlocksToLegacyContent() {
   const textParts = contentBlocks
     .map(block => {
       if (block.type === "text" || block.type === "quote") return block.value || "";
       if (block.type === "image") return block.caption || "";
+      if (block.type === "gallery") return "Gallery ảnh";
       if (block.type === "youtube") return block.url || "";
       return "";
     })
@@ -488,6 +598,20 @@ function getCleanBlocks() {
         };
       }
 
+      if (block.type === "gallery") {
+        return {
+          type: "gallery",
+          images: Array.isArray(block.images)
+            ? block.images
+                .filter(img => img.url)
+                .map(img => ({
+                  url: String(img.url || "").trim(),
+                  caption: String(img.caption || "").trim()
+                }))
+            : []
+        };
+      }
+
       if (block.type === "youtube") {
         return {
           type: "youtube",
@@ -508,10 +632,25 @@ function getCleanBlocks() {
     .filter(block => {
       if (block.type === "text") return block.value;
       if (block.type === "image") return block.url;
+      if (block.type === "gallery") return block.images.length > 0;
       if (block.type === "youtube") return block.url;
       if (block.type === "quote") return block.value;
       return false;
     });
+}
+
+function resetEditor() {
+  form.reset();
+  clearPreview();
+
+  editingPostId = null;
+  contentBlocks = [];
+  addBlock("text");
+
+  const submitBtn = form.querySelector("button[type='submit']");
+  if (submitBtn) submitBtn.textContent = "Lưu bài viết";
+
+  if (statusInput) statusInput.value = "published";
 }
 
 /* =========================
@@ -572,7 +711,7 @@ logoutBtn.addEventListener("click", async () => {
 });
 
 /* =========================
-   POSTS
+   POSTS LIST
 ========================= */
 
 async function render() {
@@ -610,6 +749,7 @@ async function render() {
     list.innerHTML = docs.map((item) => {
       const p = item.data();
       const blockCount = Array.isArray(p.contentBlocks) ? p.contentBlocks.length : 0;
+      const isDraft = p.status === "draft";
 
       return `
         <div class="admin-item">
@@ -625,6 +765,12 @@ async function render() {
           }
 
           ${
+            isDraft
+              ? `<p class="muted">📝 Trạng thái: Bản nháp</p>`
+              : `<p class="muted">🌐 Trạng thái: Công khai</p>`
+          }
+
+          ${
             p.image
               ? `<img src="${optimizeCloudinary(p.image, 260)}" alt="${escapeHTML(p.title || "")}" style="max-width:160px;border-radius:14px;margin:10px 0;">`
               : ""
@@ -634,6 +780,7 @@ async function render() {
 
           <div class="actions">
             <a href="post.html?id=${item.id}" target="_blank" class="secondary-btn">Xem bài</a>
+            <button type="button" onclick="editPost('${item.id}')" class="secondary-btn">Sửa bài</button>
             <button type="button" onclick="deletePost('${item.id}')">Xóa</button>
           </div>
         </div>
@@ -645,6 +792,83 @@ async function render() {
     list.innerHTML = `<p class="muted">Không tải được bài viết từ Firestore.</p>`;
   }
 }
+
+if (searchPost) {
+  searchPost.addEventListener("input", render);
+}
+
+/* =========================
+   EDIT / DELETE / PREVIEW
+========================= */
+
+window.editPost = async function(id) {
+  try {
+    const ref = doc(db, "posts", id);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+      alert("Không tìm thấy bài viết để sửa.");
+      return;
+    }
+
+    const p = snap.data();
+
+    editingPostId = id;
+
+    titleInput.value = p.title || "";
+    categoryInput.value = p.category || "";
+    imageInput.value = p.image || "";
+    descInput.value = p.desc || "";
+    linkInput.value = p.link || "";
+
+    if (featuredInput) featuredInput.checked = !!p.featured;
+    if (statusInput) statusInput.value = p.status || "published";
+
+    if (imagePreview && p.image) {
+      imagePreview.src = optimizeCloudinary(p.image, 420);
+      imagePreview.style.display = "block";
+    }
+
+    if (Array.isArray(p.contentBlocks) && p.contentBlocks.length > 0) {
+      contentBlocks = p.contentBlocks.map(block => ({
+        id: uid(),
+        type: block.type || "text",
+        value: block.value || "",
+        url: block.url || "",
+        caption: block.caption || "",
+        images: Array.isArray(block.images) ? block.images : [],
+        uploadStatus: ""
+      }));
+    } else {
+      contentBlocks = [
+        {
+          id: uid(),
+          type: "text",
+          value: p.content || "",
+          url: "",
+          caption: "",
+          images: [],
+          uploadStatus: ""
+        }
+      ];
+    }
+
+    renderBlocks();
+
+    const submitBtn = form.querySelector("button[type='submit']");
+    if (submitBtn) submitBtn.textContent = "Cập nhật bài viết";
+
+    window.scrollTo({
+      top: form.offsetTop - 40,
+      behavior: "smooth"
+    });
+
+    alert("Đã tải bài viết lên form để chỉnh sửa.");
+  } catch (error) {
+    console.error(error);
+    alert("Không thể tải bài viết để sửa.");
+  }
+};
 
 window.deletePost = async function(id) {
   const ok = confirm("Bạn có chắc muốn xóa bài viết này không?");
@@ -660,9 +884,28 @@ window.deletePost = async function(id) {
   }
 };
 
-if (searchPost) {
-  searchPost.addEventListener("input", render);
-}
+window.previewPost = function() {
+  syncBlocksToLegacyContent();
+
+  const previewData = {
+    title: titleInput.value.trim(),
+    category: categoryInput.value.trim(),
+    image: imageInput.value.trim(),
+    desc: descInput.value.trim(),
+    content: contentInput.value.trim(),
+    contentBlocks: getCleanBlocks(),
+    link: linkInput.value.trim(),
+    status: statusInput?.value || "published"
+  };
+
+  localStorage.setItem("minaPreviewPost", JSON.stringify(previewData));
+
+  const previewWindow = window.open("post-preview.html", "_blank");
+
+  if (!previewWindow) {
+    alert("Trình duyệt đang chặn popup. Hãy cho phép mở tab mới để xem preview.");
+  }
+};
 
 /* =========================
    SUBMIT
@@ -684,9 +927,8 @@ form.addEventListener("submit", async (e) => {
     contentBlocks: cleanBlocks,
     link: linkInput.value.trim(),
     featured: featuredInput ? featuredInput.checked : false,
-    status: document.getElementById("status")?.value || "published",
-    cmsVersion: "mina-cms-v2",
-    createdAt: serverTimestamp()
+    status: statusInput?.value || "published",
+    cmsVersion: "mina-cms-v2-professional"
   };
 
   if (!post.title) {
@@ -705,19 +947,31 @@ form.addEventListener("submit", async (e) => {
   }
 
   try {
-    await addDoc(collection(db, "posts"), post);
+    if (editingPostId) {
+      await updateDoc(doc(db, "posts", editingPostId), {
+        ...post,
+        updatedAt: serverTimestamp()
+      });
 
-    form.reset();
-    clearPreview();
+      alert("Đã cập nhật bài viết thành công.");
+    } else {
+      await addDoc(collection(db, "posts"), {
+        ...post,
+        createdAt: serverTimestamp()
+      });
 
-    contentBlocks = [];
-    addBlock("text");
+      if (post.status === "draft") {
+        alert("Đã lưu bài viết dưới dạng bản nháp.");
+      } else {
+        alert("Đã đăng bài viết thành công.");
+      }
+    }
 
-    alert("Đã đăng bài Mina CMS V2 lên Firestore thành công.");
+    resetEditor();
     render();
   } catch (error) {
     console.error(error);
-    alert("Đăng bài chưa thành công. Hãy kiểm tra Firestore Rules hoặc đăng nhập Admin.");
+    alert("Lưu bài chưa thành công. Hãy kiểm tra Firestore Rules hoặc đăng nhập Admin.");
   }
 });
 
@@ -726,9 +980,6 @@ if (resetBtn) {
     const ok = confirm("Bạn có chắc muốn làm mới form không?");
     if (!ok) return;
 
-    form.reset();
-    clearPreview();
-    contentBlocks = [];
-    addBlock("text");
+    resetEditor();
   });
 }
