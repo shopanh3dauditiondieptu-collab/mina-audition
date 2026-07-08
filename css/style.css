@@ -1986,3 +1986,50 @@ figcaption {
     box-shadow:0 0 18px rgba(125,249,255,.45);
     border-color:rgba(125,249,255,.55);
 }
+.site-header {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.brand {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+
+.brand span {
+  font-size: 24px;
+  white-space: nowrap;
+}
+
+.main-nav {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+.main-nav a {
+  padding: 11px 17px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.follow-btn,
+.main-nav .follow-btn {
+  flex-shrink: 0;
+}
