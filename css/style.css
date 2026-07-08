@@ -1380,3 +1380,16 @@ footer .contact-row a{
     border-radius:18px !important;
   }
 }
+/* Tinh chỉnh nhẹ trang chi tiết bài viết Mina */
+
+#postDetail .post-card.post-full{
+  max-width:860px;
+}
+
+#postDetail .mina-post-image-wrap{
+  margin-bottom:42px;
+}
+
+#postDetail .post-detail-image{
+  max-width:min(560px, 100%) !important;
+}
