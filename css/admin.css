@@ -1011,3 +1011,22 @@ textarea#desc{
     margin-top:10px;
 
 }
+/* ===== MINA CMS V3.1 ADMIN ===== */
+
+.mina-block-card {
+  cursor: grab;
+}
+
+.mina-block-card:active {
+  cursor: grabbing;
+}
+
+.mina-dragging {
+  opacity: .45;
+  transform: scale(.98);
+}
+
+.mina-drag-over {
+  border-color: #ff4fd8 !important;
+  box-shadow: 0 0 28px rgba(255,79,216,.25);
+}
