@@ -1174,3 +1174,17 @@ footer .contact-row a{
   border-radius: 18px;
   background: rgba(255,255,255,.04);
 }
+.post-card.post-full img.post-detail-image,
+.post-full img.post-detail-image,
+img.post-detail-image {
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: 760px !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  display: block !important;
+  margin: 0 auto 26px !important;
+  border-radius: 18px !important;
+  background: rgba(255,255,255,.05) !important;
+}
