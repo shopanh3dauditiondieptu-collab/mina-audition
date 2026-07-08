@@ -99,6 +99,33 @@ function renderContentBlocks(blocks = [], legacyContent = "") {
       `;
     }
 
+    if (block.type === "gallery") {
+      const images = Array.isArray(block.images)
+        ? block.images.filter(img => img && img.url)
+        : [];
+
+      if (images.length === 0) return "";
+
+      return `
+        <section class="mina-gallery-block">
+          ${images.map(img => `
+            <figure class="mina-gallery-item">
+              <img
+                src="${optimizeCloudinary(img.url, 520)}"
+                alt="${escapeHTML(img.caption || "Ảnh gallery Mina")}"
+                loading="lazy"
+              >
+              ${
+                img.caption
+                  ? `<figcaption>${escapeHTML(img.caption)}</figcaption>`
+                  : ""
+              }
+            </figure>
+          `).join("")}
+        </section>
+      `;
+    }
+
     if (block.type === "youtube") {
       const embedUrl = getYouTubeEmbedUrl(block.url || "");
       if (!embedUrl) return "";
@@ -157,6 +184,17 @@ async function loadPost() {
     }
 
     const p = snap.data();
+
+    if (p.status === "draft") {
+      postDetail.innerHTML = `
+        <article class="post-card">
+          <h1>Bài viết đang ở trạng thái bản nháp</h1>
+          <p class="muted">Bài viết này chưa được đăng công khai.</p>
+          <a href="blog.html" class="read-more">← Quay lại danh sách</a>
+        </article>
+      `;
+      return;
+    }
 
     document.title = `${p.title || "Bài viết"} | Mina Audition`;
 
