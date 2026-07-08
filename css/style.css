@@ -86,8 +86,8 @@ img{max-width:100%;display:block}
 /* HERO */
 .hero{
     position:relative;
-    min-height:790px;
-    padding:95px 7% 35px;
+    min-height:560px;
+    padding:55px 7% 25px;
     background:
         linear-gradient(
             90deg,
@@ -162,8 +162,8 @@ img{max-width:100%;display:block}
   position:absolute;
   z-index:3;
   right:8%;
-  bottom:112px;
-  width:min(360px,30vw);
+  bottom:45px;
+  width:min(300px,24vw);
   filter:drop-shadow(0 0 22px rgba(255,79,227,.55)) drop-shadow(0 18px 30px rgba(0,0,0,.45));
 }
 .hero-character img{width:100%;object-fit:contain}
@@ -458,9 +458,9 @@ img{max-width:100%;display:block}
   .nav-toggle{display:block}
   .main-nav{order:3;width:100%;gap:14px;flex-wrap:wrap}
   .follow-btn{margin-left:auto}
-  .hero{padding:70px 5% 220px;min-height:auto}
+  .hero{padding:50px 5% 130px;min-height:auto}
   .hero-content{width:62%}
-  .hero-character{right:5%;bottom:135px;width:34vw}
+  .hero-character{right:5%;bottom:70px;width:28vw}
   .social-box{left:5%;right:5%}
   .feature-grid{grid-template-columns:repeat(2,1fr)}
 }
