@@ -2654,3 +2654,52 @@ figcaption {
     grid-template-columns: 1fr !important;
   }
 }
+/* FIX CĂN GIỮA SOCIAL BOX */
+.social-section {
+  overflow: hidden !important;
+}
+
+.social-box {
+  max-width: 1200px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 28px !important;
+  justify-content: center !important;
+  align-items: stretch !important;
+}
+
+.social-item {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.social-item strong {
+  max-width: 100% !important;
+  font-size: 23px !important;
+  overflow-wrap: anywhere !important;
+}
+
+.social-item span {
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+}
+
+/* Màn hình nhỏ hơn thì tự chuyển 2 cột */
+@media (max-width: 1150px) {
+  .social-box {
+    max-width: 760px !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Mobile chuyển 1 cột */
+@media (max-width: 620px) {
+  .social-box {
+    max-width: 360px !important;
+    grid-template-columns: 1fr !important;
+  }
+}
