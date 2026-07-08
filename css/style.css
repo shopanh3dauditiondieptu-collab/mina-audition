@@ -2098,3 +2098,22 @@ figcaption {
   z-index:3;
   margin-top:40px;
 }
+@media (min-width:901px){
+  .hero{
+    display:grid;
+    grid-template-columns: 52% 18% 30%;
+    gap:20px;
+    align-items:center;
+  }
+
+  .hero-content{
+    width:100%;
+  }
+
+  .hero-character{
+    position:relative;
+    right:auto;
+    bottom:auto;
+    justify-self:center;
+  }
+}
