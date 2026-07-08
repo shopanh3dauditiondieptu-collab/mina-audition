@@ -624,7 +624,7 @@
 .hero-image img,
 .hero figure img,
 .hero .mina-character img{
-  transform:scale(1.15) translateX(35px);
+  transform:scale(1.15) translateX(55px);
 }
 
 .hero-character img:hover,
@@ -632,7 +632,7 @@
 .hero-image img:hover,
 .hero figure img:hover,
 .hero .mina-character img:hover{
-  transform:scale(1.18) translateX(35px) translateY(-4px);
+  transform:scale(1.18) translateX(55px) translateY(-4px);
 }
 
 /* làm chữ bên trái gọn lại để nhân vật có thêm không gian */
