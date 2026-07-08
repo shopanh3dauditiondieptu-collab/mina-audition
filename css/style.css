@@ -1010,3 +1010,22 @@ width:100%;
 .footer a:hover .instagram{
     color:#ff73c6;
 }
+/* Fix màu icon mạng xã hội trong footer */
+.footer a .social-icon.youtube{
+  color:#ff0000 !important;
+}
+
+.footer a .social-icon.facebook{
+  color:#1877f2 !important;
+}
+
+.footer a .social-icon.tiktok{
+  color:#ffffff !important;
+  text-shadow:
+    -1px -1px 0 #25f4ee,
+    1px 1px 0 #fe2c55;
+}
+
+.footer a .social-icon.instagram{
+  color:#e4405f !important;
+}
