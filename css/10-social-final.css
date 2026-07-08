@@ -288,3 +288,169 @@
   color: #ff3ecf !important;
   fill: #ff3ecf !important;
 }
+/* ===============================
+   FIX SOCIAL BOX - MINA V6
+================================ */
+
+.social-section{
+  width:min(1180px, calc(100% - 32px)) !important;
+  margin:0 auto !important;
+  padding:70px 0 80px !important;
+  text-align:center !important;
+  overflow:hidden !important;
+}
+
+.social-box{
+  width:100% !important;
+  display:grid !important;
+  grid-template-columns:repeat(4, minmax(0, 1fr)) !important;
+  gap:18px !important;
+  margin:38px auto 0 !important;
+  padding:0 !important;
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  overflow:visible !important;
+}
+
+.social-item{
+  min-width:0 !important;
+  min-height:178px !important;
+  padding:20px 14px !important;
+
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:10px !important;
+
+  text-align:center !important;
+  border-radius:14px !important;
+  background:rgba(6,7,25,.82) !important;
+  box-shadow:0 0 24px rgba(95,244,255,.10) !important;
+}
+
+.social-item i{
+  width:48px !important;
+  height:48px !important;
+  margin:0 0 4px !important;
+
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  border-radius:14px !important;
+  font-size:28px !important;
+  line-height:1 !important;
+  background:rgba(255,255,255,.08) !important;
+}
+
+.social-item strong{
+  margin:0 !important;
+  font-size:20px !important;
+  font-weight:900 !important;
+  line-height:1.1 !important;
+}
+
+.social-item span{
+  margin:0 !important;
+  font-size:12px !important;
+  font-weight:800 !important;
+  line-height:1.25 !important;
+  color:#fff !important;
+}
+
+.social-item a{
+  min-width:106px !important;
+  height:34px !important;
+  margin-top:6px !important;
+  padding:0 14px !important;
+
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  border-radius:8px !important;
+  border:1px solid #5ff4ff !important;
+  background:transparent !important;
+  box-shadow:none !important;
+
+  font-size:11px !important;
+  font-weight:900 !important;
+  line-height:1 !important;
+}
+
+/* Màu từng nền tảng */
+.social-item.youtube{
+  border:1px solid #ff1e1e !important;
+}
+
+.social-item.youtube i,
+.social-item.youtube strong,
+.social-item.youtube a{
+  color:#ff2424 !important;
+}
+
+.social-item.facebook{
+  border:1px solid #1877f2 !important;
+}
+
+.social-item.facebook i,
+.social-item.facebook strong,
+.social-item.facebook a{
+  color:#1877f2 !important;
+}
+
+.social-item.tiktok{
+  border:1px solid rgba(255,255,255,.75) !important;
+}
+
+.social-item.tiktok i,
+.social-item.tiktok strong,
+.social-item.tiktok a{
+  color:#fff !important;
+}
+
+.social-item.instagram{
+  border:1px solid #ff3ecf !important;
+}
+
+.social-item.instagram i,
+.social-item.instagram strong,
+.social-item.instagram a{
+  color:#ff3ecf !important;
+}
+
+/* Riêng Facebook: sửa icon bị phóng to/lệch */
+.social-item.facebook i{
+  background:#1877f2 !important;
+  color:#fff !important;
+  font-size:30px !important;
+  border-radius:50% !important;
+}
+
+.social-item.facebook strong,
+.social-item.facebook a{
+  color:#1877f2 !important;
+}
+
+/* Tablet */
+@media(max-width:1024px){
+  .social-box{
+    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+    max-width:720px !important;
+  }
+}
+
+/* Mobile */
+@media(max-width:620px){
+  .social-section{
+    width:calc(100% - 28px) !important;
+    padding:55px 0 65px !important;
+  }
+
+  .social-box{
+    grid-template-columns:1fr !important;
+    max-width:360px !important;
+  }
+}
