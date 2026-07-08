@@ -1162,46 +1162,27 @@ footer .contact-row a{
   display: block;
   background: rgba(255,255,255,.04);
 }
-.post-full .post-detail-image {
-  width: auto !important;
-  max-width: 100% !important;
-  height: auto !important;
-  max-height: 720px !important;
-  object-fit: contain !important;
-  object-position: center !important;
-  display: block !important;
-  margin: 0 auto 24px !important;
-  border-radius: 18px;
-  background: rgba(255,255,255,.04);
-}
-.post-card.post-full img.post-detail-image,
-.post-full img.post-detail-image,
-img.post-detail-image {
-  width: auto !important;
-  max-width: 100% !important;
-  height: auto !important;
-  max-height: 760px !important;
-  object-fit: contain !important;
-  object-position: center !important;
-  display: block !important;
-  margin: 0 auto 26px !important;
-  border-radius: 18px !important;
-  background: rgba(255,255,255,.05) !important;
-}
-/* FIX ảnh chi tiết bài viết - không cắt ảnh dọc Mina */
-.post-card.post-full {
-  overflow: visible !important;
+/* ===========================
+   Mina Post Detail
+=========================== */
+
+.post-card.post-full{
+    max-width:980px;
+    margin:40px auto;
+    padding:34px;
+    overflow:visible;
 }
 
-.post-card.post-full .post-detail-image {
-  width: auto !important;
-  max-width: 100% !important;
-  height: auto !important;
-  max-height: none !important;
-  aspect-ratio: auto !important;
-  object-fit: contain !important;
-  object-position: center center !important;
-  display: block !important;
-  margin: 0 auto 28px !important;
-  border-radius: 18px !important;
+.post-card.post-full img.post-detail-image{
+    display:block;
+    width:100%;
+    max-width:760px;
+    height:auto;
+    max-height:650px;
+    object-fit:contain;
+    object-position:center;
+    margin:0 auto 28px;
+    border-radius:18px;
+    background:#111;
+    box-shadow:0 15px 45px rgba(0,0,0,.35);
 }
