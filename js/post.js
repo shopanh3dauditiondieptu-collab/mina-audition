@@ -75,6 +75,16 @@ async function loadPost() {
   alt="${p.title || "Bài viết Mina"}"
   class="post-detail-image"
   loading="eager"
+  style="
+    width:auto !important;
+    max-width:100% !important;
+    height:auto !important;
+    max-height:none !important;
+    object-fit:contain !important;
+    display:block !important;
+    margin:0 auto 28px !important;
+    border-radius:18px !important;
+  "
 >`
             : ""
         }
