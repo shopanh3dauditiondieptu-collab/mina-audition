@@ -1917,8 +1917,8 @@ figcaption {
 }
 
 .brand img{
-    width:88px !important;
-    height:88px !important;
+    width:95px !important;
+    height:95px !important;
     object-fit:contain !important;
     flex-shrink:0 !important;
 }
