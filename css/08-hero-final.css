@@ -1,154 +1,29 @@
 /* =====================================================
-   08-HERO-FINAL - Mina CMS V6 modular CSS
-   Giữ nguyên thứ tự cascade từ style.css gốc
+   08-HERO-FINAL - Mina CMS V6
+   Hero banner + responsive background
 ===================================================== */
 
 .hero{
   min-height:520px;
-  padding:50px 70px 40px;
-}
-
-.hero-content{
-  width:52%;
-  max-width:620px;
-}
-
-.hero h1,
-.hero-title{
-  font-size:clamp(62px,6.5vw,80px);
-  line-height:.88;
-}
-
-.hero-character{
-  position:absolute;
-  right:44%;
-  bottom:20px;
-  z-index:2;
-}
-
-.hero-character img,
-.hero-img{
-  max-height:360px;
-}
-
-.social-section,
-.social-cards,
-.follow-section{
-  position:relative;
-  z-index:3;
-  margin-top:40px;
-}
-@media (min-width:901px){
-  .hero{
-    display:grid;
-    grid-template-columns: 52% 18% 30%;
-    gap:20px;
-    align-items:center;
-  }
-
-  .hero-content{
-    width:100%;
-  }
-
-  .hero-character{
-    position:relative;
-    right:auto;
-    bottom:auto;
-    justify-self:center;
-  }
-  .hero-content{
-    width:100%;
-    max-width:560px;
-  }
-
-  .hero h1,
-  .hero-title{
-    font-size:clamp(58px,5.8vw,92px);
-    line-height:.88;
-  }
-
-  .hero-character{
-    position:relative;
-    right:auto;
-    bottom:auto;
-    justify-self:center;
-    z-index:4;
-  }
-
-  .hero-character img,
-  .hero-img{
-    max-height:360px;
-    width:auto;
-  }
-
-  .social-section,
-  .social-cards,
-  .follow-section{
-    position:relative;
-    z-index:2;
-    margin:0;
-    transform:none;
-  }
-}
-.hero{
-  min-height:520px;
-  padding:60px 70px 45px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:35px;
-}
-
-.hero-content{
-  width:52%;
-  max-width:620px;
-  z-index:3;
-}
-
-.hero h1,
-.hero-title{
-  font-size:clamp(62px,6.4vw,105px);
-  line-height:.9;
-}
-
-.hero-character{
-  position:relative;
-  z-index:2;
-  flex:0 0 230px;
-  text-align:center;
-}
-
-.hero-character img,
-.hero-img{
-  max-height:370px;
-  width:auto;
-}
-
-.social-section,
-.social-cards,
-.follow-section{
-  position:relative;
-  z-index:2;
-  flex:0 0 320px;
-  margin:0;
-  transform:none;
-  overflow:hidden;
-}
-/* HERO FIX - giống banner mẫu, giữ chiều cao hiện tại */
-.hero{
-  min-height:520px;
-  padding:48px 70px 35px;
+  padding:55px 70px 35px;
   display:grid;
-  grid-template-columns: 58% 42%;
+  grid-template-columns:58% 42%;
   align-items:center;
   gap:20px;
   position:relative;
   overflow:hidden;
+
+  background-image:
+    linear-gradient(90deg, rgba(5,6,22,.88), rgba(5,6,22,.48)),
+    url("../images/background/hero-bg.webp");
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
 }
 
 .hero-content{
   width:100%;
-  max-width:720px;
+  max-width:680px;
   z-index:3;
 }
 
@@ -159,59 +34,8 @@
 
 .hero h1,
 .hero-title{
-    font-size: clamp(60px, 6vw, 95px);
-    line-height: 0.9;
-}
-
-.hero-character{
-  position:absolute;
-  right:70px;
-  bottom:0;
-  z-index:2;
-}
-
-.hero-character img,
-.hero-img{
-  max-height:500px;
-  width:auto;
-  object-fit:contain;
-}
-
-.hero .btn,
-.hero-button,
-.youtube-btn{
-  display:inline-flex;
-  margin-top:22px;
-}
-
-/* Đưa nút MXH xuống dưới giống ảnh mẫu */
-.social-section,
-.social-cards,
-.follow-section{
-  grid-column:1 / -1;
-  width:86%;
-  max-width:1050px;
-  margin:18px auto 0;
-  display:grid;
-  grid-template-columns:repeat(3, 1fr);
-  position:relative;
-  z-index:4;
-  transform:none;
-  overflow:hidden;
-}
-/* FIX HERO: đưa MXH xuống dưới, không đè nhân vật */
-.hero{
-  min-height:520px;
-  padding:55px 70px 35px;
-  display:grid;
-  grid-template-columns: 58% 42%;
-  align-items:center;
-  gap:20px;
-}
-
-.hero-content{
-  max-width:680px;
-  z-index:3;
+  font-size:clamp(60px,6vw,95px);
+  line-height:.9;
 }
 
 .hero-character{
@@ -225,6 +49,14 @@
 .hero-img{
   max-height:430px;
   width:auto;
+  object-fit:contain;
+}
+
+.hero .btn,
+.hero-button,
+.youtube-btn{
+  display:inline-flex;
+  margin-top:22px;
 }
 
 .social-section,
@@ -241,13 +73,58 @@
   transform:none;
   overflow:hidden;
 }
+
 .social-wrapper{
-    width:100%;
-    display:flex;
-    justify-content:center;
-    margin:40px 0;
+  width:100%;
+  display:flex;
+  justify-content:center;
+  margin:40px 0;
 }
 
 .social-wrapper .social-box{
-    width:min(1100px,92%);
+  width:min(1100px,92%);
+}
+
+/* Mobile */
+@media (max-width:768px){
+  .hero{
+    min-height:720px;
+    padding:42px 24px 32px;
+    grid-template-columns:1fr;
+    text-align:left;
+
+    background-image:
+      linear-gradient(180deg, rgba(5,6,22,.86), rgba(5,6,22,.50)),
+      url("../images/background/hero-bg-mobile.webp");
+    background-position:center top;
+  }
+
+  .hero-content{
+    max-width:100%;
+  }
+
+  .hero h1,
+  .hero-title{
+    font-size:clamp(46px,14vw,68px);
+  }
+
+  .hero-character{
+    position:relative;
+    right:auto;
+    bottom:auto;
+    margin:20px auto 0;
+  }
+
+  .hero-character img,
+  .hero-img{
+    max-height:360px;
+  }
+
+  .social-section,
+  .social-cards,
+  .follow-section{
+    width:100%;
+    grid-template-columns:1fr;
+    margin-top:25px;
+  }
 }
