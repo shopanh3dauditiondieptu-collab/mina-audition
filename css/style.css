@@ -313,7 +313,7 @@
 
 .hero-character img,
 .hero-img{
-  max-height:520px;
+  max-height:560px;
   filter:
     drop-shadow(0 0 8px rgba(255,255,255,.7))
     drop-shadow(0 0 24px rgba(117,238,255,.65))
@@ -352,5 +352,36 @@
   .hero-character img,
   .hero-img{
     max-height:390px;
+  }
+}
+/* FIX HERO DESKTOP - Mina giống demo hơn */
+@media (min-width:769px){
+  .hero{
+    min-height:560px;
+  }
+
+  .hero-content{
+    transform:translateY(18px);
+  }
+
+  .hero h1,
+  .hero-title{
+    font-size:clamp(68px,6.8vw,105px);
+    line-height:.84;
+    letter-spacing:-4px;
+  }
+
+  .script-text{
+    font-size:clamp(38px,4.5vw,62px);
+  }
+
+  .hero-character{
+    right:65px;
+    bottom:-8px;
+  }
+
+  .hero-character img,
+  .hero-img{
+    max-height:560px;
   }
 }
