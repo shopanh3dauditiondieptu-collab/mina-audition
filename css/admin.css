@@ -285,3 +285,206 @@ input:focus,textarea:focus,select:focus{
     padding:24px;
   }
 }
+/* ===== MINA ADMIN V3 FIX ===== */
+
+.admin{
+  max-width:1180px;
+}
+
+/* Dashboard 4 ô ngang */
+.dashboard-grid{
+  display:grid !important;
+  grid-template-columns:repeat(4,1fr);
+  gap:16px;
+  margin:24px 0;
+}
+
+.stat-card{
+  border:1px solid rgba(125,249,255,.28);
+  background:linear-gradient(180deg,rgba(21,24,55,.92),rgba(8,9,28,.92));
+  border-radius:22px;
+  padding:20px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  min-height:110px;
+  box-shadow:0 0 30px rgba(125,249,255,.1);
+}
+
+.stat-icon{
+  width:48px;
+  height:48px;
+  border-radius:16px;
+  display:grid;
+  place-items:center;
+  background:rgba(125,249,255,.1);
+  font-size:26px;
+}
+
+.stat-card strong{
+  display:block;
+  font-size:24px;
+  line-height:1;
+}
+
+.stat-card p{
+  margin:8px 0 0;
+  color:#c9ccef;
+}
+
+/* Layout form + gợi ý */
+.admin-layout{
+  display:grid !important;
+  grid-template-columns:minmax(0,1.75fr) minmax(280px,.8fr);
+  gap:24px;
+  align-items:start;
+}
+
+.form-grid{
+  display:grid !important;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.panel-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+  margin-bottom:20px;
+}
+
+/* Select đẹp hơn */
+select{
+  width:100%;
+  border:1px solid rgba(125,249,255,.32);
+  border-radius:14px;
+  background:#070817;
+  color:#fff;
+  padding:14px;
+  outline:none;
+  font-size:15px;
+}
+
+/* Checkbox ghim bài */
+.checkbox-row{
+  display:flex !important;
+  align-items:center;
+  justify-content:flex-start;
+  gap:10px;
+  margin-top:8px;
+  padding:14px 16px;
+  border:1px solid rgba(255,79,216,.22);
+  background:rgba(255,79,216,.06);
+  border-radius:16px;
+}
+
+.checkbox-row input{
+  width:18px !important;
+  height:18px;
+  accent-color:#ff4fd8;
+  margin:0;
+}
+
+.checkbox-row span{
+  font-weight:900;
+}
+
+/* Nút bấm */
+.actions{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+
+.secondary-btn{
+  background:rgba(255,255,255,.08) !important;
+  color:#fff !important;
+  border:1px solid rgba(125,249,255,.28);
+}
+
+/* Gợi ý nội dung đẹp hơn */
+.side-panel{
+  position:sticky;
+  top:24px;
+}
+
+.guide-item{
+  border:1px solid rgba(255,79,216,.22);
+  background:linear-gradient(180deg,rgba(255,79,216,.08),rgba(125,249,255,.04));
+  border-radius:18px;
+  padding:16px;
+  margin-top:14px;
+}
+
+.guide-item strong{
+  color:#7df9ff;
+  font-size:16px;
+}
+
+.guide-item p{
+  margin:8px 0 0;
+  color:#c9ccef;
+  line-height:1.55;
+}
+
+/* Danh sách bài viết */
+.post-list{
+  display:grid;
+  gap:14px;
+}
+
+.admin-item{
+  border:1px solid rgba(125,249,255,.22);
+  background:rgba(7,8,23,.65);
+  border-radius:18px;
+  padding:18px;
+  display:grid;
+  gap:8px;
+}
+
+.admin-item b{
+  color:#fff;
+  font-size:18px;
+}
+
+.admin-item p{
+  margin:0;
+  color:#c9ccef;
+  line-height:1.5;
+}
+
+.search-input{
+  max-width:320px;
+}
+
+/* Responsive */
+@media(max-width:1000px){
+  .dashboard-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .admin-layout{
+    grid-template-columns:1fr;
+  }
+
+  .side-panel{
+    position:static;
+  }
+}
+
+@media(max-width:720px){
+  .dashboard-grid,
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .panel-title{
+    flex-direction:column;
+  }
+
+  .search-input{
+    max-width:100%;
+  }
+}
