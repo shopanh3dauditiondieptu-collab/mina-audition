@@ -1030,3 +1030,200 @@ textarea#desc{
   border-color: #ff4fd8 !important;
   box-shadow: 0 0 28px rgba(255,79,216,.25);
 }
+/* =====================================================
+   MINA CMS V4 - CONTENT MANAGER
+===================================================== */
+
+.mina-v4-manager {
+  margin-top: 28px;
+}
+
+.mina-v4-tools {
+  display: grid;
+  grid-template-columns: 1fr 220px auto auto;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.mina-v4-tools input,
+.mina-v4-tools select {
+  min-height: 46px;
+}
+
+.mina-v4-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0 18px;
+}
+
+.mina-v4-categories button {
+  padding: 9px 13px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08) !important;
+  color: #fff !important;
+  border: 1px solid rgba(125,249,255,.25);
+}
+
+.mina-v4-categories button.active {
+  background: linear-gradient(135deg,#7df9ff,#ff4fd8) !important;
+  color: #070817 !important;
+}
+
+.mina-v4-stats {
+  display: grid;
+  grid-template-columns: repeat(5,1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.mina-v4-stats div {
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(125,249,255,.2);
+  background: rgba(7,8,23,.48);
+}
+
+.mina-v4-stats strong {
+  display: block;
+  font-size: 22px;
+  color: #7df9ff;
+}
+
+.mina-v4-stats span {
+  display: block;
+  margin-top: 4px;
+  color: #c9ccef;
+  font-size: 13px;
+}
+
+.mina-v4-table {
+  display: grid;
+  gap: 10px;
+}
+
+.mina-v4-table-head,
+.mina-v4-row {
+  display: grid;
+  grid-template-columns: 90px minmax(260px,1fr) 160px 140px 220px;
+  gap: 12px;
+  align-items: center;
+}
+
+.mina-v4-table-head {
+  padding: 12px 14px;
+  color: #7df9ff;
+  font-weight: 900;
+  border-bottom: 1px solid rgba(125,249,255,.18);
+}
+
+.mina-v4-row {
+  padding: 14px;
+  border: 1px solid rgba(125,249,255,.22);
+  border-radius: 18px;
+  background: rgba(7,8,23,.58);
+}
+
+.mina-v4-row.is-duplicate {
+  border-color: rgba(255,79,216,.55);
+  box-shadow: 0 0 24px rgba(255,79,216,.12);
+}
+
+.mina-v4-row img,
+.mina-v4-no-img {
+  width: 78px;
+  height: 78px;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 1px solid rgba(125,249,255,.18);
+  background: rgba(255,255,255,.05);
+}
+
+.mina-v4-no-img {
+  display: grid;
+  place-items: center;
+  color: #c9ccef;
+  font-size: 12px;
+}
+
+.mina-v4-row strong {
+  display: block;
+  color: #fff;
+  margin-bottom: 5px;
+}
+
+.mina-v4-row p {
+  margin: 0;
+  color: #c9ccef;
+  line-height: 1.5;
+}
+
+.mina-v4-row em {
+  display: inline-block;
+  margin-top: 8px;
+  color: #ff9ee8;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.mina-v4-status,
+.mina-v4-featured {
+  display: inline-flex;
+  width: fit-content;
+  margin: 3px 0;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.mina-v4-status.published {
+  background: rgba(125,249,255,.12);
+  color: #7df9ff;
+}
+
+.mina-v4-status.draft {
+  background: rgba(255,79,216,.12);
+  color: #ff9ee8;
+}
+
+.mina-v4-featured {
+  background: rgba(255,255,255,.08);
+  color: #fff;
+}
+
+.mina-v4-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mina-v4-actions a,
+.mina-v4-actions button {
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+@media(max-width:1000px) {
+  .mina-v4-tools {
+    grid-template-columns: 1fr;
+  }
+
+  .mina-v4-stats {
+    grid-template-columns: repeat(2,1fr);
+  }
+
+  .mina-v4-table-head {
+    display: none;
+  }
+
+  .mina-v4-row {
+    grid-template-columns: 90px 1fr;
+  }
+
+  .mina-v4-row > div:nth-child(3),
+  .mina-v4-row > div:nth-child(4),
+  .mina-v4-row > div:nth-child(5) {
+    grid-column: 1 / -1;
+  }
+}
