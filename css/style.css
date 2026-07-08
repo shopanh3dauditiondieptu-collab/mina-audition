@@ -812,13 +812,10 @@ transition:.28s;
 }
 
 .youtube-btn{
-
-background:linear-gradient(90deg,#ff4fe3,#5ff4ff);
-
-box-shadow:
-
-0 0 26px rgba(95,244,255,.30);
-
+    background:linear-gradient(135deg,#ff0000,#cc0000);
+    border:1px solid rgba(255,255,255,.15);
+    color:#fff;
+    box-shadow:0 0 20px rgba(255,0,0,.35);
 }
 
 .facebook-btn{
@@ -844,9 +841,9 @@ box-shadow:
 }
 
 .youtube-btn:hover{
-
-background:linear-gradient(90deg,#ff2ebd,#3de8ff);
-
+    background:linear-gradient(135deg,#ff1a1a,#b30000);
+    transform:translateY(-3px) scale(1.03);
+    box-shadow:0 0 30px rgba(255,0,0,.60);
 }
 
 .facebook-btn:hover{
