@@ -24,7 +24,15 @@ function escapeHTML(text = "") {
   return String(text)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function optimizeCloudinary(url = "", width = 900) {
+  if (!url || !url.includes("res.cloudinary.com")) return url;
+  if (url.includes("/upload/f_auto")) return url;
+  return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`);
 }
 
 function formatContent(text = "") {
@@ -33,6 +41,92 @@ function formatContent(text = "") {
     .filter(line => line.trim() !== "")
     .map(line => `<p>${line}</p>`)
     .join("");
+}
+
+function getYouTubeEmbedUrl(url = "") {
+  try {
+    const value = String(url).trim();
+    if (!value) return "";
+
+    let videoId = "";
+
+    if (value.includes("youtu.be/")) {
+      videoId = value.split("youtu.be/")[1].split("?")[0];
+    } else if (value.includes("youtube.com/watch")) {
+      videoId = new URL(value).searchParams.get("v");
+    } else if (value.includes("youtube.com/shorts/")) {
+      videoId = value.split("youtube.com/shorts/")[1].split("?")[0];
+    } else if (value.includes("youtube.com/embed/")) {
+      videoId = value.split("youtube.com/embed/")[1].split("?")[0];
+    }
+
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+  } catch {
+    return "";
+  }
+}
+
+function renderContentBlocks(blocks = [], legacyContent = "") {
+  if (!Array.isArray(blocks) || blocks.length === 0) {
+    return formatContent(legacyContent || "Bài viết chưa có nội dung chi tiết.");
+  }
+
+  return blocks.map(block => {
+    if (!block || !block.type) return "";
+
+    if (block.type === "text") {
+      return formatContent(block.value || "");
+    }
+
+    if (block.type === "image") {
+      const imageUrl = block.url || "";
+      if (!imageUrl) return "";
+
+      return `
+        <figure class="mina-content-image-wrap">
+          <img
+            src="${optimizeCloudinary(imageUrl, 860)}"
+            alt="${escapeHTML(block.caption || "Ảnh trong bài viết Mina")}"
+            class="mina-content-image"
+            loading="lazy"
+          >
+          ${
+            block.caption
+              ? `<figcaption>${escapeHTML(block.caption)}</figcaption>`
+              : ""
+          }
+        </figure>
+      `;
+    }
+
+    if (block.type === "youtube") {
+      const embedUrl = getYouTubeEmbedUrl(block.url || "");
+      if (!embedUrl) return "";
+
+      return `
+        <div class="mina-youtube-embed">
+          <iframe
+            src="${embedUrl}"
+            title="YouTube video"
+            loading="lazy"
+            allowfullscreen>
+          </iframe>
+        </div>
+      `;
+    }
+
+    if (block.type === "quote") {
+      if (!block.value) return "";
+
+      return `
+        <blockquote class="mina-post-quote">
+          ${formatContent(block.value)}
+        </blockquote>
+      `;
+    }
+
+    return "";
+  }).join("");
 }
 
 async function loadPost() {
@@ -69,21 +163,21 @@ async function loadPost() {
     postDetail.innerHTML = `
       <article class="post-card post-full">
         ${
-  p.image
-    ? `
-<figure class="mina-post-image-wrap">
-  <img
-    src="${p.image.replace('/upload/', '/upload/f_auto,q_auto,w_560/')}"
-    alt="${escapeHTML(p.title || 'Bài viết Mina')}"
-    class="post-detail-image"
-    loading="eager"
-  >
-</figure>
-`
-    : ""
-}
+          p.image
+            ? `
+              <figure class="mina-post-image-wrap">
+                <img
+                  src="${optimizeCloudinary(p.image, 700)}"
+                  alt="${escapeHTML(p.title || "Bài viết Mina")}"
+                  class="post-detail-image"
+                  loading="eager"
+                >
+              </figure>
+            `
+            : ""
+        }
 
-        <p class="post-category">${p.category || "Bài viết"}</p>
+        <p class="post-category">${escapeHTML(p.category || "Bài viết")}</p>
 
         <h1>${escapeHTML(p.title || "Không có tiêu đề")}</h1>
 
@@ -98,12 +192,12 @@ async function loadPost() {
         }
 
         <div class="post-content">
-          ${formatContent(p.content || "Bài viết chưa có nội dung chi tiết.")}
+          ${renderContentBlocks(p.contentBlocks, p.content)}
         </div>
 
         ${
           p.link
-            ? `<p><a href="${p.link}" target="_blank" rel="noopener" class="read-more">Xem link liên quan</a></p>`
+            ? `<p><a href="${escapeHTML(p.link)}" target="_blank" rel="noopener" class="read-more">Xem link liên quan</a></p>`
             : ""
         }
 
