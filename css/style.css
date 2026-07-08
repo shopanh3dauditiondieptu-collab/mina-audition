@@ -2128,3 +2128,18 @@ figcaption {
 .follow-btn{
     flex-shrink:0 !important;
 }
+/* FIX NÚT THEO DÕI NGAY - CANH GIỮA CHỮ */
+.follow-btn{
+  min-width: 170px !important;
+  height: 46px !important;
+  padding: 0 22px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  font-size: 15px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+}
