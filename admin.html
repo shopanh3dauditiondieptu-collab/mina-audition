@@ -159,10 +159,20 @@
 
           <div class="form-grid">
             <div>
-              <label>Link ngoài nếu có</label>
-              <input type="text" id="link" placeholder="https://youtube.com/... hoặc facebook...">
-            </div>
+    <label>🔗 Liên kết bài viết (Facebook / YouTube / TikTok)</label>
 
+    <input
+        type="url"
+        id="link"
+        placeholder="https://www.facebook.com/share/p/..."
+        autocomplete="off"
+    >
+
+    <small class="field-note">
+  Dán link Facebook của bài viết. Website Mina sẽ tự hiển thị nút
+  <strong>Xem bài viết Facebook</strong>.
+</small>
+</div>
             <div>
               <label>Trạng thái</label>
               <select id="status">
