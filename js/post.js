@@ -152,33 +152,32 @@ function renderContentBlocks(blocks = [], legacyContent = "") {
 }
 
 function renderBreadcrumb(postData = {}) {
-  const categoryText =
-  postData.category ||
-  postData.categoryName ||
-  postData.playlist ||
-  postData.tag ||
-  postData.type ||
-  postData.group ||
-  "Bài viết Mina";
-
-  const parts = String(categoryText)
-    .split("/")
-    .map(item => item.trim())
-    .filter(Boolean);
+  const parts = Array.isArray(postData.categoryPath) && postData.categoryPath.length
+    ? postData.categoryPath
+    : [
+        postData.categoryName ||
+        postData.category ||
+        postData.playlist ||
+        postData.tag ||
+        "Bài viết Mina"
+      ];
 
   return `
     <div class="breadcrumb">
       <a href="index.html">Trang chủ</a>
       <span> → </span>
       <a href="blog.html">Mina Blog</a>
-      ${
-        parts.length
-          ? parts.map(part => `
-              <span> → </span>
-              <span>${escapeHTML(part)}</span>
-            `).join("")
-          : ""
-      }
+
+      ${parts.map(part => `
+        <span> → </span>
+        <span>${escapeHTML(part)}</span>
+      `).join("")}
+
+      <span> → </span>
+      <span>Bài viết</span>
+    </div>
+  `;
+}
       <span> → </span>
       <span>Bài viết</span>
     </div>
