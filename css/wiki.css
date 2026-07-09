@@ -207,3 +207,61 @@ body {
 .wiki-grid {
   content-visibility: auto;
 }
+/* WIKI TOP NAV - MINA */
+.wiki-top-nav {
+  width: 100%;
+  margin: 0 0 26px;
+  padding: 14px 18px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(24,24,45,.92), rgba(10,10,24,.94));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.wiki-nav-logo {
+  color: #fff;
+  font-weight: 900;
+  text-decoration: none;
+  letter-spacing: .3px;
+}
+
+.wiki-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wiki-nav-links a {
+  color: #e8e8ff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+}
+
+.wiki-nav-links a:hover {
+  color: #fff;
+  background: rgba(255,79,227,.22);
+}
+
+@media (max-width: 700px) {
+  .wiki-top-nav {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .wiki-nav-links {
+    width: 100%;
+  }
+
+  .wiki-nav-links a {
+    flex: 1;
+    text-align: center;
+  }
+}
