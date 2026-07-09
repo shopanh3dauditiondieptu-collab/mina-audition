@@ -256,23 +256,32 @@ async function loadPost() {
         ${
   p.link
     ? `
-      <div class="mina-facebook-action">
-        <a 
-          href="${escapeHTML(p.link)}" 
-          target="_blank" 
-          rel="noopener" 
-          class="read-more facebook-post-btn">
-          ${getLinkButtonText(p.link)}
-        </a>
+     <div class="mina-facebook-embed-box">
+  <div 
+    class="fb-post" 
+    data-href="${escapeHTML(p.link)}"
+    data-width="500"
+    data-show-text="true">
+  </div>
+</div>
 
-        <a 
-          href="${escapeHTML(p.link)}" 
-          target="_blank" 
-          rel="noopener" 
-          class="read-more comment-post-btn">
-          💬 Bình luận / tương tác
-        </a>
-      </div>
+<div class="mina-facebook-action">
+  <a 
+    href="${escapeHTML(p.link)}" 
+    target="_blank" 
+    rel="noopener" 
+    class="read-more facebook-post-btn">
+    Xem bài viết Facebook
+  </a>
+
+  <a 
+    href="${escapeHTML(p.link)}" 
+    target="_blank" 
+    rel="noopener" 
+    class="read-more comment-post-btn">
+    Bình luận / tương tác
+  </a>
+</div>
     `
     : ""
 }
@@ -502,7 +511,24 @@ function addAuthorBox(article) {
 
   article.appendChild(author);
 }
+function loadFacebookSDK(){
+  if (document.getElementById("facebook-jssdk")) return;
 
+  const fbRoot = document.createElement("div");
+  fbRoot.id = "fb-root";
+  document.body.prepend(fbRoot);
+
+  const script = document.createElement("script");
+  script.id = "facebook-jssdk";
+  script.async = true;
+  script.defer = true;
+  script.crossOrigin = "anonymous";
+  script.src = "https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v20.0";
+
+  document.body.appendChild(script);
+}
+
+loadFacebookSDK();
 window.addEventListener("DOMContentLoaded", () => {
   setTimeout(minaEnhancePost, 500);
 });
