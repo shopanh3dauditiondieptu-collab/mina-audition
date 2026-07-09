@@ -1716,3 +1716,59 @@ font-weight:900;
   align-items:center !important;
   gap:6px !important;
 }
+/* =========================================
+   MINA ADMIN CATEGORY SELECTOR
+========================================= */
+
+.mina-admin-category-panel{
+  margin-top:12px;
+  padding:16px;
+  border-radius:18px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(125,243,255,.28);
+  box-shadow:0 0 18px rgba(110,231,255,.14);
+}
+
+.mina-admin-category-title{
+  margin-bottom:14px;
+  color:#fff;
+  font-size:17px;
+  font-weight:900;
+  text-shadow:0 0 10px rgba(125,243,255,.75);
+}
+
+.mina-admin-category-field{
+  margin-bottom:12px;
+}
+
+.mina-admin-category-field label{
+  display:block;
+  margin-bottom:6px;
+  color:#fff;
+  font-weight:800;
+}
+
+.mina-admin-category-field select{
+  width:100%;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid rgba(125,243,255,.45);
+  background:#080b18;
+  color:#fff;
+  font-weight:800;
+  outline:none;
+}
+
+.mina-admin-category-field select:focus{
+  border-color:#7df3ff;
+  box-shadow:0 0 14px rgba(125,243,255,.35);
+}
+
+.mina-admin-category-preview{
+  margin-top:10px;
+  padding:12px 14px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#ff65dc,#6ee7ff);
+  color:#fff;
+  font-weight:900;
+}
