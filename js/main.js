@@ -44,7 +44,7 @@ async function initHome() {
   if (!wrap) return;
   const posts = await getPosts();
   wrap.innerHTML = posts
-  .slice(0, 6)
+  .slice(0, 8)
   .map(card)
   .join("");
 }
