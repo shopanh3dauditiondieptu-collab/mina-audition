@@ -12,7 +12,62 @@ const sidebar = document.querySelector(".blog-category-box");
 
 let allPosts = [];
 
-function normalizeText(text = "") {
+const minaTree = [
+  {
+    name: "KINH NGHIỆM GAME",
+    children: []
+  },
+  {
+    name: "MIX & MATCH OUTFIT GAME",
+    children: [
+      {
+        name: "Style Girl",
+        children: ["Cute Girl", "Sexy Girl", "Cool Girl", "Style 105 D8"]
+      },
+      {
+        name: "Style Boy",
+        children: ["Cute Boy", "Sexy Boy", "Cool Boy", "Style 105 D8"]
+      },
+      {
+        name: "Couple Outfit",
+        children: ["Cute Style", "Sexy Style", "Cool Style"]
+      }
+    ]
+  },
+  {
+    name: "VIDEO GAME AUDITION",
+    children: [
+      "MV Audition",
+      "Perfect x Combo Audition",
+      {
+        name: "D8 SKILL DANCE PERFORMANCE",
+        children: ["Múa Quạt", "Poppin", "D8 Sexy Girl", "D8 Cool Girl", "D8 Sexy Boy", "D8 Cool Boy"]
+      },
+      {
+        name: "D8 TEAM DANCE PERFORMANCE",
+        children: ["COUPLE", "Girl & Girl", "Boy & Boy"]
+      },
+      {
+        name: "ĐÔI 8-4K DANCE PERFORMANCE",
+        children: ["Đôi 8K", "Đôi 4K"]
+      },
+      {
+        name: "D8 SKILL REVIEW",
+        children: ["Lv6", "Lv7", "Lv8", "Lv9"]
+      },
+      {
+        name: "DC8 SKILL REVIEW",
+        children: ["Lv8", "Lv9", "Lv10", "Lv11"]
+      }
+    ]
+  },
+  {
+    name: "TÂM SỰ - CHIA SẺ",
+    children: []
+  }
+];
+
+function normalize(text = "") {
   return String(text)
     .toLowerCase()
     .normalize("NFD")
@@ -20,47 +75,47 @@ function normalizeText(text = "") {
     .trim();
 }
 
-function detectGroup(category = "") {
-  const text = normalizeText(category);
+function matchPost(post, keyword) {
+  const text = normalize(`
+    ${post.category || ""}
+    ${post.group || ""}
+    ${post.playlist || ""}
+    ${post.title || ""}
+    ${post.desc || ""}
+  `);
 
-  if (text.includes("mix") || text.includes("match") || text.includes("outfit") || text.includes("toc") || text.includes("item")) {
-    return "Mix & Match";
+  return text.includes(normalize(keyword));
+}
+
+function getAllNames(node) {
+  if (typeof node === "string") return [node];
+
+  let names = [node.name];
+
+  if (node.children && node.children.length) {
+    node.children.forEach(child => {
+      names = names.concat(getAllNames(child));
+    });
   }
 
-  if (text.includes("skill") || text.includes("review") || text.includes("d8") || text.includes("8k") || text.includes("4k")) {
-    return "Review Skill";
-  }
+  return names;
+}
 
-  if (text.includes("team") || text.includes("mv") || text.includes("combo") || text.includes("dance")) {
-    return "D8 Team";
-  }
+function filterByNode(node) {
+  const names = getAllNames(node);
 
-  if (text.includes("trai nghiem") || text.includes("game")) {
-    return "Trải nghiệm";
-  }
+  const filtered = allPosts.filter(item => {
+    return names.some(name => matchPost(item.data, name));
+  });
 
-  if (text.includes("tam su") || text.includes("chia se")) {
-    return "Tâm sự Mina";
-  }
-
-  if (text.includes("huong dan") || text.includes("tutorial") || text.includes("cach")) {
-    return "Hướng dẫn";
-  }
-
-  if (text.includes("tin tuc") || text.includes("news") || text.includes("update")) {
-    return "Tin tức";
-  }
-
-  return "Khác";
+  renderPosts(filtered);
 }
 
 function renderPosts(posts) {
-  if (!box) return;
-
   if (!posts.length) {
     box.innerHTML = `
       <article class="post-card">
-        <h3>Chưa có bài viết trong playlist này</h3>
+        <h3>Chưa có bài viết trong mục này</h3>
         <p>Bạn hãy đăng thêm bài trong Admin Mina.</p>
       </article>
     `;
@@ -74,7 +129,7 @@ function renderPosts(posts) {
     return `
       <article class="post-card">
         <img src="${p.image || "images/default-post.svg"}" alt="${p.title || "Bài viết Mina"}">
-        <p class="post-category">${p.category || "Bài viết"}</p>
+        <p class="post-category">${p.category || p.playlist || "Mina Blog"}</p>
         <h3>${p.title || "Không có tiêu đề"}</h3>
         <p>${p.desc || ""}</p>
         <a href="post.html?id=${id}" class="read-more">Đọc bài</a>
@@ -83,145 +138,102 @@ function renderPosts(posts) {
   }).join("");
 }
 
-function filterPosts(type, value) {
-  if (type === "all") {
-    renderPosts(allPosts);
-    return;
-  }
+function countNode(node) {
+  const names = getAllNames(node);
 
-  if (type === "group") {
-    renderPosts(allPosts.filter(item => detectGroup(item.data.category) === value));
-    return;
-  }
-
-  if (type === "playlist") {
-    renderPosts(allPosts.filter(item => (item.data.category || "Bài viết") === value));
-  }
+  return allPosts.filter(item => {
+    return names.some(name => matchPost(item.data, name));
+  }).length;
 }
 
-function setActive(container, activeButton) {
-  container.querySelectorAll("button").forEach(btn => btn.classList.remove("active"));
-  activeButton.classList.add("active");
+function renderTreeNode(node, level = 1) {
+  if (typeof node === "string") {
+    const count = countNode(node);
+
+    return `
+      <button class="mina-tree-item level-${level}" data-name="${node}">
+        <span>• ${node}</span>
+        <b>${count}</b>
+      </button>
+    `;
+  }
+
+  const count = countNode(node);
+
+  return `
+    <div class="mina-tree-group level-${level}">
+      <button class="mina-tree-parent" data-name="${node.name}">
+        <span>▼ ${node.name}</span>
+        <b>${count}</b>
+      </button>
+
+      <div class="mina-tree-children">
+        ${(node.children || []).map(child => renderTreeNode(child, level + 1)).join("")}
+      </div>
+    </div>
+  `;
 }
 
 function buildSidebar() {
-  if (!sidebar) return;
-
-  const categories = [...new Set(
-    allPosts.map(item => item.data.category || "Bài viết")
-  )];
-
-  const groups = {};
-
-  categories.forEach(category => {
-    const groupName = detectGroup(category);
-    if (!groups[groupName]) groups[groupName] = [];
-    groups[groupName].push(category);
-  });
-
   sidebar.innerHTML = `
-    <h3>📁 PLAYLIST MINA</h3>
+    <h3>📁 DANH MỤC MINA BLOG</h3>
 
-    <button class="blog-cat active" data-type="all" data-value="all">
+    <button class="mina-tree-all active">
       <span>🔥 Tất cả bài viết</span>
       <b>${allPosts.length}</b>
     </button>
 
-    ${Object.entries(groups).map(([groupName, groupCategories]) => {
-      const groupCount = allPosts.filter(item => detectGroup(item.data.category) === groupName).length;
-
-      return `
-        <div class="playlist-group">
-          <button class="playlist-parent" data-type="group" data-value="${groupName}">
-            <span>▼ ${groupName}</span>
-            <b>${groupCount}</b>
-          </button>
-
-          <div class="playlist-child-list">
-            ${groupCategories.map(category => {
-              const count = allPosts.filter(item => (item.data.category || "Bài viết") === category).length;
-
-              return `
-                <button class="playlist-child" data-type="playlist" data-value="${category}">
-                  <span>• ${category}</span>
-                  <b>${count}</b>
-                </button>
-              `;
-            }).join("")}
-          </div>
-        </div>
-      `;
-    }).join("")}
+    ${minaTree.map(node => renderTreeNode(node)).join("")}
   `;
 
-  sidebar.querySelectorAll("button").forEach(button => {
-    button.addEventListener("click", () => {
-      setActive(sidebar, button);
-      filterPosts(button.dataset.type, button.dataset.value);
-    });
+  sidebar.querySelector(".mina-tree-all").addEventListener("click", function () {
+    sidebar.querySelectorAll("button").forEach(btn => btn.classList.remove("active"));
+    this.classList.add("active");
+    renderPosts(allPosts);
   });
-}
 
-function buildTopTabs() {
-  const layout = document.querySelector(".blog-layout");
-  if (!layout) return;
+  sidebar.querySelectorAll("[data-name]").forEach(button => {
+    button.addEventListener("click", function () {
+      sidebar.querySelectorAll("button").forEach(btn => btn.classList.remove("active"));
+      this.classList.add("active");
 
-  const oldTabs = document.querySelector(".mina-blog-tabs");
-  if (oldTabs) oldTabs.remove();
+      const name = this.dataset.name;
 
-  const tabs = document.createElement("div");
-  tabs.className = "mina-blog-tabs";
+      function findNode(list) {
+        for (const item of list) {
+          if (typeof item === "string" && item === name) return item;
+          if (typeof item === "object") {
+            if (item.name === name) return item;
+            const found = findNode(item.children || []);
+            if (found) return found;
+          }
+        }
+        return null;
+      }
 
-  tabs.innerHTML = `
-    <button class="active" data-type="all" data-value="all">🔥 Mới nhất</button>
-    <button data-type="group" data-value="Review Skill">🎵 Review Skill</button>
-    <button data-type="group" data-value="Mix & Match">👗 Mix & Match</button>
-    <button data-type="group" data-value="D8 Team">💃 D8 Team</button>
-    <button data-type="group" data-value="Trải nghiệm">🎮 Trải nghiệm</button>
-    <button data-type="group" data-value="Tâm sự Mina">💬 Tâm sự</button>
-  `;
-
-  layout.parentNode.insertBefore(tabs, layout);
-
-  tabs.querySelectorAll("button").forEach(button => {
-    button.addEventListener("click", () => {
-      setActive(tabs, button);
-      filterPosts(button.dataset.type, button.dataset.value);
+      const node = findNode(minaTree);
+      filterByNode(node);
     });
   });
 }
 
 async function loadPosts() {
-  if (!box) return;
-
   box.innerHTML = `<p class="muted">Đang tải bài viết...</p>`;
 
   try {
     const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
     const snapshot = await getDocs(q);
 
-    if (snapshot.empty) {
-      box.innerHTML = `
-        <article class="post-card">
-          <h3>Chưa có bài viết</h3>
-          <p>Hãy đăng bài trong Admin.</p>
-        </article>
-      `;
-      return;
-    }
-
     allPosts = snapshot.docs.map(docItem => ({
       id: docItem.id,
       data: docItem.data()
     }));
 
-    buildTopTabs();
     buildSidebar();
     renderPosts(allPosts);
 
   } catch (error) {
-    console.error("Mina Blog Error:", error);
-
+    console.error(error);
     box.innerHTML = `
       <article class="post-card">
         <h3>Không tải được bài viết</h3>
