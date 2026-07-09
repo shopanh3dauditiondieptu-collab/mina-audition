@@ -1061,3 +1061,42 @@
     width:100%;
   }
 }
+/* ===========================
+   FACEBOOK EMBED
+===========================*/
+
+.mina-facebook-embed-box{
+    margin:35px auto;
+    max-width:600px;
+    display:flex;
+    justify-content:center;
+}
+
+.mina-facebook-action{
+    display:flex;
+    justify-content:center;
+    gap:18px;
+    margin-top:25px;
+    flex-wrap:wrap;
+}
+
+.facebook-post-btn,
+.comment-post-btn{
+    background:linear-gradient(135deg,#1877f2,#6d8cff);
+    color:#fff!important;
+    border-radius:999px;
+    padding:14px 28px;
+    font-weight:700;
+    text-decoration:none;
+    transition:.25s;
+}
+
+.comment-post-btn{
+    background:linear-gradient(135deg,#ff46c8,#9d5cff);
+}
+
+.facebook-post-btn:hover,
+.comment-post-btn:hover{
+    transform:translateY(-3px);
+    box-shadow:0 12px 30px rgba(0,0,0,.28);
+}
