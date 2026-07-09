@@ -1,82 +1,59 @@
 /* =====================================================
    YOUTUBE LATEST - MINA AUDITION
-   Bản tối ưu: không dùng API Key, không crash web
+   Lightweight version - không làm web quay loading
 ===================================================== */
 
 (function () {
   "use strict";
 
-  const CONFIG = {
-    channelUrl: "https://www.youtube.com/@mina.audition",
-    fallbackVideoId: "Bh7v-eQKhCQ",
-    embedId: "youtubeFrame",
-    linkId: "youtubeLink",
-    viewsId: "youtubeViews",
-    dateId: "youtubeDate"
-  };
+  const VIDEO_ID = "Bh7v-eQKhCQ";
+  const CHANNEL_URL = "https://www.youtube.com/@mina.audition";
 
-  function $(id) {
-    return document.getElementById(id);
+  function ready(fn) {
+    if (document.readyState !== "loading") fn();
+    else document.addEventListener("DOMContentLoaded", fn);
   }
 
-  function setText(id, text) {
-    const el = $(id);
-    if (el) el.textContent = text;
-  }
-
-  function setFallbackVideo() {
-    const frame = $(CONFIG.embedId);
-    const link = $(CONFIG.linkId);
-
-    if (frame) {
-      frame.src =
-        `https://www.youtube.com/embed/${CONFIG.fallbackVideoId}?rel=0&modestbranding=1`;
-    }
+  ready(function () {
+    const frame = document.getElementById("youtubeFrame");
+    const link = document.getElementById("youtubeLink");
+    const views = document.getElementById("youtubeViews");
+    const date = document.getElementById("youtubeDate");
 
     if (link) {
-      link.href = `https://www.youtube.com/watch?v=${CONFIG.fallbackVideoId}`;
-    }
-
-    setText(CONFIG.viewsId, "👁️ Đang cập nhật");
-    setText(CONFIG.dateId, "📅 Video nổi bật");
-  }
-
-  function initYoutubeBlock() {
-    const frame = $(CONFIG.embedId);
-    const link = $(CONFIG.linkId);
-
-    if (!frame) {
-      console.warn("Không tìm thấy #youtubeFrame");
-      return;
-    }
-
-    /*
-      Bản ổn định nhất:
-      - Không dùng YouTube API
-      - Không cần API Key
-      - Không bị lỗi 400/quota
-      - Không làm web bị quay vòng nếu YouTube lỗi
-    */
-
-    frame.src =
-      `https://www.youtube.com/embed?listType=user_uploads&list=mina.audition`;
-
-    if (link) {
-      link.href = CONFIG.channelUrl;
+      link.href = CHANNEL_URL;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
     }
 
-    setText(CONFIG.viewsId, "👁️ Xem trên YouTube");
-    setText(CONFIG.dateId, "📅 Video mới nhất từ kênh Mina");
-  }
+    if (views) views.textContent = "👁️ Xem trên YouTube";
+    if (date) date.textContent = "📅 Video nổi bật từ Mina";
 
-  document.addEventListener("DOMContentLoaded", function () {
-    try {
-      initYoutubeBlock();
-    } catch (error) {
-      console.error("Không tải được YouTube Mina:", error);
-      setFallbackVideo();
-    }
+    if (!frame) return;
+
+    frame.removeAttribute("src");
+    frame.loading = "lazy";
+
+    const box = frame.parentElement;
+    if (!box) return;
+
+    const poster = document.createElement("div");
+    poster.className = "youtube-lite-box";
+    poster.innerHTML = `
+      <button class="youtube-lite-btn" type="button">
+        ▶ Xem video Mina Audition
+      </button>
+    `;
+
+    frame.style.display = "none";
+    box.appendChild(poster);
+
+    poster.addEventListener("click", function () {
+      frame.src = `https://www.youtube.com/embed/${VIDEO_ID}?rel=0&modestbranding=1&autoplay=1`;
+      frame.style.display = "block";
+      poster.remove();
+    });
+
+    console.log("✅ YouTube lite loaded safely");
   });
 })();
