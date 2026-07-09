@@ -328,3 +328,96 @@
 .video-heading *{
   text-align: center !important;
 }
+/* =====================================================
+   VIDEO SHOWCASE - FIX GỌN CÂN ĐỐI THEO TỔNG THỂ MINA
+===================================================== */
+
+.video-showcase{
+  padding: 70px 24px 76px !important;
+  min-height: auto !important;
+  text-align: center !important;
+}
+
+.video-showcase::before,
+.video-left::before,
+.video-left::after{
+  content: none !important;
+  display: none !important;
+}
+
+.video-left,
+.video-heading{
+  max-width: 760px !important;
+  margin: 0 auto 34px !important;
+  text-align: center !important;
+}
+
+.video-title,
+.video-left h2{
+  max-width: 720px !important;
+  margin: 0 auto 14px !important;
+  font-size: clamp(36px, 4vw, 52px) !important;
+  line-height: 1.05 !important;
+  letter-spacing: -1px !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+}
+
+.video-desc{
+  max-width: 620px !important;
+  margin: 0 auto !important;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  text-align: center !important;
+}
+
+/* Bỏ social + bình luận nếu còn */
+.video-actions,
+.video-comments,
+.featured-comments,
+.comment-list,
+.comment-card{
+  display: none !important;
+}
+
+/* Ép video nằm giữa và to vừa phải */
+.video-main,
+.video-layout,
+.video-right{
+  width: 100% !important;
+  max-width: 760px !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.video-box,
+.video-frame,
+.youtube-frame,
+.video-embed,
+.video-player,
+.video-card{
+  width: min(100%, 640px) !important;
+  max-width: 640px !important;
+  aspect-ratio: 16 / 9 !important;
+  margin: 0 auto !important;
+  border-radius: 22px !important;
+  overflow: hidden !important;
+}
+
+.video-box iframe,
+.video-frame iframe,
+.youtube-frame iframe,
+.video-embed iframe,
+#youtubeFrame{
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  border: 0 !important;
+  border-radius: 20px !important;
+}
