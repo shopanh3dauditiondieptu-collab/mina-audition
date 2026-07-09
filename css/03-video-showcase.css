@@ -16,13 +16,8 @@
 }
 
 .video-showcase::before{
-  content:"◆ ◆ ◆";
-  display:block;
-  margin:0 auto 18px;
-  color:#5ff4ff;
-  font-size:15px;
-  letter-spacing:14px;
-  text-shadow:0 0 18px rgba(95,244,255,.9);
+    display:none !important;
+    content:none !important;
 }
 
 .video-left,
