@@ -155,7 +155,27 @@ function renderContentBlocks(blocks = [], legacyContent = "") {
     return "";
   }).join("");
 }
+function getLinkButtonText(url = "") {
+  const link = String(url).toLowerCase();
 
+  if (link.includes("facebook.com") || link.includes("fb.watch")) {
+    return "📘 Xem bài viết Facebook";
+  }
+
+  if (link.includes("youtube.com") || link.includes("youtu.be")) {
+    return "▶️ Xem Video YouTube";
+  }
+
+  if (link.includes("tiktok.com")) {
+    return "🎵 Xem Video TikTok";
+  }
+
+  if (link.includes("instagram.com")) {
+    return "📷 Xem Instagram";
+  }
+
+  return "🌐 Xem liên kết";
+}
 async function loadPost() {
   if (!postId) {
     postDetail.innerHTML = `
@@ -242,7 +262,15 @@ async function loadPost() {
           target="_blank" 
           rel="noopener" 
           class="read-more facebook-post-btn">
-          📘 Xem bài viết Facebook
+          ${getLinkButtonText(p.link)}
+        </a>
+
+        <a 
+          href="${escapeHTML(p.link)}" 
+          target="_blank" 
+          rel="noopener" 
+          class="read-more comment-post-btn">
+          💬 Bình luận / tương tác
         </a>
       </div>
     `
