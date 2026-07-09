@@ -541,8 +541,23 @@ function addAuthorBox(article) {
   const author = document.createElement("div");
   author.className = "post-author";
 
-  author.innerHTML = `
-    <img class="author-avatar" src="/images/logo-mina.png" alt="Mina Audition">
+ author.innerHTML = `
+  <img
+    class="author-avatar"
+    src="./images/logo-mina.png"
+    alt="Mina Audition"
+    loading="lazy"
+    onerror="this.onerror=null;this.src='./images/avatar.png';"
+  >
+
+  <div>
+    <h3>Mina Audition</h3>
+    <p>
+      Review Skill Audition, chia sẻ concept ảnh 2D/3D, Mix & Match outfit
+      và nội dung dành cho cộng đồng Audition.
+    </p>
+  </div>
+`;
 
     <div>
       <h3>Mina Audition</h3>
