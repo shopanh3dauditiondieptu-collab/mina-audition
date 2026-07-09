@@ -1014,3 +1014,50 @@
   transform:translateY(-2px);
   box-shadow:0 14px 36px rgba(24,119,242,.5);
 }
+.mina-facebook-action{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:12px;
+  margin:28px 0;
+}
+
+.facebook-post-btn,
+.comment-post-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:13px 22px;
+  border-radius:999px;
+  color:#fff !important;
+  font-weight:800;
+  text-decoration:none;
+  transition:.25s ease;
+}
+
+.facebook-post-btn{
+  background:linear-gradient(135deg,#1877f2,#00a2ff);
+  box-shadow:0 10px 28px rgba(24,119,242,.35);
+}
+
+.comment-post-btn{
+  background:linear-gradient(135deg,#ff4fd8,#7c5cff);
+  box-shadow:0 10px 28px rgba(255,79,216,.35);
+}
+
+.facebook-post-btn:hover,
+.comment-post-btn:hover{
+  transform:translateY(-2px);
+}
+
+@media(max-width:768px){
+  .mina-facebook-action{
+    flex-direction:column;
+  }
+
+  .facebook-post-btn,
+  .comment-post-btn{
+    width:100%;
+  }
+}
