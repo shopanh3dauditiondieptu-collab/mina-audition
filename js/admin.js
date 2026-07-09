@@ -68,117 +68,86 @@ const statusInput = document.getElementById("status");
 let contentBlocks = [];
 let editingPostId = null;
 /* =====================================================
-   MINA CMS V8 - CATEGORY SYSTEM
-   Giữ nguyên giao diện cũ, chỉ nâng cấp dữ liệu danh mục
+   MINA CMS V8.5 - CATEGORY TREE SYSTEM
+   Giữ nguyên layout Admin, chỉ nâng cấp chọn danh mục
 ===================================================== */
 
-const MINA_CATEGORIES_V8 = [
+const MINA_CATEGORY_TREE_V85 = [
   {
     id: "kinh-nghiem-game",
     name: "Kinh nghiệm Game",
-    path: ["Kinh nghiệm Game"]
+    icon: "🎮",
+    children: []
   },
   {
     id: "mix-match-outfit-game",
     name: "Mix & Match Outfit Game",
-    path: ["Mix & Match Outfit Game"]
-  },
-  {
-    id: "style-girl",
-    name: "Mix & Match Outfit Game/Style Girl",
-    path: ["Mix & Match Outfit Game", "Style Girl"]
-  },
-  {
-    id: "cute-girl",
-    name: "Mix & Match Outfit Game/Style Girl/Cute Girl",
-    path: ["Mix & Match Outfit Game", "Style Girl", "Cute Girl"]
-  },
-  {
-    id: "sexy-girl",
-    name: "Mix & Match Outfit Game/Style Girl/Sexy Girl",
-    path: ["Mix & Match Outfit Game", "Style Girl", "Sexy Girl"]
-  },
-  {
-    id: "cool-girl",
-    name: "Mix & Match Outfit Game/Style Girl/Cool Girl",
-    path: ["Mix & Match Outfit Game", "Style Girl", "Cool Girl"]
-  },
-  {
-    id: "style-105-d8",
-    name: "Mix & Match Outfit Game/Style Girl/Style 105 D8",
-    path: ["Mix & Match Outfit Game", "Style Girl", "Style 105 D8"]
-  },
-  {
-    id: "style-boy",
-    name: "Mix & Match Outfit Game/Style Boy",
-    path: ["Mix & Match Outfit Game", "Style Boy"]
-  },
-  {
-    id: "couple-outfit",
-    name: "Mix & Match Outfit Game/Couple Outfit",
-    path: ["Mix & Match Outfit Game", "Couple Outfit"]
+    icon: "👗",
+    children: [
+      {
+        id: "style-girl",
+        name: "Style Girl",
+        icon: "💃",
+        children: [
+          { id: "cute-girl", name: "Cute Girl", icon: "🌸", children: [] },
+          { id: "sexy-girl", name: "Sexy Girl", icon: "🔥", children: [] },
+          { id: "cool-girl", name: "Cool Girl", icon: "💎", children: [] },
+          { id: "style-105-d8", name: "Style 105 D8", icon: "✨", children: [] }
+        ]
+      },
+      { id: "style-boy", name: "Style Boy", icon: "🧢", children: [] },
+      { id: "couple-outfit", name: "Couple Outfit", icon: "💞", children: [] }
+    ]
   },
   {
     id: "video-game-audition",
     name: "Video Game Audition",
-    path: ["Video Game Audition"]
-  },
-  {
-    id: "mv-audition",
-    name: "Video Game Audition/MV Audition",
-    path: ["Video Game Audition", "MV Audition"]
-  },
-  {
-    id: "perfect-combo-audition",
-    name: "Video Game Audition/Perfect x Combo Audition",
-    path: ["Video Game Audition", "Perfect x Combo Audition"]
-  },
-  {
-    id: "d8-skill-dance-performance",
-    name: "Video Game Audition/D8 Skill Dance Performance",
-    path: ["Video Game Audition", "D8 Skill Dance Performance"]
-  },
-  {
-    id: "d8-team-dance-performance",
-    name: "Video Game Audition/D8 Team Dance Performance",
-    path: ["Video Game Audition", "D8 Team Dance Performance"]
-  },
-  {
-    id: "doi-8-4k-dance-performance",
-    name: "Video Game Audition/Đôi 8-4K Dance Performance",
-    path: ["Video Game Audition", "Đôi 8-4K Dance Performance"]
+    icon: "🎬",
+    children: [
+      { id: "mv-audition", name: "MV Audition", icon: "🎵", children: [] },
+      { id: "perfect-combo-audition", name: "Perfect x Combo Audition", icon: "⚡", children: [] },
+      { id: "d8-skill-dance-performance", name: "D8 Skill Dance Performance", icon: "🕺", children: [] },
+      { id: "d8-team-dance-performance", name: "D8 Team Dance Performance", icon: "👥", children: [] },
+      { id: "doi-8-4k-dance-performance", name: "Đôi 8-4K Dance Performance", icon: "🎮", children: [] }
+    ]
   },
   {
     id: "review-skill",
     name: "Review Skill",
-    path: ["Review Skill"]
+    icon: "⭐",
+    children: [
+      { id: "d8-skill-poppin", name: "D8 Skill Poppin", icon: "🔥", children: [] }
+    ]
   },
-  {
-    id: "d8-skill-poppin",
-    name: "Review Skill/D8 Skill Poppin",
-    path: ["Review Skill", "D8 Skill Poppin"]
-  },
-  {
-    id: "huong-dan-audition",
-    name: "Hướng dẫn Audition",
-    path: ["Hướng dẫn Audition"]
-  },
-  {
-    id: "tin-tuc-audition",
-    name: "Tin tức Audition",
-    path: ["Tin tức Audition"]
-  },
-  {
-    id: "wiki-skill",
-    name: "Wiki Skill",
-    path: ["Wiki Skill"]
-  },
-  {
-    id: "khac",
-    name: "Khác",
-    path: ["Khác"]
-  }
+  { id: "huong-dan-audition", name: "Hướng dẫn Audition", icon: "📘", children: [] },
+  { id: "tin-tuc-audition", name: "Tin tức Audition", icon: "📰", children: [] },
+  { id: "wiki-skill", name: "Wiki Skill", icon: "🎮", children: [] },
+  { id: "khac", name: "Khác", icon: "📌", children: [] }
 ];
+
+let minaSelectedCategoryV85 = null;
+
+function flattenCategoriesV8(nodes = [], parentPath = []) {
+  let result = [];
+
+  nodes.forEach(node => {
+    const path = [...parentPath, node.name];
+
+    result.push({
+      id: node.id,
+      name: node.name,
+      icon: node.icon || "📁",
+      path,
+      fullName: path.join("/")
+    });
+
+    if (Array.isArray(node.children) && node.children.length > 0) {
+      result = result.concat(flattenCategoriesV8(node.children, path));
+    }
+  });
+
+  return result;
+}
 
 function normalizeTextV8(text = "") {
   return String(text)
@@ -190,39 +159,176 @@ function normalizeTextV8(text = "") {
 
 function getCategoryV8(value = "") {
   const raw = String(value || "").trim();
+  const flat = flattenCategoriesV8(MINA_CATEGORY_TREE_V85);
 
-  const found = MINA_CATEGORIES_V8.find(cat =>
+  const found = flat.find(cat =>
     cat.id === raw ||
     cat.name === raw ||
-    normalizeTextV8(cat.name) === normalizeTextV8(raw)
+    cat.fullName === raw ||
+    normalizeTextV8(cat.name) === normalizeTextV8(raw) ||
+    normalizeTextV8(cat.fullName) === normalizeTextV8(raw)
   );
 
-  if (found) return found;
+  if (found) {
+    return {
+      id: found.id,
+      name: found.name,
+      path: found.path,
+      fullName: found.fullName
+    };
+  }
+
+  const fallbackPath = raw
+    ? raw.split("/").map(item => item.trim()).filter(Boolean)
+    : ["Bài viết Mina"];
 
   return {
     id: "custom",
-    name: raw || "Bài viết Mina",
-    path: [raw || "Bài viết Mina"]
+    name: fallbackPath[fallbackPath.length - 1] || "Bài viết Mina",
+    path: fallbackPath,
+    fullName: fallbackPath.join("/")
   };
+}
+
+function setCategoryV8(value = "") {
+  const cat = getCategoryV8(value);
+  minaSelectedCategoryV85 = cat;
+
+  if (categoryInput) {
+    categoryInput.value = cat.fullName;
+  }
+
+  const label = document.getElementById("minaCategorySelectedTextV85");
+  if (label) {
+    label.textContent = cat.path.join(" → ");
+  }
+
+  document.querySelectorAll(".mina-cat-tree-item").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.fullname === cat.fullName);
+  });
+}
+
+function clearCategoryV8() {
+  minaSelectedCategoryV85 = null;
+  if (categoryInput) categoryInput.value = "";
+
+  const label = document.getElementById("minaCategorySelectedTextV85");
+  if (label) label.textContent = "Chọn danh mục bài viết";
+
+  document.querySelectorAll(".mina-cat-tree-item").forEach(btn => {
+    btn.classList.remove("active");
+  });
+}
+
+function renderCategoryNodeV8(node, parentPath = [], level = 0) {
+  const path = [...parentPath, node.name];
+  const fullName = path.join("/");
+  const hasChildren = Array.isArray(node.children) && node.children.length > 0;
+
+  return `
+    <div class="mina-cat-node level-${level}" data-cat-node="${node.id}">
+      <button
+        type="button"
+        class="mina-cat-tree-item"
+        data-category-id="${node.id}"
+        data-fullname="${escapeHTML(fullName)}"
+        data-has-children="${hasChildren ? "true" : "false"}"
+      >
+        <span class="mina-cat-toggle">${hasChildren ? "+" : "•"}</span>
+        <span class="mina-cat-name">${node.icon || "📁"} ${escapeHTML(node.name)}</span>
+      </button>
+
+      ${
+        hasChildren
+          ? `
+            <div class="mina-cat-children hidden">
+              ${node.children.map(child => renderCategoryNodeV8(child, path, level + 1)).join("")}
+            </div>
+          `
+          : ""
+      }
+    </div>
+  `;
+}
+
+function openSelectedCategoryBranchV8(fullName = "") {
+  if (!fullName) return;
+
+  document.querySelectorAll(".mina-cat-tree-item").forEach(btn => {
+    const currentName = btn.dataset.fullname || "";
+    if (!fullName.startsWith(currentName)) return;
+
+    const node = btn.closest(".mina-cat-node");
+    const children = node?.querySelector(":scope > .mina-cat-children");
+    const toggle = btn.querySelector(".mina-cat-toggle");
+
+    if (children) {
+      children.classList.remove("hidden");
+      if (toggle) toggle.textContent = "−";
+    }
+  });
 }
 
 function setupCategoryV8() {
   if (!categoryInput) return;
 
-  if (document.getElementById("minaCategoryListV8")) return;
+  if (document.getElementById("minaCategoryTreeV85")) return;
 
-  const datalist = document.createElement("datalist");
-  datalist.id = "minaCategoryListV8";
+  categoryInput.style.display = "none";
+  categoryInput.removeAttribute("list");
 
-  datalist.innerHTML = MINA_CATEGORIES_V8.map(cat => `
-    <option value="${escapeHTML(cat.name)}"></option>
-  `).join("");
+  const wrap = document.createElement("div");
+  wrap.id = "minaCategoryTreeV85";
+  wrap.className = "mina-category-tree-v8";
 
-  categoryInput.setAttribute("list", "minaCategoryListV8");
-  categoryInput.setAttribute("placeholder", "Chọn hoặc nhập danh mục bài viết");
+  wrap.innerHTML = `
+    <button type="button" id="minaCategoryOpenBtnV85" class="mina-category-current-v8">
+      <span id="minaCategorySelectedTextV85">Chọn danh mục bài viết</span>
+      <span>▾</span>
+    </button>
 
-  categoryInput.insertAdjacentElement("afterend", datalist);
+    <div id="minaCategoryPanelV85" class="mina-category-panel-v8 hidden">
+      ${MINA_CATEGORY_TREE_V85.map(node => renderCategoryNodeV8(node)).join("")}
+    </div>
+  `;
+
+  categoryInput.insertAdjacentElement("afterend", wrap);
+
+  const openBtn = document.getElementById("minaCategoryOpenBtnV85");
+  const panel = document.getElementById("minaCategoryPanelV85");
+
+  openBtn.addEventListener("click", () => {
+    panel.classList.toggle("hidden");
+  });
+
+  panel.addEventListener("click", (e) => {
+    const btn = e.target.closest(".mina-cat-tree-item");
+    if (!btn) return;
+
+    const node = btn.closest(".mina-cat-node");
+    const children = node?.querySelector(":scope > .mina-cat-children");
+    const toggle = btn.querySelector(".mina-cat-toggle");
+
+    if (children) {
+      children.classList.toggle("hidden");
+      if (toggle) toggle.textContent = children.classList.contains("hidden") ? "+" : "−";
+    }
+
+    setCategoryV8(btn.dataset.fullname);
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!wrap.contains(e.target)) {
+      panel.classList.add("hidden");
+    }
+  });
+
+  if (categoryInput.value) {
+    setCategoryV8(categoryInput.value);
+    openSelectedCategoryBranchV8(categoryInput.value);
+  }
 }
+
 /* =========================
    HELPERS
 ========================= */
@@ -796,6 +902,7 @@ function getCleanBlocks() {
 
 function resetEditor() {
   form.reset();
+  clearCategoryV8();
   clearPreview();
 
   editingPostId = null;
@@ -912,7 +1019,7 @@ async function render() {
           <b>${escapeHTML(p.title || "Không có tiêu đề")}</b>
 
           <p>${escapeHTML(p.desc || "")}</p>
-          <p class="muted">Danh mục: ${escapeHTML(p.category || "Chưa phân loại")}</p>
+          <p class="muted">Danh mục: ${escapeHTML(p.categoryFullName || p.category || "Chưa phân loại")}</p>
 
           ${
             blockCount
@@ -972,7 +1079,7 @@ window.editPost = async function(id) {
     editingPostId = id;
 
     titleInput.value = p.title || "";
-    categoryInput.value = p.categoryName || p.category || "";
+    setCategoryV8(p.categoryPath?.join("/") || p.categoryFullName || p.category || p.categoryName || "");
     imageInput.value = p.image || "";
     descInput.value = p.desc || "";
     linkInput.value = p.link || "";
@@ -1045,10 +1152,11 @@ window.previewPost = function() {
 
   const previewData = {
     title: titleInput.value.trim(),
-    category: categoryInput.value.trim(),
-categoryId: getCategoryV8(categoryInput.value).id,
-categoryName: getCategoryV8(categoryInput.value).name,
-categoryPath: getCategoryV8(categoryInput.value).path,
+    category: getCategoryV8(categoryInput.value).fullName,
+    categoryId: getCategoryV8(categoryInput.value).id,
+    categoryName: getCategoryV8(categoryInput.value).name,
+    categoryPath: getCategoryV8(categoryInput.value).path,
+    categoryFullName: getCategoryV8(categoryInput.value).fullName,
     image: imageInput.value.trim(),
     desc: descInput.value.trim(),
     content: contentInput.value.trim(),
@@ -1082,10 +1190,11 @@ form.addEventListener("submit", async (e) => {
 const post = {
   title: titleInput.value.trim(),
 
-  category: selectedCategoryV8.name,
+  category: selectedCategoryV8.fullName,
   categoryId: selectedCategoryV8.id,
   categoryName: selectedCategoryV8.name,
   categoryPath: selectedCategoryV8.path,
+  categoryFullName: selectedCategoryV8.fullName,
     image: imageInput.value.trim(),
     desc: descInput.value.trim(),
     content: contentInput.value.trim(),
@@ -1207,6 +1316,10 @@ function minaV3AutoSaveDraft() {
   const draft = {
     title: titleInput.value || "",
     category: categoryInput.value || "",
+    categoryFullName: getCategoryV8(categoryInput.value).fullName,
+    categoryId: getCategoryV8(categoryInput.value).id,
+    categoryName: getCategoryV8(categoryInput.value).name,
+    categoryPath: getCategoryV8(categoryInput.value).path,
     image: imageInput.value || "",
     desc: descInput.value || "",
     link: linkInput.value || "",
@@ -1247,7 +1360,7 @@ function minaV3CreateRestoreButton() {
     const draft = JSON.parse(raw);
 
     titleInput.value = draft.title || "";
-    categoryInput.value = draft.category || "";
+    setCategoryV8(draft.categoryFullName || draft.category || "");
     imageInput.value = draft.image || "";
     descInput.value = draft.desc || "";
     linkInput.value = draft.link || "";
@@ -1385,6 +1498,8 @@ async function minaV4LoadPosts() {
         p.title,
         p.desc,
         p.category,
+        p.categoryName,
+        Array.isArray(p.categoryPath) ? p.categoryPath.join(" ") : "",
         p.content,
         p.link,
         minaV4TextFromBlocks(p.contentBlocks)
@@ -1435,7 +1550,7 @@ function minaV4RenderCategories(posts = minaV4Posts) {
   const box = document.getElementById("minaV4Categories");
   if (!box) return;
 
-  const categories = [...new Set(posts.map(p => p.category || "Chưa phân loại"))];
+  const categories = [...new Set(posts.map(p => p.categoryFullName || p.category || "Chưa phân loại"))];
 
   box.innerHTML = `
     <button type="button" class="${minaV4State.category === "all" ? "active" : ""}" data-cat="all">
@@ -1443,7 +1558,7 @@ function minaV4RenderCategories(posts = minaV4Posts) {
     </button>
 
     ${categories.map(cat => {
-      const count = posts.filter(p => (p.category || "Chưa phân loại") === cat).length;
+      const count = posts.filter(p => (p.categoryFullName || p.category || "Chưa phân loại") === cat).length;
 
       return `
         <button type="button" class="${minaV4State.category === cat ? "active" : ""}" data-cat="${escapeHTML(cat)}">
@@ -1473,7 +1588,7 @@ function minaV4Render() {
   let filtered = [...minaV4Posts];
 
   if (minaV4State.category !== "all") {
-    filtered = filtered.filter(p => (p.category || "Chưa phân loại") === minaV4State.category);
+    filtered = filtered.filter(p => (p.categoryFullName || p.category || "Chưa phân loại") === minaV4State.category);
   }
 
   if (minaV4State.status !== "all") {
@@ -1548,7 +1663,7 @@ function minaV4Render() {
             ${isDuplicate ? `<em>⚠ Có khả năng trùng tiêu đề</em>` : ""}
           </div>
 
-          <div>${escapeHTML(p.category || "Chưa phân loại")}</div>
+          <div>${escapeHTML(p.categoryFullName || p.category || "Chưa phân loại")}</div>
 
           <div>
             <span class="mina-v4-status ${p.status === "draft" ? "draft" : "published"}">
