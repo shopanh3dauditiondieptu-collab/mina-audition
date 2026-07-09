@@ -419,3 +419,73 @@ img{max-width:100%;display:block}
     font-weight:900;
     color:#fff;
 }
+
+/* =====================================================
+   MINA GLOBAL SECTION TITLE LOCK
+   Chuẩn hoá font + size tiêu đề lớn toàn website
+   Áp dụng cho: THEO DÕI MINA, BÀI VIẾT MỚI, NỘI DUNG NỔI BẬT,
+   WIKIPEDIA SKILL DANCE, VIDEO MỚI NHẤT...
+===================================================== */
+
+.section-title{
+  text-align:center !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+  margin-bottom:34px !important;
+}
+
+.section-title span,
+.section-dots{
+  display:block;
+  margin:0 auto 14px;
+  color:var(--cyan);
+  font-size:15px;
+  line-height:1;
+  letter-spacing:10px;
+  text-align:center;
+  text-shadow:0 0 14px var(--cyan);
+}
+
+.section-title h2,
+.video-title{
+  margin:14px auto 10px !important;
+  font-family:'Inter',Arial,sans-serif !important;
+  font-size:clamp(42px,4.8vw,62px) !important;
+  font-weight:900 !important;
+  line-height:1.05 !important;
+  letter-spacing:-1.4px !important;
+  text-transform:uppercase !important;
+  color:#fff !important;
+  text-align:center !important;
+  text-shadow:
+    0 0 8px rgba(255,255,255,.92),
+    0 0 22px rgba(255,210,255,.65),
+    0 0 44px rgba(255,79,227,.45) !important;
+}
+
+.section-title p,
+.video-desc{
+  max-width:720px;
+  margin:0 auto !important;
+  color:var(--muted) !important;
+  font-size:18px !important;
+  font-weight:700 !important;
+  line-height:1.6 !important;
+  text-align:center !important;
+}
+
+@media(max-width:768px){
+  .section-title h2,
+  .video-title{
+    font-size:clamp(34px,10vw,48px) !important;
+    letter-spacing:-.8px !important;
+  }
+
+  .section-title p,
+  .video-desc{
+    font-size:16px !important;
+  }
+}
+
+/* END MINA GLOBAL SECTION TITLE LOCK
+===================================================== */
