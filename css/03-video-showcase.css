@@ -53,32 +53,20 @@
 .video-title,
 .video-showcase .video-title,
 .video-title{
-
-    margin:16px 0 10px;
-
-    font-family:inherit;
-
-    font-size:clamp(38px,4vw,52px);
-
-    font-weight:900;
-
-    line-height:1.08;
-
-    letter-spacing:-1px;
-
-    text-transform:uppercase;
-
-    color:#ffffff;
-
-    text-align:center;
-
-    text-shadow:
-        0 0 2px rgba(255,255,255,.85),
-        0 0 8px rgba(255,190,255,.28),
-        0 0 16px rgba(255,79,227,.12);
-
+margin:7px 0 4px;
+font-family:inherit;
+font-size:clamp(16.2px,1.68vw,21.6px);
+font-weight:700;
+line-height:0.95;
+letter-spacing:-0.42px;
+text-transform:uppercase;
+color:#ffffff;
+text-align:center;
+text-shadow:
+    0 0 0.6px rgba(255,255,255,.48),
+    0 0 3px rgba(255,190,255,.132),
+    0 0 6px rgba(255,79,227,.048);
 }
-
 /* Mô tả giống section-title p */
 .video-desc,
 .video-showcase .video-desc{
