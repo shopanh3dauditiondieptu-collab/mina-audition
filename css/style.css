@@ -1362,3 +1362,134 @@
     grid-template-columns:1fr !important;
   }
 }
+/* =========================================
+   MINA BLOG - TREE PLAYLIST SYSTEM
+========================================= */
+
+.mina-blog-tabs{
+  display:none !important;
+}
+
+.blog-layout{
+  display:grid !important;
+  grid-template-columns:310px minmax(0,1fr) !important;
+  gap:24px !important;
+  align-items:start !important;
+}
+
+.blog-category-box{
+  position:sticky !important;
+  top:95px !important;
+  max-height:calc(100vh - 120px) !important;
+  overflow:auto !important;
+  padding:18px !important;
+  border-radius:20px !important;
+  background:rgba(18,18,34,.96) !important;
+  border:1px solid rgba(94,220,255,.35) !important;
+  box-shadow:0 0 24px rgba(111,91,255,.22) !important;
+}
+
+.blog-category-box h3{
+  margin:0 0 16px !important;
+  font-size:17px !important;
+  color:#fff !important;
+  text-shadow:0 0 12px rgba(109,239,255,.9) !important;
+}
+
+.blog-category-box button{
+  width:100% !important;
+  display:flex !important;
+  justify-content:space-between !important;
+  align-items:center !important;
+  gap:8px !important;
+  margin:0 0 8px !important;
+  padding:10px 12px !important;
+  border-radius:13px !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  background:rgba(255,255,255,.055) !important;
+  color:#fff !important;
+  font-family:inherit !important;
+  font-size:13px !important;
+  font-weight:800 !important;
+  text-align:left !important;
+  cursor:pointer !important;
+  transition:.25s ease !important;
+}
+
+.blog-category-box button:hover,
+.blog-category-box button.active{
+  background:linear-gradient(135deg,#ff65dc,#6ee7ff) !important;
+  box-shadow:0 0 16px rgba(110,231,255,.42) !important;
+  transform:translateX(4px) !important;
+}
+
+.blog-category-box button b{
+  min-width:26px !important;
+  padding:2px 7px !important;
+  border-radius:999px !important;
+  background:rgba(125,243,255,.18) !important;
+  color:#7df3ff !important;
+  font-size:11px !important;
+  text-align:center !important;
+}
+
+.blog-category-box button.active b,
+.blog-category-box button:hover b{
+  background:rgba(0,0,0,.22) !important;
+  color:#fff !important;
+}
+
+.mina-tree-group{
+  margin-bottom:8px !important;
+}
+
+.mina-tree-children{
+  padding-left:12px !important;
+  margin:4px 0 10px !important;
+  border-left:1px dashed rgba(125,243,255,.18) !important;
+}
+
+.mina-tree-item.level-2,
+.mina-tree-group.level-2 .mina-tree-parent{
+  font-size:12.5px !important;
+  opacity:.96 !important;
+}
+
+.mina-tree-item.level-3,
+.mina-tree-group.level-3 .mina-tree-parent{
+  font-size:12px !important;
+  opacity:.88 !important;
+}
+
+.mina-tree-item.level-4{
+  font-size:11.5px !important;
+  opacity:.82 !important;
+}
+
+.blog-layout .post-list{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:24px !important;
+}
+
+.blog-layout .post-card img{
+  height:170px !important;
+  object-fit:cover !important;
+  border-radius:14px !important;
+}
+
+@media(max-width:1000px){
+  .blog-layout{
+    grid-template-columns:1fr !important;
+  }
+
+  .blog-category-box{
+    position:relative !important;
+    top:0 !important;
+    max-height:none !important;
+  }
+
+  .blog-layout .post-list{
+    grid-template-columns:1fr !important;
+  }
+}
