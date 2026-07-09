@@ -1,6 +1,6 @@
 /* =====================================================
    WIKI.JS - Mina Wikipedia D8 Audition
-   Optimized version: giảm lag, debounce search, lazy image
+   Fix ảnh + giảm lag + fallback an toàn
 ===================================================== */
 
 let wikiSkills = [];
@@ -10,14 +10,36 @@ const wikiSearch = document.getElementById("wikiSearch");
 const wikiStyleFilter = document.getElementById("wikiStyleFilter");
 const wikiRarityFilter = document.getElementById("wikiRarityFilter");
 
+const DEFAULT_IMAGE = "/images/wiki/skills/default.webp";
 let searchTimer = null;
+
+/* ===============================
+   FIX ĐƯỜNG DẪN ẢNH
+=============================== */
+function normalizeImagePath(path) {
+  if (!path || typeof path !== "string") return DEFAULT_IMAGE;
+
+  const cleanPath = path.trim();
+
+  if (cleanPath.startsWith("http://") || cleanPath.startsWith("https://")) {
+    return cleanPath;
+  }
+
+  if (cleanPath.startsWith("/")) {
+    return cleanPath;
+  }
+
+  return "/" + cleanPath;
+}
 
 /* ===============================
    LOAD DATA
 =============================== */
 async function loadWikiSkills() {
   try {
-    const response = await fetch("database/wiki-skills.json");
+    const response = await fetch("/database/wiki-skills.json?v=" + Date.now(), {
+      cache: "no-store"
+    });
 
     if (!response.ok) {
       throw new Error("Không tải được database/wiki-skills.json");
@@ -41,7 +63,7 @@ async function loadWikiSkills() {
 }
 
 /* ===============================
-   RENDER CARD - TỐI ƯU
+   RENDER CARD
 =============================== */
 function renderWikiSkills(skills) {
   if (!wikiGrid) return;
@@ -58,12 +80,14 @@ function renderWikiSkills(skills) {
     card.className = "wiki-card";
 
     const img = document.createElement("img");
-    img.src = skill.image || "images/wiki/skills/default.webp";
+    img.src = normalizeImagePath(skill.image);
     img.alt = skill.name || "Skill Audition";
     img.loading = "lazy";
     img.decoding = "async";
+
     img.onerror = function () {
-      this.src = "images/wiki/skills/default.webp";
+      if (this.src.includes("default.webp")) return;
+      this.src = DEFAULT_IMAGE;
     };
 
     const body = document.createElement("div");
@@ -101,6 +125,8 @@ function renderWikiSkills(skills) {
 function renderStyleOptions() {
   if (!wikiStyleFilter) return;
 
+  wikiStyleFilter.innerHTML = `<option value="">Tất cả Style</option>`;
+
   const styles = [...new Set(
     wikiSkills
       .map(skill => skill.style)
@@ -116,7 +142,7 @@ function renderStyleOptions() {
 }
 
 /* ===============================
-   FILTER SKILLS
+   FILTER
 =============================== */
 function filterWikiSkills() {
   const keyword = wikiSearch ? wikiSearch.value.toLowerCase().trim() : "";
@@ -147,7 +173,7 @@ function filterWikiSkills() {
 }
 
 /* ===============================
-   DEBOUNCE SEARCH - GIẢM LAG
+   DEBOUNCE SEARCH
 =============================== */
 function debounceFilter() {
   clearTimeout(searchTimer);
