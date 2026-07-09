@@ -1,14 +1,12 @@
 /* =====================================================
-   05-POST-DETAIL - Mina CMS V6 modular CSS
-   Giữ nguyên thứ tự cascade từ style.css gốc
+   05-POST-DETAIL - Mina CMS V8 clean CSS
+   Trang chi tiết bài viết + tác giả + nội dung nhúng
+   Không thay đổi cấu trúc website
 ===================================================== */
 
-/***********************
-  MINA POST DETAIL FIX
-  - Giữ ảnh bài viết nhỏ, cân đối
-  - Không ép ảnh quá lớn
-  - Không làm méo ảnh
-***********************/
+/* =========================
+   PAGE WRAPPER
+========================= */
 
 .page{
   padding:70px 7%;
@@ -20,11 +18,17 @@
   margin:0 auto;
 }
 
+/* =========================
+   POST CARD
+========================= */
+
+#postDetail .post-card.post-full,
 .post-card.post-full{
-  width:min(980px,100%);
+  width:min(920px,100%);
+  max-width:920px;
   margin:40px auto;
-  padding:34px;
-  border-radius:22px;
+  padding:36px;
+  border-radius:24px;
   background:rgba(255,255,255,.06);
   border:1px solid rgba(95,244,255,.25);
   box-shadow:
@@ -35,6 +39,8 @@
 
 .post-card.post-full .post-category{
   display:inline-flex;
+  align-items:center;
+  justify-content:center;
   margin:0 0 18px;
   padding:9px 16px;
   border-radius:999px;
@@ -62,28 +68,6 @@
   font-weight:800;
 }
 
-/* Ảnh chính trong trang chi tiết bài viết */
-#postDetail img,
-.post-detail img,
-.post-card.post-full img,
-.post-card.post-full img.post-detail-image,
-.post-card.post-full .post-detail-image,
-.post-card.post-full .post-hero-image{
-  display:block !important;
-  width:auto !important;
-  max-width:360px !important;
-  height:auto !important;
-  max-height:460px !important;
-  object-fit:contain !important;
-  object-position:center !important;
-  margin:0 auto 30px !important;
-  border-radius:18px !important;
-  background:rgba(255,255,255,.04) !important;
-  box-shadow:
-    0 15px 40px rgba(0,0,0,.35),
-    0 0 22px rgba(95,244,255,.12) !important;
-}
-
 .post-card.post-full .post-desc{
   margin:0 0 24px;
   color:#dfe3ff;
@@ -92,23 +76,166 @@
   font-weight:700;
 }
 
-.post-card.post-full .post-content{
-  margin-top:22px;
+/* =========================
+   MAIN POST IMAGE
+========================= */
+
+#postDetail .mina-post-image-wrap,
+.mina-post-image-wrap{
+  width:min(620px,100%);
+  margin:0 auto 34px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+}
+
+#postDetail .post-detail-image,
+#postDetail img.post-detail-image,
+#postDetail img.post-hero-image,
+.post-detail-image{
+  display:block !important;
+  width:100% !important;
+  max-width:560px !important;
+  height:auto !important;
+  max-height:560px !important;
+  object-fit:contain !important;
+  object-position:center !important;
+  margin:0 auto !important;
+  border-radius:24px !important;
+  border:1px solid rgba(125,249,255,.22) !important;
+  background:rgba(7,8,23,.55) !important;
+  box-shadow:
+    0 18px 45px rgba(0,0,0,.42),
+    0 0 28px rgba(95,244,255,.14) !important;
+}
+
+/* Chỉ áp dụng cho ảnh nội dung, không ép toàn bộ img quá nhỏ */
+#postDetail .post-content img,
+.post-card.post-full .post-content img{
+  display:block;
+  max-width:100%;
+  height:auto;
+  object-fit:contain;
+  margin:26px auto;
+  border-radius:20px;
+}
+
+/* =========================
+   POST CONTENT
+========================= */
+
+.post-card.post-full .post-content,
+.post-content{
+  display:grid;
+  gap:18px;
+  margin-top:26px;
   color:#eef0ff;
   font-size:18px;
   line-height:1.85;
   font-weight:650;
 }
 
+.post-content p,
 .post-card.post-full .post-content p{
-  margin:0 0 18px;
+  margin:0;
+  color:#e8eaff;
+  line-height:1.8;
+  font-size:16px;
 }
 
-.post-card.post-full .post-content img{
-  margin:26px auto !important;
+/* =========================
+   INLINE IMAGES
+========================= */
+
+.mina-inline-image-wrap,
+.mina-content-image-wrap{
+  width:min(720px,100%);
+  margin:22px auto;
+  text-align:center;
 }
 
-/* Link ngoài nếu bài viết có */
+.mina-inline-image,
+.mina-content-image{
+  display:block;
+  width:100%;
+  max-height:620px;
+  object-fit:contain;
+  margin:0 auto;
+  border-radius:22px;
+  border:1px solid rgba(125,249,255,.22);
+  background:rgba(7,8,23,.55);
+  box-shadow:
+    0 0 28px rgba(125,249,255,.12),
+    0 0 40px rgba(255,79,216,.08);
+}
+
+.mina-content-image-wrap figcaption{
+  margin-top:10px;
+  color:#c9ccef;
+  font-size:14px;
+  line-height:1.5;
+}
+
+/* =========================
+   YOUTUBE EMBED
+========================= */
+
+.mina-youtube-wrap,
+.mina-youtube-embed{
+  position:relative;
+  width:min(760px,100%);
+  aspect-ratio:16/9;
+  margin:26px auto;
+  border-radius:22px;
+  overflow:hidden;
+  border:1px solid rgba(255,79,216,.24);
+  background:rgba(7,8,23,.65);
+  box-shadow:
+    0 0 28px rgba(255,79,216,.12),
+    0 0 34px rgba(125,249,255,.08);
+}
+
+.mina-youtube-wrap iframe,
+.mina-youtube-embed iframe{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+}
+
+/* =========================
+   QUOTE
+========================= */
+
+.mina-post-quote{
+  margin:22px 0;
+  padding:18px 20px;
+  border-left:4px solid #ff4fd8;
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(255,79,216,.12),rgba(125,249,255,.06));
+  color:#fff;
+}
+
+.mina-post-quote p{
+  margin:0;
+  color:#fff;
+  font-weight:800;
+}
+
+/* =========================
+   POST ACTIONS / LINKS
+========================= */
+
+.post-actions{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:28px;
+}
+
 .post-card.post-full .post-link,
 .post-card.post-full a.post-link{
   display:inline-flex;
@@ -119,323 +246,220 @@
   border-radius:999px;
   color:#050514;
   font-weight:900;
+  text-decoration:none;
   background:linear-gradient(135deg,#5ff4ff,#ff4fe3);
   box-shadow:0 0 24px rgba(95,244,255,.32);
 }
 
-/* Responsive cho điện thoại */
+/* =========================
+   AUTHOR / MINA INTRO CARD FIX
+   Sửa lỗi avatar/logo bị méo, lệch và xuống dòng
+========================= */
+
+.author-card,
+.post-author,
+.about-author,
+.mina-author-card{
+  display:flex;
+  align-items:center;
+  gap:22px;
+  width:100%;
+  margin:34px auto;
+  padding:28px;
+  border-radius:24px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(95,244,255,.28);
+  box-shadow:
+    0 0 28px rgba(95,244,255,.08),
+    inset 0 0 24px rgba(255,79,227,.035);
+}
+
+.author-avatar,
+.post-author-avatar,
+.about-author-avatar,
+.mina-author-avatar{
+  flex:0 0 92px;
+  width:92px;
+  height:92px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  border-radius:22px;
+  border:2px solid #5ff4ff;
+  background:#10131f;
+  box-shadow:0 0 20px rgba(95,244,255,.25);
+}
+
+.author-avatar img,
+.post-author-avatar img,
+.about-author-avatar img,
+.mina-author-avatar img,
+.author-card > img,
+.post-author > img,
+.about-author > img,
+.mina-author-card > img{
+  display:block !important;
+  width:100% !important;
+  height:100% !important;
+  max-width:100% !important;
+  max-height:100% !important;
+  object-fit:cover !important;
+  object-position:center !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:20px !important;
+  box-shadow:none !important;
+  background:transparent !important;
+}
+
+.author-card > img,
+.post-author > img,
+.about-author > img,
+.mina-author-card > img{
+  flex:0 0 92px;
+  width:92px !important;
+  height:92px !important;
+  border:2px solid #5ff4ff !important;
+  border-radius:22px !important;
+  box-shadow:0 0 20px rgba(95,244,255,.25) !important;
+}
+
+.author-info,
+.post-author-info,
+.about-author-info,
+.mina-author-info{
+  flex:1;
+  min-width:0;
+}
+
+.author-info h3,
+.post-author-info h3,
+.about-author-info h3,
+.mina-author-info h3,
+.author-card h3,
+.post-author h3,
+.about-author h3,
+.mina-author-card h3{
+  margin:0 0 10px;
+  color:#6ff6ff;
+  font-size:clamp(22px,2.6vw,32px);
+  font-weight:900;
+  line-height:1.15;
+  text-shadow:0 0 14px rgba(95,244,255,.35);
+}
+
+.author-info p,
+.post-author-info p,
+.about-author-info p,
+.mina-author-info p,
+.author-card p,
+.post-author p,
+.about-author p,
+.mina-author-card p{
+  margin:0;
+  color:#fff;
+  font-size:17px;
+  line-height:1.65;
+  font-weight:750;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
 @media(max-width:768px){
   .page{
     padding:38px 16px;
   }
 
+  #postDetail .post-card.post-full,
   .post-card.post-full{
     margin:24px auto;
-    padding:20px;
+    padding:22px;
     border-radius:18px;
   }
 
-  #postDetail img,
-  .post-detail img,
-  .post-card.post-full img,
-  .post-card.post-full img.post-detail-image,
-  .post-card.post-full .post-detail-image,
-  .post-card.post-full .post-hero-image{
-    width:100% !important;
-    max-width:100% !important;
-    max-height:none !important;
+  .post-card.post-full h1{
+    font-size:clamp(28px,8vw,38px);
   }
 
+  #postDetail .mina-post-image-wrap,
+  .mina-post-image-wrap,
+  .mina-inline-image-wrap,
+  .mina-content-image-wrap,
+  .mina-youtube-wrap,
+  .mina-youtube-embed{
+    width:100%;
+  }
+
+  #postDetail .post-detail-image,
+  #postDetail img.post-detail-image,
+  #postDetail img.post-hero-image,
+  .post-detail-image{
+    max-width:100% !important;
+    max-height:460px !important;
+    border-radius:18px !important;
+  }
+
+  .post-card.post-full .post-desc,
   .post-card.post-full .post-content,
-  .post-card.post-full .post-desc{
+  .post-content{
     font-size:16px;
     line-height:1.75;
   }
-}
-/* =========================
-   FIX ẢNH TRANG CHI TIẾT BÀI VIẾT
-========================= */
 
-#postDetail .post-card.post-full img,
-#postDetail img.post-detail-image,
-#postDetail img.post-hero-image{
-    display:block !important;
+  .post-content{
+    gap:15px;
+  }
 
-    width:auto !important;
-    max-width:420px !important;
+  .post-content p,
+  .post-card.post-full .post-content p{
+    font-size:15px;
+    line-height:1.75;
+  }
 
-    height:auto !important;
-    max-height:none !important;
+  .mina-inline-image,
+  .mina-content-image{
+    max-height:480px;
+    border-radius:18px;
+  }
 
-    object-fit:contain !important;
-    object-position:center !important;
+  .mina-youtube-wrap,
+  .mina-youtube-embed{
+    border-radius:16px;
+  }
 
-    margin:0 auto 30px auto !important;
-    border-radius:18px !important;
-
-    background:transparent !important;
-    box-shadow:0 15px 40px rgba(0,0,0,.35) !important;
-}
-
-@media(max-width:768px){
-    #postDetail .post-card.post-full img,
-    #postDetail img.post-detail-image,
-    #postDetail img.post-hero-image{
-        width:100% !important;
-        max-width:100% !important;
-    }
-}
-/* =========================
-   MINA POST DETAIL IMAGE FIX
-========================= */
-
-#postDetail .mina-post-image-wrap{
-  width:100%;
-  margin:0 auto 34px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-
-#postDetail .post-detail-image{
-  display:block !important;
-  width:auto !important;
-  max-width:min(560px, 100%) !important;
-  height:auto !important;
-  max-height:none !important;
-  object-fit:contain !important;
-  object-position:center !important;
-  border-radius:22px !important;
-  background:rgba(255,255,255,.04) !important;
-  box-shadow:
-    0 18px 45px rgba(0,0,0,.42),
-    0 0 28px rgba(95,244,255,.14) !important;
-}
-
-#postDetail .post-card.post-full{
-  max-width:920px;
-  margin:40px auto;
-  padding:36px;
-  border-radius:24px;
-}
-
-@media(max-width:768px){
-  #postDetail .post-card.post-full{
+  .author-card,
+  .post-author,
+  .about-author,
+  .mina-author-card{
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:16px;
     padding:22px;
-    margin:24px auto;
+    border-radius:20px;
   }
 
-  #postDetail .post-detail-image{
-    max-width:100% !important;
-    border-radius:18px !important;
-  }
-}
-/* Tinh chỉnh nhẹ trang chi tiết bài viết Mina */
-
-#postDetail .post-card.post-full{
-  max-width:860px;
-}
-
-#postDetail .mina-post-image-wrap{
-  margin-bottom:42px;
-}
-
-#postDetail .post-detail-image{
-  max-width:min(560px, 100%) !important;
-}
-
-/* ===== MINA CMS V2 - POST CONTENT ===== */
-
-.post-content{
-  line-height:1.75;
-}
-
-.post-content p{
-  margin:0 0 18px;
-}
-
-.mina-inline-image-wrap{
-  width:100%;
-  margin:22px auto;
-  text-align:center;
-}
-
-.mina-inline-image{
-  width:min(100%, 760px);
-  max-height:560px;
-  object-fit:contain;
-  border-radius:20px;
-  display:block;
-  margin:0 auto;
-  border:1px solid rgba(125,249,255,.18);
-  box-shadow:0 0 26px rgba(125,249,255,.08);
-}
-
-.mina-youtube-wrap{
-  position:relative;
-  width:min(100%, 820px);
-  aspect-ratio:16/9;
-  margin:26px auto;
-  border-radius:20px;
-  overflow:hidden;
-  border:1px solid rgba(255,79,216,.22);
-  box-shadow:0 0 28px rgba(255,79,216,.09);
-}
-
-.mina-youtube-wrap iframe{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  border:0;
-}
-
-.mina-post-quote{
-  margin:24px auto;
-  padding:18px 20px;
-  border-left:4px solid #ff4fd8;
-  border-radius:16px;
-  background:rgba(255,79,216,.08);
-  color:#fff;
-}
-
-.mina-post-quote p:last-child{
-  margin-bottom:0;
-}
-
-@media(max-width:720px){
-  .mina-inline-image{
-    max-height:430px;
-    border-radius:16px;
+  .author-avatar,
+  .post-author-avatar,
+  .about-author-avatar,
+  .mina-author-avatar,
+  .author-card > img,
+  .post-author > img,
+  .about-author > img,
+  .mina-author-card > img{
+    flex:0 0 86px;
+    width:86px !important;
+    height:86px !important;
   }
 
-  .mina-youtube-wrap{
-    border-radius:16px;
-  }
-}
-/* ===== MINA CMS V2 - POST CONTENT BLOCKS ===== */
-
-.post-content {
-  display: grid;
-  gap: 18px;
-  margin-top: 26px;
-}
-
-.post-content p {
-  margin: 0;
-  color: #e8eaff;
-  line-height: 1.8;
-  font-size: 16px;
-}
-
-.mina-content-image-wrap {
-  margin: 18px auto;
-  width: min(720px, 100%);
-  text-align: center;
-}
-
-.mina-content-image {
-  width: 100%;
-  max-height: 620px;
-  object-fit: contain;
-  border-radius: 22px;
-  border: 1px solid rgba(125, 249, 255, .22);
-  background: rgba(7, 8, 23, .55);
-  box-shadow:
-    0 0 28px rgba(125, 249, 255, .12),
-    0 0 40px rgba(255, 79, 216, .08);
-}
-
-.mina-content-image-wrap figcaption {
-  margin-top: 10px;
-  color: #c9ccef;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.mina-youtube-embed {
-  position: relative;
-  width: min(760px, 100%);
-  margin: 22px auto;
-  aspect-ratio: 16 / 9;
-  border-radius: 22px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 79, 216, .24);
-  background: rgba(7, 8, 23, .65);
-  box-shadow:
-    0 0 28px rgba(255, 79, 216, .12),
-    0 0 34px rgba(125, 249, 255, .08);
-}
-
-.mina-youtube-embed iframe {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  display: block;
-}
-
-.mina-post-quote {
-  margin: 22px 0;
-  padding: 18px 20px;
-  border-left: 4px solid #ff4fd8;
-  border-radius: 18px;
-  background:
-    linear-gradient(135deg, rgba(255, 79, 216, .12), rgba(125, 249, 255, .06));
-  color: #fff;
-}
-
-.mina-post-quote p {
-  color: #fff;
-  font-weight: 800;
-}
-
-.post-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 28px;
-}
-
-/* Ảnh đại diện bài viết giữ nhỏ, cân đối */
-.mina-post-image-wrap {
-  margin: 0 auto 22px;
-  width: min(620px, 100%);
-  text-align: center;
-}
-
-.post-detail-image {
-  width: 100%;
-  max-height: 520px;
-  object-fit: contain;
-  border-radius: 24px;
-  border: 1px solid rgba(125, 249, 255, .22);
-  background: rgba(7, 8, 23, .55);
-}
-
-/* Mobile */
-@media (max-width: 720px) {
-  .post-content {
-    gap: 15px;
-  }
-
-  .post-content p {
-    font-size: 15px;
-    line-height: 1.75;
-  }
-
-  .mina-content-image-wrap,
-  .mina-youtube-embed,
-  .mina-post-image-wrap {
-    width: 100%;
-  }
-
-  .mina-content-image {
-    max-height: 480px;
-    border-radius: 18px;
-  }
-
-  .post-detail-image {
-    max-height: 460px;
-    border-radius: 18px;
+  .author-card p,
+  .post-author p,
+  .about-author p,
+  .mina-author-card p{
+    font-size:15px;
+    line-height:1.6;
   }
 }
