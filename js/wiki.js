@@ -1,3 +1,8 @@
+/* =====================================================
+   WIKI.JS - Mina Wikipedia D8 Audition
+   Optimized version: giảm lag, debounce search, lazy image
+===================================================== */
+
 let wikiSkills = [];
 
 const wikiGrid = document.getElementById("wikiGrid");
@@ -5,61 +10,102 @@ const wikiSearch = document.getElementById("wikiSearch");
 const wikiStyleFilter = document.getElementById("wikiStyleFilter");
 const wikiRarityFilter = document.getElementById("wikiRarityFilter");
 
+let searchTimer = null;
+
+/* ===============================
+   LOAD DATA
+=============================== */
 async function loadWikiSkills() {
   try {
     const response = await fetch("database/wiki-skills.json");
+
+    if (!response.ok) {
+      throw new Error("Không tải được database/wiki-skills.json");
+    }
+
     wikiSkills = await response.json();
 
     renderStyleOptions();
     renderWikiSkills(wikiSkills);
-
   } catch (error) {
-    console.error("Lỗi tải dữ liệu Wikimedia:", error);
-    wikiGrid.innerHTML = `
-      <p class="wiki-error">
-        Không thể tải dữ liệu Wikimedia. Hãy kiểm tra file database/wiki-skills.json
-      </p>
-    `;
+    console.error("Lỗi tải dữ liệu Wikipedia:", error);
+
+    if (wikiGrid) {
+      wikiGrid.innerHTML = `
+        <p class="wiki-error">
+          Không thể tải dữ liệu Wikipedia. Hãy kiểm tra file database/wiki-skills.json
+        </p>
+      `;
+    }
   }
 }
 
+/* ===============================
+   RENDER CARD - TỐI ƯU
+=============================== */
 function renderWikiSkills(skills) {
-  if (!skills.length) {
-    wikiGrid.innerHTML = `<p>Không tìm thấy Skill phù hợp.</p>`;
+  if (!wikiGrid) return;
+
+  if (!skills || skills.length === 0) {
+    wikiGrid.innerHTML = `<p class="wiki-empty">Không tìm thấy Skill phù hợp.</p>`;
     return;
   }
 
-  wikiGrid.innerHTML = skills.map(skill => `
-    <article class="wiki-card">
-      <img 
-        src="${skill.image}" 
-        alt="${skill.name}"
-        onerror="this.src='images/wiki/skills/default.webp'"
-      >
+  const fragment = document.createDocumentFragment();
 
-      <div class="wiki-card-body">
-        <div class="wiki-id">ID Skill: ${skill.id}</div>
+  skills.forEach(skill => {
+    const card = document.createElement("article");
+    card.className = "wiki-card";
 
-        <h3>${skill.name}</h3>
+    const img = document.createElement("img");
+    img.src = skill.image || "images/wiki/skills/default.webp";
+    img.alt = skill.name || "Skill Audition";
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.onerror = function () {
+      this.src = "images/wiki/skills/default.webp";
+    };
 
-        <div class="wiki-meta">
-          <span>${skill.style}</span>
-          <span>BPM ${skill.bpm}</span>
-          <span>Độ hiếm ${skill.rarity}</span>
-        </div>
+    const body = document.createElement("div");
+    body.className = "wiki-card-body";
 
-        <p class="wiki-desc">${skill.description}</p>
+    body.innerHTML = `
+      <div class="wiki-id">ID Skill: ${safeText(skill.id)}</div>
 
-        <div class="wiki-rating">
-          ⭐ ${skill.rating}/10
-        </div>
+      <h3>${safeText(skill.name)}</h3>
+
+      <div class="wiki-meta">
+        <span>${safeText(skill.style)}</span>
+        <span>BPM ${safeText(skill.bpm)}</span>
+        <span>Độ hiếm ${safeText(skill.rarity)}</span>
       </div>
-    </article>
-  `).join("");
+
+      <p class="wiki-desc">${safeText(skill.description)}</p>
+
+      <div class="wiki-rating">
+        ⭐ ${safeText(skill.rating)}/10
+      </div>
+    `;
+
+    card.appendChild(img);
+    card.appendChild(body);
+    fragment.appendChild(card);
+  });
+
+  wikiGrid.replaceChildren(fragment);
 }
 
+/* ===============================
+   STYLE FILTER
+=============================== */
 function renderStyleOptions() {
-  const styles = [...new Set(wikiSkills.map(skill => skill.style))];
+  if (!wikiStyleFilter) return;
+
+  const styles = [...new Set(
+    wikiSkills
+      .map(skill => skill.style)
+      .filter(Boolean)
+  )];
 
   styles.forEach(style => {
     const option = document.createElement("option");
@@ -69,19 +115,30 @@ function renderStyleOptions() {
   });
 }
 
+/* ===============================
+   FILTER SKILLS
+=============================== */
 function filterWikiSkills() {
-  const keyword = wikiSearch.value.toLowerCase().trim();
-  const styleValue = wikiStyleFilter.value;
-  const rarityValue = wikiRarityFilter.value;
+  const keyword = wikiSearch ? wikiSearch.value.toLowerCase().trim() : "";
+  const styleValue = wikiStyleFilter ? wikiStyleFilter.value : "";
+  const rarityValue = wikiRarityFilter ? wikiRarityFilter.value : "";
 
   const filtered = wikiSkills.filter(skill => {
-    const matchKeyword =
-      skill.id.toLowerCase().includes(keyword) ||
-      skill.name.toLowerCase().includes(keyword) ||
-      skill.style.toLowerCase().includes(keyword);
+    const id = String(skill.id || "").toLowerCase();
+    const name = String(skill.name || "").toLowerCase();
+    const style = String(skill.style || "").toLowerCase();
 
-    const matchStyle = !styleValue || skill.style === styleValue;
-    const matchRarity = !rarityValue || skill.rarity === rarityValue;
+    const matchKeyword =
+      !keyword ||
+      id.includes(keyword) ||
+      name.includes(keyword) ||
+      style.includes(keyword);
+
+    const matchStyle =
+      !styleValue || skill.style === styleValue;
+
+    const matchRarity =
+      !rarityValue || skill.rarity === rarityValue;
 
     return matchKeyword && matchStyle && matchRarity;
   });
@@ -89,8 +146,40 @@ function filterWikiSkills() {
   renderWikiSkills(filtered);
 }
 
-wikiSearch.addEventListener("input", filterWikiSkills);
-wikiStyleFilter.addEventListener("change", filterWikiSkills);
-wikiRarityFilter.addEventListener("change", filterWikiSkills);
+/* ===============================
+   DEBOUNCE SEARCH - GIẢM LAG
+=============================== */
+function debounceFilter() {
+  clearTimeout(searchTimer);
 
+  searchTimer = setTimeout(() => {
+    filterWikiSkills();
+  }, 250);
+}
+
+/* ===============================
+   SAFE TEXT
+=============================== */
+function safeText(value) {
+  return value === undefined || value === null ? "" : String(value);
+}
+
+/* ===============================
+   EVENTS
+=============================== */
+if (wikiSearch) {
+  wikiSearch.addEventListener("input", debounceFilter);
+}
+
+if (wikiStyleFilter) {
+  wikiStyleFilter.addEventListener("change", filterWikiSkills);
+}
+
+if (wikiRarityFilter) {
+  wikiRarityFilter.addEventListener("change", filterWikiSkills);
+}
+
+/* ===============================
+   INIT
+=============================== */
 loadWikiSkills();
