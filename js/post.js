@@ -151,16 +151,44 @@ function renderContentBlocks(blocks = [], legacyContent = "") {
   }).join("");
 }
 
+function getPostCategoryPath(postData = {}) {
+  if (Array.isArray(postData.categoryPath) && postData.categoryPath.length) {
+    return postData.categoryPath;
+  }
+
+  const rawCategory =
+    postData.categoryName ||
+    postData.category ||
+    postData.playlist ||
+    postData.tag ||
+    "";
+
+  if (rawCategory) {
+    return String(rawCategory)
+      .split("/")
+      .map(item => item.trim())
+      .filter(Boolean);
+  }
+
+  const text = [
+    postData.title,
+    postData.desc,
+    postData.content
+  ].join(" ").toLowerCase();
+
+  if (text.includes("mix") || text.includes("outfit") || text.includes("cute girl")) {
+    return ["Mix & Match Outfit Game", "Style Girl", "Cute Girl"];
+  }
+
+  if (text.includes("poppin") || text.includes("skill")) {
+    return ["Review Skill", "D8 Skill Poppin"];
+  }
+
+  return ["Bài viết Mina"];
+}
+
 function renderBreadcrumb(postData = {}) {
-  const parts = Array.isArray(postData.categoryPath) && postData.categoryPath.length
-    ? postData.categoryPath
-    : [
-        postData.categoryName ||
-        postData.category ||
-        postData.playlist ||
-        postData.tag ||
-        "Bài viết Mina"
-      ];
+  const parts = getPostCategoryPath(postData);
 
   return `
     <div class="breadcrumb">
@@ -177,8 +205,7 @@ function renderBreadcrumb(postData = {}) {
       <span>Bài viết</span>
     </div>
   `;
-}
-      <span> → </span>
+}     <span> → </span>
       <span>Bài viết</span>
     </div>
   `;
@@ -250,7 +277,7 @@ async function loadPost() {
         }
 
         <p class="post-category">
-  ${escapeHTML(p.category || p.categoryName || p.playlist || p.tag || p.type || p.group || "Bài viết Mina")}
+  ${escapeHTML(getPostCategoryPath(p).join(" / "))}
 </p>
 
         <h1>${escapeHTML(p.title || "Không có tiêu đề")}</h1>
