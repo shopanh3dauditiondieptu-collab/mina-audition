@@ -1707,3 +1707,12 @@ color:#111!important;
 font-weight:900;
 
 }
+.mina-tree-children.collapsed{
+  display:none !important;
+}
+
+.tree-toggle{
+  display:inline-flex !important;
+  align-items:center !important;
+  gap:6px !important;
+}
