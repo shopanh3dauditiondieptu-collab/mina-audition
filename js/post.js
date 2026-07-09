@@ -305,7 +305,6 @@ async function loadPost() {
         }
       });
     }
-
   } catch (error) {
     console.error(error);
 
