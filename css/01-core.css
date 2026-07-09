@@ -213,17 +213,17 @@ img{max-width:100%;display:block}
 ===================================================== */
 .section-title h2{
 
-    margin:16px 0 10px;
+    margin:11px 0 7px;
 
     font-family:inherit;
 
-    font-size:clamp(38px,4vw,52px);
+    font-size:clamp(27px,2.8vw,36px);
 
     font-weight:900;
 
-    line-height:1.08;
+    line-height:1.02;
 
-    letter-spacing:-1px;
+    letter-spacing:-0.7px;
 
     text-transform:uppercase;
 
@@ -232,10 +232,9 @@ img{max-width:100%;display:block}
     text-align:center;
 
     text-shadow:
-        0 0 2px rgba(255,255,255,.85),
-        0 0 8px rgba(255,190,255,.28),
-        0 0 16px rgba(255,79,227,.12);
-
+        0 0 1px rgba(255,255,255,.80),
+        0 0 5px rgba(255,190,255,.22),
+        0 0 10px rgba(255,79,227,.08);
 }
 .section-title p{color:var(--muted);font-size:18px}
 .feature-grid{
