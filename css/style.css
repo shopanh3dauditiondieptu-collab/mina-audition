@@ -1801,3 +1801,80 @@ font-weight:900;
 #latestPosts .post-card p{
   flex:1 !important;
 }
+/* ===============================
+   HOME LATEST POSTS - 8 CARDS GRID
+================================ */
+
+#latestPosts{
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:28px !important;
+  align-items:stretch !important;
+}
+
+#latestPosts .post-card{
+  height:450px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  cursor:pointer !important;
+  transition:.25s ease !important;
+}
+
+#latestPosts .post-card:hover{
+  transform:translateY(-6px) !important;
+  box-shadow:0 0 24px rgba(255,101,220,.28) !important;
+}
+
+#latestPosts .post-card img{
+  width:100% !important;
+  height:150px !important;
+  object-fit:cover !important;
+  border-radius:14px !important;
+  flex-shrink:0 !important;
+}
+
+#latestPosts .post-card .tag{
+  min-height:22px !important;
+  margin-top:8px !important;
+}
+
+#latestPosts .post-card h3{
+  min-height:92px !important;
+  max-height:92px !important;
+  overflow:hidden !important;
+  display:-webkit-box !important;
+  -webkit-line-clamp:3 !important;
+  -webkit-box-orient:vertical !important;
+}
+
+#latestPosts .post-card p{
+  min-height:70px !important;
+  max-height:70px !important;
+  overflow:hidden !important;
+  display:-webkit-box !important;
+  -webkit-line-clamp:3 !important;
+  -webkit-box-orient:vertical !important;
+  flex:1 !important;
+}
+
+#latestPosts .post-card a{
+  margin-top:auto !important;
+  position:relative !important;
+  z-index:2 !important;
+}
+
+@media(max-width:1100px){
+  #latestPosts{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  }
+}
+
+@media(max-width:700px){
+  #latestPosts{
+    grid-template-columns:1fr !important;
+  }
+
+  #latestPosts .post-card{
+    height:auto !important;
+  }
+}
