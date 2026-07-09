@@ -1697,3 +1697,112 @@ window.deletePost = async function(id) {
   await minaV4OldDeletePost(id);
   setTimeout(minaV4LoadPosts, 800);
 };
+/* =====================================================
+   MINA CMS V8.1 - COMMENT MANAGER
+   Admin xem và xoá bình luận spam
+===================================================== */
+
+async function minaV81LoadCommentsManager() {
+  if (!adminApp || document.getElementById("minaCommentManagerV81")) return;
+
+  const section = document.createElement("section");
+  section.className = "panel";
+  section.id = "minaCommentManagerV81";
+
+  section.innerHTML = `
+    <div class="panel-title">
+      <div>
+        <h2>💬 Quản lý bình luận</h2>
+        <p class="muted">Xem và xoá bình luận spam dưới các bài viết.</p>
+      </div>
+      <button type="button" id="reloadCommentsV81" class="secondary-btn">Tải lại</button>
+    </div>
+
+    <div id="minaCommentsAdminListV81">
+      <p class="muted">Đang tải bình luận...</p>
+    </div>
+  `;
+
+  adminApp.appendChild(section);
+
+  document.getElementById("reloadCommentsV81").addEventListener("click", minaV81RenderComments);
+  minaV81RenderComments();
+}
+
+async function minaV81RenderComments() {
+  const box = document.getElementById("minaCommentsAdminListV81");
+  if (!box) return;
+
+  box.innerHTML = `<p class="muted">Đang tải bình luận...</p>`;
+
+  try {
+    const postsSnapshot = await getDocs(query(collection(db, "posts"), orderBy("createdAt", "desc")));
+
+    let comments = [];
+
+    for (const postDoc of postsSnapshot.docs) {
+      const post = postDoc.data();
+      const commentsSnapshot = await getDocs(
+        query(collection(db, "posts", postDoc.id, "comments"), orderBy("createdAt", "desc"))
+      );
+
+      commentsSnapshot.docs.forEach(commentDoc => {
+        comments.push({
+          id: commentDoc.id,
+          postId: postDoc.id,
+          postTitle: post.title || "Bài viết Mina",
+          ...commentDoc.data()
+        });
+      });
+    }
+
+    if (comments.length === 0) {
+      box.innerHTML = `<p class="muted">Chưa có bình luận nào.</p>`;
+      return;
+    }
+
+    box.innerHTML = comments.map(c => `
+      <div class="admin-item">
+        <b>${escapeHTML(c.name || "Người xem Mina")}</b>
+
+        <p>${escapeHTML(c.text || "")}</p>
+
+        <p class="muted">
+          Bài viết: ${escapeHTML(c.postTitle)}
+        </p>
+
+        <div class="actions">
+          <a href="post.html?id=${c.postId}" target="_blank" class="secondary-btn">
+            Xem bài
+          </a>
+
+          <button 
+            type="button" 
+            onclick="minaV81DeleteComment('${c.postId}', '${c.id}')">
+            Xoá bình luận
+          </button>
+        </div>
+      </div>
+    `).join("");
+
+  } catch (error) {
+    console.error(error);
+    box.innerHTML = `<p class="muted">Không tải được bình luận. Hãy kiểm tra Firestore Rules.</p>`;
+  }
+}
+
+window.minaV81DeleteComment = async function(postId, commentId) {
+  const ok = confirm("Bạn có chắc muốn xoá bình luận này không?");
+  if (!ok) return;
+
+  try {
+    await deleteDoc(doc(db, "posts", postId, "comments", commentId));
+    alert("Đã xoá bình luận.");
+    minaV81RenderComments();
+  } catch (error) {
+    console.error(error);
+    alert("Không xoá được bình luận. Hãy kiểm tra Firestore Rules.");
+  }
+};
+
+setTimeout(minaV81LoadCommentsManager, 1500);
