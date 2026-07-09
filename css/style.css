@@ -1878,3 +1878,166 @@ font-weight:900;
     height:auto !important;
   }
 }
+/* =====================================================
+   MINA CMS V8.1 - POST EXPERIENCE
+===================================================== */
+
+.mina-post-experience-v81{
+  margin-top:34px;
+  display:grid;
+  gap:24px;
+}
+
+.mina-post-stats-v81{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.mina-post-stats-v81 > div,
+.mina-post-stats-v81 button{
+  min-height:72px;
+  border-radius:18px;
+  border:1px solid rgba(80,220,255,.35);
+  background:rgba(255,255,255,.045);
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:5px;
+  font-weight:800;
+}
+
+.mina-post-stats-v81 button{
+  cursor:pointer;
+}
+
+.mina-post-stats-v81 button.liked{
+  background:linear-gradient(135deg,#ff4fd8,#6af6ff);
+  border-color:transparent;
+}
+
+.mina-post-nav-v81{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.mina-post-nav-v81 a{
+  padding:16px;
+  border-radius:18px;
+  border:1px solid rgba(80,220,255,.32);
+  background:rgba(255,255,255,.04);
+  color:#eaf7ff;
+  text-decoration:none;
+}
+
+.mina-post-nav-v81 a:hover{
+  border-color:#6af6ff;
+  box-shadow:0 0 18px rgba(106,246,255,.2);
+}
+
+.mina-related-posts-v81,
+.mina-comments-v81{
+  padding:22px;
+  border-radius:22px;
+  border:1px solid rgba(80,220,255,.32);
+  background:rgba(255,255,255,.035);
+}
+
+.mina-related-posts-v81 h3,
+.mina-comments-v81 h3{
+  margin-bottom:16px;
+}
+
+.mina-related-grid-v81{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:14px;
+}
+
+.mina-related-card-v81{
+  padding:12px;
+  border-radius:18px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.12);
+  color:#fff;
+  text-decoration:none;
+}
+
+.mina-related-card-v81 img{
+  width:100%;
+  aspect-ratio:16/10;
+  object-fit:cover;
+  border-radius:14px;
+  margin-bottom:10px;
+}
+
+.mina-related-card-v81 strong{
+  display:block;
+  font-size:15px;
+  line-height:1.3;
+}
+
+.mina-related-card-v81 span{
+  display:block;
+  margin-top:6px;
+  color:#7df9ff;
+  font-size:13px;
+}
+
+.mina-comment-form-v81{
+  display:grid;
+  gap:12px;
+  margin-bottom:18px;
+}
+
+.mina-comment-form-v81 input,
+.mina-comment-form-v81 textarea{
+  width:100%;
+  border-radius:14px;
+  border:1px solid rgba(80,220,255,.35);
+  background:rgba(5,8,25,.75);
+  color:#fff;
+  padding:13px 15px;
+  font-family:inherit;
+}
+
+.mina-comment-form-v81 button{
+  width:max-content;
+  padding:12px 20px;
+  border-radius:999px;
+  border:0;
+  background:linear-gradient(135deg,#18f0ff,#d95cff);
+  color:#fff;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.mina-comment-list-v81{
+  display:grid;
+  gap:12px;
+}
+
+.mina-comment-item-v81{
+  padding:14px 16px;
+  border-radius:16px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.1);
+}
+
+.mina-comment-item-v81 strong{
+  color:#7df9ff;
+}
+
+.mina-comment-item-v81 p{
+  margin:6px 0 0;
+}
+
+@media(max-width:700px){
+  .mina-post-stats-v81,
+  .mina-post-nav-v81{
+    grid-template-columns:1fr;
+  }
+}
