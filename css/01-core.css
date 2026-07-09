@@ -496,3 +496,55 @@ img{max-width:100%;display:block}
 
 /* END MINA GLOBAL SECTION TITLE LOCK
 ===================================================== */
+/*========================================
+    MINA CMS - TITLE FONT SYSTEM
+========================================*/
+
+:root{
+    --title-font:"Barlow Condensed",sans-serif;
+}
+
+/* Hero */
+.hero-title{
+    font-family:var(--title-font);
+    font-weight:800;
+    font-size:clamp(62px,6vw,82px);
+    letter-spacing:.5px;
+    line-height:1;
+}
+
+/* Wikipedia */
+.wiki-title{
+    font-family:var(--title-font);
+    font-weight:800;
+    font-size:clamp(46px,4vw,66px);
+    letter-spacing:.5px;
+    line-height:1;
+}
+
+/* Video */
+.video-title{
+    font-family:var(--title-font);
+    font-weight:800;
+    font-size:clamp(42px,3vw,54px);
+    letter-spacing:.4px;
+    line-height:1;
+}
+
+/* Mina Blog */
+.blog-title{
+    font-family:var(--title-font);
+    font-weight:800;
+    font-size:clamp(42px,3vw,54px);
+    letter-spacing:.4px;
+    line-height:1;
+}
+
+/* Social */
+.social-title{
+    font-family:var(--title-font);
+    font-weight:800;
+    font-size:clamp(42px,3vw,54px);
+    letter-spacing:.4px;
+    line-height:1;
+}
