@@ -221,3 +221,123 @@
 
     text-shadow:inherit;
 }
+/* =====================================================
+   MINA CMS V7 - VIDEO SECTION ĐỒNG BỘ WIKIPEDIA
+===================================================== */
+
+/* Section Video về dạng 1 cột giống Wikipedia */
+.video-showcase{
+  display:block !important;
+  padding:76px 24px 86px !important;
+  text-align:center !important;
+}
+
+/* Cụm tiêu đề căn giữa */
+.video-heading{
+  max-width:760px !important;
+  margin:0 auto 34px !important;
+  text-align:center !important;
+}
+
+/* Dấu ◆ giống section-title */
+.video-heading .section-dots{
+  display:block !important;
+  margin:0 auto 14px !important;
+  color:var(--cyan) !important;
+  letter-spacing:8px !important;
+  text-shadow:0 0 14px var(--cyan) !important;
+}
+
+/* VIDEO MỚI NHẤT giống 100% .section-title h2 */
+.video-title{
+  margin:14px 0 8px !important;
+  font-size:clamp(34px,4vw,50px) !important;
+  font-weight:900 !important;
+  font-family:inherit !important;
+  line-height:1.15 !important;
+  letter-spacing:0 !important;
+  text-transform:uppercase !important;
+  color:#fff !important;
+  text-align:center !important;
+  text-shadow:0 0 20px rgba(255,79,227,.45) !important;
+}
+
+/* Mô tả giống .section-title p */
+.video-desc{
+  max-width:620px !important;
+  margin:0 auto !important;
+  text-align:center !important;
+  font-size:18px !important;
+  line-height:1.6 !important;
+  color:var(--muted) !important;
+}
+
+/* Xóa các khối cũ gây lệch */
+.video-side,
+.video-badge,
+.video-meta,
+.video-actions,
+.video-comments,
+.featured-comments{
+  display:none !important;
+}
+
+/* Khối video nằm giữa */
+.video-layout,
+.video-main{
+  width:100% !important;
+  max-width:760px !important;
+  margin:0 auto !important;
+  padding:0 !important;
+  display:flex !important;
+  justify-content:center !important;
+  align-items:center !important;
+  background:transparent !important;
+  border:none !important;
+  box-shadow:none !important;
+}
+
+/* Video cân đối */
+.video-box{
+  width:min(100%,680px) !important;
+  max-width:680px !important;
+  aspect-ratio:16 / 9 !important;
+  margin:0 auto !important;
+  padding:2px !important;
+  border-radius:22px !important;
+  overflow:hidden !important;
+  background:linear-gradient(135deg,#5ff4ff,#7b4dff,#ff4fe3) !important;
+  box-shadow:
+    0 0 32px rgba(95,244,255,.28),
+    0 0 58px rgba(255,79,227,.18) !important;
+}
+
+.video-box iframe,
+#youtubeFrame{
+  width:100% !important;
+  height:100% !important;
+  display:block !important;
+  border:0 !important;
+  border-radius:20px !important;
+  background:#000 !important;
+}
+
+/* Xóa glow phụ nếu làm rối */
+.video-glow{
+  display:none !important;
+}
+
+/* Mobile */
+@media(max-width:600px){
+  .video-showcase{
+    padding:58px 16px 68px !important;
+  }
+
+  .video-title{
+    font-size:clamp(32px,10vw,46px) !important;
+  }
+
+  .video-desc{
+    font-size:16px !important;
+  }
+}
