@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Đăng nhập Mina CMS</title>
+  <link rel="stylesheet" href="css/admin-wiki.css?v=1.5.0" />
+</head>
+
+<body class="login-body">
+  <main class="login-box">
+    <div class="login-logo">✦</div>
+
+    <h1>Mina CMS</h1>
+    <p>Đăng nhập để quản lý Wiki Skill</p>
+
+    <form id="loginForm" class="login-form">
+      <input id="adminUser" type="text" placeholder="Tài khoản admin" autocomplete="username" required />
+      <input id="adminPass" type="password" placeholder="Mật khẩu" autocomplete="current-password" required />
+
+      <label class="remember-row">
+        <input id="rememberLogin" type="checkbox" />
+        <span>Ghi nhớ đăng nhập</span>
+      </label>
+
+      <button type="submit" class="cms-btn primary full">Đăng nhập</button>
+
+      <small id="loginError" class="login-error"></small>
+    </form>
+
+    <a href="wiki.html" class="back-link">← Quay lại Wiki Mina</a>
+  </main>
+
+  <script src="js/admin-auth.js?v=1.5.0"></script>
+</body>
+</html>
