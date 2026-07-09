@@ -1,67 +1,82 @@
-const YOUTUBE_API_KEY = "DAN_API_KEY_CUA_BAN_VAO_DAY";
-const YOUTUBE_CHANNEL_ID = "DAN_CHANNEL_ID_CUA_BAN_VAO_DAY";
+/* =====================================================
+   YOUTUBE LATEST - MINA AUDITION
+   Bản tối ưu: không dùng API Key, không crash web
+===================================================== */
 
-async function loadLatestYoutubeVideo() {
-  try {
-    const searchUrl =
-      `https://www.googleapis.com/youtube/v3/search?key=${YOUTUBE_API_KEY}&channelId=${YOUTUBE_CHANNEL_ID}&part=snippet,id&order=date&maxResults=1&type=video`;
+(function () {
+  "use strict";
 
-    const searchRes = await fetch(searchUrl);
-    const searchData = await searchRes.json();
-// Kiểm tra dữ liệu YouTube trả về
-if (
-    !searchData ||
-    !searchData.items ||
-    searchData.items.length === 0
-) {
-    console.warn("YouTube API không trả về video.");
+  const CONFIG = {
+    channelUrl: "https://www.youtube.com/@mina.audition",
+    fallbackVideoId: "Bh7v-eQKhCQ",
+    embedId: "youtubeFrame",
+    linkId: "youtubeLink",
+    viewsId: "youtubeViews",
+    dateId: "youtubeDate"
+  };
 
-    const frame = document.getElementById("youtubeFrame");
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function setText(id, text) {
+    const el = $(id);
+    if (el) el.textContent = text;
+  }
+
+  function setFallbackVideo() {
+    const frame = $(CONFIG.embedId);
+    const link = $(CONFIG.linkId);
+
     if (frame) {
-        frame.src =
-            "https://www.youtube.com/embed?listType=user_uploads&list=mina.audition";
+      frame.src =
+        `https://www.youtube.com/embed/${CONFIG.fallbackVideoId}?rel=0&modestbranding=1`;
     }
 
-    document.getElementById("youtubeViews").innerText =
-        "👁 Đang cập nhật";
+    if (link) {
+      link.href = `https://www.youtube.com/watch?v=${CONFIG.fallbackVideoId}`;
+    }
 
-    document.getElementById("youtubeDate").innerText =
-        "📅 Chưa có dữ liệu";
-
-    return;
-}
-    const video = searchData.items[0];
-    const videoId = video.id.videoId;
-    const publishedAt = video.snippet.publishedAt;
-
-    document.getElementById("youtubeFrame").src =
-      `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
-
-    document.getElementById("youtubeLink").href =
-      `https://www.youtube.com/watch?v=${videoId}`;
-
-    const statsUrl =
-      `https://www.googleapis.com/youtube/v3/videos?key=${YOUTUBE_API_KEY}&id=${videoId}&part=statistics,snippet`;
-
-    const statsRes = await fetch(statsUrl);
-    const statsData = await statsRes.json();
-
-    const viewCount = Number(statsData.items[0].statistics.viewCount || 0);
-
-    document.getElementById("youtubeViews").innerText =
-      `👁️ ${viewCount.toLocaleString("vi-VN")} lượt xem`;
-
-    document.getElementById("youtubeDate").innerText =
-      `📅 ${new Date(publishedAt).toLocaleDateString("vi-VN")}`;
-  } catch (error) {
-    console.error("Không tải được video YouTube:", error);
-
-    document.getElementById("youtubeFrame").src =
-      "https://www.youtube.com/embed/Bh7v-eQKhCQ?rel=0&modestbranding=1";
-
-    document.getElementById("youtubeViews").innerText = "👁️ Đang cập nhật";
-    document.getElementById("youtubeDate").innerText = "📅 Video nổi bật";
+    setText(CONFIG.viewsId, "👁️ Đang cập nhật");
+    setText(CONFIG.dateId, "📅 Video nổi bật");
   }
-}
 
-loadLatestYoutubeVideo();
+  function initYoutubeBlock() {
+    const frame = $(CONFIG.embedId);
+    const link = $(CONFIG.linkId);
+
+    if (!frame) {
+      console.warn("Không tìm thấy #youtubeFrame");
+      return;
+    }
+
+    /*
+      Bản ổn định nhất:
+      - Không dùng YouTube API
+      - Không cần API Key
+      - Không bị lỗi 400/quota
+      - Không làm web bị quay vòng nếu YouTube lỗi
+    */
+
+    frame.src =
+      `https://www.youtube.com/embed?listType=user_uploads&list=mina.audition`;
+
+    if (link) {
+      link.href = CONFIG.channelUrl;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+    }
+
+    setText(CONFIG.viewsId, "👁️ Xem trên YouTube");
+    setText(CONFIG.dateId, "📅 Video mới nhất từ kênh Mina");
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    try {
+      initYoutubeBlock();
+    } catch (error) {
+      console.error("Không tải được YouTube Mina:", error);
+      setFallbackVideo();
+    }
+  });
+})();
