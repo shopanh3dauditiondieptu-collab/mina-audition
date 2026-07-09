@@ -1,0 +1,26 @@
+[
+  {
+    "id": "47767",
+    "name": "Skill 47767",
+    "style": "Poppin",
+    "bpm": "132",
+    "rarity": "S",
+    "rating": 9.5,
+    "image": "images/wiki/skills/47767.webp",
+    "description": "Skill đẹp, phù hợp quay video Audition D8, có tiềm năng làm nội dung viral.",
+    "youtube": "",
+    "tags": ["D8", "Audition", "Poppin", "Skill đẹp"]
+  },
+  {
+    "id": "47768",
+    "name": "Skill 47768",
+    "style": "Sexy Girl",
+    "bpm": "128",
+    "rarity": "A",
+    "rating": 8.8,
+    "image": "images/wiki/skills/47768.webp",
+    "description": "Skill có dáng đẹp, phù hợp làm video review hoặc short dance.",
+    "youtube": "",
+    "tags": ["D8", "Audition", "Sexy Girl"]
+  }
+]
