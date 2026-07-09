@@ -265,3 +265,63 @@ body {
     text-align: center;
   }
 }
+/* ===== WIKI TOP NAV FIX ===== */
+.wiki-top-nav{
+    max-width:1120px;
+    margin:28px auto 18px;
+    padding:14px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:22px;
+    background:rgba(20,18,38,.72);
+    backdrop-filter:blur(16px);
+}
+
+.wiki-nav-logo{
+    color:#fff;
+    text-decoration:none;
+    font-size:18px;
+    font-weight:900;
+}
+
+.wiki-nav-links{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.wiki-nav-links a{
+    color:#fff;
+    text-decoration:none;
+    padding:9px 14px;
+    border-radius:999px;
+    font-size:14px;
+    font-weight:800;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.08);
+}
+
+.wiki-nav-links a:hover{
+    background:rgba(255,79,227,.18);
+    color:#ff8df1;
+}
+
+@media(max-width:768px){
+    .wiki-top-nav{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .wiki-nav-links{
+        width:100%;
+    }
+
+    .wiki-nav-links a{
+        flex:1;
+        text-align:center;
+    }
+}
