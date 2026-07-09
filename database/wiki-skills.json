@@ -1,173 +1,44 @@
 [
   {
     "id": "47767",
-    "name": "Skill 47767",
-    "style": "Poppin",
-    "bpm": 132,
-    "rarity": "S",
-    "rating": 9.5,
-    "image": "/images/wiki/skills/47767.webp",
-    "description": "Skill đẹp, form nhảy rõ, phù hợp quay video Audition D8 và làm nội dung review skill.",
-    "youtube": "",
-    "tags": [
-      "D8",
-      "Audition",
-      "Poppin",
-      "Skill đẹp",
-      "Mina Wiki"
-    ]
+    "name": "Wave",
+    "level": "6",
+    "type": "4K",
+    "style": "HipHop",
+    "bpm": 128,
+    "rarity": "A",
+    "rating": 5,
+    "reviewed": true,
+    "youtube": true,
+    "wiki": true,
+    "hot": true,
+    "image": "images/wiki/47767.webp",
+    "youtubeUrl": "",
+    "description": "Skill mẫu dùng để kiểm tra hệ thống Wiki Mina.",
+    "tags": ["HipHop", "4K", "Hot"],
+    "createdAt": "2026-07-10",
+    "updatedAt": "2026-07-10",
+    "status": "published"
   },
   {
     "id": "47768",
-    "name": "Skill 47768",
-    "style": "Sexy Girl",
-    "bpm": 128,
-    "rarity": "A",
-    "rating": 8.8,
-    "image": "/images/wiki/skills/47768.webp",
-    "description": "Skill có dáng mềm, hợp video short dance, review dáng và nội dung Mina Blog.",
-    "youtube": "",
-    "tags": [
-      "D8",
-      "Audition",
-      "Sexy Girl",
-      "Review Skill"
-    ]
-  },
-  {
-    "id": "47769",
-    "name": "Skill 47769",
-    "style": "HipHop",
-    "bpm": 136,
-    "rarity": "A",
-    "rating": 8.6,
-    "image": "/images/wiki/skills/47769.webp",
-    "description": "Skill có nhịp mạnh, phù hợp các bài BPM cao và video highlight động tác.",
-    "youtube": "",
-    "tags": [
-      "D8",
-      "Audition",
-      "HipHop",
-      "BPM cao"
-    ]
-  },
-  {
-    "id": "47770",
-    "name": "Skill 47770",
-    "style": "Cute",
-    "bpm": 120,
-    "rarity": "B",
-    "rating": 8.2,
-    "image": "/images/wiki/skills/47770.webp",
-    "description": "Skill dễ thương, hợp concept nhẹ nhàng, pastel hoặc nội dung giải trí ngắn.",
-    "youtube": "",
-    "tags": [
-      "D8",
-      "Audition",
-      "Cute",
-      "Pastel"
-    ]
-  },
-  {
-    "id": "47771",
-    "name": "Skill 47771",
+    "name": "Moon Walk",
+    "level": "7",
+    "type": "8K",
     "style": "Poppin",
-    "bpm": 140,
+    "bpm": 132,
     "rarity": "S",
-    "rating": 9.2,
-    "image": "/images/wiki/skills/47771.webp",
-    "description": "Skill có độ nổi bật cao, hợp quay clip viral, montage và review skill đẹp.",
-    "youtube": "",
-    "tags": [
-      "D8",
-      "Audition",
-      "Poppin",
-      "Viral"
-    ]
-  },
-  {
-    "id": "47772",
-    "name": "Skill 47772",
-    "style": "Sexy Girl",
-    "bpm": 126,
-    "rarity": "B",
-    "rating": 8.0,
-    "image": "/images/wiki/skills/47772.webp",
-    "description": "Skill dễ dùng, phù hợp người xem muốn tham khảo dáng nhảy nữ mềm và gọn.",
-    "youtube": "",
-    "tags": [
-      "D8",
-      "Audition",
-      "Sexy Girl",
-      "Dáng đẹp"
-    ]
-  },
-  {
-    "id": "47773",
-    "name": "Skill 47773",
-    "style": "FreeStyle",
-    "bpm": 130,
-    "rarity": "A",
-    "rating": 8.7,
-    "image": "/images/wiki/skills/47773.webp",
-    "description": "Skill linh hoạt, có thể dùng cho nhiều concept video khác nhau của Mina Audition.",
-    "youtube": "",
-    "tags": [
-      "D8",
-      "Audition",
-      "FreeStyle",
-      "Content"
-    ]
-  },
-  {
-    "id": "47774",
-    "name": "Skill 47774",
-    "style": "Dance",
-    "bpm": 124,
-    "rarity": "C",
-    "rating": 7.6,
-    "image": "/images/wiki/skills/47774.webp",
-    "description": "Skill cơ bản, phù hợp làm dữ liệu nền cho Wikipedia D8 và so sánh với skill hiếm.",
-    "youtube": "",
-    "tags": [
-      "D8",
-      "Audition",
-      "Dance",
-      "Cơ bản"
-    ]
-  },
-  {
-    "id": "47775",
-    "name": "Skill 47775",
-    "style": "Poppin",
-    "bpm": 134,
-    "rarity": "A",
-    "rating": 8.9,
-    "image": "/images/wiki/skills/47775.webp",
-    "description": "Skill có tiết tấu đẹp, phù hợp dựng video review nhanh và highlight chuyển động.",
-    "youtube": "",
-    "tags": [
-      "D8",
-      "Audition",
-      "Poppin",
-      "Highlight"
-    ]
-  },
-  {
-    "id": "47776",
-    "name": "Skill 47776",
-    "style": "HipHop",
-    "bpm": 138,
-    "rarity": "S",
-    "rating": 9.1,
-    "image": "/images/wiki/skills/47776.webp",
-    "description": "Skill mạnh, hợp nhạc nhanh, nội dung so sánh skill và video YouTube Shorts.",
-    "youtube": "",
-    "tags": [
-      "D8",
-      "Audition",
-      "HipHop",
-      "YouTube Shorts"
-    ]
+    "rating": 5,
+    "reviewed": false,
+    "youtube": false,
+    "wiki": true,
+    "hot": false,
+    "image": "images/wiki/47768.webp",
+    "youtubeUrl": "",
+    "description": "Skill mẫu cho hệ thống lọc theo độ hiếm, BPM, style và trạng thái review.",
+    "tags": ["Poppin", "8K", "Rare"],
+    "createdAt": "2026-07-10",
+    "updatedAt": "2026-07-10",
+    "status": "draft"
   }
 ]
