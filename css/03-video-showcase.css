@@ -168,3 +168,42 @@
     border-radius:18px;
   }
 }
+/* =====================================================
+   VIDEO TITLE = WIKIPEDIA TITLE
+===================================================== */
+
+/* Kế thừa toàn bộ style từ Wikipedia */
+
+.video-title{
+    all: unset;
+
+    display:block;
+
+    font: inherit;
+
+    color: inherit;
+}
+
+/* Dùng đúng style của section-title h2 */
+
+.section-title h2,
+.video-title{
+
+    font-family: inherit !important;
+
+    font-size: inherit !important;
+
+    font-weight: inherit !important;
+
+    line-height: inherit !important;
+
+    letter-spacing: inherit !important;
+
+    text-transform: uppercase;
+
+    color: #fff;
+
+    text-align:center;
+
+    text-shadow:inherit;
+}
