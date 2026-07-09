@@ -3,94 +3,190 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Wiki Mina</title>
 
-  <link rel="stylesheet" href="css/admin-wiki.css?v=1.0.0">
+  <title>Mina CMS - Wiki Skill</title>
 
+  <link rel="stylesheet" href="css/admin-wiki.css?v=2.0.0" />
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
-  <main class="admin-wrap">
-    <header class="admin-head">
-      <div>
-        <h1>Admin Wiki Mina</h1>
-        <p>Quản lý dữ liệu Skill Audition nhanh bằng form hoặc Excel.</p>
+  <div class="mina-cms">
+    <aside class="cms-sidebar">
+      <div class="cms-logo">
+        <span class="cms-logo-icon">✦</span>
+        <div>
+          <h1>Mina CMS</h1>
+          <p>Wiki Skill Manager</p>
+        </div>
       </div>
 
-      <div class="admin-actions">
-        <a href="index.html" class="btn ghost">← Trang chủ</a>
-        <a href="wiki.html" class="btn ghost">Xem Wiki</a>
+      <nav class="cms-nav">
+        <button class="active" data-tab="dashboard">📊 Dashboard</button>
+        <button data-tab="add">➕ Thêm Skill</button>
+        <button data-tab="manage">📚 Quản lý Skill</button>
+        <button data-tab="import">📥 Import Excel</button>
+        <button data-tab="youtube">▶ YouTube Review</button>
+        <button data-tab="backup">💾 Backup</button>
+      </nav>
+
+      <div class="cms-links">
+        <a href="index.html">← Trang chủ</a>
+        <a href="wiki.html">Xem Wiki</a>
       </div>
-    </header>
+    </aside>
 
-    <section class="panel">
-      <h2>Nhập dữ liệu</h2>
+    <main class="cms-main">
+      <header class="cms-top">
+        <div>
+          <h2 id="cmsTitle">Dashboard Wiki Mina</h2>
+          <p>Quản lý dữ liệu skill không cần sửa code thủ công.</p>
+        </div>
 
-      <div class="tool-row">
-        <button id="loadJsonBtn" class="btn">Tải dữ liệu hiện tại</button>
+        <div class="cms-top-actions">
+          <button id="loadJsonBtn" class="cms-btn">Tải JSON hiện tại</button>
+          <button id="exportJsonBtn" class="cms-btn primary">Xuất wiki-skills.json</button>
+        </div>
+      </header>
 
-        <label class="btn">
-          Import Excel
-          <input id="excelInput" type="file" accept=".xlsx,.xls,.csv" hidden />
-        </label>
+      <section class="cms-tab active" id="tab-dashboard">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <span>Tổng Skill</span>
+            <strong id="totalSkill">0</strong>
+          </div>
 
-        <button id="exportJsonBtn" class="btn primary">Xuất wiki-skills.json</button>
-        <button id="clearBtn" class="btn danger">Xoá dữ liệu tạm</button>
-      </div>
+          <div class="stat-card">
+            <span>Có YouTube</span>
+            <strong id="totalYoutube">0</strong>
+          </div>
 
-      <p class="note">
-        Excel nên có các cột: id, name, style, bpm, rarity, rating, image, youtube, description, tags.
-      </p>
-    </section>
+          <div class="stat-card">
+            <span>Cần Review</span>
+            <strong id="totalNeedReview">0</strong>
+          </div>
 
-    <section class="panel">
-      <h2>Thêm / sửa skill</h2>
+          <div class="stat-card">
+            <span>Độ hiếm S</span>
+            <strong id="totalRareS">0</strong>
+          </div>
+        </div>
 
-      <form id="skillForm" class="form-grid">
-        <input name="id" placeholder="ID Skill, ví dụ: 47767" required />
-        <input name="name" placeholder="Tên skill" required />
-        <input name="style" placeholder="Style: Poppin, Sexy Girl..." />
-        <input name="bpm" type="number" placeholder="BPM" />
-        <input name="rarity" placeholder="Độ hiếm: S, A, B, C" />
-        <input name="rating" type="number" step="0.1" placeholder="Điểm đẹp: 9.5" />
+        <div class="cms-panel">
+          <h3>Quy trình cập nhật chuẩn</h3>
+          <div class="workflow">
+            <span>Excel</span>
+            <b>→</b>
+            <span>Import</span>
+            <b>→</b>
+            <span>Kiểm tra</span>
+            <b>→</b>
+            <span>Xuất JSON</span>
+            <b>→</b>
+            <span>Upload GitHub</span>
+          </div>
+        </div>
+      </section>
 
-        <input name="image" placeholder="/images/wiki/skills/47767.webp" />
-        <input name="youtube" placeholder="Link YouTube review skill" />
+      <section class="cms-tab" id="tab-add">
+        <div class="cms-panel">
+          <h3>Thêm / sửa Skill</h3>
 
-        <textarea name="description" placeholder="Mô tả skill"></textarea>
-        <input name="tags" placeholder="Tag, cách nhau bằng dấu phẩy: D8, Audition, Poppin" />
+          <form id="skillForm" class="skill-form">
+            <input name="id" placeholder="ID Skill, ví dụ: 47767" required />
+            <input name="name" placeholder="Tên skill" required />
+            <input name="style" placeholder="Style: Poppin, Sexy Girl, HipHop..." />
+            <input name="bpm" type="number" placeholder="BPM đẹp" />
+            <input name="rarity" placeholder="Độ hiếm: S, A, B, C" />
+            <input name="rating" type="number" step="0.1" placeholder="Điểm đẹp: 9.5" />
 
-        <button class="btn primary full" type="submit">Lưu skill</button>
-      </form>
-    </section>
+            <input name="image" placeholder="/images/wiki/skills/47767.webp" />
+            <input name="youtube" placeholder="Link YouTube review skill" />
+            <input name="song" placeholder="Bài nhạc đề xuất" />
+            <input name="camera" placeholder="Góc quay đề xuất" />
 
-    <section class="panel">
-      <div class="table-head">
-        <h2>Danh sách skill</h2>
-        <input id="searchInput" placeholder="Tìm ID, tên skill, style..." />
-      </div>
+            <textarea name="description" placeholder="Mô tả skill"></textarea>
+            <textarea name="note" placeholder="Ghi chú sản xuất video / CapCut / ý tưởng review"></textarea>
 
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Tên skill</th>
-              <th>Style</th>
-              <th>BPM</th>
-              <th>Hiếm</th>
-              <th>Điểm</th>
-              <th>YouTube</th>
-              <th>Sửa</th>
-            </tr>
-          </thead>
-          <tbody id="skillTable"></tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+            <input name="tags" placeholder="Tags: D8, Audition, Poppin, Skill đẹp" />
 
-  <script src="js/admin-wiki.js?v=1.0.0"></script>
+            <button type="submit" class="cms-btn primary full">Lưu Skill</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="cms-tab" id="tab-manage">
+        <div class="cms-panel">
+          <div class="panel-head">
+            <h3>Danh sách Skill</h3>
+            <input id="searchInput" class="cms-search" placeholder="Tìm ID, tên skill, style..." />
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Tên Skill</th>
+                  <th>Style</th>
+                  <th>BPM</th>
+                  <th>Hiếm</th>
+                  <th>Điểm</th>
+                  <th>YouTube</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="skillTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="cms-tab" id="tab-import">
+        <div class="cms-panel">
+          <h3>Import Excel</h3>
+
+          <label class="upload-box">
+            <input id="excelInput" type="file" accept=".xlsx,.xls,.csv" hidden />
+            <span>📥 Chọn file Excel để import</span>
+            <small>Cột nên dùng: id, name, style, bpm, rarity, rating, image, youtube, description, tags</small>
+          </label>
+
+          <button id="downloadTemplateBtn" class="cms-btn">Tải file mẫu Excel</button>
+        </div>
+      </section>
+
+      <section class="cms-tab" id="tab-youtube">
+        <div class="cms-panel">
+          <h3>YouTube Review Skill</h3>
+          <p class="muted">
+            Skill nào chưa có link YouTube sẽ hiện trạng thái “Cần Review”.
+            Nút tìm review sẽ mở YouTube theo ID + tên skill.
+          </p>
+
+          <div id="youtubeList" class="youtube-list"></div>
+        </div>
+      </section>
+
+      <section class="cms-tab" id="tab-backup">
+        <div class="cms-panel">
+          <h3>Backup dữ liệu</h3>
+
+          <div class="backup-actions">
+            <button id="exportJsonBtn2" class="cms-btn primary">Xuất JSON</button>
+            <button id="clearBtn" class="cms-btn danger">Xoá dữ liệu tạm</button>
+          </div>
+
+          <p class="muted">
+            Sau khi xuất file, hãy upload đè vào:
+            <b>database/wiki-skills.json</b>
+          </p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/admin-wiki.js?v=2.0.0"></script>
 </body>
 </html>
