@@ -34,6 +34,7 @@ function escapeHTML(text = "") {
 function optimizeCloudinary(url = "", width = 900) {
   if (!url || !url.includes("res.cloudinary.com")) return url;
   if (url.includes("/upload/f_auto")) return url;
+
   return url.replace("/upload/", `/upload/f_auto,q_auto,w_${width}/`);
 }
 
@@ -150,7 +151,41 @@ function renderContentBlocks(blocks = [], legacyContent = "") {
   }).join("");
 }
 
+function renderBreadcrumb(postData = {}) {
+  const categoryText =
+    postData.category ||
+    postData.categoryName ||
+    postData.playlist ||
+    postData.tag ||
+    "Mina Blog";
+
+  const parts = String(categoryText)
+    .split("/")
+    .map(item => item.trim())
+    .filter(Boolean);
+
+  return `
+    <div class="breadcrumb">
+      <a href="index.html">Trang chủ</a>
+      <span> → </span>
+      <a href="blog.html">Mina Blog</a>
+      ${
+        parts.length
+          ? parts.map(part => `
+              <span> → </span>
+              <span>${escapeHTML(part)}</span>
+            `).join("")
+          : ""
+      }
+      <span> → </span>
+      <span>Bài viết</span>
+    </div>
+  `;
+}
+
 async function loadPost() {
+  if (!postDetail) return;
+
   if (!postId) {
     postDetail.innerHTML = `
       <article class="post-card">
@@ -195,6 +230,9 @@ async function loadPost() {
 
     postDetail.innerHTML = `
       <article class="post-card post-full">
+
+        ${renderBreadcrumb(p)}
+
         ${
           p.image
             ? `
@@ -210,7 +248,9 @@ async function loadPost() {
             : ""
         }
 
-        <p class="post-category">${escapeHTML(p.category || p.playlist || "Bài viết")}</p>
+        <p class="post-category">
+          ${escapeHTML(p.category || p.playlist || "Bài viết")}
+        </p>
 
         <h1>${escapeHTML(p.title || "Không có tiêu đề")}</h1>
 
@@ -326,44 +366,11 @@ function minaEnhancePost() {
 
   if (!article) return;
 
-  addBreadcrumb(article, currentPostData);
   addTableOfContents(article);
   enhanceImages(article);
   addShareBox(article);
   addAuthorBox(article);
   addLightbox();
-}
-
-function addBreadcrumb(article, postData = {}) {
-  if (document.querySelector(".breadcrumb")) return;
-
-  const categoryText = postData.category || postData.playlist || "Mina Blog";
-
-  const parts = String(categoryText)
-    .split("/")
-    .map(item => item.trim())
-    .filter(Boolean);
-
-  const breadcrumb = document.createElement("div");
-  breadcrumb.className = "breadcrumb";
-
-  breadcrumb.innerHTML = `
-    <a href="index.html">Trang chủ</a>
-    <span> → </span>
-    <a href="blog.html">Mina Blog</a>
-    ${
-      parts.length
-        ? parts.map(part => `
-            <span> → </span>
-            <span>${escapeHTML(part)}</span>
-          `).join("")
-        : ""
-    }
-    <span> → </span>
-    <span>Bài viết</span>
-  `;
-
-  article.prepend(breadcrumb);
 }
 
 function addTableOfContents(article) {
@@ -388,6 +395,7 @@ function addTableOfContents(article) {
   });
 
   const title = article.querySelector("h1");
+
   if (title) {
     title.insertAdjacentElement("afterend", toc);
   } else {
@@ -417,6 +425,7 @@ function addLightbox() {
 
   const box = document.createElement("div");
   box.className = "lightbox";
+
   box.innerHTML = `
     <span class="lightbox-close">×</span>
     <img src="" alt="Mina Audition">
@@ -434,8 +443,10 @@ function openLightbox(src, alt) {
   if (!box) return;
 
   const img = box.querySelector("img");
+
   img.src = src;
   img.alt = alt || "Mina Audition";
+
   box.classList.add("active");
 }
 
@@ -446,8 +457,10 @@ function addShareBox(article) {
 
   const share = document.createElement("div");
   share.className = "share-box";
+
   share.innerHTML = `
     <h3>💎 Chia sẻ bài viết</h3>
+
     <div class="share-actions">
       <a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=${url}">
         Facebook
@@ -488,8 +501,10 @@ function addAuthorBox(article) {
 
   const author = document.createElement("div");
   author.className = "post-author";
+
   author.innerHTML = `
     <img class="author-avatar" src="assets/avatar.jpg" alt="Mina Audition">
+
     <div>
       <h3>Mina Audition</h3>
       <p>
@@ -519,15 +534,13 @@ function loadFacebookSDK() {
   document.body.appendChild(script);
 }
 
-loadFacebookSDK();
-loadPost();
-
 document.addEventListener("click", (e) => {
   const img = e.target.closest(".mina-gallery-item img, .mina-content-image");
   if (!img) return;
 
   const overlay = document.createElement("div");
   overlay.className = "mina-lightbox";
+
   overlay.innerHTML = `
     <button class="mina-lightbox-close">×</button>
     <img src="${img.src}" alt="">
@@ -559,3 +572,6 @@ window.addEventListener("scroll", function() {
     btn.classList.remove("show");
   }
 });
+
+loadFacebookSDK();
+loadPost();
