@@ -1,22 +1,26 @@
 /* =====================================================
-   03-VIDEO-SHOWCASE - MINA CMS V7 CLEAN
-   Bố cục giống Wikipedia Skill Dance:
-   dots -> title -> mô tả -> video lớn giữa trang
+   03-VIDEO-SHOWCASE - Mina CMS V7.2 CLEAN
+   Mục tiêu:
+   - Bố cục 1 cột giống Wikipedia Skill Dance
+   - VIDEO MỚI NHẤT dùng cùng font + size với .section-title h2
+   - Chỉ còn: dots -> title -> mô tả -> video
+   - Không còn social/comment/meta cũ gây rối layout
 ===================================================== */
 
 .video-showcase{
   width:100%;
-  padding:76px 24px 82px;
+  padding:76px 24px 86px !important;
   background:
     radial-gradient(circle at 50% 28%,rgba(95,244,255,.12),transparent 34%),
     linear-gradient(180deg,#050516 0%,#07071d 100%);
   border-top:1px solid rgba(95,244,255,.12);
   border-bottom:1px solid rgba(95,244,255,.14);
-  text-align:center;
+  text-align:center !important;
   overflow:hidden;
   display:block !important;
 }
 
+/* Xoá toàn bộ dấu/khối trang trí cũ sinh bằng pseudo */
 .video-showcase::before,
 .video-showcase::after,
 .video-left::before,
@@ -27,269 +31,73 @@
   display:none !important;
 }
 
+/* Cụm tiêu đề giống section-title */
 .video-heading{
-  width:min(900px,100%);
-  margin:0 auto 42px;
-  text-align:center;
-}
-
-.video-heading .section-dots{
-  display:block;
-  margin:0 auto 18px;
-  color:#5ff4ff;
-  font-size:15px;
-  line-height:1;
-  letter-spacing:14px;
-  text-align:center;
-  text-shadow:0 0 18px rgba(95,244,255,.9);
-}
-
-/* =====================================================
-   VIDEO TITLE = GIỐNG WIKIPEDIA
-===================================================== */
-
-.video-title{
-
-    margin:18px 0 12px;
-
-    font-size:clamp(54px,6vw,76px);
-
-    font-weight:900;
-
-    font-family:inherit;
-
-    line-height:1.05;
-
-    letter-spacing:-2px;
-
-    text-transform:uppercase;
-
-    color:#fff;
-
-    text-align:center;
-
-    text-shadow:
-        0 0 8px rgba(255,255,255,.95),
-        0 0 24px rgba(255,210,255,.75),
-        0 0 50px rgba(255,79,227,.55);
-}
-.video-desc{
-
-    max-width:620px;
-
-    margin:0 auto;
-
-    text-align:center;
-
-    font-size:18px;
-
-    line-height:1.6;
-
-    color:var(--muted);
-}
-
-.video-main{
-  width:100%;
-  max-width:860px;
-  margin:0 auto;
-  padding:0;
-  display:flex !important;
-  justify-content:center !important;
-  align-items:center !important;
-  background:transparent !important;
-  border:0 !important;
-  box-shadow:none !important;
-}
-
-.video-box{
-  width:min(100%,760px);
-  aspect-ratio:16 / 9;
-  margin:0 auto;
-  padding:2px;
-  position:relative;
-  overflow:hidden;
-  border-radius:24px;
-  background:linear-gradient(135deg,#5ff4ff,#7b4dff,#ff4fe3);
-  box-shadow:
-    0 0 34px rgba(95,244,255,.34),
-    0 0 76px rgba(255,79,227,.22);
-}
-
-.video-box iframe,
-#youtubeFrame{
-  position:relative;
-  z-index:2;
-  width:100% !important;
-  height:100% !important;
-  min-height:0 !important;
-  display:block;
-  border:0;
-  border-radius:22px;
-  background:#000;
-}
-
-.video-glow{
-  position:absolute;
-  inset:-35%;
-  z-index:1;
-  pointer-events:none;
-  background:
-    radial-gradient(circle,rgba(95,244,255,.22),transparent 38%),
-    radial-gradient(circle at 80% 20%,rgba(255,79,227,.20),transparent 34%);
-  filter:blur(22px);
-  opacity:.85;
-}
-
-/* Xóa hoàn toàn phần phụ cũ trong Video Showcase */
-.video-actions,
-.video-comments,
-.featured-comments,
-.video-badge,
-.video-meta,
-.video-side{
-  display:none !important;
-}
-
-@media(max-width:768px){
-  .video-showcase{
-    padding:60px 16px 66px;
-  }
-
-  .video-heading{
-    margin-bottom:30px;
-  }
-
-  .video-heading .section-dots{
-    font-size:13px;
-    letter-spacing:10px;
-    margin-bottom:14px;
-  }
-
-  .video-title{
-    font-size:clamp(34px,10vw,46px);
-    letter-spacing:-.8px;
-  }
-
-  .video-desc{
-    font-size:15px;
-    line-height:1.55;
-  }
-
-  .video-box{
-    width:100%;
-    border-radius:20px;
-  }
-
-  .video-box iframe,
-  #youtubeFrame{
-    border-radius:18px;
-  }
-}
-/* =====================================================
-   VIDEO TITLE = WIKIPEDIA TITLE
-===================================================== */
-
-/* Kế thừa toàn bộ style từ Wikipedia */
-
-.video-title{
-    all: unset;
-
-    display:block;
-
-    font: inherit;
-
-    color: inherit;
-}
-
-/* Dùng đúng style của section-title h2 */
-
-.section-title h2,
-.video-title{
-
-    font-family: inherit !important;
-
-    font-size: inherit !important;
-
-    font-weight: inherit !important;
-
-    line-height: inherit !important;
-
-    letter-spacing: inherit !important;
-
-    text-transform: uppercase;
-
-    color: #fff;
-
-    text-align:center;
-
-    text-shadow:inherit;
-}
-/* =====================================================
-   MINA CMS V7 - VIDEO SECTION ĐỒNG BỘ WIKIPEDIA
-===================================================== */
-
-/* Section Video về dạng 1 cột giống Wikipedia */
-.video-showcase{
-  display:block !important;
-  padding:76px 24px 86px !important;
+  width:min(900px,100%) !important;
+  margin:0 auto 38px !important;
   text-align:center !important;
 }
 
-/* Cụm tiêu đề căn giữa */
-.video-heading{
-  max-width:760px !important;
-  margin:0 auto 34px !important;
-  text-align:center !important;
-}
-
-/* Dấu ◆ giống section-title */
 .video-heading .section-dots{
   display:block !important;
   margin:0 auto 14px !important;
-  color:var(--cyan) !important;
-  letter-spacing:8px !important;
-  text-shadow:0 0 14px var(--cyan) !important;
+  color:var(--cyan,#5ff4ff) !important;
+  font-size:15px !important;
+  line-height:1 !important;
+  letter-spacing:10px !important;
+  text-align:center !important;
+  text-shadow:0 0 14px var(--cyan,#5ff4ff) !important;
 }
 
-/* VIDEO MỚI NHẤT giống 100% .section-title h2 */
-.video-title{
-  margin:14px 0 8px !important;
-  font-size:clamp(34px,4vw,50px) !important;
+/* Tiêu đề VIDEO dùng cùng thông số với .section-title h2 trong 01-core.css */
+.video-title,
+.video-showcase .video-title,
+.video-left h2{
+  margin:14px auto 10px !important;
+  font-family:'Inter',Arial,sans-serif !important;
+  font-size:clamp(42px,4.8vw,62px) !important;
   font-weight:900 !important;
-  font-family:inherit !important;
-  line-height:1.15 !important;
-  letter-spacing:0 !important;
+  line-height:1.05 !important;
+  letter-spacing:-1.4px !important;
   text-transform:uppercase !important;
   color:#fff !important;
   text-align:center !important;
-  text-shadow:0 0 20px rgba(255,79,227,.45) !important;
+  text-shadow:
+    0 0 8px rgba(255,255,255,.92),
+    0 0 22px rgba(255,210,255,.65),
+    0 0 44px rgba(255,79,227,.45) !important;
 }
 
-/* Mô tả giống .section-title p */
-.video-desc{
-  max-width:620px !important;
+/* Mô tả giống section-title p */
+.video-desc,
+.video-showcase .video-desc{
+  max-width:720px !important;
   margin:0 auto !important;
-  text-align:center !important;
+  color:var(--muted,#c9ccff) !important;
   font-size:18px !important;
+  font-weight:700 !important;
   line-height:1.6 !important;
-  color:var(--muted) !important;
+  text-align:center !important;
 }
 
-/* Xóa các khối cũ gây lệch */
+/* Ẩn toàn bộ thành phần cũ không còn dùng */
 .video-side,
 .video-badge,
 .video-meta,
 .video-actions,
 .video-comments,
-.featured-comments{
+.featured-comments,
+.comment-list,
+.comment-card{
   display:none !important;
 }
 
-/* Khối video nằm giữa */
+/* Reset layout cũ */
 .video-layout,
-.video-main{
+.video-main,
+.video-right{
   width:100% !important;
-  max-width:760px !important;
+  max-width:860px !important;
   margin:0 auto !important;
   padding:0 !important;
   display:flex !important;
@@ -300,90 +108,99 @@
   box-shadow:none !important;
 }
 
-/* Video cân đối */
-.video-box{
-  width:min(100%,680px) !important;
-  max-width:680px !important;
+/* Video nằm giữa, cân với tổng thể website */
+.video-box,
+.video-frame,
+.youtube-frame,
+.video-embed,
+.video-player,
+.video-card{
+  width:min(100%,760px) !important;
+  max-width:760px !important;
   aspect-ratio:16 / 9 !important;
   margin:0 auto !important;
   padding:2px !important;
-  border-radius:22px !important;
+  position:relative !important;
   overflow:hidden !important;
+  border-radius:24px !important;
   background:linear-gradient(135deg,#5ff4ff,#7b4dff,#ff4fe3) !important;
   box-shadow:
-    0 0 32px rgba(95,244,255,.28),
-    0 0 58px rgba(255,79,227,.18) !important;
+    0 0 34px rgba(95,244,255,.32),
+    0 0 72px rgba(255,79,227,.20) !important;
 }
 
 .video-box iframe,
+.video-frame iframe,
+.youtube-frame iframe,
+.video-embed iframe,
 #youtubeFrame{
+  position:relative !important;
+  z-index:2 !important;
   width:100% !important;
   height:100% !important;
+  min-height:0 !important;
   display:block !important;
   border:0 !important;
-  border-radius:20px !important;
+  border-radius:22px !important;
   background:#000 !important;
 }
 
-/* Xóa glow phụ nếu làm rối */
+/* Glow nằm sau iframe, không làm lệch layout */
 .video-glow{
-  display:none !important;
+  position:absolute;
+  inset:-35%;
+  z-index:1;
+  pointer-events:none;
+  background:
+    radial-gradient(circle,rgba(95,244,255,.20),transparent 38%),
+    radial-gradient(circle at 80% 20%,rgba(255,79,227,.18),transparent 34%);
+  filter:blur(22px);
+  opacity:.85;
 }
 
 /* Mobile */
-@media(max-width:600px){
+@media(max-width:768px){
   .video-showcase{
-    padding:58px 16px 68px !important;
+    padding:60px 16px 70px !important;
   }
 
-  .video-title{
-    font-size:clamp(32px,10vw,46px) !important;
+  .video-heading{
+    margin-bottom:30px !important;
   }
 
-  .video-desc{
+  .video-heading .section-dots{
+    font-size:13px !important;
+    letter-spacing:8px !important;
+    margin-bottom:12px !important;
+  }
+
+  .video-title,
+  .video-showcase .video-title,
+  .video-left h2{
+    font-size:clamp(34px,10vw,48px) !important;
+    letter-spacing:-.8px !important;
+  }
+
+  .video-desc,
+  .video-showcase .video-desc{
     font-size:16px !important;
   }
-}
-/* =====================================================
-   FIX ĐỒNG BỘ TIÊU ĐỀ VIDEO VỚI WIKIPEDIA
-   (Không thay đổi layout website)
-===================================================== */
 
-/* Tiêu đề Video */
-.video-showcase .video-title{
-    font-size: clamp(54px, 6vw, 76px) !important;
-    font-weight: 900 !important;
-    line-height: 1.05 !important;
-    letter-spacing: -2px !important;
+  .video-box,
+  .video-frame,
+  .youtube-frame,
+  .video-embed,
+  .video-player,
+  .video-card{
+    width:100% !important;
+    border-radius:20px !important;
+  }
 
-    font-family: inherit !important;
-    text-transform: uppercase !important;
-
-    color: #ffffff !important;
-    text-align: center !important;
-
-    text-shadow:
-        0 0 8px rgba(255,255,255,.95),
-        0 0 24px rgba(255,210,255,.75),
-        0 0 50px rgba(255,79,227,.55) !important;
-
-    margin: 18px 0 12px !important;
-}
-
-/* Mô tả dưới tiêu đề */
-.video-showcase .video-desc{
-    font-size: 18px !important;
-    line-height: 1.6 !important;
-    max-width: 700px !important;
-
-    margin: 0 auto 28px !important;
-    text-align: center !important;
-}
-
-/* Căn giữa toàn bộ phần tiêu đề */
-.video-showcase .video-heading{
-    width:100%;
-    max-width:900px;
-    margin:0 auto 35px;
-    text-align:center;
+  .video-box iframe,
+  .video-frame iframe,
+  .youtube-frame iframe,
+  .video-embed iframe,
+  #youtubeFrame{
+    border-radius:18px !important;
+  }
 }
