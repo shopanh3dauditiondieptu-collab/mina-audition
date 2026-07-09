@@ -368,3 +368,132 @@
     min-height:260px !important;
   }
 }
+/* =====================================================
+   FIX VIDEO SHOWCASE V6.8 - CÂN LẠI BỐ CỤC CUỐI
+===================================================== */
+
+.video-showcase{
+  padding-top:80px !important;
+  padding-bottom:90px !important;
+}
+
+.video-heading{
+  margin-bottom:70px !important;
+}
+
+.video-layout{
+  max-width:1260px !important;
+  margin:0 auto !important;
+  display:grid !important;
+  grid-template-columns:330px 1fr !important;
+  gap:52px !important;
+  align-items:center !important;
+  padding:0 !important;
+  background:transparent !important;
+  border:none !important;
+  box-shadow:none !important;
+}
+
+.video-side{
+  width:100% !important;
+  align-self:center !important;
+}
+
+.video-badge{
+  margin-bottom:22px !important;
+}
+
+.video-meta{
+  margin:0 0 24px !important;
+  justify-content:flex-start !important;
+}
+
+.video-actions{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:14px !important;
+  margin:0 0 26px !important;
+}
+
+.social-btn{
+  height:58px !important;
+  border-radius:14px !important;
+}
+
+.video-comments{
+  margin-top:0 !important;
+}
+
+.comment-card{
+  min-height:86px !important;
+  align-items:center !important;
+}
+
+.video-main{
+  width:100% !important;
+  display:flex !important;
+  justify-content:center !important;
+  align-items:center !important;
+}
+
+.video-box{
+  width:100% !important;
+  max-width:820px !important;
+  height:auto !important;
+  aspect-ratio:16 / 9 !important;
+  min-height:0 !important;
+  padding:2px !important;
+  border-radius:22px !important;
+}
+
+.video-box iframe,
+#youtubeFrame{
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+  aspect-ratio:16 / 9 !important;
+  object-fit:cover !important;
+  border-radius:20px !important;
+}
+
+/* Ép YouTube hiển thị lớn và cân trong khung */
+.video-box{
+  transform:scale(1.04);
+  transform-origin:center;
+}
+
+/* Responsive */
+@media(max-width:1100px){
+  .video-layout{
+    grid-template-columns:1fr !important;
+    gap:36px !important;
+  }
+
+  .video-side{
+    max-width:520px !important;
+    margin:0 auto !important;
+  }
+
+  .video-meta{
+    justify-content:center !important;
+  }
+
+  .video-main{
+    order:2 !important;
+  }
+
+  .video-box{
+    max-width:820px !important;
+    transform:none !important;
+  }
+}
+
+@media(max-width:560px){
+  .video-heading{
+    margin-bottom:40px !important;
+  }
+
+  .video-actions{
+    grid-template-columns:1fr !important;
+  }
+}
