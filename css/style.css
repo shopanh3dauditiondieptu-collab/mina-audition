@@ -891,3 +891,103 @@
 .back-to-top:hover{
   transform:translateY(-4px) scale(1.06);
 }
+/* ================================
+   MINA BLOG INTERACTION CARD
+================================ */
+
+.mina-post-card{
+  max-width:1100px;
+  margin:40px auto;
+  padding:28px;
+  border-radius:26px;
+  background:linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 20px 60px rgba(0,0,0,.35);
+  backdrop-filter:blur(14px);
+}
+
+.mina-post-header h2{
+  margin:12px 0 10px;
+  font-size:clamp(26px,4vw,42px);
+  color:#fff;
+}
+
+.mina-post-header p{
+  color:rgba(255,255,255,.78);
+  line-height:1.7;
+  max-width:760px;
+}
+
+.post-badge{
+  display:inline-block;
+  padding:7px 16px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#ff4fd8,#7c5cff);
+  color:#fff;
+  font-weight:700;
+  font-size:14px;
+  box-shadow:0 0 20px rgba(255,79,216,.55);
+}
+
+.mina-post-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:24px;
+}
+
+.post-btn{
+  border:none;
+  outline:none;
+  cursor:pointer;
+  text-decoration:none;
+  padding:13px 20px;
+  border-radius:999px;
+  font-weight:700;
+  font-size:15px;
+  color:#fff;
+  transition:.25s ease;
+}
+
+.facebook-btn{
+  background:linear-gradient(135deg,#1877f2,#00a2ff);
+}
+
+.like-btn{
+  background:linear-gradient(135deg,#ff3b86,#ff7ac8);
+}
+
+.copy-btn{
+  background:linear-gradient(135deg,#7c5cff,#22d3ee);
+}
+
+.post-btn:hover{
+  transform:translateY(-3px);
+  box-shadow:0 12px 30px rgba(255,255,255,.18);
+}
+
+.post-note{
+  margin-top:22px;
+  padding:16px 18px;
+  border-radius:18px;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  line-height:1.6;
+  border-left:4px solid #ff4fd8;
+}
+
+@media(max-width:768px){
+  .mina-post-card{
+    margin:25px 14px;
+    padding:22px;
+  }
+
+  .mina-post-actions{
+    flex-direction:column;
+  }
+
+  .post-btn{
+    width:100%;
+    text-align:center;
+  }
+}
