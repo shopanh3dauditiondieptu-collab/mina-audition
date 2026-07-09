@@ -2,7 +2,15 @@ import { db } from "./firebase-config.js";
 
 import {
   doc,
-  getDoc
+  getDoc,
+  getDocs,
+  updateDoc,
+  addDoc,
+  collection,
+  query,
+  orderBy,
+  increment,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 const postDetail = document.getElementById("postDetail");
