@@ -50,25 +50,28 @@
 
 .video-title{
 
-    margin:14px 0 8px !important;
+    margin:18px 0 12px;
 
-    font-size:clamp(34px,4vw,50px) !important;
+    font-size:clamp(54px,6vw,76px);
 
-    font-weight:900 !important;
+    font-weight:900;
 
-    font-family:inherit !important;
+    font-family:inherit;
 
-    line-height:1.15 !important;
+    line-height:1.05;
 
-    letter-spacing:0 !important;
+    letter-spacing:-2px;
 
-    text-transform:uppercase !important;
+    text-transform:uppercase;
 
-    color:#fff !important;
+    color:#fff;
 
-    text-align:center !important;
+    text-align:center;
 
-    text-shadow:0 0 20px rgba(255,79,227,.45) !important;
+    text-shadow:
+        0 0 8px rgba(255,255,255,.95),
+        0 0 24px rgba(255,210,255,.75),
+        0 0 50px rgba(255,79,227,.55);
 }
 .video-desc{
 
