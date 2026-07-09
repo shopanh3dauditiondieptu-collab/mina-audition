@@ -145,7 +145,27 @@ function countNode(node) {
     return names.some(name => matchPost(item.data, name));
   }).length;
 }
+const icons = {
 
+  "KINH NGHIỆM GAME":"🎮",
+  "MIX & MATCH OUTFIT GAME":"👗",
+  "VIDEO GAME AUDITION":"🎬",
+  "TÂM SỰ - CHIA SẺ":"💌",
+
+  "Style Girl":"👧",
+  "Style Boy":"👦",
+  "Couple Outfit":"❤️",
+
+  "D8 SKILL REVIEW":"⭐",
+  "DC8 SKILL REVIEW":"⭐",
+
+  "D8 SKILL DANCE PERFORMANCE":"💃",
+  "D8 TEAM DANCE PERFORMANCE":"👯",
+
+  "MV Audition":"🎵",
+  "Perfect x Combo Audition":"🏆"
+
+};
 function renderTreeNode(node, level = 1) {
   if (typeof node === "string") {
     const count = countNode(node);
@@ -163,7 +183,7 @@ function renderTreeNode(node, level = 1) {
   return `
     <div class="mina-tree-group level-${level}">
       <button class="mina-tree-parent" data-name="${node.name}">
-        <span>▼ ${node.name}</span>
+        <span>${icons[node.name] || "📁"} ${node.name}</span>
         <b>${count}</b>
       </button>
 
