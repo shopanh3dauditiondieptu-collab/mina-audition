@@ -1,207 +1,149 @@
 /* =====================================================
-   03-VIDEO-SHOWCASE - Mina CMS V7 CLEAN
-   Layout chuẩn: tiêu đề giữa -> social giữa -> video lớn -> bình luận dưới
-   Ghi đè toàn bộ các bản fix cũ bị lệch
+   03-VIDEO-SHOWCASE - MINA FINAL CLEAN
+   Bố cục chuẩn: title -> social -> video lớn -> comment
 ===================================================== */
 
 .video-showcase{
   width:100%;
-  max-width:1180px;
-  margin:0 auto;
-  padding:90px 24px 86px;
-  position:relative;
-  overflow:hidden;
-  text-align:center;
+  padding:90px 24px 80px;
   background:
-    radial-gradient(circle at 50% 28%, rgba(95,244,255,.13), transparent 34%),
+    radial-gradient(circle at 50% 32%,rgba(95,244,255,.13),transparent 34%),
     linear-gradient(180deg,#050516 0%,#07071d 100%);
   border-top:1px solid rgba(95,244,255,.12);
-  border-bottom:1px solid rgba(95,244,255,.16);
-}
-
-.video-showcase *,
-.video-showcase *::before,
-.video-showcase *::after{
-  box-sizing:border-box;
+  border-bottom:1px solid rgba(95,244,255,.12);
+  text-align:center;
+  overflow:hidden;
 }
 
 .video-showcase::before{
-  content:"◆  ◆  ◆";
+  content:"◆ ◆ ◆";
   display:block;
   margin:0 auto 18px;
   color:#5ff4ff;
   font-size:15px;
-  line-height:1;
   letter-spacing:14px;
-  text-align:center;
-  text-shadow:0 0 18px rgba(95,244,255,.95);
+  text-shadow:0 0 18px rgba(95,244,255,.9);
 }
 
-.video-showcase::after,
-.video-left::before,
-.video-left::after,
-.video-dots,
-.video-decor,
+.video-left,
+.video-heading{
+  max-width:900px;
+  margin:0 auto 28px;
+  text-align:center;
+}
+
 .video-badge,
 .video-meta{
   display:none !important;
 }
 
-.video-left,
-.video-heading{
-  width:100%;
-  max-width:900px;
-  margin:0 auto 34px !important;
-  padding:0 !important;
-  display:block !important;
-  text-align:center !important;
-}
-
-.video-left h2,
 .video-title,
-#video-title{
-  display:block !important;
-  width:100% !important;
-  margin:0 auto 14px !important;
-  padding:0 !important;
-  text-align:center !important;
-  font-family:inherit !important;
-  font-size:clamp(44px,5vw,68px) !important;
-  font-weight:900 !important;
-  line-height:.95 !important;
-  letter-spacing:-2px !important;
-  text-transform:uppercase !important;
-  color:#fff !important;
+.video-left h2{
+  margin:0 0 16px;
+  font-size:clamp(44px,5vw,68px);
+  font-weight:900;
+  line-height:1;
+  letter-spacing:-2px;
+  text-transform:uppercase;
+  color:#fff;
+  text-align:center;
   text-shadow:
-    0 0 8px rgba(255,255,255,.96),
-    0 0 22px rgba(255,212,255,.72),
-    0 0 42px rgba(212,111,255,.46) !important;
-}
-
-.video-title span{
-  display:inline !important;
+    0 0 8px rgba(255,255,255,.95),
+    0 0 22px rgba(255,212,255,.7),
+    0 0 42px rgba(212,111,255,.65);
 }
 
 .video-desc{
-  max-width:780px !important;
-  margin:0 auto !important;
-  padding:0 !important;
-  text-align:center !important;
-  color:#e9ecff !important;
-  font-size:18px !important;
-  font-weight:800 !important;
-  line-height:1.55 !important;
+  max-width:760px;
+  margin:0 auto;
+  color:#e8ecff;
+  font-size:18px;
+  font-weight:800;
+  line-height:1.55;
+  text-align:center;
 }
 
-/* Khối chính ép về 1 cột giữa */
-.video-layout,
-.video-main{
-  width:100% !important;
-  max-width:960px !important;
-  margin:0 auto !important;
-  padding:0 !important;
+/* Khối chính */
+.video-main,
+.video-layout{
+  width:100%;
+  max-width:980px;
+  margin:34px auto 0;
   display:flex !important;
   flex-direction:column !important;
   align-items:center !important;
   justify-content:center !important;
-  gap:26px !important;
+  gap:24px;
+  padding:0 !important;
   background:transparent !important;
-  border:0 !important;
+  border:none !important;
   box-shadow:none !important;
-  transform:none !important;
 }
 
-.video-side,
-.video-right{
-  width:100% !important;
-  max-width:960px !important;
-  margin:0 auto !important;
-  padding:0 !important;
-  display:flex !important;
-  flex-direction:column !important;
-  align-items:center !important;
-  justify-content:center !important;
-  text-align:center !important;
-  transform:none !important;
-}
-
-/* Social nằm giữa, nhỏ đều */
+/* Social nằm giữa, đều hàng */
 .video-actions{
-  width:100% !important;
-  max-width:620px !important;
-  margin:0 auto 6px !important;
-  padding:0 !important;
-  order:1 !important;
-  display:grid !important;
-  grid-template-columns:repeat(4, 1fr) !important;
-  gap:14px !important;
-  align-items:center !important;
+  width:100%;
+  display:flex !important;
   justify-content:center !important;
-  transform:none !important;
+  align-items:center !important;
+  flex-wrap:wrap;
+  gap:18px !important;
+  margin:0 auto !important;
+  order:1;
 }
 
 .social-btn,
-.video-actions .social-btn,
-.video-mini-btn,
-.video-watch-btn{
-  width:100% !important;
-  min-width:0 !important;
+.video-actions .social-btn{
+  width:132px !important;
   height:40px !important;
   min-height:40px !important;
-  padding:0 12px !important;
+  padding:0 14px !important;
   border-radius:12px !important;
   display:inline-flex !important;
   align-items:center !important;
   justify-content:center !important;
   gap:8px !important;
-  color:#fff !important;
-  text-decoration:none !important;
+  color:#fff;
   font-size:13px !important;
-  font-weight:900 !important;
-  line-height:1 !important;
-  border:1px solid rgba(255,255,255,.14) !important;
-  transition:.25s ease !important;
+  font-weight:900;
+  text-decoration:none;
+  border:1px solid rgba(255,255,255,.16);
+  box-sizing:border-box;
 }
 
 .social-btn i,
-.video-actions .social-btn i,
 .social-btn svg,
 .social-btn img{
   width:17px !important;
   height:17px !important;
   font-size:17px !important;
-  flex:0 0 auto !important;
 }
 
-.youtube-btn{background:#ff0000 !important;box-shadow:0 0 22px rgba(255,0,0,.38) !important;}
-.facebook-btn{background:#1877f2 !important;box-shadow:0 0 22px rgba(24,119,242,.42) !important;}
-.instagram-btn{background:radial-gradient(circle at 30% 110%,#ffdc80 0%,#fcaf45 23%,#f77737 42%,#e1306c 62%,#833ab4 82%,#405de6 100%) !important;box-shadow:0 0 22px rgba(225,48,108,.46) !important;}
-.tiktok-btn{background:#000 !important;border-color:rgba(37,244,238,.76) !important;box-shadow:0 0 18px rgba(37,244,238,.36),0 0 22px rgba(254,44,85,.22) !important;}
+/* Video lớn ở giữa */
+.video-right,
+.video-main{
+  width:100%;
+}
 
-/* Video lớn, ở chính giữa */
 .video-box,
 .video-frame,
 .youtube-frame,
 .video-embed,
 .video-player,
 .video-card{
-  order:2 !important;
-  position:relative !important;
-  width:100% !important;
-  max-width:860px !important;
+  order:2;
+  width:min(100%,820px) !important;
+  max-width:820px !important;
   aspect-ratio:16 / 9 !important;
-  height:auto !important;
-  min-height:0 !important;
-  margin:10px auto 0 !important;
+  margin:0 auto !important;
   padding:2px !important;
-  display:block !important;
-  overflow:hidden !important;
   border-radius:24px !important;
-  background:linear-gradient(135deg,#5ff4ff,#7b4dff,#ff4fe3) !important;
+  overflow:hidden !important;
+  position:relative !important;
+  background:linear-gradient(135deg,#5ff4ff,#7b4dff,#ff4fe3);
   box-shadow:
-    0 0 34px rgba(95,244,255,.34),
-    0 0 78px rgba(255,79,227,.20) !important;
-  transform:none !important;
+    0 0 36px rgba(95,244,255,.36),
+    0 0 70px rgba(255,79,227,.22);
 }
 
 .video-box iframe,
@@ -209,100 +151,119 @@
 .youtube-frame iframe,
 .video-embed iframe,
 #youtubeFrame{
-  position:relative !important;
-  z-index:3 !important;
-  display:block !important;
   width:100% !important;
   height:100% !important;
   min-height:0 !important;
   aspect-ratio:16 / 9 !important;
+  display:block !important;
   border:0 !important;
   border-radius:22px !important;
-  background:#000 !important;
-  object-fit:cover !important;
-  opacity:1 !important;
-  visibility:visible !important;
+  background:#000;
 }
 
-.video-glow{
-  position:absolute !important;
-  inset:-28% !important;
-  z-index:1 !important;
-  pointer-events:none !important;
-  background:
-    radial-gradient(circle,rgba(95,244,255,.22),transparent 42%),
-    radial-gradient(circle at 80% 20%,rgba(255,79,227,.18),transparent 36%) !important;
-  filter:blur(24px) !important;
-}
-
-/* Bình luận dưới video, 2 cột */
+/* Bình luận dưới video */
 .video-comments,
 .featured-comments{
-  order:3 !important;
-  width:100% !important;
-  max-width:860px !important;
-  margin:6px auto 0 !important;
-  padding:0 !important;
+  order:3;
+  width:min(100%,820px) !important;
+  margin:4px auto 0 !important;
   text-align:left !important;
 }
 
-.video-comments h3,
-.featured-comments h3{
-  margin:0 0 14px !important;
-  color:#fff !important;
-  font-size:20px !important;
-  font-weight:900 !important;
+.video-comments h3{
+  margin:0 0 14px;
+  color:#fff;
+  font-size:20px;
+  font-weight:900;
 }
 
 .comment-list,
 .video-comment-list{
-  width:100% !important;
   display:grid !important;
-  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
-  gap:16px !important;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
 }
 
 .comment-card{
-  min-height:96px !important;
-  margin:0 !important;
-  padding:16px !important;
-  display:flex !important;
-  align-items:center !important;
-  gap:14px !important;
-  border-radius:16px !important;
-  background:rgba(255,255,255,.055) !important;
-  border:1px solid rgba(95,244,255,.22) !important;
-  box-shadow:inset 0 0 18px rgba(95,244,255,.05) !important;
+  min-height:96px;
+  display:flex;
+  gap:14px;
+  align-items:center;
+  padding:16px;
+  border-radius:18px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(95,244,255,.22);
 }
 
 .comment-avatar{
-  width:40px !important;
-  height:40px !important;
-  flex:0 0 40px !important;
-  border-radius:50% !important;
-  display:grid !important;
-  place-items:center !important;
-  color:#fff !important;
-  font-size:13px !important;
-  font-weight:900 !important;
-  background:linear-gradient(135deg,#ff4fe3,#5ff4ff) !important;
-  box-shadow:0 0 18px rgba(95,244,255,.35) !important;
+  width:40px;
+  height:40px;
+  flex:0 0 40px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  color:#fff;
+  font-size:13px;
+  font-weight:900;
+  background:linear-gradient(135deg,#ff4fe3,#5ff4ff);
+  box-shadow:0 0 18px rgba(95,244,255,.35);
 }
 
-.comment-card strong{color:#5ff4ff !important;font-size:14px !important;}
-.comment-card p{margin:5px 0 !important;color:#eef0ff !important;font-size:14px !important;line-height:1.45 !important;}
-.comment-card span{color:#ffb8f4 !important;font-size:12px !important;font-weight:800 !important;}
-
-@media(max-width:900px){
-  .video-showcase{padding:64px 18px 70px !important;}
-  .video-actions{max-width:560px !important;grid-template-columns:repeat(2, minmax(0, 160px)) !important;}
-  .video-box,.video-frame,.youtube-frame,.video-embed,.video-player,.video-card{max-width:100% !important;}
-  .comment-list,.video-comment-list{grid-template-columns:1fr !important;}
+.comment-card strong{
+  color:#5ff4ff;
+  font-size:14px;
 }
 
-@media(max-width:560px){
-  .video-left h2,.video-title,#video-title{font-size:clamp(34px,11vw,46px) !important;letter-spacing:-1px !important;}
-  .video-desc{font-size:15px !important;}
-  .video-actions{grid-template-columns:1fr 1fr !important;gap:12px !important;}
-  .social-btn,.video-actions .social-btn{height:38px !important;font-size:12px !important;}
+.comment-card p{
+  margin:5px 0;
+  color:#eef0ff;
+  font-size:14px;
+  line-height:1.45;
+}
+
+.comment-card span{
+  color:#ffb8f4;
+  font-size:12px;
+  font-weight:800;
+}
+
+/* Ẩn glow phụ nếu làm lệch layout */
+.video-glow{
+  display:none !important;
+}
+
+/* Mobile */
+@media(max-width:768px){
+  .video-showcase{
+    padding:60px 16px;
+  }
+
+  .video-title,
+  .video-left h2{
+    font-size:clamp(36px,11vw,50px);
+    letter-spacing:-1px;
+  }
+
+  .video-desc{
+    font-size:15px;
+  }
+
+  .video-main,
+  .video-layout{
+    margin-top:28px;
+  }
+
+  .video-actions{
+    gap:12px !important;
+  }
+
+  .social-btn,
+  .video-actions .social-btn{
+    width:132px !important;
+  }
+
+  .comment-list,
+  .video-comment-list{
+    grid-template-columns:1fr;
+  }
 }
