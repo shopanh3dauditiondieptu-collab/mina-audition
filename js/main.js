@@ -27,7 +27,7 @@ async function getPosts() {
 
 function card(post) {
   return `
-    <article class="post-card">
+    <article class="post-card" onclick="location.href='${post.link ? post.link : `post.html?id=${post.id}`}'">
       <img src="${post.image || 'images/default-post.svg'}" alt="${post.title || 'Mina Audition'}" loading="lazy">
       <div class="post-body">
         <span class="tag">${post.category || 'Bài viết'}</span>
