@@ -1227,3 +1227,110 @@ textarea#desc{
     grid-column: 1 / -1;
   }
 }
+/* =====================================================
+   MINA CMS V8.5 - CATEGORY TREE ADMIN
+   Dán cuối file admin.css
+===================================================== */
+
+.mina-category-tree-v8{
+  position:relative;
+  width:100%;
+}
+
+.mina-category-current-v8{
+  width:100%;
+  min-height:46px;
+  padding:0 16px;
+  border-radius:14px;
+  border:1px solid rgba(80,220,255,.7);
+  background:rgba(5,8,25,.72);
+  color:#eaf7ff;
+  font-weight:800;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  cursor:pointer;
+  box-shadow:0 0 14px rgba(70,230,255,.18);
+}
+
+.mina-category-panel-v8{
+  position:absolute;
+  top:54px;
+  left:0;
+  right:0;
+  z-index:999;
+  max-height:430px;
+  overflow:auto;
+  padding:12px;
+  border-radius:18px;
+  border:1px solid rgba(80,220,255,.45);
+  background:rgba(12,14,35,.98);
+  box-shadow:0 18px 40px rgba(0,0,0,.45);
+}
+
+.mina-category-panel-v8.hidden,
+.mina-cat-children.hidden{
+  display:none;
+}
+
+.mina-cat-node{
+  margin:6px 0;
+}
+
+.mina-cat-children{
+  margin-left:18px;
+  padding-left:12px;
+  border-left:1px dashed rgba(80,220,255,.35);
+}
+
+.mina-cat-tree-item{
+  width:100%;
+  min-height:40px;
+  padding:8px 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.045);
+  color:#ffffff;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  cursor:pointer;
+  font-weight:800;
+  text-align:left;
+}
+
+.mina-cat-tree-item:hover{
+  border-color:rgba(80,240,255,.75);
+  box-shadow:0 0 14px rgba(80,240,255,.18);
+}
+
+.mina-cat-tree-item.active{
+  background:linear-gradient(135deg,#18f0ff,#d95cff);
+  color:#ffffff;
+  border-color:transparent;
+}
+
+.mina-cat-toggle{
+  min-width:24px;
+  height:24px;
+  border-radius:999px;
+  background:rgba(0,0,0,.35);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  color:#7df9ff;
+}
+
+.mina-cat-tree-item.active .mina-cat-toggle{
+  background:rgba(255,255,255,.25);
+  color:#fff;
+}
+
+.level-1 .mina-cat-tree-item{
+  font-size:14px;
+}
+
+.level-2 .mina-cat-tree-item{
+  font-size:13px;
+  opacity:.95;
+}
