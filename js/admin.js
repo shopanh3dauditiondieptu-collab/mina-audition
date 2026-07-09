@@ -758,6 +758,7 @@ function showAdmin(user) {
   adminApp.classList.remove("hidden");
   adminEmail.textContent = `Đang đăng nhập: ${user.email}`;
 
+  setupCategoryV8();
   setupBlockEditor();
   render();
 }
@@ -906,7 +907,7 @@ window.editPost = async function(id) {
     editingPostId = id;
 
     titleInput.value = p.title || "";
-    categoryInput.value = p.category || "";
+    categoryInput.value = p.categoryName || p.category || "";
     imageInput.value = p.image || "";
     descInput.value = p.desc || "";
     linkInput.value = p.link || "";
@@ -980,6 +981,9 @@ window.previewPost = function() {
   const previewData = {
     title: titleInput.value.trim(),
     category: categoryInput.value.trim(),
+categoryId: getCategoryV8(categoryInput.value).id,
+categoryName: getCategoryV8(categoryInput.value).name,
+categoryPath: getCategoryV8(categoryInput.value).path,
     image: imageInput.value.trim(),
     desc: descInput.value.trim(),
     content: contentInput.value.trim(),
@@ -1008,9 +1012,15 @@ form.addEventListener("submit", async (e) => {
 
   const cleanBlocks = getCleanBlocks();
 
-  const post = {
-    title: titleInput.value.trim(),
-    category: categoryInput.value.trim(),
+  const selectedCategoryV8 = getCategoryV8(categoryInput.value);
+
+const post = {
+  title: titleInput.value.trim(),
+
+  category: selectedCategoryV8.name,
+  categoryId: selectedCategoryV8.id,
+  categoryName: selectedCategoryV8.name,
+  categoryPath: selectedCategoryV8.path,
     image: imageInput.value.trim(),
     desc: descInput.value.trim(),
     content: contentInput.value.trim(),
