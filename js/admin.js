@@ -74,19 +74,89 @@ let editingPostId = null;
 
 const MINA_CATEGORIES_V8 = [
   {
+    id: "kinh-nghiem-game",
+    name: "Kinh nghiệm Game",
+    path: ["Kinh nghiệm Game"]
+  },
+  {
+    id: "mix-match-outfit-game",
+    name: "Mix & Match Outfit Game",
+    path: ["Mix & Match Outfit Game"]
+  },
+  {
+    id: "style-girl",
+    name: "Mix & Match Outfit Game/Style Girl",
+    path: ["Mix & Match Outfit Game", "Style Girl"]
+  },
+  {
+    id: "cute-girl",
+    name: "Mix & Match Outfit Game/Style Girl/Cute Girl",
+    path: ["Mix & Match Outfit Game", "Style Girl", "Cute Girl"]
+  },
+  {
+    id: "sexy-girl",
+    name: "Mix & Match Outfit Game/Style Girl/Sexy Girl",
+    path: ["Mix & Match Outfit Game", "Style Girl", "Sexy Girl"]
+  },
+  {
+    id: "cool-girl",
+    name: "Mix & Match Outfit Game/Style Girl/Cool Girl",
+    path: ["Mix & Match Outfit Game", "Style Girl", "Cool Girl"]
+  },
+  {
+    id: "style-105-d8",
+    name: "Mix & Match Outfit Game/Style Girl/Style 105 D8",
+    path: ["Mix & Match Outfit Game", "Style Girl", "Style 105 D8"]
+  },
+  {
+    id: "style-boy",
+    name: "Mix & Match Outfit Game/Style Boy",
+    path: ["Mix & Match Outfit Game", "Style Boy"]
+  },
+  {
+    id: "couple-outfit",
+    name: "Mix & Match Outfit Game/Couple Outfit",
+    path: ["Mix & Match Outfit Game", "Couple Outfit"]
+  },
+  {
+    id: "video-game-audition",
+    name: "Video Game Audition",
+    path: ["Video Game Audition"]
+  },
+  {
+    id: "mv-audition",
+    name: "Video Game Audition/MV Audition",
+    path: ["Video Game Audition", "MV Audition"]
+  },
+  {
+    id: "perfect-combo-audition",
+    name: "Video Game Audition/Perfect x Combo Audition",
+    path: ["Video Game Audition", "Perfect x Combo Audition"]
+  },
+  {
+    id: "d8-skill-dance-performance",
+    name: "Video Game Audition/D8 Skill Dance Performance",
+    path: ["Video Game Audition", "D8 Skill Dance Performance"]
+  },
+  {
+    id: "d8-team-dance-performance",
+    name: "Video Game Audition/D8 Team Dance Performance",
+    path: ["Video Game Audition", "D8 Team Dance Performance"]
+  },
+  {
+    id: "doi-8-4k-dance-performance",
+    name: "Video Game Audition/Đôi 8-4K Dance Performance",
+    path: ["Video Game Audition", "Đôi 8-4K Dance Performance"]
+  },
+  {
     id: "review-skill",
     name: "Review Skill",
     path: ["Review Skill"]
   },
   {
     id: "d8-skill-poppin",
-    name: "D8 Skill Poppin",
+    name: "Review Skill/D8 Skill Poppin",
     path: ["Review Skill", "D8 Skill Poppin"]
-  },
-  {
-    id: "mix-match-outfit",
-    name: "Mix & Match Outfit Game",
-    path: ["Mix & Match Outfit Game"]
   },
   {
     id: "huong-dan-audition",
@@ -97,11 +167,6 @@ const MINA_CATEGORIES_V8 = [
     id: "tin-tuc-audition",
     name: "Tin tức Audition",
     path: ["Tin tức Audition"]
-  },
-  {
-    id: "event-mina",
-    name: "Event Mina",
-    path: ["Event Mina"]
   },
   {
     id: "wiki-skill",
