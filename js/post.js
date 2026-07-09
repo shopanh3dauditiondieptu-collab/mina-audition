@@ -286,7 +286,7 @@ async function loadPost() {
     : ""
 }
 
-        <div class="post-actions">
+        <div class="mina-post-actions">
   <a href="index.html" class="action-btn">🏠 Trang chủ</a>
   <a href="blog.html" class="action-btn">📚 Mina Blog</a>
 
@@ -551,3 +551,13 @@ document.addEventListener("click", function(e) {
     });
   }
 });
+const scrollBtn = document.getElementById("scrollTopBtn");
+
+if (scrollBtn) {
+  scrollBtn.addEventListener("click", () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  });
+}
