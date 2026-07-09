@@ -745,3 +745,147 @@ body {
   box-shadow: 0 0 18px rgba(255, 79, 222, 0.35);
   border-color: transparent !important;
 }
+/* ================================
+   WIKI MINA ADVANCED FILTER V9
+   Chỉ thêm tính năng, không đổi cấu trúc cũ
+================================ */
+
+.mina-wiki-tools{
+  margin:18px auto 22px;
+  padding:16px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:22px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.035)),
+    rgba(18,12,35,.72);
+  box-shadow:0 14px 38px rgba(0,0,0,.28);
+  backdrop-filter:blur(14px);
+}
+
+.mina-wiki-search-row{
+  display:grid;
+  grid-template-columns:1fr 170px;
+  gap:12px;
+  margin-bottom:12px;
+}
+
+.mina-wiki-filter-grid{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(120px,1fr));
+  gap:10px;
+}
+
+.mina-wiki-search,
+.mina-wiki-select{
+  width:100%;
+  min-height:42px;
+  padding:0 13px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:13px;
+  outline:none;
+  color:#fff;
+  background:rgba(12,8,28,.86);
+  font-size:13px;
+  font-weight:700;
+}
+
+.mina-wiki-search::placeholder{
+  color:rgba(255,255,255,.52);
+}
+
+.mina-wiki-select option{
+  color:#111;
+  background:#fff;
+}
+
+.mina-wiki-search:focus,
+.mina-wiki-select:focus{
+  border-color:rgba(255,105,210,.72);
+  box-shadow:0 0 0 3px rgba(255,105,210,.15);
+}
+
+.mina-wiki-action-row{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:9px;
+  margin-top:13px;
+}
+
+.mina-wiki-chip{
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:999px;
+  padding:9px 14px;
+  color:#fff;
+  background:rgba(255,255,255,.08);
+  cursor:pointer;
+  font-size:13px;
+  font-weight:800;
+  transition:.2s ease;
+}
+
+.mina-wiki-chip:hover,
+.mina-wiki-chip.is-active{
+  background:linear-gradient(135deg,#ff67d8,#7c5cff);
+  border-color:transparent;
+  transform:translateY(-1px);
+}
+
+.mina-wiki-count{
+  margin-left:auto;
+  color:rgba(255,255,255,.72);
+  font-size:13px;
+  font-weight:700;
+}
+
+.wiki-fav-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:34px;
+  height:34px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  cursor:pointer;
+  font-size:16px;
+  transition:.2s ease;
+}
+
+.wiki-fav-btn.is-active{
+  color:#ff5abf;
+  background:rgba(255,90,191,.16);
+  border-color:rgba(255,90,191,.48);
+}
+
+.wiki-hidden-by-filter{
+  display:none !important;
+}
+
+@media(max-width:1024px){
+  .mina-wiki-filter-grid{
+    grid-template-columns:repeat(3,1fr);
+  }
+}
+
+@media(max-width:640px){
+  .mina-wiki-search-row{
+    grid-template-columns:1fr;
+  }
+
+  .mina-wiki-filter-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .mina-wiki-count{
+    width:100%;
+    margin-left:0;
+  }
+}
+
+@media(max-width:420px){
+  .mina-wiki-filter-grid{
+    grid-template-columns:1fr;
+  }
+}
