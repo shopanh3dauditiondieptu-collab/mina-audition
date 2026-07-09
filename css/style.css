@@ -1136,3 +1136,138 @@
     transform:translateY(-3px);
     box-shadow:0 12px 30px rgba(0,0,0,.28);
 }
+/* =====================================================
+   POST DETAIL UX UPGRADE - Mina CMS
+===================================================== */
+
+.mina-post-actions{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:30px;
+  padding-top:22px;
+  border-top:1px solid rgba(255,79,196,.18);
+}
+
+.action-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:40px;
+  padding:10px 16px;
+  border-radius:12px;
+  background:#17172e;
+  color:#fff;
+  border:1px solid #ff4fc4;
+  text-decoration:none;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.25s ease;
+}
+
+.action-btn:hover{
+  background:#ff4fc4;
+  color:#fff;
+  transform:translateY(-2px);
+  box-shadow:0 0 16px rgba(255,79,196,.45);
+}
+
+.post-extra-panel{
+  margin:28px auto 0;
+  padding:22px;
+  border-radius:18px;
+  background:linear-gradient(135deg, rgba(255,79,196,.12), rgba(75,120,255,.08));
+  border:1px solid rgba(255,79,196,.25);
+  box-shadow:0 0 24px rgba(255,79,196,.10);
+}
+
+.post-extra-panel h3{
+  margin:0 0 10px;
+  color:#fff;
+  font-size:20px;
+}
+
+.post-extra-panel p{
+  margin:0;
+  color:#d9dcff;
+  line-height:1.7;
+}
+
+.post-extra-links{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:18px;
+}
+
+.post-extra-links a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:10px 14px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  text-decoration:none;
+  border:1px solid rgba(255,255,255,.14);
+  font-weight:700;
+  transition:.25s ease;
+}
+
+.post-extra-links a:hover{
+  background:#ff4fc4;
+  border-color:#ff4fc4;
+  transform:translateY(-2px);
+}
+
+.floating-top-btn{
+  position:fixed;
+  right:24px;
+  bottom:28px;
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.25);
+  background:linear-gradient(135deg,#ff4fc4,#6b7cff);
+  color:#fff;
+  font-size:24px;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 0 24px rgba(255,79,196,.45);
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(12px);
+  transition:.25s ease;
+  z-index:999;
+}
+
+.floating-top-btn.show{
+  opacity:1;
+  visibility:visible;
+  transform:translateY(0);
+}
+
+.floating-top-btn:hover{
+  transform:translateY(-3px) scale(1.05);
+}
+
+@media(max-width:600px){
+  .mina-post-actions,
+  .post-extra-links{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .action-btn,
+  .post-extra-links a{
+    width:100%;
+  }
+
+  .floating-top-btn{
+    right:16px;
+    bottom:18px;
+  }
+}
