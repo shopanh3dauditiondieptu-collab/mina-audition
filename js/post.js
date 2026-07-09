@@ -291,12 +291,27 @@ async function loadPost() {
   <a href="blog.html" class="action-btn">📚 Mina Blog</a>
 
   <button id="copyLinkBtn" class="action-btn">
-    📋 Copy link bài viết
+    📋 Copy link
   </button>
+</div>
 
-  <button id="scrollTopBtn" class="action-btn">
-    ⬆ Lên đầu trang
-  </button>
+<section class="post-extra-panel">
+  <h3>📌 Tiếp tục khám phá Mina</h3>
+  <p>
+    Bạn có thể quay lại Mina Blog để xem thêm các bài review Skill, hướng dẫn Audition
+    và nội dung mới được cập nhật thường xuyên.
+  </p>
+
+  <div class="post-extra-links">
+    <a href="blog.html">📚 Xem thêm bài viết</a>
+    <a href="wiki.html">🎮 Wiki Skill</a>
+    <a href="index.html">🏠 Về trang chủ</a>
+  </div>
+</section>
+
+<button id="floatingTopBtn" class="floating-top-btn" title="Lên đầu trang">
+  ↑
+</button>
 </div>
       </article>
     `;
@@ -561,3 +576,22 @@ if (scrollBtn) {
     });
   });
 }
+document.addEventListener("click", function(e) {
+  if (e.target && e.target.id === "floatingTopBtn") {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  }
+});
+
+window.addEventListener("scroll", function() {
+  const btn = document.getElementById("floatingTopBtn");
+  if (!btn) return;
+
+  if (window.scrollY > 300) {
+    btn.classList.add("show");
+  } else {
+    btn.classList.remove("show");
+  }
+});
