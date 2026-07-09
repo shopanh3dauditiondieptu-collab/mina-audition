@@ -117,11 +117,20 @@ function getChildren(node) {
 }
 
 function findCategoryInput() {
-  const inputs = Array.from(document.querySelectorAll("input, textarea"));
+  const inputs = Array.from(document.querySelectorAll("input"));
 
   return inputs.find(input => {
-    const text = `${input.placeholder || ""} ${input.name || ""} ${input.id || ""}`.toLowerCase();
-    return text.includes("review skill") || text.includes("mix match") || text.includes("category") || text.includes("danh");
+    const placeholder = (input.placeholder || "").toLowerCase();
+    const value = (input.value || "").toLowerCase();
+
+    return (
+      placeholder.includes("review skill") ||
+      placeholder.includes("mix match") ||
+      placeholder.includes("d8 team") ||
+      value.includes("review skill") ||
+      value.includes("mix match") ||
+      value.includes("d8 team")
+    );
   });
 }
 
