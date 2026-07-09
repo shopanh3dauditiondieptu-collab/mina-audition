@@ -1493,3 +1493,120 @@
     grid-template-columns:1fr !important;
   }
 }
+/* =========================================
+   MINA BLOG TREE COLOR SYSTEM
+========================================= */
+
+/* Khung sidebar */
+.blog-category-box{
+  scrollbar-width:thin;
+  scrollbar-color:#7df3ff rgba(255,255,255,.08);
+}
+
+/* Tất cả bài viết */
+.mina-tree-all{
+  background:linear-gradient(135deg,#ff65dc,#6ee7ff) !important;
+  color:#fff !important;
+  box-shadow:0 0 18px rgba(110,231,255,.45) !important;
+}
+
+/* CẤP 1 - Danh mục lớn */
+.mina-tree-group.level-1 > .mina-tree-parent{
+  background:linear-gradient(135deg,#123a7a,#6a5cff) !important;
+  border:1px solid rgba(125,243,255,.38) !important;
+  color:#fff !important;
+  font-size:14px !important;
+  text-transform:uppercase !important;
+  box-shadow:0 0 12px rgba(80,160,255,.18) !important;
+}
+
+/* CẤP 2 - Nhóm nội dung */
+.mina-tree-group.level-2 > .mina-tree-parent{
+  background:linear-gradient(135deg,#4b267d,#9b5cff) !important;
+  border:1px solid rgba(205,160,255,.36) !important;
+  color:#fff !important;
+  font-size:13px !important;
+}
+
+/* CẤP 3 - Playlist con */
+.mina-tree-item.level-3,
+.mina-tree-group.level-3 > .mina-tree-parent{
+  background:rgba(26,38,58,.96) !important;
+  border-left:4px solid #5ee7ff !important;
+  color:#eafcff !important;
+}
+
+/* CẤP 4 - Chi tiết level/style */
+.mina-tree-item.level-4,
+.mina-tree-group.level-4 > .mina-tree-parent{
+  background:rgba(38,32,45,.96) !important;
+  border-left:4px solid #ffb84d !important;
+  color:#fff3dc !important;
+  font-size:11.5px !important;
+}
+
+/* Đường cây thư mục */
+.mina-tree-children{
+  margin-left:12px !important;
+  padding-left:14px !important;
+  border-left:2px dashed rgba(125,243,255,.28) !important;
+}
+
+/* Nút con */
+.mina-tree-item{
+  position:relative !important;
+}
+
+.mina-tree-item::before{
+  content:"";
+  position:absolute;
+  left:-15px;
+  top:50%;
+  width:12px;
+  border-top:1px dashed rgba(125,243,255,.32);
+}
+
+/* Badge đếm bài */
+.blog-category-box button b{
+  min-width:34px !important;
+  padding:3px 8px !important;
+  background:linear-gradient(135deg,#00e5ff,#7df3ff) !important;
+  color:#06121f !important;
+  font-weight:900 !important;
+  box-shadow:0 0 10px rgba(125,243,255,.35) !important;
+}
+
+/* Hover phát sáng */
+.blog-category-box button:hover,
+.blog-category-box button.active{
+  background:linear-gradient(135deg,#ff65dc,#6ee7ff) !important;
+  color:#fff !important;
+  box-shadow:0 0 18px rgba(110,231,255,.48) !important;
+  transform:translateX(7px) !important;
+}
+
+.blog-category-box button:hover b,
+.blog-category-box button.active b{
+  background:rgba(0,0,0,.25) !important;
+  color:#fff !important;
+}
+
+/* Dễ đọc hơn */
+.blog-category-box button span{
+  line-height:1.25 !important;
+}
+
+/* Thanh cuộn đẹp hơn */
+.blog-category-box::-webkit-scrollbar{
+  width:8px;
+}
+
+.blog-category-box::-webkit-scrollbar-track{
+  background:rgba(255,255,255,.06);
+  border-radius:999px;
+}
+
+.blog-category-box::-webkit-scrollbar-thumb{
+  background:linear-gradient(#6ee7ff,#ff65dc);
+  border-radius:999px;
+}
