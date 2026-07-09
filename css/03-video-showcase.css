@@ -310,3 +310,61 @@
     grid-template-columns:1fr;
   }
 }
+/* =====================================================
+   FIX VIDEO IFRAME BỊ THU NHỎ / MẤT HIỂN THỊ
+===================================================== */
+
+.video-layout{
+  display:grid !important;
+  grid-template-columns:360px minmax(640px, 1fr) !important;
+  gap:48px !important;
+  align-items:center !important;
+}
+
+.video-main{
+  width:100% !important;
+  min-width:0 !important;
+  display:flex !important;
+  justify-content:center !important;
+  align-items:center !important;
+}
+
+.video-box{
+  width:100% !important;
+  max-width:900px !important;
+  min-height:420px !important;
+  aspect-ratio:16 / 9 !important;
+  display:block !important;
+  position:relative !important;
+  overflow:hidden !important;
+}
+
+.video-box iframe,
+#youtubeFrame{
+  display:block !important;
+  width:100% !important;
+  height:100% !important;
+  min-height:420px !important;
+  opacity:1 !important;
+  visibility:visible !important;
+  position:relative !important;
+  z-index:5 !important;
+  border:0 !important;
+}
+
+.video-glow{
+  z-index:1 !important;
+  pointer-events:none !important;
+}
+
+@media(max-width:900px){
+  .video-layout{
+    grid-template-columns:1fr !important;
+  }
+
+  .video-box,
+  .video-box iframe,
+  #youtubeFrame{
+    min-height:260px !important;
+  }
+}
