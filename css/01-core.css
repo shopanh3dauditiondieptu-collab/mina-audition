@@ -567,3 +567,18 @@ text-shadow:
 .content-card h3{
     font-size:50% !important;
 }
+/* FIX: giảm size tiêu đề lớn toàn website Mina */
+.section-title h2,
+.video-title,
+.wiki-title,
+#wiki-title,
+#video-title {
+  font-size: clamp(24px, 2.4vw, 34px) !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.4px !important;
+
+  text-shadow:
+    0 0 1px rgba(255,255,255,.55),
+    0 0 4px rgba(255,190,255,.16),
+    0 0 8px rgba(255,79,227,.06) !important;
+}
