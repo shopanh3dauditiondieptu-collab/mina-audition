@@ -12,6 +12,10 @@ const postId = params.get("id");
 
 let currentPostData = null;
 
+/* =========================
+   HELPERS
+========================= */
+
 function formatDate(timestamp) {
   if (!timestamp || !timestamp.toDate) return "Chưa có ngày đăng";
 
@@ -68,6 +72,54 @@ function getYouTubeEmbedUrl(url = "") {
     return "";
   }
 }
+
+/* =========================
+   CATEGORY / BREADCRUMB V8
+========================= */
+
+function getPostCategoryPath(postData = {}) {
+  if (Array.isArray(postData.categoryPath) && postData.categoryPath.length > 0) {
+    return postData.categoryPath
+      .map(item => String(item || "").trim())
+      .filter(Boolean);
+  }
+
+  const rawCategory =
+    postData.categoryName ||
+    postData.category ||
+    postData.playlist ||
+    postData.tag ||
+    "Bài viết Mina";
+
+  return String(rawCategory)
+    .split("/")
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+function renderBreadcrumb(postData = {}) {
+  const parts = getPostCategoryPath(postData);
+
+  return `
+    <div class="breadcrumb">
+      <a href="index.html">Trang chủ</a>
+      <span> → </span>
+      <a href="blog.html">Mina Blog</a>
+
+      ${parts.map(part => `
+        <span> → </span>
+        <span>${escapeHTML(part)}</span>
+      `).join("")}
+
+      <span> → </span>
+      <span>Bài viết</span>
+    </div>
+  `;
+}
+
+/* =========================
+   CONTENT RENDER
+========================= */
 
 function renderContentBlocks(blocks = [], legacyContent = "") {
   if (!Array.isArray(blocks) || blocks.length === 0) {
@@ -151,65 +203,9 @@ function renderContentBlocks(blocks = [], legacyContent = "") {
   }).join("");
 }
 
-function getPostCategoryPath(postData = {}) {
-  if (Array.isArray(postData.categoryPath) && postData.categoryPath.length) {
-    return postData.categoryPath;
-  }
-
-  const rawCategory =
-    postData.categoryName ||
-    postData.category ||
-    postData.playlist ||
-    postData.tag ||
-    "";
-
-  if (rawCategory) {
-    return String(rawCategory)
-      .split("/")
-      .map(item => item.trim())
-      .filter(Boolean);
-  }
-
-  const text = [
-    postData.title,
-    postData.desc,
-    postData.content
-  ].join(" ").toLowerCase();
-
-  if (text.includes("mix") || text.includes("outfit") || text.includes("cute girl")) {
-    return ["Mix & Match Outfit Game", "Style Girl", "Cute Girl"];
-  }
-
-  if (text.includes("poppin") || text.includes("skill")) {
-    return ["Review Skill", "D8 Skill Poppin"];
-  }
-
-  return ["Bài viết Mina"];
-}
-
-function renderBreadcrumb(postData = {}) {
-  const parts = getPostCategoryPath(postData);
-
-  return `
-    <div class="breadcrumb">
-      <a href="index.html">Trang chủ</a>
-      <span> → </span>
-      <a href="blog.html">Mina Blog</a>
-
-      ${parts.map(part => `
-        <span> → </span>
-        <span>${escapeHTML(part)}</span>
-      `).join("")}
-
-      <span> → </span>
-      <span>Bài viết</span>
-    </div>
-  `;
-}     <span> → </span>
-      <span>Bài viết</span>
-    </div>
-  `;
-}
+/* =========================
+   LOAD POST
+========================= */
 
 async function loadPost() {
   if (!postDetail) return;
@@ -254,7 +250,7 @@ async function loadPost() {
       return;
     }
 
-    document.title = `${p.title || "Bài viết"} | Mina Audition`;
+    document.title = `${p.title || "Chi tiết bài viết"} | Mina Audition`;
 
     postDetail.innerHTML = `
       <article class="post-card post-full">
@@ -277,8 +273,8 @@ async function loadPost() {
         }
 
         <p class="post-category">
-  ${escapeHTML(getPostCategoryPath(p).join(" / "))}
-</p>
+          ${escapeHTML(getPostCategoryPath(p).join(" / "))}
+        </p>
 
         <h1>${escapeHTML(p.title || "Không có tiêu đề")}</h1>
 
@@ -384,6 +380,10 @@ async function loadPost() {
   }
 }
 
+/* =========================
+   POST ENHANCE
+========================= */
+
 function minaEnhancePost() {
   const article =
     document.querySelector(".post-full") ||
@@ -471,7 +471,6 @@ function openLightbox(src, alt) {
   if (!box) return;
 
   const img = box.querySelector("img");
-
   img.src = src;
   img.alt = alt || "Mina Audition";
 
@@ -545,6 +544,10 @@ function addAuthorBox(article) {
   article.appendChild(author);
 }
 
+/* =========================
+   FACEBOOK SDK
+========================= */
+
 function loadFacebookSDK() {
   if (document.getElementById("facebook-jssdk")) return;
 
@@ -561,6 +564,10 @@ function loadFacebookSDK() {
 
   document.body.appendChild(script);
 }
+
+/* =========================
+   EVENTS
+========================= */
 
 document.addEventListener("click", (e) => {
   const img = e.target.closest(".mina-gallery-item img, .mina-content-image");
@@ -600,6 +607,10 @@ window.addEventListener("scroll", function() {
     btn.classList.remove("show");
   }
 });
+
+/* =========================
+   INIT
+========================= */
 
 loadFacebookSDK();
 loadPost();
