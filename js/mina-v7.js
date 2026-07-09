@@ -25,3 +25,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   console.log("✅ Mina CMS V7 loaded successfully");
 });
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll("a, h1, h2, h3, span, p, button").forEach((el) => {
+    if (el.childElementCount === 0) {
+      el.textContent = el.textContent
+        .replaceAll("REVIEW SKILL", "MINA BLOG")
+        .replaceAll("Review Skill", "Mina Blog");
+    }
+  });
+});
