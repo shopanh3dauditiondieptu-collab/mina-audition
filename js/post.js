@@ -10,6 +10,8 @@ const postDetail = document.getElementById("postDetail");
 const params = new URLSearchParams(window.location.search);
 const postId = params.get("id");
 
+let currentPostData = null;
+
 function formatDate(timestamp) {
   if (!timestamp || !timestamp.toDate) return "Chưa có ngày đăng";
 
@@ -90,11 +92,7 @@ function renderContentBlocks(blocks = [], legacyContent = "") {
             class="mina-content-image"
             loading="lazy"
           >
-          ${
-            block.caption
-              ? `<figcaption>${escapeHTML(block.caption)}</figcaption>`
-              : ""
-          }
+          ${block.caption ? `<figcaption>${escapeHTML(block.caption)}</figcaption>` : ""}
         </figure>
       `;
     }
@@ -115,11 +113,7 @@ function renderContentBlocks(blocks = [], legacyContent = "") {
                 alt="${escapeHTML(img.caption || "Ảnh gallery Mina")}"
                 loading="lazy"
               >
-              ${
-                img.caption
-                  ? `<figcaption>${escapeHTML(img.caption)}</figcaption>`
-                  : ""
-              }
+              ${img.caption ? `<figcaption>${escapeHTML(img.caption)}</figcaption>` : ""}
             </figure>
           `).join("")}
         </section>
@@ -155,27 +149,7 @@ function renderContentBlocks(blocks = [], legacyContent = "") {
     return "";
   }).join("");
 }
-function getLinkButtonText(url = "") {
-  const link = String(url).toLowerCase();
 
-  if (link.includes("facebook.com") || link.includes("fb.watch")) {
-    return "📘 Xem bài viết Facebook";
-  }
-
-  if (link.includes("youtube.com") || link.includes("youtu.be")) {
-    return "▶️ Xem Video YouTube";
-  }
-
-  if (link.includes("tiktok.com")) {
-    return "🎵 Xem Video TikTok";
-  }
-
-  if (link.includes("instagram.com")) {
-    return "📷 Xem Instagram";
-  }
-
-  return "🌐 Xem liên kết";
-}
 async function loadPost() {
   if (!postId) {
     postDetail.innerHTML = `
@@ -204,6 +178,7 @@ async function loadPost() {
     }
 
     const p = snap.data();
+    currentPostData = p;
 
     if (p.status === "draft") {
       postDetail.innerHTML = `
@@ -235,86 +210,81 @@ async function loadPost() {
             : ""
         }
 
-        <p class="post-category">${escapeHTML(p.category || "Bài viết")}</p>
+        <p class="post-category">${escapeHTML(p.category || p.playlist || "Bài viết")}</p>
 
         <h1>${escapeHTML(p.title || "Không có tiêu đề")}</h1>
 
-        <p class="muted">
-          Ngày đăng: ${formatDate(p.createdAt)}
-        </p>
+        <p class="muted">Ngày đăng: ${formatDate(p.createdAt)}</p>
 
-        ${
-          p.desc
-            ? `<p class="post-desc">${escapeHTML(p.desc)}</p>`
-            : ""
-        }
+        ${p.desc ? `<p class="post-desc">${escapeHTML(p.desc)}</p>` : ""}
 
         <div class="post-content">
           ${renderContentBlocks(p.contentBlocks, p.content)}
         </div>
 
         ${
-  p.link
-    ? `
-     <div class="mina-facebook-embed-box">
-  <div 
-    class="fb-post" 
-    data-href="${escapeHTML(p.link)}"
-    data-width="500"
-    data-show-text="true">
-  </div>
-</div>
+          p.link
+            ? `
+              <div class="mina-facebook-embed-box">
+                <div 
+                  class="fb-post" 
+                  data-href="${escapeHTML(p.link)}"
+                  data-width="500"
+                  data-show-text="true">
+                </div>
+              </div>
 
-<div class="mina-facebook-action">
-  <a 
-    href="${escapeHTML(p.link)}" 
-    target="_blank" 
-    rel="noopener" 
-    class="read-more facebook-post-btn">
-    Xem bài viết Facebook
-  </a>
+              <div class="mina-facebook-action">
+                <a 
+                  href="${escapeHTML(p.link)}" 
+                  target="_blank" 
+                  rel="noopener" 
+                  class="read-more facebook-post-btn">
+                  Xem bài viết Facebook
+                </a>
 
-  <a 
-    href="${escapeHTML(p.link)}" 
-    target="_blank" 
-    rel="noopener" 
-    class="read-more comment-post-btn">
-    Bình luận / tương tác
-  </a>
-</div>
-    `
-    : ""
-}
+                <a 
+                  href="${escapeHTML(p.link)}" 
+                  target="_blank" 
+                  rel="noopener" 
+                  class="read-more comment-post-btn">
+                  Bình luận / tương tác
+                </a>
+              </div>
+            `
+            : ""
+        }
 
         <div class="mina-post-actions">
-  <a href="index.html" class="action-btn">🏠 Trang chủ</a>
-  <a href="blog.html" class="action-btn">📚 Mina Blog</a>
+          <a href="index.html" class="action-btn">🏠 Trang chủ</a>
+          <a href="blog.html" class="action-btn">📚 Mina Blog</a>
 
-  <button id="copyLinkBtn" class="action-btn">
-    📋 Copy link
-  </button>
-</div>
+          <button id="copyLinkBtn" class="action-btn">
+            📋 Copy link
+          </button>
+        </div>
 
-<section class="post-extra-panel">
-  <h3>📌 Tiếp tục khám phá Mina</h3>
-  <p>
-    Bạn có thể quay lại Mina Blog để xem thêm các bài review Skill, hướng dẫn Audition
-    và nội dung mới được cập nhật thường xuyên.
-  </p>
+        <section class="post-extra-panel">
+          <h3>📌 Tiếp tục khám phá Mina</h3>
+          <p>
+            Bạn có thể quay lại Mina Blog để xem thêm các bài review Skill, hướng dẫn Audition
+            và nội dung mới được cập nhật thường xuyên.
+          </p>
 
-  <div class="post-extra-links">
-    <a href="blog.html">📚 Xem thêm bài viết</a>
-    <a href="wiki.html">🎮 Wiki Skill</a>
-    <a href="index.html">🏠 Về trang chủ</a>
-  </div>
-</section>
+          <div class="post-extra-links">
+            <a href="blog.html">📚 Xem thêm bài viết</a>
+            <a href="wiki.html">🎮 Wiki Skill</a>
+            <a href="index.html">🏠 Về trang chủ</a>
+          </div>
+        </section>
 
-<button id="floatingTopBtn" class="floating-top-btn" title="Lên đầu trang">
-  ↑
-</button>
-</div>
+        <button id="floatingTopBtn" class="floating-top-btn" title="Lên đầu trang">
+          ↑
+        </button>
       </article>
     `;
+
+    minaEnhancePost();
 
     const copyBtn = document.getElementById("copyLinkBtn");
 
@@ -328,10 +298,11 @@ async function loadPost() {
         }
       });
     }
-  // Render Facebook Embed
-if (window.FB) {
-    window.FB.XFBML.parse();
-}
+
+    if (window.FB) {
+      window.FB.XFBML.parse();
+    }
+
   } catch (error) {
     console.error(error);
 
@@ -345,35 +316,9 @@ if (window.FB) {
   }
 }
 
-loadPost();
-/* =====================================================
-   MINA CMS V3.1 - IMAGE LIGHTBOX
-===================================================== */
-
-document.addEventListener("click", (e) => {
-  const img = e.target.closest(".mina-gallery-item img, .mina-content-image");
-  if (!img) return;
-
-  const overlay = document.createElement("div");
-  overlay.className = "mina-lightbox";
-  overlay.innerHTML = `
-    <button class="mina-lightbox-close">×</button>
-    <img src="${img.src}" alt="">
-  `;
-
-  document.body.appendChild(overlay);
-
-  overlay.addEventListener("click", () => {
-    overlay.remove();
-  });
-});
-/* ================================
-   MINA CMS V5 - POST ENHANCEMENT
-   Không phá layout cũ
-================================ */
-
 function minaEnhancePost() {
   const article =
+    document.querySelector(".post-full") ||
     document.querySelector(".post-detail") ||
     document.querySelector(".post-content") ||
     document.querySelector("article") ||
@@ -381,7 +326,7 @@ function minaEnhancePost() {
 
   if (!article) return;
 
-  addBreadcrumb(article);
+  addBreadcrumb(article, currentPostData);
   addTableOfContents(article);
   enhanceImages(article);
   addShareBox(article);
@@ -389,15 +334,31 @@ function minaEnhancePost() {
   addLightbox();
 }
 
-function addBreadcrumb(article) {
+function addBreadcrumb(article, postData = {}) {
   if (document.querySelector(".breadcrumb")) return;
+
+  const categoryText = postData.category || postData.playlist || "Mina Blog";
+
+  const parts = String(categoryText)
+    .split("/")
+    .map(item => item.trim())
+    .filter(Boolean);
 
   const breadcrumb = document.createElement("div");
   breadcrumb.className = "breadcrumb";
+
   breadcrumb.innerHTML = `
     <a href="index.html">Trang chủ</a>
     <span> → </span>
-    <a href="review.html">Review Skill</a>
+    <a href="blog.html">Mina Blog</a>
+    ${
+      parts.length
+        ? parts.map(part => `
+            <span> → </span>
+            <span>${escapeHTML(part)}</span>
+          `).join("")
+        : ""
+    }
     <span> → </span>
     <span>Bài viết</span>
   `;
@@ -470,8 +431,9 @@ function addLightbox() {
 
 function openLightbox(src, alt) {
   const box = document.querySelector(".lightbox");
-  const img = box.querySelector("img");
+  if (!box) return;
 
+  const img = box.querySelector("img");
   img.src = src;
   img.alt = alt || "Mina Audition";
   box.classList.add("active");
@@ -481,7 +443,6 @@ function addShareBox(article) {
   if (document.querySelector(".share-box")) return;
 
   const url = encodeURIComponent(window.location.href);
-  const title = encodeURIComponent(document.title);
 
   const share = document.createElement("div");
   share.className = "share-box";
@@ -509,14 +470,17 @@ function addShareBox(article) {
   article.appendChild(share);
 
   const copyBtn = document.getElementById("copyPostLinkV5");
-  copyBtn.addEventListener("click", async () => {
-    await navigator.clipboard.writeText(window.location.href);
-    copyBtn.textContent = "Đã copy ✓";
 
-    setTimeout(() => {
-      copyBtn.textContent = "Copy Link";
-    }, 1800);
-  });
+  if (copyBtn) {
+    copyBtn.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(window.location.href);
+      copyBtn.textContent = "Đã copy ✓";
+
+      setTimeout(() => {
+        copyBtn.textContent = "Copy Link";
+      }, 1800);
+    });
+  }
 }
 
 function addAuthorBox(article) {
@@ -537,7 +501,8 @@ function addAuthorBox(article) {
 
   article.appendChild(author);
 }
-function loadFacebookSDK(){
+
+function loadFacebookSDK() {
   if (document.getElementById("facebook-jssdk")) return;
 
   const fbRoot = document.createElement("div");
@@ -555,27 +520,26 @@ function loadFacebookSDK(){
 }
 
 loadFacebookSDK();
-window.addEventListener("DOMContentLoaded", () => {
-  setTimeout(minaEnhancePost, 500);
-});
-document.addEventListener("click", function(e) {
-  if (e.target && e.target.id === "scrollTopBtn") {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
-  }
-});
-const scrollBtn = document.getElementById("scrollTopBtn");
+loadPost();
 
-if (scrollBtn) {
-  scrollBtn.addEventListener("click", () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
+document.addEventListener("click", (e) => {
+  const img = e.target.closest(".mina-gallery-item img, .mina-content-image");
+  if (!img) return;
+
+  const overlay = document.createElement("div");
+  overlay.className = "mina-lightbox";
+  overlay.innerHTML = `
+    <button class="mina-lightbox-close">×</button>
+    <img src="${img.src}" alt="">
+  `;
+
+  document.body.appendChild(overlay);
+
+  overlay.addEventListener("click", () => {
+    overlay.remove();
   });
-}
+});
+
 document.addEventListener("click", function(e) {
   if (e.target && e.target.id === "floatingTopBtn") {
     window.scrollTo({
