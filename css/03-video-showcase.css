@@ -497,3 +497,146 @@
     grid-template-columns:1fr !important;
   }
 }
+/* =====================================================
+   VIDEO MỚI NHẤT - Layout cân giữa giống mẫu mới
+===================================================== */
+
+.video-showcase{
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 70px 24px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 26px;
+}
+
+/* Xoá dấu 3 chấm / kim cương góc trái */
+.video-showcase::before,
+.video-showcase::after,
+.video-left::before,
+.video-left::after,
+.video-dots,
+.video-decor,
+.video-badge{
+  display: none !important;
+}
+
+.video-left{
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.video-title{
+  margin: 0 0 14px;
+  font-size: clamp(42px, 5vw, 74px);
+  line-height: 1;
+  text-align: center;
+}
+
+.video-desc{
+  max-width: 720px;
+  margin: 0 auto;
+  font-size: 18px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.video-meta{
+  display: none !important;
+}
+
+/* Logo mạng xã hội nhỏ, đều hàng */
+.video-actions{
+  margin-top: 26px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 26px;
+  flex-wrap: wrap;
+}
+
+.video-actions .social-btn{
+  width: 135px;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.video-actions .social-btn i,
+.video-actions .social-btn img,
+.video-actions .social-btn svg{
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+}
+
+/* Video nằm giữa */
+.video-right{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.video-frame,
+.youtube-frame,
+.video-embed{
+  width: min(100%, 760px);
+  margin: 0 auto;
+}
+
+/* Bình luận nổi bật đưa xuống dưới video */
+.video-comments,
+.featured-comments{
+  width: min(100%, 900px);
+  margin: 10px auto 0;
+  text-align: left;
+}
+
+.comment-list,
+.video-comment-list{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* Mobile */
+@media (max-width: 768px){
+  .video-showcase{
+    padding: 50px 16px;
+  }
+
+  .video-title{
+    font-size: clamp(34px, 10vw, 48px);
+  }
+
+  .video-desc{
+    font-size: 15px;
+  }
+
+  .video-actions{
+    gap: 12px;
+  }
+
+  .video-actions .social-btn{
+    width: 128px;
+    height: 40px;
+    font-size: 13px;
+  }
+
+  .comment-list,
+  .video-comment-list{
+    grid-template-columns: 1fr;
+  }
+}
