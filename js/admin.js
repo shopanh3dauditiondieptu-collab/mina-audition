@@ -67,7 +67,97 @@ const statusInput = document.getElementById("status");
 
 let contentBlocks = [];
 let editingPostId = null;
+/* =====================================================
+   MINA CMS V8 - CATEGORY SYSTEM
+   Giữ nguyên giao diện cũ, chỉ nâng cấp dữ liệu danh mục
+===================================================== */
 
+const MINA_CATEGORIES_V8 = [
+  {
+    id: "review-skill",
+    name: "Review Skill",
+    path: ["Review Skill"]
+  },
+  {
+    id: "d8-skill-poppin",
+    name: "D8 Skill Poppin",
+    path: ["Review Skill", "D8 Skill Poppin"]
+  },
+  {
+    id: "mix-match-outfit",
+    name: "Mix & Match Outfit Game",
+    path: ["Mix & Match Outfit Game"]
+  },
+  {
+    id: "huong-dan-audition",
+    name: "Hướng dẫn Audition",
+    path: ["Hướng dẫn Audition"]
+  },
+  {
+    id: "tin-tuc-audition",
+    name: "Tin tức Audition",
+    path: ["Tin tức Audition"]
+  },
+  {
+    id: "event-mina",
+    name: "Event Mina",
+    path: ["Event Mina"]
+  },
+  {
+    id: "wiki-skill",
+    name: "Wiki Skill",
+    path: ["Wiki Skill"]
+  },
+  {
+    id: "khac",
+    name: "Khác",
+    path: ["Khác"]
+  }
+];
+
+function normalizeTextV8(text = "") {
+  return String(text)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function getCategoryV8(value = "") {
+  const raw = String(value || "").trim();
+
+  const found = MINA_CATEGORIES_V8.find(cat =>
+    cat.id === raw ||
+    cat.name === raw ||
+    normalizeTextV8(cat.name) === normalizeTextV8(raw)
+  );
+
+  if (found) return found;
+
+  return {
+    id: "custom",
+    name: raw || "Bài viết Mina",
+    path: [raw || "Bài viết Mina"]
+  };
+}
+
+function setupCategoryV8() {
+  if (!categoryInput) return;
+
+  if (document.getElementById("minaCategoryListV8")) return;
+
+  const datalist = document.createElement("datalist");
+  datalist.id = "minaCategoryListV8";
+
+  datalist.innerHTML = MINA_CATEGORIES_V8.map(cat => `
+    <option value="${escapeHTML(cat.name)}"></option>
+  `).join("");
+
+  categoryInput.setAttribute("list", "minaCategoryListV8");
+  categoryInput.setAttribute("placeholder", "Chọn hoặc nhập danh mục bài viết");
+
+  categoryInput.insertAdjacentElement("afterend", datalist);
+}
 /* =========================
    HELPERS
 ========================= */
