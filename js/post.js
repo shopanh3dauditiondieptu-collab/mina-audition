@@ -153,11 +153,13 @@ function renderContentBlocks(blocks = [], legacyContent = "") {
 
 function renderBreadcrumb(postData = {}) {
   const categoryText =
-    postData.category ||
-    postData.categoryName ||
-    postData.playlist ||
-    postData.tag ||
-    "Mina Blog";
+  postData.category ||
+  postData.categoryName ||
+  postData.playlist ||
+  postData.tag ||
+  postData.type ||
+  postData.group ||
+  "Bài viết Mina";
 
   const parts = String(categoryText)
     .split("/")
@@ -249,8 +251,8 @@ async function loadPost() {
         }
 
         <p class="post-category">
-          ${escapeHTML(p.category || p.playlist || "Bài viết")}
-        </p>
+  ${escapeHTML(p.category || p.categoryName || p.playlist || p.tag || p.type || p.group || "Bài viết Mina")}
+</p>
 
         <h1>${escapeHTML(p.title || "Không có tiêu đề")}</h1>
 
