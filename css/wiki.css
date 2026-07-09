@@ -739,3 +739,9 @@ body {
         width:100%;
     }
 }
+.wiki-admin-link {
+  background: linear-gradient(135deg, #ff4fde, #8b5cff) !important;
+  color: #fff !important;
+  box-shadow: 0 0 18px rgba(255, 79, 222, 0.35);
+  border-color: transparent !important;
+}
