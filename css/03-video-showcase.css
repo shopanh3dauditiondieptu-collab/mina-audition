@@ -54,15 +54,15 @@
 .video-showcase .video-title,
 .video-title{
 
-    margin:18px 0 12px;
+    margin:16px 0 10px;
 
     font-family:inherit;
 
-    font-size:clamp(42px,4.5vw,58px);
+    font-size:clamp(38px,4vw,52px);
 
     font-weight:900;
 
-    line-height:1.05;
+    line-height:1.08;
 
     letter-spacing:-1px;
 
@@ -73,9 +73,9 @@
     text-align:center;
 
     text-shadow:
-        0 0 4px rgba(255,255,255,.90),
-        0 0 12px rgba(255,190,255,.45),
-        0 0 24px rgba(255,79,227,.20);
+        0 0 2px rgba(255,255,255,.85),
+        0 0 8px rgba(255,190,255,.28),
+        0 0 16px rgba(255,79,227,.12);
 
 }
 
