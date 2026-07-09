@@ -572,3 +572,9 @@ img{max-width:100%;display:block}
         0 0 6px rgba(120,220,255,.12);
 
 }
+/* ===== Giảm 30% size tiêu đề card ===== */
+.feature-card h3,
+.feature-title,
+.content-card h3{
+    font-size:70% !important;
+}
