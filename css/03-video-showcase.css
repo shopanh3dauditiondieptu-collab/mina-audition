@@ -52,20 +52,31 @@
 /* Tiêu đề VIDEO dùng cùng thông số với .section-title h2 trong 01-core.css */
 .video-title,
 .video-showcase .video-title,
-.video-left h2{
-  margin:14px auto 10px !important;
-  font-family:'Inter',Arial,sans-serif !important;
-  font-size:clamp(42px,4.8vw,62px) !important;
-  font-weight:900 !important;
-  line-height:1.05 !important;
-  letter-spacing:-1.4px !important;
-  text-transform:uppercase !important;
-  color:#fff !important;
-  text-align:center !important;
-  text-shadow:
-    0 0 8px rgba(255,255,255,.92),
-    0 0 22px rgba(255,210,255,.65),
-    0 0 44px rgba(255,79,227,.45) !important;
+.video-title{
+
+    margin:18px 0 12px;
+
+    font-family:inherit;
+
+    font-size:clamp(42px,4.5vw,58px);
+
+    font-weight:900;
+
+    line-height:1.05;
+
+    letter-spacing:-1px;
+
+    text-transform:uppercase;
+
+    color:#ffffff;
+
+    text-align:center;
+
+    text-shadow:
+        0 0 4px rgba(255,255,255,.90),
+        0 0 12px rgba(255,190,255,.45),
+        0 0 24px rgba(255,79,227,.20);
+
 }
 
 /* Mô tả giống section-title p */
