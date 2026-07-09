@@ -542,7 +542,7 @@ function addAuthorBox(article) {
   author.className = "post-author";
 
   author.innerHTML = `
-    <img class="author-avatar" src="assets/avatar.jpg" alt="Mina Audition">
+    <img class="author-avatar" src="/images/logo-mina.png" alt="Mina Audition">
 
     <div>
       <h3>Mina Audition</h3>
