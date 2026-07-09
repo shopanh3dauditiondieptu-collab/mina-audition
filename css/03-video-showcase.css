@@ -44,23 +44,32 @@
   text-shadow:0 0 18px rgba(95,244,255,.9);
 }
 
-.video-title{
-  width:100%;
-  margin:0 auto 16px;
-  font-family:inherit;
-  font-size:clamp(40px,4.3vw,58px);
-  font-weight:900;
-  line-height:1.05;
-  letter-spacing:-1.2px;
-  text-transform:uppercase;
-  text-align:center;
-  color:#fff;
-  text-shadow:
-    0 0 8px rgba(255,255,255,.92),
-    0 0 22px rgba(255,212,255,.72),
-    0 0 42px rgba(212,111,255,.62);
-}
+/* =====================================================
+   VIDEO TITLE = GIỐNG WIKIPEDIA
+===================================================== */
 
+.video-title{
+
+    margin:14px 0 8px !important;
+
+    font-size:clamp(34px,4vw,50px) !important;
+
+    font-weight:900 !important;
+
+    font-family:inherit !important;
+
+    line-height:1.15 !important;
+
+    letter-spacing:0 !important;
+
+    text-transform:uppercase !important;
+
+    color:#fff !important;
+
+    text-align:center !important;
+
+    text-shadow:0 0 20px rgba(255,79,227,.45) !important;
+}
 .video-desc{
   max-width:720px;
   margin:0 auto;
