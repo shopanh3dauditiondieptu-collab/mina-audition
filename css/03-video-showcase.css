@@ -640,3 +640,176 @@
     grid-template-columns: 1fr;
   }
 }
+/* =====================================================
+   FIX VIDEO MỚI NHẤT - Bố cục giống hình tham chiếu 2
+===================================================== */
+
+.video-showcase{
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 70px 20px 80px;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  gap: 22px;
+}
+
+/* Xoá bố cục chia cột cũ */
+.video-left,
+.video-right{
+  width: 100% !important;
+  max-width: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+}
+
+/* Ẩn badge HOT HIT, meta ngày/view nếu còn */
+.video-badge,
+.video-meta{
+  display: none !important;
+}
+
+/* Tiêu đề nằm giữa */
+.video-title{
+  margin: 0 auto 12px !important;
+  text-align: center !important;
+  font-size: clamp(46px, 5vw, 72px) !important;
+  line-height: .95 !important;
+  letter-spacing: -1px;
+}
+
+/* Mô tả nằm giữa */
+.video-desc{
+  max-width: 760px;
+  margin: 0 auto !important;
+  text-align: center !important;
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+/* Dấu kim cương nằm dưới mô tả, giữa trang */
+.video-left::after{
+  content: "◆  ◆  ◆";
+  display: block;
+  margin: 24px auto 0;
+  color: #42f6ff;
+  font-size: 15px;
+  letter-spacing: 16px;
+  text-shadow: 0 0 14px rgba(66,246,255,.9);
+}
+
+/* Ẩn các dấu 3 chấm / kim cương cũ ở góc trái */
+.video-showcase::before,
+.video-showcase::after,
+.video-left::before,
+.video-dots,
+.video-decor{
+  display: none !important;
+}
+
+/* Hàng logo mạng xã hội */
+.video-actions{
+  order: 2;
+  width: 100%;
+  margin: 2px auto 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-wrap: wrap;
+  gap: 28px !important;
+}
+
+/* Nút social nhỏ lại đều nhau */
+.video-actions .social-btn{
+  width: 128px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 0 14px !important;
+  border-radius: 11px !important;
+  font-size: 13px !important;
+  font-weight: 800;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+.video-actions .social-btn i,
+.video-actions .social-btn svg,
+.video-actions .social-btn img{
+  width: 17px !important;
+  height: 17px !important;
+  font-size: 17px !important;
+  flex: 0 0 auto;
+}
+
+/* Video chính nằm giữa và to hơn */
+.video-right{
+  order: 3;
+  margin-top: 12px;
+}
+
+.video-frame,
+.youtube-frame,
+.video-embed,
+.video-player,
+.video-card{
+  width: min(100%, 760px) !important;
+  max-width: 760px !important;
+  margin: 0 auto !important;
+}
+
+/* Khung iframe/video */
+.video-frame iframe,
+.youtube-frame iframe,
+.video-embed iframe{
+  width: 100% !important;
+  display: block;
+}
+
+/* Bình luận nằm dưới video */
+.video-comments,
+.featured-comments{
+  order: 4;
+  width: min(100%, 900px) !important;
+  margin: 12px auto 0 !important;
+  text-align: left !important;
+}
+
+.comment-list,
+.video-comment-list{
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+/* Mobile */
+@media (max-width: 768px){
+  .video-showcase{
+    padding: 48px 16px 60px;
+  }
+
+  .video-title{
+    font-size: clamp(36px, 11vw, 50px) !important;
+  }
+
+  .video-desc{
+    font-size: 15px;
+  }
+
+  .video-actions{
+    gap: 12px !important;
+  }
+
+  .video-actions .social-btn{
+    width: 132px !important;
+  }
+
+  .comment-list,
+  .video-comment-list{
+    grid-template-columns: 1fr;
+  }
+}
