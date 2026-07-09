@@ -41,5 +41,22 @@
   </div>
 
   <script type="module" src="js/blog.js"></script>
+  <script>
+function minaLike(button){
+  const count = button.querySelector("span");
+  let number = parseInt(count.innerText);
+  number++;
+  count.innerText = number;
+  button.classList.add("liked");
+}
+
+function copyPostLink(){
+  const link = window.location.href;
+
+  navigator.clipboard.writeText(link).then(function(){
+    alert("Đã sao chép link bài viết Mina!");
+  });
+}
+</script>
 </body>
 </html>
