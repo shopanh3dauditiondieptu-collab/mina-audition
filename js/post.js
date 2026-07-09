@@ -245,7 +245,10 @@ async function loadPost() {
     }
 
     const p = snap.data();
-    currentPostData = p;
+p.id = postId;
+currentPostData = p;
+
+countPostViewV81(postId);
 
     if (p.status === "draft") {
       postDetail.innerHTML = `
@@ -406,7 +409,8 @@ function minaEnhancePost() {
   enhanceImages(article);
   addShareBox(article);
   addAuthorBox(article);
-  addLightbox();
+addPostExperienceV81(article, currentPostData);
+addLightbox();
 }
 
 function addTableOfContents(article) {
@@ -551,7 +555,305 @@ function addAuthorBox(article) {
 
   article.appendChild(author);
 }
+/* =====================================================
+   MINA CMS V8.1 - POST EXPERIENCE
+   Comment + Like + Related + Prev/Next + Views
+===================================================== */
 
+function getPostLocalKeyV81(type, id) {
+  return `mina_${type}_${id}`;
+}
+
+async function countPostViewV81(id) {
+  if (!id) return;
+
+  const today = new Date().toISOString().slice(0, 10);
+  const key = getPostLocalKeyV81("view", `${id}_${today}`);
+
+  if (localStorage.getItem(key)) return;
+
+  try {
+    await updateDoc(doc(db, "posts", id), {
+      views: increment(1),
+      lastViewedAt: serverTimestamp()
+    });
+
+    localStorage.setItem(key, "1");
+  } catch (error) {
+    console.warn("Không cập nhật được lượt xem:", error);
+  }
+}
+
+function addPostExperienceV81(article, postData = {}) {
+  if (!article || document.getElementById("minaPostExperienceV81")) return;
+
+  const liked = localStorage.getItem(getPostLocalKeyV81("like", postId)) === "1";
+
+  const box = document.createElement("section");
+  box.id = "minaPostExperienceV81";
+  box.className = "mina-post-experience-v81";
+
+  box.innerHTML = `
+    <div class="mina-post-stats-v81">
+      <div>
+        <strong id="minaViewCountV81">${Number(postData.views || 0)}</strong>
+        <span>👁️ Lượt xem</span>
+      </div>
+
+      <button 
+        type="button" 
+        id="minaLikeBtnV81" 
+        class="${liked ? "liked" : ""}">
+        <strong id="minaLikeCountV81">${Number(postData.likes || 0)}</strong>
+        <span>${liked ? "💖 Đã thích" : "👍 Yêu thích"}</span>
+      </button>
+    </div>
+
+    <div class="mina-post-nav-v81" id="minaPrevNextV81"></div>
+
+    <div class="mina-related-posts-v81">
+      <h3>📚 Bài viết liên quan</h3>
+      <div id="minaRelatedPostsV81" class="mina-related-grid-v81">
+        <p class="muted">Đang tải bài viết liên quan...</p>
+      </div>
+    </div>
+
+    <div class="mina-comments-v81">
+      <h3>💬 Bình luận</h3>
+
+      <form id="minaCommentFormV81" class="mina-comment-form-v81">
+        <input 
+          id="minaCommentNameV81" 
+          type="text" 
+          placeholder="Tên của bạn"
+          maxlength="40"
+          required
+        >
+
+        <textarea 
+          id="minaCommentTextV81" 
+          rows="4" 
+          placeholder="Viết bình luận của bạn..."
+          maxlength="500"
+          required
+        ></textarea>
+
+        <button type="submit">Gửi bình luận</button>
+        <p id="minaCommentMessageV81" class="muted"></p>
+      </form>
+
+      <div id="minaCommentListV81" class="mina-comment-list-v81">
+        <p class="muted">Đang tải bình luận...</p>
+      </div>
+    </div>
+  `;
+
+  article.appendChild(box);
+
+  setupLikeV81();
+  loadCommentsV81();
+  setupCommentFormV81();
+  loadRelatedPostsV81(postData);
+  loadPrevNextPostsV81(postData);
+}
+
+async function setupLikeV81() {
+  const btn = document.getElementById("minaLikeBtnV81");
+  const countEl = document.getElementById("minaLikeCountV81");
+  if (!btn || !countEl || !postId) return;
+
+  btn.addEventListener("click", async () => {
+    const key = getPostLocalKeyV81("like", postId);
+    const liked = localStorage.getItem(key) === "1";
+
+    try {
+      if (liked) {
+        await updateDoc(doc(db, "posts", postId), {
+          likes: increment(-1)
+        });
+
+        localStorage.removeItem(key);
+        btn.classList.remove("liked");
+        btn.querySelector("span").textContent = "👍 Yêu thích";
+        countEl.textContent = Math.max(0, Number(countEl.textContent || 0) - 1);
+      } else {
+        await updateDoc(doc(db, "posts", postId), {
+          likes: increment(1)
+        });
+
+        localStorage.setItem(key, "1");
+        btn.classList.add("liked");
+        btn.querySelector("span").textContent = "💖 Đã thích";
+        countEl.textContent = Number(countEl.textContent || 0) + 1;
+      }
+    } catch (error) {
+      console.warn("Không cập nhật được like:", error);
+      alert("Chưa thể cập nhật yêu thích. Hãy kiểm tra Firestore Rules.");
+    }
+  });
+}
+
+async function setupCommentFormV81() {
+  const form = document.getElementById("minaCommentFormV81");
+  const nameInput = document.getElementById("minaCommentNameV81");
+  const textInput = document.getElementById("minaCommentTextV81");
+  const message = document.getElementById("minaCommentMessageV81");
+
+  if (!form || !nameInput || !textInput || !postId) return;
+
+  const savedName = localStorage.getItem("mina_comment_name");
+  if (savedName) nameInput.value = savedName;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const name = nameInput.value.trim();
+    const text = textInput.value.trim();
+
+    if (!name || !text) return;
+
+    message.textContent = "Đang gửi bình luận...";
+
+    try {
+      await addDoc(collection(db, "posts", postId, "comments"), {
+        name,
+        text,
+        status: "approved",
+        createdAt: serverTimestamp()
+      });
+
+      localStorage.setItem("mina_comment_name", name);
+      textInput.value = "";
+      message.textContent = "Đã gửi bình luận.";
+      loadCommentsV81();
+    } catch (error) {
+      console.warn("Không gửi được bình luận:", error);
+      message.textContent = "Chưa gửi được bình luận. Hãy kiểm tra Firestore Rules.";
+    }
+  });
+}
+
+async function loadCommentsV81() {
+  const list = document.getElementById("minaCommentListV81");
+  if (!list || !postId) return;
+
+  try {
+    const q = query(
+      collection(db, "posts", postId, "comments"),
+      orderBy("createdAt", "desc")
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      list.innerHTML = `<p class="muted">Chưa có bình luận nào. Hãy là người đầu tiên bình luận nhé.</p>`;
+      return;
+    }
+
+    list.innerHTML = snapshot.docs.map(item => {
+      const c = item.data();
+
+      if (c.status && c.status !== "approved") return "";
+
+      return `
+        <div class="mina-comment-item-v81">
+          <strong>${escapeHTML(c.name || "Người xem Mina")}</strong>
+          <p>${escapeHTML(c.text || "")}</p>
+        </div>
+      `;
+    }).join("");
+  } catch (error) {
+    console.warn("Không tải được bình luận:", error);
+    list.innerHTML = `<p class="muted">Chưa tải được bình luận.</p>`;
+  }
+}
+
+async function loadRelatedPostsV81(postData = {}) {
+  const box = document.getElementById("minaRelatedPostsV81");
+  if (!box) return;
+
+  try {
+    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+
+    const currentPath = Array.isArray(postData.categoryPath)
+      ? postData.categoryPath.join("/")
+      : postData.category || postData.categoryName || "";
+
+    const posts = snapshot.docs
+      .map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }))
+      .filter(p => p.id !== postId && p.status !== "draft")
+      .filter(p => {
+        const path = Array.isArray(p.categoryPath)
+          ? p.categoryPath.join("/")
+          : p.category || p.categoryName || "";
+
+        return path && currentPath && path.includes(currentPath.split("/")[0]);
+      })
+      .slice(0, 4);
+
+    if (posts.length === 0) {
+      box.innerHTML = `<p class="muted">Chưa có bài viết liên quan.</p>`;
+      return;
+    }
+
+    box.innerHTML = posts.map(p => `
+      <a href="post.html?id=${p.id}" class="mina-related-card-v81">
+        ${
+          p.image
+            ? `<img src="${optimizeCloudinary(p.image, 320)}" alt="${escapeHTML(p.title || "")}">`
+            : ""
+        }
+        <strong>${escapeHTML(p.title || "Bài viết Mina")}</strong>
+        <span>${escapeHTML(p.categoryName || p.category || "Mina Blog")}</span>
+      </a>
+    `).join("");
+  } catch (error) {
+    console.warn("Không tải được bài liên quan:", error);
+    box.innerHTML = `<p class="muted">Chưa tải được bài viết liên quan.</p>`;
+  }
+}
+
+async function loadPrevNextPostsV81(postData = {}) {
+  const box = document.getElementById("minaPrevNextV81");
+  if (!box || !postId) return;
+
+  try {
+    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+    const snapshot = await getDocs(q);
+
+    const posts = snapshot.docs
+      .map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }))
+      .filter(p => p.status !== "draft");
+
+    const index = posts.findIndex(p => p.id === postId);
+
+    const prev = posts[index - 1];
+    const next = posts[index + 1];
+
+    box.innerHTML = `
+      ${
+        prev
+          ? `<a href="post.html?id=${prev.id}">← Bài mới hơn<br><strong>${escapeHTML(prev.title || "")}</strong></a>`
+          : `<span></span>`
+      }
+
+      ${
+        next
+          ? `<a href="post.html?id=${next.id}">Bài cũ hơn →<br><strong>${escapeHTML(next.title || "")}</strong></a>`
+          : `<span></span>`
+      }
+    `;
+  } catch (error) {
+    console.warn("Không tải được bài trước/sau:", error);
+  }
+}
 /* =========================
    FACEBOOK SDK
 ========================= */
