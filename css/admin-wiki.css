@@ -1,0 +1,178 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #10071f;
+  color: #fff;
+}
+
+.admin-wrap {
+  width: min(1180px, 94%);
+  margin: 0 auto;
+  padding: 28px 0 60px;
+}
+
+.admin-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.admin-head h1 {
+  margin: 0 0 6px;
+  font-size: 32px;
+  color: #ff9df2;
+}
+
+.admin-head p,
+.note {
+  color: #d8c9ee;
+}
+
+.panel {
+  background: rgba(255, 255, 255, .07);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 0 25px rgba(255, 70, 220, .08);
+}
+
+.tool-row,
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.btn {
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 16px;
+  background: #30204f;
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.btn:hover {
+  filter: brightness(1.15);
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #ff4fde, #8b5cff);
+}
+
+.btn.ghost {
+  background: rgba(255,255,255,.1);
+}
+
+.btn.danger {
+  background: #8b1e3f;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+input,
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 12px;
+  background: rgba(0,0,0,.25);
+  color: #fff;
+  padding: 12px;
+  outline: none;
+}
+
+textarea {
+  min-height: 88px;
+  grid-column: span 2;
+}
+
+.full {
+  grid-column: span 2;
+}
+
+.table-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.table-head input {
+  max-width: 340px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+th,
+td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  text-align: left;
+  font-size: 14px;
+}
+
+th {
+  color: #ffb7f4;
+}
+
+.small-btn {
+  padding: 7px 10px;
+  border-radius: 9px;
+  border: 0;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.edit {
+  background: #6c55ff;
+  color: #fff;
+}
+
+.del {
+  background: #e9366a;
+  color: #fff;
+}
+
+.yes {
+  color: #6dffb5;
+  font-weight: 700;
+}
+
+.no {
+  color: #ff8aa8;
+}
+
+@media (max-width: 760px) {
+  .admin-head,
+  .table-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  textarea,
+  .full {
+    grid-column: span 1;
+  }
+}
