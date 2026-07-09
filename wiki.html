@@ -1,1 +1,47 @@
-<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Wiki Skill | Mina Audition</title><link rel="stylesheet" href="css/style.css"></head><body><div class="site-shell"><header class="site-header"><a class="brand" href="index.html"><img src="images/logo.png" onerror="this.style.display='none'"><span>Mina Audition</span></a><nav class="main-nav"><a href="index.html">TRANG CHỦ</a><a href="blog.html">REVIEW SKILL</a><a class="active" href="wiki.html">WIKI SKILL</a></nav></header><main class="section wiki-section"><div class="section-title"><span>◆ ◆ ◆</span><h2>WIKIPEDIA SKILL DANCE</h2><p>Tìm kiếm ID Skill, Style, BPM.</p></div><input class="search-box" id="skillSearch" type="search" placeholder="🔍 Nhập ID skill, tên skill, Poppin..."><div class="skill-grid" id="skillGrid"></div></main></div><script src="js/app.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Mina Wikimedia D8 Audition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="css/wiki.css">
+</head>
+
+<body>
+
+  <main class="mina-wiki-page">
+
+    <section class="wiki-hero">
+      <span class="wiki-badge">MINA WIKIMEDIA</span>
+      <h1>Wikipedia D8 Audition</h1>
+      <p>Kho dữ liệu Skill Audition D8 do Mina xây dựng.</p>
+    </section>
+
+    <section class="wiki-tools">
+      <input 
+        type="text" 
+        id="wikiSearch" 
+        placeholder="Tìm theo ID Skill, tên skill, style..."
+      >
+
+      <select id="wikiStyleFilter">
+        <option value="">Tất cả Style</option>
+      </select>
+
+      <select id="wikiRarityFilter">
+        <option value="">Tất cả độ hiếm</option>
+        <option value="S">S</option>
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+      </select>
+    </section>
+
+    <section id="wikiGrid" class="wiki-grid"></section>
+
+  </main>
+
+  <script src="js/wiki.js"></script>
+</body>
+</html>
