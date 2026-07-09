@@ -144,3 +144,33 @@ body {
     grid-template-columns: 1fr;
   }
 }
+/* FIX LAG WIKIPEDIA MINA */
+.wiki-page *,
+.wiki-card,
+.wiki-hero,
+.wiki-filter,
+.wiki-search {
+  animation: none !important;
+  transition: none !important;
+}
+
+.wiki-card {
+  will-change: auto !important;
+  transform: none !important;
+  contain: layout paint;
+}
+
+.wiki-card img,
+.wiki-card-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  background: #111;
+}
+
+.wiki-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 22px;
+  align-items: stretch;
+}
