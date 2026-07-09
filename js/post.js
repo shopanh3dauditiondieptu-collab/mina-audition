@@ -234,10 +234,20 @@ async function loadPost() {
         </div>
 
         ${
-          p.link
-            ? `<p><a href="${escapeHTML(p.link)}" target="_blank" rel="noopener" class="read-more">Xem link liên quan</a></p>`
-            : ""
-        }
+  p.link
+    ? `
+      <div class="mina-facebook-action">
+        <a 
+          href="${escapeHTML(p.link)}" 
+          target="_blank" 
+          rel="noopener" 
+          class="read-more facebook-post-btn">
+          📘 Xem bài viết Facebook
+        </a>
+      </div>
+    `
+    : ""
+}
 
         <div class="post-actions">
           <a href="blog.html" class="read-more">← Quay lại danh sách</a>
