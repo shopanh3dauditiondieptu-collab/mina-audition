@@ -573,7 +573,7 @@ text-shadow:
 .wiki-title,
 #wiki-title,
 #video-title {
-  font-size: clamp(24px, 2.4vw, 34px) !important;
+  font-size: clamp(20px, 2vw, 28px) !important;
   line-height: 1.05 !important;
   letter-spacing: -0.4px !important;
 
