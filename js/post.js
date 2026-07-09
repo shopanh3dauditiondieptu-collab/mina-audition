@@ -305,6 +305,10 @@ async function loadPost() {
         }
       });
     }
+  // Render Facebook Embed
+if (window.FB) {
+    window.FB.XFBML.parse();
+}
   } catch (error) {
     console.error(error);
 
