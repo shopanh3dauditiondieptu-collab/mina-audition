@@ -287,9 +287,17 @@ async function loadPost() {
 }
 
         <div class="post-actions">
-          <a href="blog.html" class="read-more">← Quay lại danh sách</a>
-          <button type="button" id="copyLinkBtn" class="read-more">Copy link bài viết</button>
-        </div>
+  <a href="index.html" class="action-btn">🏠 Trang chủ</a>
+  <a href="blog.html" class="action-btn">📚 Mina Blog</a>
+
+  <button id="copyLinkBtn" class="action-btn">
+    📋 Copy link bài viết
+  </button>
+
+  <button id="scrollTopBtn" class="action-btn">
+    ⬆ Lên đầu trang
+  </button>
+</div>
       </article>
     `;
 
@@ -534,4 +542,12 @@ function loadFacebookSDK(){
 loadFacebookSDK();
 window.addEventListener("DOMContentLoaded", () => {
   setTimeout(minaEnhancePost, 500);
+});
+document.addEventListener("click", function(e) {
+  if (e.target && e.target.id === "scrollTopBtn") {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+  }
 });
