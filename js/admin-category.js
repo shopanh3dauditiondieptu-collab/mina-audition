@@ -225,7 +225,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   originalInput.parentNode.insertBefore(panel, originalInput.nextSibling);
 
-  originalInput.style.display = "none";
+/* Ẩn ô Danh mục gốc, KHÔNG ẩn ô Tiêu đề */
+originalInput.type = "hidden";
 
   const selects = [field1.select, field2.select, field3.select, field4.select];
 
