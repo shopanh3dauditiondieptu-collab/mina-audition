@@ -262,3 +262,69 @@
     grid-template-columns:1fr;
   }
 }
+/* =====================================================
+   FIX TITLE VIDEO GIỐNG WIKIPEDIA
+===================================================== */
+
+.video-showcase{
+  padding-top: 95px !important;
+  padding-bottom: 90px !important;
+}
+
+.video-left,
+.video-heading{
+  max-width: 760px !important;
+  margin: 0 auto 42px !important;
+  text-align: center !important;
+}
+
+/* Chấm kim cương nằm giữa như Wikipedia */
+.video-showcase::before{
+  content: "◆ ◆ ◆" !important;
+  display: block !important;
+  text-align: center !important;
+  margin: 0 auto 22px !important;
+  color: #5ff4ff !important;
+  font-size: 14px !important;
+  letter-spacing: 13px !important;
+  text-shadow: 0 0 18px rgba(95,244,255,.9) !important;
+}
+
+/* Chữ VIDEO MỚI NHẤT giống WIKIPEDIA */
+.video-title,
+.video-left h2{
+  max-width: 760px !important;
+  margin: 0 auto 20px !important;
+
+  font-family: inherit !important;
+  font-size: clamp(46px, 5vw, 68px) !important;
+  font-weight: 900 !important;
+  line-height: 1.02 !important;
+  letter-spacing: -1.8px !important;
+  text-transform: uppercase !important;
+  text-align: center !important;
+
+  color: #fff !important;
+  text-shadow:
+    0 0 8px rgba(255,255,255,.95),
+    0 0 22px rgba(255,212,255,.75),
+    0 0 42px rgba(212,111,255,.7) !important;
+}
+
+/* Mô tả dưới title canh giữa */
+.video-desc{
+  max-width: 620px !important;
+  margin: 0 auto !important;
+  text-align: center !important;
+
+  color: #e8ecff !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  line-height: 1.55 !important;
+}
+
+/* Đảm bảo cụm title không lệch trái */
+.video-left *,
+.video-heading *{
+  text-align: center !important;
+}
