@@ -13,27 +13,17 @@ const sidebar = document.querySelector(".blog-category-box");
 let allPosts = [];
 
 const minaTree = [
-  {
-    name: "KINH NGHIỆM GAME",
-    children: []
-  },
+  { name: "KINH NGHIỆM GAME", children: [] },
+
   {
     name: "MIX & MATCH OUTFIT GAME",
     children: [
-      {
-        name: "Style Girl",
-        children: ["Cute Girl", "Sexy Girl", "Cool Girl", "Style 105 D8"]
-      },
-      {
-        name: "Style Boy",
-        children: ["Cute Boy", "Sexy Boy", "Cool Boy", "Style 105 D8"]
-      },
-      {
-        name: "Couple Outfit",
-        children: ["Cute Style", "Sexy Style", "Cool Style"]
-      }
+      { name: "Style Girl", children: ["Cute Girl", "Sexy Girl", "Cool Girl", "Style 105 D8"] },
+      { name: "Style Boy", children: ["Cute Boy", "Sexy Boy", "Cool Boy", "Style 105 D8"] },
+      { name: "Couple Outfit", children: ["Cute Style", "Sexy Style", "Cool Style"] }
     ]
   },
+
   {
     name: "VIDEO GAME AUDITION",
     children: [
@@ -53,19 +43,44 @@ const minaTree = [
       },
       {
         name: "D8 SKILL REVIEW",
-        children: ["Lv6", "Lv7", "Lv8", "Lv9"]
+        children: [
+          { name: "Lv6", children: ["8K - Sexy Girl", "8K - Cool Boy", "4K - Sexy Girl", "4K - Cool Boy", "8K - Poppin", "4K - Poppin"] },
+          { name: "Lv7", children: ["8K - Sexy Girl", "8K - Cool Boy", "4K - Sexy Girl", "4K - Cool Boy", "8K - Poppin", "4K - Poppin"] },
+          { name: "Lv8", children: ["8K - Sexy Girl", "8K - Cool Boy", "4K - Sexy Girl", "4K - Cool Boy", "8K - Poppin", "4K - Poppin"] },
+          { name: "Lv9", children: ["8K - Sexy Girl", "8K - Cool Boy", "4K - Sexy Girl", "4K - Cool Boy", "8K - Poppin", "4K - Poppin"] }
+        ]
       },
       {
         name: "DC8 SKILL REVIEW",
-        children: ["Lv8", "Lv9", "Lv10", "Lv11"]
+        children: [
+          { name: "Lv8", children: ["8K - Sexy Girl", "8K - Cool Boy", "4K - Sexy Girl", "4K - Cool Boy", "8K - Poppin", "4K - Poppin"] },
+          { name: "Lv9", children: ["8K - Sexy Girl", "8K - Cool Boy", "4K - Sexy Girl", "4K - Cool Boy", "8K - Poppin", "4K - Poppin"] },
+          { name: "Lv10", children: ["8K - Sexy Girl", "8K - Cool Boy", "4K - Sexy Girl", "4K - Cool Boy", "8K - Poppin", "4K - Poppin"] },
+          { name: "Lv11", children: ["8K - Sexy Girl", "8K - Cool Boy", "4K - Sexy Girl", "4K - Cool Boy", "8K - Poppin", "4K - Poppin"] }
+        ]
       }
     ]
   },
-  {
-    name: "TÂM SỰ - CHIA SẺ",
-    children: []
-  }
+
+  { name: "TÂM SỰ - CHIA SẺ", children: [] }
 ];
+
+const icons = {
+  "KINH NGHIỆM GAME": "🎮",
+  "MIX & MATCH OUTFIT GAME": "👗",
+  "VIDEO GAME AUDITION": "🎬",
+  "TÂM SỰ - CHIA SẺ": "💌",
+  "Style Girl": "👧",
+  "Style Boy": "👦",
+  "Couple Outfit": "❤️",
+  "D8 SKILL REVIEW": "⭐",
+  "DC8 SKILL REVIEW": "⭐",
+  "D8 SKILL DANCE PERFORMANCE": "💃",
+  "D8 TEAM DANCE PERFORMANCE": "👯",
+  "MV Audition": "🎵",
+  "Perfect x Combo Audition": "🏆",
+  "ĐÔI 8-4K DANCE PERFORMANCE": "💞"
+};
 
 function normalize(text = "") {
   return String(text)
@@ -88,6 +103,7 @@ function matchPost(post, keyword) {
 }
 
 function getAllNames(node) {
+  if (!node) return [];
   if (typeof node === "string") return [node];
 
   let names = [node.name];
@@ -101,17 +117,17 @@ function getAllNames(node) {
   return names;
 }
 
-function filterByNode(node) {
+function countNode(node) {
   const names = getAllNames(node);
 
-  const filtered = allPosts.filter(item => {
+  return allPosts.filter(item => {
     return names.some(name => matchPost(item.data, name));
-  });
-
-  renderPosts(filtered);
+  }).length;
 }
 
 function renderPosts(posts) {
+  if (!box) return;
+
   if (!posts.length) {
     box.innerHTML = `
       <article class="post-card">
@@ -138,34 +154,31 @@ function renderPosts(posts) {
   }).join("");
 }
 
-function countNode(node) {
+function filterByNode(node) {
   const names = getAllNames(node);
 
-  return allPosts.filter(item => {
+  const filtered = allPosts.filter(item => {
     return names.some(name => matchPost(item.data, name));
-  }).length;
+  });
+
+  renderPosts(filtered);
 }
-const icons = {
 
-  "KINH NGHIỆM GAME":"🎮",
-  "MIX & MATCH OUTFIT GAME":"👗",
-  "VIDEO GAME AUDITION":"🎬",
-  "TÂM SỰ - CHIA SẺ":"💌",
+function findNodeByName(list, name) {
+  for (const item of list) {
+    if (typeof item === "string" && item === name) return item;
 
-  "Style Girl":"👧",
-  "Style Boy":"👦",
-  "Couple Outfit":"❤️",
+    if (typeof item === "object") {
+      if (item.name === name) return item;
 
-  "D8 SKILL REVIEW":"⭐",
-  "DC8 SKILL REVIEW":"⭐",
+      const found = findNodeByName(item.children || [], name);
+      if (found) return found;
+    }
+  }
 
-  "D8 SKILL DANCE PERFORMANCE":"💃",
-  "D8 TEAM DANCE PERFORMANCE":"👯",
+  return null;
+}
 
-  "MV Audition":"🎵",
-  "Perfect x Combo Audition":"🏆"
-
-};
 function renderTreeNode(node, level = 1) {
   if (typeof node === "string") {
     const count = countNode(node);
@@ -179,15 +192,16 @@ function renderTreeNode(node, level = 1) {
   }
 
   const count = countNode(node);
+  const icon = icons[node.name] || "📁";
 
   return `
     <div class="mina-tree-group level-${level}">
-      <button class="mina-tree-parent" data-name="${node.name}">
-        <span>${icons[node.name] || "📁"} ${node.name}</span>
+      <button class="mina-tree-parent level-${level}" data-name="${node.name}">
+        <span class="tree-toggle">+ ${icon} ${node.name}</span>
         <b>${count}</b>
       </button>
 
-      <div class="mina-tree-children">
+      <div class="mina-tree-children collapsed">
         ${(node.children || []).map(child => renderTreeNode(child, level + 1)).join("")}
       </div>
     </div>
@@ -195,6 +209,8 @@ function renderTreeNode(node, level = 1) {
 }
 
 function buildSidebar() {
+  if (!sidebar) return;
+
   sidebar.innerHTML = `
     <h3>📁 DANH MỤC MINA BLOG</h3>
 
@@ -214,30 +230,33 @@ function buildSidebar() {
 
   sidebar.querySelectorAll("[data-name]").forEach(button => {
     button.addEventListener("click", function () {
+      const children = this.parentElement.querySelector(":scope > .mina-tree-children");
+
+      if (children) {
+        children.classList.toggle("collapsed");
+
+        const label = this.querySelector(".tree-toggle");
+        if (label) {
+          const name = this.dataset.name;
+          const icon = icons[name] || "📁";
+          label.textContent = children.classList.contains("collapsed")
+            ? `+ ${icon} ${name}`
+            : `− ${icon} ${name}`;
+        }
+      }
+
       sidebar.querySelectorAll("button").forEach(btn => btn.classList.remove("active"));
       this.classList.add("active");
 
-      const name = this.dataset.name;
-
-      function findNode(list) {
-        for (const item of list) {
-          if (typeof item === "string" && item === name) return item;
-          if (typeof item === "object") {
-            if (item.name === name) return item;
-            const found = findNode(item.children || []);
-            if (found) return found;
-          }
-        }
-        return null;
-      }
-
-      const node = findNode(minaTree);
+      const node = findNodeByName(minaTree, this.dataset.name);
       filterByNode(node);
     });
   });
 }
 
 async function loadPosts() {
+  if (!box) return;
+
   box.innerHTML = `<p class="muted">Đang tải bài viết...</p>`;
 
   try {
@@ -253,7 +272,8 @@ async function loadPosts() {
     renderPosts(allPosts);
 
   } catch (error) {
-    console.error(error);
+    console.error("Mina Blog Error:", error);
+
     box.innerHTML = `
       <article class="post-card">
         <h3>Không tải được bài viết</h3>
