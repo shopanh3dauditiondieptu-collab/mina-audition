@@ -603,3 +603,11 @@ text-shadow:
   background:linear-gradient(90deg,#ff4fe3,#42dfff);
   box-shadow:0 0 24px rgba(79,220,255,.35);
 }
+.video-frame iframe,
+#youtubeFrame{
+  display:block !important;
+  width:100% !important;
+  min-height:360px !important;
+  border:0 !important;
+  border-radius:22px;
+}
