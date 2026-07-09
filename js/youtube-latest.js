@@ -8,7 +8,28 @@ async function loadLatestYoutubeVideo() {
 
     const searchRes = await fetch(searchUrl);
     const searchData = await searchRes.json();
+// Kiểm tra dữ liệu YouTube trả về
+if (
+    !searchData ||
+    !searchData.items ||
+    searchData.items.length === 0
+) {
+    console.warn("YouTube API không trả về video.");
 
+    const frame = document.getElementById("youtubeFrame");
+    if (frame) {
+        frame.src =
+            "https://www.youtube.com/embed?listType=user_uploads&list=mina.audition";
+    }
+
+    document.getElementById("youtubeViews").innerText =
+        "👁 Đang cập nhật";
+
+    document.getElementById("youtubeDate").innerText =
+        "📅 Chưa có dữ liệu";
+
+    return;
+}
     const video = searchData.items[0];
     const videoId = video.id.videoId;
     const publishedAt = video.snippet.publishedAt;
