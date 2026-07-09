@@ -344,3 +344,46 @@
     font-size:16px !important;
   }
 }
+/* =====================================================
+   FIX ĐỒNG BỘ TIÊU ĐỀ VIDEO VỚI WIKIPEDIA
+   (Không thay đổi layout website)
+===================================================== */
+
+/* Tiêu đề Video */
+.video-showcase .video-title{
+    font-size: clamp(54px, 6vw, 76px) !important;
+    font-weight: 900 !important;
+    line-height: 1.05 !important;
+    letter-spacing: -2px !important;
+
+    font-family: inherit !important;
+    text-transform: uppercase !important;
+
+    color: #ffffff !important;
+    text-align: center !important;
+
+    text-shadow:
+        0 0 8px rgba(255,255,255,.95),
+        0 0 24px rgba(255,210,255,.75),
+        0 0 50px rgba(255,79,227,.55) !important;
+
+    margin: 18px 0 12px !important;
+}
+
+/* Mô tả dưới tiêu đề */
+.video-showcase .video-desc{
+    font-size: 18px !important;
+    line-height: 1.6 !important;
+    max-width: 700px !important;
+
+    margin: 0 auto 28px !important;
+    text-align: center !important;
+}
+
+/* Căn giữa toàn bộ phần tiêu đề */
+.video-showcase .video-heading{
+    width:100%;
+    max-width:900px;
+    margin:0 auto 35px;
+    text-align:center;
+}
