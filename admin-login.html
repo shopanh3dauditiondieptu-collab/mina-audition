@@ -3,35 +3,156 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>Đăng nhập Mina CMS</title>
-  <link rel="stylesheet" href="css/admin-wiki.css?v=1.5.0" />
+
+  <script src="js/admin-auth.js?v=1.6.0" defer></script>
+
+  <style>
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Arial,sans-serif;
+      color:#fff;
+      background:
+        radial-gradient(circle at top left,rgba(255,79,227,.22),transparent 35%),
+        linear-gradient(135deg,#080012,#1b0738 60%,#100022);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+    }
+    .login-card{
+      width:100%;
+      max-width:420px;
+      padding:34px 28px;
+      border-radius:24px;
+      background:rgba(22,10,42,.86);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow:0 24px 80px rgba(0,0,0,.45);
+      text-align:center;
+    }
+    .logo{
+      width:58px;
+      height:58px;
+      margin:0 auto 14px;
+      border-radius:18px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,#ff4fe3,#7c4dff);
+      box-shadow:0 0 28px rgba(255,79,227,.45);
+      font-size:28px;
+    }
+    h1{
+      margin:0 0 8px;
+      font-size:30px;
+      font-weight:900;
+    }
+    p{
+      margin:0 0 24px;
+      color:#d8c8ff;
+      font-size:14px;
+    }
+    .field{
+      width:100%;
+      margin-bottom:14px;
+      text-align:left;
+    }
+    label{
+      display:block;
+      margin-bottom:7px;
+      color:#f3d7ff;
+      font-size:13px;
+      font-weight:700;
+    }
+    input{
+      width:100%;
+      height:46px;
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:14px;
+      padding:0 14px;
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      outline:none;
+      font-size:15px;
+    }
+    input::placeholder{color:rgba(255,255,255,.48)}
+    input:focus{
+      border-color:#ff6af0;
+      box-shadow:0 0 0 3px rgba(255,106,240,.16);
+    }
+    .remember{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin:8px 0 18px;
+      color:#e9dfff;
+      font-size:14px;
+      text-align:left;
+    }
+    .remember input{
+      width:16px;
+      height:16px;
+    }
+    button{
+      width:100%;
+      height:48px;
+      border:0;
+      border-radius:15px;
+      color:#fff;
+      font-size:16px;
+      font-weight:900;
+      cursor:pointer;
+      background:linear-gradient(135deg,#ff4fe3,#7c4dff);
+      box-shadow:0 12px 34px rgba(255,79,227,.32);
+    }
+    button:hover{filter:brightness(1.08)}
+    #adminLoginError{
+      margin-top:14px;
+      min-height:20px;
+      color:#ff8ecf;
+      font-size:14px;
+      font-weight:700;
+    }
+    .back-link{
+      display:inline-block;
+      margin-top:18px;
+      color:#ffc8ff;
+      font-weight:700;
+      text-decoration:none;
+    }
+    .back-link:hover{text-decoration:underline}
+  </style>
 </head>
 
-<body class="login-body">
-  <main class="login-box">
-    <div class="login-logo">✦</div>
-
+<body>
+  <main class="login-card">
+    <div class="logo">✦</div>
     <h1>Mina CMS</h1>
     <p>Đăng nhập để quản lý Wiki Skill</p>
 
-    <form id="loginForm" class="login-form">
-      <input id="adminUser" type="text" placeholder="Tài khoản admin" autocomplete="username" required />
-      <input id="adminPass" type="password" placeholder="Mật khẩu" autocomplete="current-password" required />
+    <form id="adminLoginForm">
+      <div class="field">
+        <label for="adminUser">Tài khoản admin</label>
+        <input id="adminUser" type="text" placeholder="Nhập tài khoản" autocomplete="username" required />
+      </div>
 
-      <label class="remember-row">
-        <input id="rememberLogin" type="checkbox" />
-        <span>Ghi nhớ đăng nhập</span>
+      <div class="field">
+        <label for="adminPass">Mật khẩu</label>
+        <input id="adminPass" type="password" placeholder="Nhập mật khẩu" autocomplete="current-password" required />
+      </div>
+
+      <label class="remember">
+        <input type="checkbox" id="rememberAdmin" checked />
+        Ghi nhớ đăng nhập
       </label>
 
-      <button type="submit" class="cms-btn primary full">Đăng nhập</button>
+      <button type="submit">Đăng nhập</button>
 
-      <small id="loginError" class="login-error"></small>
+      <div id="adminLoginError"></div>
     </form>
 
-    <a href="wiki.html" class="back-link">← Quay lại Wiki Mina</a>
+    <a class="back-link" href="/wiki">← Quay lại Wiki Mina</a>
   </main>
-
-  <script src="js/admin-auth.js?v=1.5.0"></script>
 </body>
 </html>
