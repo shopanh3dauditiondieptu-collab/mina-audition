@@ -1,153 +1,273 @@
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ ok: false, message: "Method not allowed" });
+/* =====================================================
+   MINA WIKI SAVE SKILL API - V3 SECURITY FIX
+   File: api/wiki-save-skill.js
+
+   Yêu cầu Environment Variables:
+   GITHUB_TOKEN
+   GITHUB_OWNER
+   GITHUB_REPO
+   GITHUB_BRANCH=main
+   MINA_DB_PATH=database/master-skills.json
+   MINA_ADMIN_API_KEY
+
+   Cloudinary (chỉ cần khi upload ảnh từ máy):
+   CLOUDINARY_CLOUD_NAME
+   CLOUDINARY_API_KEY
+   CLOUDINARY_API_SECRET
+===================================================== */
+
+const crypto = require("crypto");
+
+const GH_API = "https://api.github.com";
+const DB_PATH = process.env.MINA_DB_PATH || "database/master-skills.json";
+
+function env(name) {
+  const value = process.env[name];
+  if (!value) throw new Error(`Thiếu biến môi trường ${name}`);
+  return value;
+}
+
+function json(res, status, body) {
+  res.status(status);
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
+  res.end(JSON.stringify(body));
+}
+
+function requireAdmin(req) {
+  const configured = env("MINA_ADMIN_API_KEY");
+  const received =
+    req.headers["x-mina-admin-key"] ||
+    (req.body && (req.body.adminApiKey || req.body.adminPassword)) ||
+    "";
+
+  if (String(received) !== String(configured)) {
+    const err = new Error("Sai khóa quản trị");
+    err.statusCode = 401;
+    throw err;
+  }
+}
+
+function repoInfo() {
+  return {
+    owner: env("GITHUB_OWNER"),
+    repo: env("GITHUB_REPO"),
+    branch: process.env.GITHUB_BRANCH || "main"
+  };
+}
+
+function ghHeaders() {
+  return {
+    Authorization: `Bearer ${env("GITHUB_TOKEN")}`,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "Content-Type": "application/json"
+  };
+}
+
+function contentUrl() {
+  const { owner, repo } = repoInfo();
+  return `${GH_API}/repos/${owner}/${repo}/contents/${DB_PATH}`;
+}
+
+async function readDatabase() {
+  const { branch } = repoInfo();
+  const response = await fetch(`${contentUrl()}?ref=${encodeURIComponent(branch)}`, {
+    headers: ghHeaders()
+  });
+
+  if (response.status === 404) {
+    return { sha: null, data: { version: 1, updatedAt: null, skills: [] } };
   }
 
+  if (!response.ok) {
+    throw new Error(`GitHub GET lỗi ${response.status}: ${await response.text()}`);
+  }
+
+  const payload = await response.json();
+  const decoded = Buffer.from(
+    String(payload.content || "").replace(/\n/g, ""),
+    "base64"
+  ).toString("utf8");
+
+  const data = JSON.parse(decoded);
+  if (!data || !Array.isArray(data.skills)) {
+    throw new Error("master-skills.json phải có cấu trúc { skills: [] }");
+  }
+
+  return { sha: payload.sha, data };
+}
+
+async function writeDatabase(data, sha, message) {
+  const { branch } = repoInfo();
+  const body = {
+    message,
+    branch,
+    content: Buffer.from(JSON.stringify(data, null, 2), "utf8").toString("base64")
+  };
+
+  if (sha) body.sha = sha;
+
+  const response = await fetch(contentUrl(), {
+    method: "PUT",
+    headers: ghHeaders(),
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub PUT lỗi ${response.status}: ${await response.text()}`);
+  }
+
+  return response.json();
+}
+
+function normalizeSkill(input = {}, imageUrl = "") {
+  const now = new Date().toISOString();
+  const id = String(input.id || input.skillId || "").trim();
+  const name = String(input.name || input.skillName || "").trim();
+
+  if (!id) throw new Error("Thiếu ID skill");
+  if (!name) throw new Error("Thiếu tên skill");
+
+  return {
+    id,
+    name,
+    alias: String(input.alias || "").trim(),
+    type: String(input.type || "").trim(),
+    style: String(input.style || "").trim(),
+    level: input.level === "" || input.level == null ? "" : Number(input.level),
+    bpmBest:
+      input.bpmBest === "" || input.bpmBest == null
+        ? ""
+        : Number(input.bpmBest),
+    rarity: String(input.rarity || "").trim(),
+    rating:
+      input.rating === "" || input.rating == null ? "" : Number(input.rating),
+    status: String(
+      input.status ||
+      input.verifiedStatus ||
+      (input.reviewed ? "verified" : "needs_review")
+    ).trim(),
+    imageUrl: String(imageUrl || input.imageUrl || input.image || "").trim(),
+    youtubeUrl: String(input.youtubeUrl || "").trim(),
+    cameraAngle: String(input.cameraAngle || "").trim(),
+    song: String(input.song || input.recommendedSong || "").trim(),
+    hasYoutube: Boolean(input.hasYoutube || input.youtubeUrl),
+    hasWiki: input.hasWiki !== false,
+    hot: Boolean(input.hot),
+    tags: Array.isArray(input.tags)
+      ? input.tags.map(String).map(v => v.trim()).filter(Boolean)
+      : String(input.tags || "")
+          .split(",")
+          .map(v => v.trim())
+          .filter(Boolean),
+    notes: String(input.notes || input.description || "").trim(),
+    createdAt: input.createdAt || now,
+    updatedAt: now
+  };
+}
+
+async function uploadCloudinary(dataUrl, publicId) {
+  if (!dataUrl) return "";
+
+  const cloudName = env("CLOUDINARY_CLOUD_NAME");
+  const apiKey = env("CLOUDINARY_API_KEY");
+  const apiSecret = env("CLOUDINARY_API_SECRET");
+
+  const timestamp = Math.floor(Date.now() / 1000);
+  const folder = "mina/wiki-skills";
+  const cleanPublicId = String(publicId || `skill-${Date.now()}`)
+    .replace(/[^a-zA-Z0-9_-]/g, "-");
+
+  const signatureBase =
+    `folder=${folder}&overwrite=true&public_id=${cleanPublicId}` +
+    `&timestamp=${timestamp}${apiSecret}`;
+
+  const signature = crypto
+    .createHash("sha1")
+    .update(signatureBase)
+    .digest("hex");
+
+  const form = new FormData();
+  form.append("file", dataUrl);
+  form.append("api_key", apiKey);
+  form.append("timestamp", String(timestamp));
+  form.append("folder", folder);
+  form.append("public_id", cleanPublicId);
+  form.append("overwrite", "true");
+  form.append("signature", signature);
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+    { method: "POST", body: form }
+  );
+
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(
+      payload?.error?.message || `Cloudinary lỗi ${response.status}`
+    );
+  }
+
+  return payload.secure_url || "";
+}
+
+module.exports = async function handler(req, res) {
   try {
-    const {
-      adminPassword,
-      skillData,
-      imageBase64,
-      imageName
-    } = req.body;
-
-    if (adminPassword !== process.env.MINA_ADMIN_PASSWORD) {
-      return res.status(401).json({ ok: false, message: "Sai mật khẩu admin" });
+    if (req.method !== "POST") {
+      return json(res, 405, { ok: false, error: "Method not allowed" });
     }
 
-    let finalImageUrl = skillData.image || "";
+    requireAdmin(req);
 
-    // 1. Upload ảnh lên Cloudinary nếu có ảnh mới
-    if (imageBase64) {
-      const cloudinaryForm = new FormData();
-      cloudinaryForm.append("file", imageBase64);
-      cloudinaryForm.append("upload_preset", process.env.CLOUDINARY_UPLOAD_PRESET);
-      cloudinaryForm.append("folder", "mina/wiki-skills");
-      cloudinaryForm.append("public_id", imageName || `skill-${Date.now()}`);
+    const body = req.body || {};
+    const rawSkill = body.skillData || body.skill || {};
+    const imageUrl = body.imageBase64
+      ? await uploadCloudinary(body.imageBase64, body.imageName || `skill-${rawSkill.id}`)
+      : "";
 
-      const cloudRes = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
-        {
-          method: "POST",
-          body: cloudinaryForm
-        }
-      );
-
-      const cloudData = await cloudRes.json();
-
-      if (!cloudRes.ok) {
-        return res.status(500).json({
-          ok: false,
-          message: "Upload Cloudinary lỗi",
-          detail: cloudData
-        });
-      }
-
-      finalImageUrl = cloudData.secure_url;
-    }
-
-    // 2. Lấy file JSON hiện tại từ GitHub
-    const githubPath = "database/wiki-skills.json";
-    const repo = process.env.GITHUB_REPO;
-    const branch = process.env.GITHUB_BRANCH || "main";
-
-    const getFileRes = await fetch(
-      `https://api.github.com/repos/${repo}/contents/${githubPath}?ref=${branch}`,
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-          Accept: "application/vnd.github+json"
-        }
-      }
-    );
-
-    const fileData = await getFileRes.json();
-
-    if (!getFileRes.ok) {
-      return res.status(500).json({
-        ok: false,
-        message: "Không đọc được wiki-skills.json từ GitHub",
-        detail: fileData
-      });
-    }
-
-    const oldContent = JSON.parse(
-      Buffer.from(fileData.content, "base64").toString("utf8")
-    );
-
-    const skills = Array.isArray(oldContent) ? oldContent : oldContent.skills || [];
-
-    const newSkill = {
-      ...skillData,
-      image: finalImageUrl,
-      updatedAt: new Date().toISOString()
-    };
+    const skill = normalizeSkill(rawSkill, imageUrl);
+    const { sha, data } = await readDatabase();
+    const skills = [...data.skills];
 
     const index = skills.findIndex(
-      item => String(item.id) === String(newSkill.id)
+      item => String(item.id).toLowerCase() === skill.id.toLowerCase()
     );
 
     if (index >= 0) {
-      skills[index] = {
-        ...skills[index],
-        ...newSkill
-      };
+      skill.createdAt = skills[index].createdAt || skill.createdAt;
+      skills[index] = { ...skills[index], ...skill };
     } else {
-      skills.unshift(newSkill);
+      skills.push(skill);
     }
 
-    const newContent = Array.isArray(oldContent)
-      ? skills
-      : {
-          ...oldContent,
-          skills
-        };
+    const next = {
+      ...data,
+      version: data.version || 1,
+      updatedAt: new Date().toISOString(),
+      skills
+    };
 
-    const encodedContent = Buffer.from(
-      JSON.stringify(newContent, null, 2),
-      "utf8"
-    ).toString("base64");
-
-    // 3. Ghi lại vào GitHub
-    const updateRes = await fetch(
-      `https://api.github.com/repos/${repo}/contents/${githubPath}`,
-      {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-          Accept: "application/vnd.github+json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          message: `Update Mina wiki skill ${newSkill.id || ""}`,
-          content: encodedContent,
-          sha: fileData.sha,
-          branch
-        })
-      }
+    await writeDatabase(
+      next,
+      sha,
+      index >= 0
+        ? `Update skill ${skill.id} - ${skill.name}`
+        : `Add skill ${skill.id} - ${skill.name}`
     );
 
-    const updateData = await updateRes.json();
-
-    if (!updateRes.ok) {
-      return res.status(500).json({
-        ok: false,
-        message: "Không ghi được dữ liệu lên GitHub",
-        detail: updateData
-      });
-    }
-
-    return res.status(200).json({
+    return json(res, index >= 0 ? 200 : 201, {
       ok: true,
-      message: "Đã lưu skill thành công",
-      image: finalImageUrl
+      mode: index >= 0 ? "updated" : "created",
+      skill,
+      image: skill.imageUrl,
+      total: skills.length
     });
-
   } catch (error) {
-    return res.status(500).json({
+    console.error("[wiki-save-skill]", error);
+    return json(res, error.statusCode || 500, {
       ok: false,
-      message: "Lỗi server",
-      error: error.message
+      error: error.message || "Lỗi máy chủ"
     });
   }
-}
+};
