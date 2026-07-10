@@ -1,0 +1,48 @@
+/* MINA BLOG CMS PRO v1.0.0 */
+.mina-cms-card{
+  margin:18px 0;
+  padding:20px;
+  border:1px solid rgba(148,163,184,.25);
+  border-radius:18px;
+  background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(248,250,252,.96));
+  box-shadow:0 14px 35px rgba(15,23,42,.08);
+}
+.mina-cms-card h3{margin:0 0 8px;color:#172033}
+.mina-cms-card p{margin:0;color:#64748b}
+.mina-card-head{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}
+.mina-manager-grid,.mina-seo-grid{display:grid;grid-template-columns:2fr .7fr 1.5fr auto;gap:12px;align-items:end}
+.mina-seo-grid{grid-template-columns:1fr 1fr}
+.mina-cms-card label{display:grid;gap:7px;font-weight:700;color:#334155}
+.mina-cms-card input,.mina-cms-card select,.mina-public-filter input,.mina-public-filter select{
+  width:100%;box-sizing:border-box;padding:11px 13px;border:1px solid #cbd5e1;border-radius:11px;background:#fff;color:#0f172a
+}
+.mina-primary-btn,.mina-secondary-btn,.mina-delete-btn{
+  border:0;border-radius:11px;padding:11px 15px;font-weight:800;cursor:pointer
+}
+.mina-primary-btn{background:#7c3aed;color:#fff}
+.mina-secondary-btn{background:#ec4899;color:#fff}
+.mina-delete-btn{background:#fee2e2;color:#b91c1c;padding:7px 11px}
+.mina-category-list{display:grid;gap:8px;margin-top:16px}
+.mina-category-row{
+  display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;
+  padding:11px 12px;border:1px solid #e2e8f0;border-radius:12px;background:#fff
+}
+.mina-category-row span{display:grid;gap:3px}
+.mina-category-row small{color:#64748b}
+.mina-category-row code{color:#7c3aed}
+.mina-tag-manager{margin-top:16px}
+.mina-tag-chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.mina-tag-chip{border:0;border-radius:999px;background:#f3e8ff;color:#6b21a8;padding:7px 11px;cursor:pointer}
+.mina-breadcrumb-line{padding:11px 13px;border-radius:11px;background:#f8fafc;color:#475569}
+.mina-public-filter{display:grid;grid-template-columns:minmax(190px,.5fr) 1fr;gap:12px;margin:18px 0}
+.mina-cms-toast{
+  position:fixed;right:20px;bottom:20px;z-index:99999;padding:12px 16px;border-radius:12px;
+  background:#166534;color:#fff;box-shadow:0 14px 30px rgba(0,0,0,.18);font-weight:700
+}
+.mina-cms-toast.warn{background:#92400e}
+@media(max-width:850px){
+  .mina-manager-grid,.mina-seo-grid,.mina-public-filter{grid-template-columns:1fr}
+  .mina-card-head{align-items:stretch;flex-direction:column}
+  .mina-category-row{grid-template-columns:1fr auto}
+  .mina-category-row code{grid-column:1/-1}
+}
