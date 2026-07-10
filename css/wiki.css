@@ -1125,3 +1125,25 @@ body {
     transform:scale(.96);
 
 }
+/* ==================================================
+   MINA WIKI - TÊN BƯỚC NHẢY + RATE CÙNG MỘT HÀNG
+================================================== */
+
+.mina-filter-row-two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.mina-filter-row-two select {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Điện thoại: tự động trở lại thành 2 hàng */
+@media (max-width: 768px) {
+  .mina-filter-row-two {
+    grid-template-columns: 1fr;
+  }
+}
