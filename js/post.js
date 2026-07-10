@@ -245,10 +245,10 @@ async function loadPost() {
     }
 
     const p = snap.data();
-p.id = postId;
-currentPostData = p;
+    p.id = postId;
+    currentPostData = p;
 
-countPostViewV81(postId);
+    void countPostViewV81(postId);
 
     if (p.status === "draft") {
       postDetail.innerHTML = `
@@ -409,8 +409,8 @@ function minaEnhancePost() {
   enhanceImages(article);
   addShareBox(article);
   addAuthorBox(article);
-addPostExperienceV81(article, currentPostData);
-addLightbox();
+  addPostExperienceV81(article, currentPostData);
+  addLightbox();
 }
 
 function addTableOfContents(article) {
@@ -525,12 +525,17 @@ function addShareBox(article) {
 
   if (copyBtn) {
     copyBtn.addEventListener("click", async () => {
-      await navigator.clipboard.writeText(window.location.href);
-      copyBtn.textContent = "Đã copy ✓";
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        copyBtn.textContent = "Đã copy ✓";
 
-      setTimeout(() => {
-        copyBtn.textContent = "Copy Link";
-      }, 1800);
+        setTimeout(() => {
+          copyBtn.textContent = "Copy Link";
+        }, 1800);
+      } catch (error) {
+        console.warn("Không copy được link:", error);
+        alert("Không copy tự động được. Bạn hãy copy link trên thanh địa chỉ.");
+      }
     });
   }
 }
@@ -558,15 +563,6 @@ function addAuthorBox(article) {
     </p>
   </div>
 `;
-
-    <div>
-      <h3>Mina Audition</h3>
-      <p>
-        Review Skill Audition, chia sẻ concept ảnh 2D/3D, Mix & Match outfit
-        và nội dung dành cho cộng đồng Audition.
-      </p>
-    </div>
-  `;
 
   article.appendChild(author);
 }
