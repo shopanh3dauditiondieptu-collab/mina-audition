@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": null,
+  "updatedAt": "2026-07-10T09:34:56.922Z",
   "skills": [
     {
       "id": "SAMPLE-001",
@@ -22,6 +22,35 @@
       "notes": "Dòng mẫu; có thể sửa hoặc xóa trong Admin.",
       "createdAt": "2026-07-10T00:00:00.000Z",
       "updatedAt": "2026-07-10T00:00:00.000Z"
+    },
+    {
+      "id": "4K_6_0002",
+      "name": "264866",
+      "alias": "",
+      "type": "4K",
+      "style": "LS-La",
+      "level": 6,
+      "bpmBest": 100,
+      "rarity": "S",
+      "rating": 5,
+      "status": "verified",
+      "imageUrl": "https://res.cloudinary.com/rpwcnrfg/image/upload/v1783676095/mina/wiki-skills/skill-4K_6_0002-lv6-264866-4k-sexy.webp",
+      "youtubeUrl": "https://www.youtube.com/shorts/GhTSyib90mA",
+      "cameraAngle": "",
+      "song": "",
+      "hasYoutube": true,
+      "hasWiki": true,
+      "hot": false,
+      "tags": [
+        "4K",
+        "LS-La",
+        "Rare-S",
+        "YouTube",
+        "Verified"
+      ],
+      "notes": "D8 Skill Sexy Girl Lv6 \"264866\" 💙 | Audition VTC | 4K Dance Showcase | Mina",
+      "createdAt": "2026-07-10T09:34:56.684Z",
+      "updatedAt": "2026-07-10T09:34:56.684Z"
     }
   ]
 }
