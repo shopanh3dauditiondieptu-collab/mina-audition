@@ -187,7 +187,46 @@ Xóa bộ lọc
 
 <script src="js/wiki.js"></script>
 <script src="/js/wiki-level-type-filter.js?v=1.0.0"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const selects = Array.from(document.querySelectorAll("select"));
 
+  const styleSelect = selects.find(function (select) {
+    const text = select.textContent.toLowerCase();
+    return text.includes("tất cả style") ||
+           text.includes("style");
+  });
+
+  const raritySelect = selects.find(function (select) {
+    const text = select.textContent.toLowerCase();
+    return text.includes("tất cả độ hiếm") ||
+           text.includes("độ hiếm");
+  });
+
+  if (!styleSelect || !raritySelect) {
+    console.warn("Mina Wiki: Không tìm thấy ô Style hoặc Độ hiếm.");
+    return;
+  }
+
+  /* Tránh tạo trùng khi script chạy lại */
+  if (
+    styleSelect.parentElement &&
+    styleSelect.parentElement.classList.contains("mina-style-rarity-row")
+  ) {
+    return;
+  }
+
+  const row = document.createElement("div");
+  row.className = "mina-style-rarity-row";
+
+  /* Đặt hàng mới vào đúng vị trí của ô Style */
+  styleSelect.parentNode.insertBefore(row, styleSelect);
+
+  /* Di chuyển hai select vào chung một hàng */
+  row.appendChild(styleSelect);
+  row.appendChild(raritySelect);
+});
+</script>
 </body>
 </html>
 /* ==================================================
