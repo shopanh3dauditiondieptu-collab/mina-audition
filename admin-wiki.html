@@ -11,7 +11,7 @@
     .mina-admin-topnav{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px}.mina-admin-topnav a,.mina-admin-topnav button{min-height:38px;padding:9px 14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid rgba(255,255,255,.1);border-radius:999px;color:#fff;background:rgba(255,255,255,.055);font:inherit;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer;transition:.2s}.mina-admin-topnav a:hover,.mina-admin-topnav button:hover{transform:translateY(-2px);border-color:rgba(238,69,218,.48);background:linear-gradient(135deg,#e843d6,#7b4cff);box-shadow:0 8px 22px rgba(164,71,255,.24)}.mina-admin-topnav .logout-btn{border-color:rgba(255,101,145,.24)}
     @media(max-width:900px){.mina-admin-topbar{align-items:flex-start;flex-direction:column}.mina-admin-topnav{width:100%;justify-content:flex-start}}@media(max-width:600px){.mina-admin-topbar{width:calc(100% - 20px);margin-top:10px;padding:11px;position:static}.mina-admin-topnav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.mina-admin-topnav a,.mina-admin-topnav button{width:100%;padding:10px 8px;border-radius:12px;font-size:12px}}
   </style>
-  <script src="js/admin-auth.js?v=1.6.0"></script>
+
 </head>
 <body>
   <header class="mina-admin-topbar">
@@ -97,8 +97,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="js/admin-wiki.js?v=2.0.1"></script>
-  <script src="js/mina-master-cms.js?v=1.0.0"></script>
+   
   <script>
     (function(){"use strict";const btn=document.getElementById("minaAdminLogout");if(!btn)return;btn.addEventListener("click",async function(){if(!window.confirm("Bạn có chắc muốn đăng xuất khỏi Mina CMS?"))return;btn.disabled=true;btn.textContent="Đang đăng xuất...";try{["mina_admin_authenticated","mina_admin_session","mina_admin_token","mina_admin_api_key","mina_admin_key"].forEach(function(key){sessionStorage.removeItem(key);localStorage.removeItem(key)});await fetch("/api/admin/logout",{method:"POST",credentials:"same-origin"}).catch(function(){})}finally{window.location.replace("/admin-login.html")}})})();
   </script>
@@ -148,5 +147,13 @@
   });
 })();
 </script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<script src="/js/mina-cms-config.js?v=2.1.0"></script>
+<script src="/js/admin-core.js?v=2.1.0"></script>
+<script src="/js/admin-layout.js?v=2.1.0"></script>
+<script src="/js/admin-auth.js?v=2.1.0"></script>
+<script src="/js/admin-wiki.js?v=2.1.0"></script>
+<script src="/js/mina-master-cms.js?v=2.1.0"></script>
 </body>
 </html>
