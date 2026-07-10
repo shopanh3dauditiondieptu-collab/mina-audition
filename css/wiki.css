@@ -1017,3 +1017,58 @@ body {
     min-height: 42px;
   }
 }
+/* ===========================
+   MINA CLEAR FILTER BUTTON
+=========================== */
+
+.mina-clear-filter-btn{
+    width:100%;
+    margin-top:10px;
+    padding:12px 16px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    border:none;
+    border-radius:14px;
+
+    background:linear-gradient(135deg,#ff5ab8,#8d5bff);
+
+    color:#fff;
+    font-size:14px;
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    box-shadow:
+        0 5px 15px rgba(255,90,184,.25),
+        inset 0 1px rgba(255,255,255,.2);
+}
+
+.mina-clear-filter-btn:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:
+        0 10px 20px rgba(255,90,184,.4);
+
+}
+
+.mina-clear-filter-icon{
+
+    font-size:18px;
+
+    transition:.3s;
+
+}
+
+.mina-clear-filter-btn:hover
+.mina-clear-filter-icon{
+
+    transform:rotate(-180deg);
+
+}
