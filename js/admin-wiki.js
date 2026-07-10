@@ -66,9 +66,15 @@
 
           <label>Tên Skill</label>
           <input id="skillName" required placeholder="VD: Wave">
-
           <label>Level</label>
-          <input id="skillLevel" placeholder="VD: 6">
+          <select id="skillLevel">
+    <option value="6">Lv.6</option>
+    <option value="7">Lv.7</option>
+    <option value="8">Lv.8</option>
+    <option value="9">Lv.9</option>
+    <option value="10">Lv.10</option>
+    <option value="11">Lv.11</option>
+</select>
 
           <label>Loại Skill</label>
           <select id="skillType">
