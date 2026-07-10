@@ -1072,3 +1072,56 @@ body {
     transform:rotate(-180deg);
 
 }
+/* =========================
+   NÚT XÓA BỘ LỌC - MINA
+========================= */
+
+.mina-clear-filter-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:12px 22px;
+
+    border:none;
+    border-radius:12px;
+
+    background:linear-gradient(
+        135deg,
+        #ff4fb6,
+        #b34dff
+    );
+
+    color:#fff;
+
+    font-size:15px;
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    box-shadow:
+        0 0 20px rgba(255,70,190,.35);
+}
+
+.mina-clear-filter-btn:hover{
+
+    background:linear-gradient(
+        135deg,
+        #ff6bc6,
+        #c76cff
+    );
+
+    transform:translateY(-2px);
+
+    box-shadow:
+        0 0 30px rgba(255,80,180,.55);
+
+}
+
+.mina-clear-filter-btn:active{
+
+    transform:scale(.96);
+
+}
