@@ -1,50 +1,71 @@
 /* =====================================================
-   MINA WIKI ADMIN JS
-   Tạo / sửa / xoá skill ngay trên web
-   Dữ liệu lưu tạm vào trình duyệt + có thể xuất JSON
+   MINA WIKI ADMIN JS - CMS V2
    File: js/admin-wiki.js
+
+   Mục tiêu:
+   - Giữ giao diện Admin Wiki Mina hiện tại
+   - Chọn ảnh từ máy tính, tự resize + chuyển WebP
+   - Gửi ảnh lên Cloudinary thông qua API Vercel
+   - Ghi dữ liệu skill vào GitHub database/wiki-skills.json
+   - Không lưu Base64 vào JSON để tránh lag web
 ===================================================== */
 
 (function () {
   "use strict";
 
   const DB_URL = "database/wiki-skills.json";
-  const STORAGE_KEY = "mina_wiki_skills_admin_v1";
+  const API_SAVE_URL = "/api/wiki-save-skill";
+  const ADMIN_PASSWORD_KEY = "mina_admin_password";
+  const LEGACY_STORAGE_KEY = "mina_wiki_skills_admin_v1";
+
+  const IMAGE_SIZE = 800;
+  const IMAGE_QUALITY = 0.85;
 
   let skills = [];
+  let selectedImageBase64 = "";
+  let selectedImageName = "";
 
   document.addEventListener("DOMContentLoaded", initAdminWiki);
 
   async function initAdminWiki() {
     await loadSkills();
     renderAdminUI();
+    bindEvents();
     renderSkillTable();
   }
 
   async function loadSkills() {
-    const localData = localStorage.getItem(STORAGE_KEY);
-
-    if (localData) {
-      try {
-        skills = JSON.parse(localData);
-        return;
-      } catch (e) {
-        console.warn("Lỗi đọc localStorage, tải lại database...");
-      }
-    }
-
     try {
-      const res = await fetch(DB_URL + "?v=" + Date.now());
-      skills = await res.json();
-      saveLocal();
+      const res = await fetch(DB_URL + "?v=" + Date.now(), {
+        cache: "no-store"
+      });
+
+      if (!res.ok) {
+        throw new Error("Không tải được database/wiki-skills.json");
+      }
+
+      const data = await res.json();
+      skills = Array.isArray(data) ? data : data.skills || [];
+
+      backupLocal();
     } catch (err) {
-      console.error("Không tải được wiki-skills.json", err);
-      skills = [];
+      console.warn("Không tải được GitHub JSON, thử dùng dữ liệu tạm:", err);
+
+      try {
+        const localData = localStorage.getItem(LEGACY_STORAGE_KEY);
+        skills = localData ? JSON.parse(localData) : [];
+      } catch (e) {
+        skills = [];
+      }
     }
   }
 
-  function saveLocal() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(skills, null, 2));
+  function backupLocal() {
+    try {
+      localStorage.setItem(LEGACY_STORAGE_KEY, JSON.stringify(skills, null, 2));
+    } catch (e) {
+      console.warn("Không thể backup dữ liệu tạm:", e);
+    }
   }
 
   function renderAdminUI() {
@@ -58,6 +79,8 @@
         <h1>Admin Wiki Mina</h1>
         <p>Thêm, sửa, xoá skill Audition cho hệ thống Wiki Mina.</p>
 
+        <div id="minaAdminNotice" class="mina-admin-notice" style="display:none;"></div>
+
         <form id="skillForm" class="mina-skill-form">
           <input type="hidden" id="editIndex" value="">
 
@@ -66,15 +89,16 @@
 
           <label>Tên Skill</label>
           <input id="skillName" required placeholder="VD: Wave">
+
           <label>Level</label>
           <select id="skillLevel">
-    <option value="6">Lv.6</option>
-    <option value="7">Lv.7</option>
-    <option value="8">Lv.8</option>
-    <option value="9">Lv.9</option>
-    <option value="10">Lv.10</option>
-    <option value="11">Lv.11</option>
-</select>
+            <option value="6">Lv.6</option>
+            <option value="7">Lv.7</option>
+            <option value="8">Lv.8</option>
+            <option value="9">Lv.9</option>
+            <option value="10">Lv.10</option>
+            <option value="11">Lv.11</option>
+          </select>
 
           <label>Loại Skill</label>
           <select id="skillType">
@@ -108,8 +132,23 @@
             <option value="1">1 sao</option>
           </select>
 
-          <label>Link ảnh</label>
-          <input id="skillImage" placeholder="VD: images/wiki/47767.webp">
+          <label>Ảnh Skill</label>
+          <input id="skillImage" placeholder="URL ảnh Cloudinary hoặc images/wiki/47767.webp">
+
+          <div class="mina-upload-box">
+            <label class="mina-upload-label">
+              📷 Chọn ảnh từ máy tính
+              <input id="skillImageFile" type="file" accept="image/*" hidden>
+            </label>
+
+            <div class="mina-upload-preview" id="skillImagePreview">
+              <span>Chưa chọn ảnh mới. Có thể dán URL ảnh vào ô phía trên.</span>
+            </div>
+
+            <small id="skillImageInfo" class="mina-upload-info">
+              Ảnh sẽ tự resize về 800x800 và chuyển sang WebP trước khi upload.
+            </small>
+          </div>
 
           <label>Link YouTube</label>
           <input id="skillYoutubeUrl" placeholder="Dán link video YouTube nếu có">
@@ -124,29 +163,116 @@
             <label><input type="checkbox" id="skillHot"> Skill hot</label>
           </div>
 
-          <button type="submit" class="mina-btn-save">Lưu skill</button>
+          <button type="submit" class="mina-btn-save" id="saveSkillBtn">Lưu skill lên Cloudinary + GitHub</button>
           <button type="button" id="resetFormBtn">Làm mới form</button>
         </form>
 
         <div class="mina-admin-actions">
-          <button id="exportJsonBtn">Xuất file wiki-skills.json</button>
+          <button id="exportJsonBtn">Xuất file backup wiki-skills.json</button>
           <button id="clearLocalBtn">Xoá dữ liệu tạm</button>
+          <button id="reloadDbBtn">Tải lại database</button>
         </div>
 
         <h2>Danh sách skill</h2>
         <div id="skillTableWrap"></div>
       </section>
     `;
-
-    document.getElementById("skillForm").addEventListener("submit", handleSaveSkill);
-    document.getElementById("resetFormBtn").addEventListener("click", resetForm);
-    document.getElementById("exportJsonBtn").addEventListener("click", exportJson);
-    document.getElementById("clearLocalBtn").addEventListener("click", clearLocalData);
   }
 
-  function handleSaveSkill(e) {
+  function bindEvents() {
+    document.getElementById("skillForm")?.addEventListener("submit", handleSaveSkill);
+    document.getElementById("resetFormBtn")?.addEventListener("click", resetForm);
+    document.getElementById("exportJsonBtn")?.addEventListener("click", exportJson);
+    document.getElementById("clearLocalBtn")?.addEventListener("click", clearLocalData);
+    document.getElementById("reloadDbBtn")?.addEventListener("click", reloadDatabase);
+    document.getElementById("skillImageFile")?.addEventListener("change", handleImageSelect);
+  }
+
+  async function handleImageSelect(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Vui lòng chọn đúng file ảnh.");
+      return;
+    }
+
+    const preview = document.getElementById("skillImagePreview");
+    const info = document.getElementById("skillImageInfo");
+
+    try {
+      setNotice("Đang tối ưu ảnh sang WebP...", "loading");
+
+      const beforeKb = Math.round(file.size / 1024);
+      const optimized = await resizeImageToWebP(file, IMAGE_SIZE, IMAGE_QUALITY);
+      const afterKb = Math.round(base64SizeBytes(optimized) / 1024);
+
+      selectedImageBase64 = optimized;
+      selectedImageName = makeImageName(file.name);
+
+      if (preview) {
+        preview.innerHTML = `
+          <img src="${optimized}" alt="Preview skill">
+          <p>
+            <strong>${safe(selectedImageName)}</strong><br>
+            Trước: ${beforeKb} KB → Sau: ${afterKb} KB
+          </p>
+        `;
+      }
+
+      if (info) {
+        info.textContent = "Ảnh đã tối ưu. Khi bấm Lưu skill, ảnh sẽ được upload lên Cloudinary.";
+      }
+
+      clearNotice();
+    } catch (err) {
+      console.error(err);
+      alert("Không tối ưu được ảnh. Vui lòng thử ảnh khác.");
+      clearNotice();
+    }
+  }
+
+  async function resizeImageToWebP(file, maxSize, quality) {
+    const img = await fileToImage(file);
+
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    const sourceW = img.naturalWidth || img.width;
+    const sourceH = img.naturalHeight || img.height;
+
+    const ratio = Math.min(maxSize / sourceW, maxSize / sourceH, 1);
+    const targetW = Math.max(1, Math.round(sourceW * ratio));
+    const targetH = Math.max(1, Math.round(sourceH * ratio));
+
+    canvas.width = targetW;
+    canvas.height = targetH;
+
+    ctx.drawImage(img, 0, 0, targetW, targetH);
+
+    return canvas.toDataURL("image/webp", quality);
+  }
+
+  function fileToImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = reader.result;
+      };
+
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleSaveSkill(e) {
     e.preventDefault();
 
+    const saveBtn = document.getElementById("saveSkillBtn");
     const editIndex = document.getElementById("editIndex").value;
 
     const skill = {
@@ -175,25 +301,103 @@
       return;
     }
 
-    if (editIndex !== "") {
-      skill.createdAt = skills[editIndex].createdAt || today();
-      skills[editIndex] = skill;
-    } else {
-      const exists = skills.some(item => String(item.id) === String(skill.id));
-      if (exists) {
-        alert("ID Skill này đã tồn tại. Hãy sửa skill cũ hoặc đổi ID khác.");
-        return;
-      }
-
-      skill.createdAt = today();
-      skills.unshift(skill);
+    if (!skill.image && !selectedImageBase64) {
+      const ok = confirm("Skill này chưa có ảnh. Bạn vẫn muốn lưu?");
+      if (!ok) return;
     }
 
-    saveLocal();
-    renderSkillTable();
-    resetForm();
+    const existsIndex = skills.findIndex(item => String(item.id) === String(skill.id));
+    const isEditing = editIndex !== "";
 
-    alert("Đã lưu skill vào Admin Wiki Mina.");
+    if (!isEditing && existsIndex >= 0) {
+      alert("ID Skill này đã tồn tại. Hãy bấm Sửa skill cũ hoặc đổi ID khác.");
+      return;
+    }
+
+    const oldSkill = isEditing ? skills[Number(editIndex)] : null;
+    skill.createdAt = oldSkill?.createdAt || today();
+
+    const adminPassword = await getAdminPassword();
+    if (!adminPassword) return;
+
+    try {
+      setLoading(saveBtn, true);
+      setNotice("Đang lưu skill lên Cloudinary + GitHub...", "loading");
+
+      const result = await saveSkillToAPI(skill, selectedImageBase64, selectedImageName || `skill-${skill.id}`);
+
+      const savedSkill = {
+        ...skill,
+        image: result.image || skill.image,
+        updatedAt: today()
+      };
+
+      if (isEditing && oldSkill) {
+        skills[Number(editIndex)] = savedSkill;
+      } else {
+        skills.unshift(savedSkill);
+      }
+
+      backupLocal();
+      renderSkillTable();
+      resetForm();
+
+      setNotice("Đã lưu skill thành công. Vercel có thể cần vài giây để deploy dữ liệu mới.", "success");
+      alert("Đã lưu skill thành công lên Cloudinary + GitHub.");
+    } catch (err) {
+      console.error(err);
+      setNotice("Lưu thất bại: " + err.message, "error");
+      alert("Lưu thất bại: " + err.message);
+    } finally {
+      setLoading(saveBtn, false);
+    }
+  }
+
+  async function saveSkillToAPI(skillData, imageBase64, imageName) {
+    const adminPassword = localStorage.getItem(ADMIN_PASSWORD_KEY) || "";
+
+    const res = await fetch(API_SAVE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        adminPassword,
+        skillData,
+        imageBase64: imageBase64 || "",
+        imageName
+      })
+    });
+
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (e) {
+      throw new Error("API không trả về JSON hợp lệ.");
+    }
+
+    if (!res.ok || !data.ok) {
+      if (res.status === 401) {
+        localStorage.removeItem(ADMIN_PASSWORD_KEY);
+      }
+
+      throw new Error(data.message || "Không lưu được skill qua API.");
+    }
+
+    return data;
+  }
+
+  async function getAdminPassword() {
+    let password = localStorage.getItem(ADMIN_PASSWORD_KEY);
+
+    if (!password) {
+      password = prompt("Nhập mật khẩu Admin Wiki Mina để lưu lên GitHub:");
+      if (!password) return "";
+
+      localStorage.setItem(ADMIN_PASSWORD_KEY, password);
+    }
+
+    return password;
   }
 
   function renderSkillTable() {
@@ -210,7 +414,9 @@
         <thead>
           <tr>
             <th>ID</th>
+            <th>Ảnh</th>
             <th>Tên</th>
+            <th>Lv</th>
             <th>Type</th>
             <th>Style</th>
             <th>BPM</th>
@@ -223,15 +429,17 @@
           ${skills.map((s, i) => `
             <tr>
               <td>${safe(s.id)}</td>
+              <td>${s.image ? `<img src="${safeAttr(s.image)}" alt="" loading="lazy" style="width:46px;height:46px;object-fit:cover;border-radius:10px;">` : ""}</td>
               <td>${safe(s.name)}</td>
+              <td>${safe(s.level)}</td>
               <td>${safe(s.type)}</td>
               <td>${safe(s.style)}</td>
               <td>${safe(s.bpm)}</td>
               <td>${safe(s.rarity)}</td>
               <td>${s.hot ? "🔥" : ""}</td>
               <td>
-                <button onclick="MinaWikiAdmin.edit(${i})">Sửa</button>
-                <button onclick="MinaWikiAdmin.remove(${i})">Xoá</button>
+                <button type="button" onclick="MinaWikiAdmin.edit(${i})">Sửa</button>
+                <button type="button" onclick="MinaWikiAdmin.remove(${i})">Xoá tạm</button>
               </td>
             </tr>
           `).join("")}
@@ -259,8 +467,18 @@
 
     setChecked("skillReviewed", s.reviewed);
     setChecked("skillYoutube", s.youtube);
-    setChecked("skillWiki", s.wiki);
+    setChecked("skillWiki", s.wiki !== false);
     setChecked("skillHot", s.hot);
+
+    selectedImageBase64 = "";
+    selectedImageName = "";
+
+    const preview = document.getElementById("skillImagePreview");
+    if (preview) {
+      preview.innerHTML = s.image
+        ? `<img src="${safeAttr(s.image)}" alt="Preview skill"><p>Đang dùng ảnh hiện tại. Chọn ảnh mới nếu muốn thay.</p>`
+        : `<span>Skill này chưa có ảnh.</span>`;
+    }
 
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -269,11 +487,14 @@
     const s = skills[index];
     if (!s) return;
 
-    if (!confirm(`Bạn muốn xoá skill "${s.name}" không?`)) return;
+    if (!confirm(`Bạn muốn xoá tạm skill "${s.name}" khỏi bảng Admin hiện tại không?\n\nLưu ý: bản này chưa xoá trên GitHub. Muốn xoá vĩnh viễn cần thêm API wiki-delete-skill.js.`)) {
+      return;
+    }
 
     skills.splice(index, 1);
-    saveLocal();
+    backupLocal();
     renderSkillTable();
+    setNotice("Đã xoá tạm trong Admin. Chưa xoá trên GitHub.", "warning");
   }
 
   function exportJson() {
@@ -288,20 +509,42 @@
 
     URL.revokeObjectURL(url);
 
-    alert("Đã xuất file wiki-skills.json. Bạn chỉ cần upload/chép đè file này vào thư mục database trên GitHub.");
+    alert("Đã xuất file backup wiki-skills.json.");
   }
 
   function clearLocalData() {
     if (!confirm("Xoá dữ liệu tạm trong trình duyệt và tải lại database gốc?")) return;
 
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
     location.reload();
   }
 
+  async function reloadDatabase() {
+    await loadSkills();
+    renderSkillTable();
+    setNotice("Đã tải lại database/wiki-skills.json.", "success");
+  }
+
   function resetForm() {
-    document.getElementById("skillForm").reset();
+    const form = document.getElementById("skillForm");
+    if (form) form.reset();
+
     setVal("editIndex", "");
     setChecked("skillWiki", true);
+
+    selectedImageBase64 = "";
+    selectedImageName = "";
+
+    const preview = document.getElementById("skillImagePreview");
+    const info = document.getElementById("skillImageInfo");
+
+    if (preview) {
+      preview.innerHTML = "<span>Chưa chọn ảnh mới. Có thể dán URL ảnh vào ô phía trên.</span>";
+    }
+
+    if (info) {
+      info.textContent = "Ảnh sẽ tự resize về 800x800 và chuyển sang WebP trước khi upload.";
+    }
   }
 
   function buildTags() {
@@ -321,13 +564,34 @@
     return tags;
   }
 
+  function makeImageName(fileName) {
+    const id = getVal("skillId") || "skill";
+    const cleanName = String(fileName || "image")
+      .replace(/\.[^/.]+$/, "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    return `skill-${id}-${cleanName || Date.now()}`;
+  }
+
+  function base64SizeBytes(base64) {
+    const str = String(base64 || "");
+    const comma = str.indexOf(",");
+    const pure = comma >= 0 ? str.slice(comma + 1) : str;
+
+    return Math.ceil((pure.length * 3) / 4);
+  }
+
   function getVal(id) {
     return (document.getElementById(id)?.value || "").trim();
   }
 
   function setVal(id, value) {
     const el = document.getElementById(id);
-    if (el) el.value = value || "";
+    if (el) el.value = value ?? "";
   }
 
   function getChecked(id) {
@@ -350,62 +614,38 @@
       .replaceAll(">", "&gt;");
   }
 
+  function safeAttr(value) {
+    return safe(value).replaceAll('"', "&quot;");
+  }
+
+  function setLoading(button, isLoading) {
+    if (!button) return;
+
+    button.disabled = !!isLoading;
+    button.dataset.originalText = button.dataset.originalText || button.textContent;
+    button.textContent = isLoading ? "Đang lưu..." : button.dataset.originalText;
+  }
+
+  function setNotice(message, type) {
+    const box = document.getElementById("minaAdminNotice");
+    if (!box) return;
+
+    box.style.display = "block";
+    box.className = `mina-admin-notice mina-admin-notice-${type || "info"}`;
+    box.textContent = message;
+  }
+
+  function clearNotice() {
+    const box = document.getElementById("minaAdminNotice");
+    if (!box) return;
+
+    box.style.display = "none";
+    box.textContent = "";
+  }
+
   window.MinaWikiAdmin = {
     edit: editSkill,
-    remove: removeSkill
+    remove: removeSkill,
+    reload: reloadDatabase
   };
 })();
-// MINA ADMIN - Upload ảnh từ máy tính cho skill
-function initMinaImageUpload() {
-  const imageInput = document.querySelector(
-    'input[name="image"], input[name="imageUrl"], input#image, input#skillImage'
-  );
-
-  if (!imageInput) return;
-
-  imageInput.type = "hidden";
-
-  const box = document.createElement("div");
-  box.className = "mina-upload-box";
-  box.innerHTML = `
-    <label class="mina-upload-label">
-      📷 Chọn ảnh từ máy tính
-      <input type="file" accept="image/*" hidden>
-    </label>
-    <div class="mina-upload-preview">
-      <span>Chưa có ảnh</span>
-    </div>
-  `;
-
-  imageInput.parentNode.insertBefore(box, imageInput.nextSibling);
-
-  const fileInput = box.querySelector('input[type="file"]');
-  const preview = box.querySelector(".mina-upload-preview");
-
-  fileInput.addEventListener("change", function () {
-    const file = this.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      alert("Vui lòng chọn đúng file ảnh.");
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = function (e) {
-      const base64Image = e.target.result;
-
-      imageInput.value = base64Image;
-
-      preview.innerHTML = `
-        <img src="${base64Image}" alt="Preview skill">
-        <p>Đã chọn: ${file.name}</p>
-      `;
-    };
-
-    reader.readAsDataURL(file);
-  });
-}
-
-document.addEventListener("DOMContentLoaded", initMinaImageUpload);
