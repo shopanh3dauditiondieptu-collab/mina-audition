@@ -889,3 +889,35 @@ body {
     grid-template-columns:1fr;
   }
 }
+/* =====================================================
+   MINA WIKI - SỬA TRẠNG THÁI MENU ĐANG MỞ
+===================================================== */
+
+/* Tất cả nút menu trở về trạng thái bình thường */
+.wiki-nav-links a {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  box-shadow: none;
+}
+
+/* Chỉ trang hiện tại mới được sáng */
+.wiki-nav-links a[aria-current="page"] {
+  background: linear-gradient(135deg, #e83fd5, #a64dff);
+  color: #ffffff;
+  box-shadow:
+    0 0 18px rgba(232, 63, 213, 0.45),
+    0 0 28px rgba(89, 213, 255, 0.22);
+}
+
+/* Admin CMS không sáng cố định khi đang ở trang Wiki */
+.wiki-nav-links .wiki-admin-link:not([aria-current="page"]) {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  box-shadow: none;
+}
+
+/* Hiệu ứng rê chuột cho Admin CMS */
+.wiki-nav-links .wiki-admin-link:hover {
+  background: linear-gradient(135deg, #e83fd5, #a64dff);
+  color: #ffffff;
+}
