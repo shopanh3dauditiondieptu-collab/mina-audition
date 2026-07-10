@@ -3,25 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>Mina CMS - Wiki Skill</title>
-
-  <link rel="stylesheet" href="css/admin-wiki.css?v=2.0.0" />
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="js/admin-auth.js?v=1.5.0"></script>
+  <link rel="stylesheet" href="css/admin-wiki.css?v=2.0.1" />
+  <style>
+    .mina-admin-topbar{width:calc(100% - 32px);max-width:1600px;margin:16px auto 0;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:10px;z-index:999;border:1px solid rgba(238,73,220,.26);border-radius:18px;background:rgba(20,7,42,.9);box-shadow:0 12px 32px rgba(0,0,0,.24),0 0 22px rgba(174,73,255,.08);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+    .mina-admin-brand{display:flex;align-items:center;gap:11px;color:#fff;text-decoration:none;white-space:nowrap}.mina-admin-brand-icon{width:40px;height:40px;display:grid;place-items:center;border-radius:13px;font-size:20px;background:linear-gradient(135deg,#f146d7,#784bff);box-shadow:0 0 18px rgba(238,68,218,.36)}.mina-admin-brand strong,.mina-admin-brand small{display:block}.mina-admin-brand strong{font-size:17px;line-height:1.1}.mina-admin-brand small{margin-top:3px;color:rgba(255,255,255,.58);font-size:11px}
+    .mina-admin-topnav{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px}.mina-admin-topnav a,.mina-admin-topnav button{min-height:38px;padding:9px 14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid rgba(255,255,255,.1);border-radius:999px;color:#fff;background:rgba(255,255,255,.055);font:inherit;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer;transition:.2s}.mina-admin-topnav a:hover,.mina-admin-topnav button:hover{transform:translateY(-2px);border-color:rgba(238,69,218,.48);background:linear-gradient(135deg,#e843d6,#7b4cff);box-shadow:0 8px 22px rgba(164,71,255,.24)}.mina-admin-topnav .logout-btn{border-color:rgba(255,101,145,.24)}
+    @media(max-width:900px){.mina-admin-topbar{align-items:flex-start;flex-direction:column}.mina-admin-topnav{width:100%;justify-content:flex-start}}@media(max-width:600px){.mina-admin-topbar{width:calc(100% - 20px);margin-top:10px;padding:11px;position:static}.mina-admin-topnav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.mina-admin-topnav a,.mina-admin-topnav button{width:100%;padding:10px 8px;border-radius:12px;font-size:12px}}
+  </style>
+  <script src="js/admin-auth.js?v=1.6.0"></script>
 </head>
-
 <body>
+  <header class="mina-admin-topbar">
+    <a class="mina-admin-brand" href="/admin-wiki.html" aria-label="Mina CMS Wiki Skill">
+      <span class="mina-admin-brand-icon">✦</span>
+      <span><strong>Mina CMS</strong><small>Wiki Skill Manager</small></span>
+    </a>
+    <nav class="mina-admin-topnav" aria-label="Điều hướng Mina CMS">
+      <a href="/index.html">🏠 Trang chủ</a>
+      <a href="/wiki.html">📚 Wikipedia D8</a>
+      <a href="/blog.html">📰 Mina Blog</a>
+      <button type="button" class="logout-btn" id="minaAdminLogout">🚪 Đăng xuất</button>
+    </nav>
+  </header>
+
   <div class="mina-cms">
     <aside class="cms-sidebar">
-      <div class="cms-logo">
-        <span class="cms-logo-icon">✦</span>
-        <div>
-          <h1>Mina CMS</h1>
-          <p>Wiki Skill Manager</p>
-        </div>
-      </div>
-
+      <div class="cms-logo"><span class="cms-logo-icon">✦</span><div><h1>Mina CMS</h1><p>Wiki Skill Manager</p></div></div>
       <nav class="cms-nav">
         <button class="active" data-tab="dashboard">📊 Dashboard</button>
         <button data-tab="add">➕ Thêm Skill</button>
@@ -30,69 +38,27 @@
         <button data-tab="youtube">▶ YouTube Review</button>
         <button data-tab="backup">💾 Backup</button>
       </nav>
-
-      <div class="cms-links">
-        <a href="index.html">← Trang chủ</a>
-        <a href="wiki.html">Xem Wiki</a>
-      </div>
+      <div class="cms-links"><a href="/index.html">← Trang chủ</a><a href="/wiki.html">Xem Wikipedia D8</a></div>
     </aside>
 
     <main class="cms-main">
       <header class="cms-top">
-        <div>
-          <h2 id="cmsTitle">Dashboard Wiki Mina</h2>
-          <p>Quản lý dữ liệu skill không cần sửa code thủ công.</p>
-        </div>
-
-        <div class="cms-top-actions">
-          <button id="loadJsonBtn" class="cms-btn">Tải JSON hiện tại</button>
-          <button id="exportJsonBtn" class="cms-btn primary">Xuất wiki-skills.json</button>
-        </div>
+        <div><h2 id="cmsTitle">Dashboard Wiki Mina</h2><p>Quản lý dữ liệu skill không cần sửa code thủ công.</p></div>
+        <div class="cms-top-actions"><button id="loadJsonBtn" class="cms-btn">Tải JSON hiện tại</button><button id="exportJsonBtn" class="cms-btn primary">Xuất wiki-skills.json</button></div>
       </header>
 
       <section class="cms-tab active" id="tab-dashboard">
         <div class="stat-grid">
-          <div class="stat-card">
-            <span>Tổng Skill</span>
-            <strong id="totalSkill">0</strong>
-          </div>
-
-          <div class="stat-card">
-            <span>Có YouTube</span>
-            <strong id="totalYoutube">0</strong>
-          </div>
-
-          <div class="stat-card">
-            <span>Cần Review</span>
-            <strong id="totalNeedReview">0</strong>
-          </div>
-
-          <div class="stat-card">
-            <span>Độ hiếm S</span>
-            <strong id="totalRareS">0</strong>
-          </div>
+          <div class="stat-card"><span>Tổng Skill</span><strong id="totalSkill">0</strong></div>
+          <div class="stat-card"><span>Có YouTube</span><strong id="totalYoutube">0</strong></div>
+          <div class="stat-card"><span>Cần Review</span><strong id="totalNeedReview">0</strong></div>
+          <div class="stat-card"><span>Độ hiếm S</span><strong id="totalRareS">0</strong></div>
         </div>
-
-        <div class="cms-panel">
-          <h3>Quy trình cập nhật chuẩn</h3>
-          <div class="workflow">
-            <span>Excel</span>
-            <b>→</b>
-            <span>Import</span>
-            <b>→</b>
-            <span>Kiểm tra</span>
-            <b>→</b>
-            <span>Xuất JSON</span>
-            <b>→</b>
-            <span>Upload GitHub</span>
-          </div>
-        </div>
+        <div class="cms-panel"><h3>Quy trình cập nhật chuẩn</h3><div class="workflow"><span>Excel</span><b>→</b><span>Import</span><b>→</b><span>Kiểm tra</span><b>→</b><span>Xuất JSON</span><b>→</b><span>Upload GitHub</span></div></div>
       </section>
 
       <section class="cms-tab" id="tab-add">
-        <div class="cms-panel">
-          <h3>Thêm / sửa Skill</h3>
-
+        <div class="cms-panel"><h3>Thêm / sửa Skill</h3>
           <form id="skillForm" class="skill-form">
             <input name="id" placeholder="ID Skill, ví dụ: 47767" required />
             <input name="name" placeholder="Tên skill" required />
@@ -100,99 +66,41 @@
             <input name="bpm" type="number" placeholder="BPM đẹp" />
             <input name="rarity" placeholder="Độ hiếm: S, A, B, C" />
             <input name="rating" type="number" step="0.1" placeholder="Điểm đẹp: 9.5" />
-
             <input name="image" placeholder="/images/wiki/skills/47767.webp" />
             <input name="youtube" placeholder="Link YouTube review skill" />
             <input name="song" placeholder="Bài nhạc đề xuất" />
             <input name="camera" placeholder="Góc quay đề xuất" />
-
             <textarea name="description" placeholder="Mô tả skill"></textarea>
             <textarea name="note" placeholder="Ghi chú sản xuất video / CapCut / ý tưởng review"></textarea>
-
             <input name="tags" placeholder="Tags: D8, Audition, Poppin, Skill đẹp" />
-
             <button type="submit" class="cms-btn primary full">Lưu Skill</button>
           </form>
         </div>
       </section>
 
       <section class="cms-tab" id="tab-manage">
-        <div class="cms-panel">
-          <div class="panel-head">
-            <h3>Danh sách Skill</h3>
-            <input id="searchInput" class="cms-search" placeholder="Tìm ID, tên skill, style..." />
-          </div>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Tên Skill</th>
-                  <th>Style</th>
-                  <th>BPM</th>
-                  <th>Hiếm</th>
-                  <th>Điểm</th>
-                  <th>YouTube</th>
-                  <th>Trạng thái</th>
-                  <th>Thao tác</th>
-                </tr>
-              </thead>
-              <tbody id="skillTable"></tbody>
-            </table>
-          </div>
-        </div>
+        <div class="cms-panel"><div class="panel-head"><h3>Danh sách Skill</h3><input id="searchInput" class="cms-search" placeholder="Tìm ID, tên skill, style..." /></div><div class="table-wrap"><table><thead><tr><th>ID</th><th>Tên Skill</th><th>Style</th><th>BPM</th><th>Hiếm</th><th>Điểm</th><th>YouTube</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody id="skillTable"></tbody></table></div></div>
       </section>
 
       <section class="cms-tab" id="tab-import">
-        <div class="cms-panel">
-          <h3>Import Excel</h3>
-
-          <label class="upload-box">
-            <input id="excelInput" type="file" accept=".xlsx,.xls,.csv" hidden />
-            <span>📥 Chọn file Excel để import</span>
-            <small>Cột nên dùng: id, name, style, bpm, rarity, rating, image, youtube, description, tags</small>
-          </label>
-
-          <button id="downloadTemplateBtn" class="cms-btn">Tải file mẫu Excel</button>
-        </div>
+        <div class="cms-panel"><h3>Import Excel</h3><label class="upload-box"><input id="excelInput" type="file" accept=".xlsx,.xls,.csv" hidden /><span>📥 Chọn file Excel để import</span><small>Cột nên dùng: id, name, style, bpm, rarity, rating, image, youtube, description, tags</small></label><button id="downloadTemplateBtn" class="cms-btn">Tải file mẫu Excel</button></div>
       </section>
 
       <section class="cms-tab" id="tab-youtube">
-        <div class="cms-panel">
-          <h3>YouTube Review Skill</h3>
-          <p class="muted">
-            Skill nào chưa có link YouTube sẽ hiện trạng thái “Cần Review”.
-            Nút tìm review sẽ mở YouTube theo ID + tên skill.
-          </p>
-
-          <div id="youtubeList" class="youtube-list"></div>
-        </div>
+        <div class="cms-panel"><h3>YouTube Review Skill</h3><p class="muted">Skill nào chưa có link YouTube sẽ hiện trạng thái “Cần Review”. Nút tìm review sẽ mở YouTube theo ID + tên skill.</p><div id="youtubeList" class="youtube-list"></div></div>
       </section>
 
       <section class="cms-tab" id="tab-backup">
-        <div class="cms-panel">
-          <h3>Backup dữ liệu</h3>
-
-          <div class="backup-actions">
-            <button id="exportJsonBtn2" class="cms-btn primary">Xuất JSON</button>
-            <button id="clearBtn" class="cms-btn danger">Xoá dữ liệu tạm</button>
-          </div>
-
-          <p class="muted">
-            Sau khi xuất file, hãy upload đè vào:
-            <b>database/wiki-skills.json</b>
-          </p>
-        </div>
+        <div class="cms-panel"><h3>Backup dữ liệu</h3><div class="backup-actions"><button id="exportJsonBtn2" class="cms-btn primary">Xuất JSON</button><button id="clearBtn" class="cms-btn danger">Xoá dữ liệu tạm</button></div><p class="muted">Sau khi xuất file, hãy upload đè vào: <b>database/wiki-skills.json</b></p></div>
       </section>
     </main>
   </div>
 
-<script src="js/admin-auth.js?v=1.6.0"></script>
-<script src="js/admin-wiki.js?v=2.0.1"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="js/mina-master-cms.js?v=1.0.0"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="js/admin-wiki.js?v=2.0.1"></script>
+  <script src="js/mina-master-cms.js?v=1.0.0"></script>
+  <script>
+    (function(){"use strict";const btn=document.getElementById("minaAdminLogout");if(!btn)return;btn.addEventListener("click",async function(){if(!window.confirm("Bạn có chắc muốn đăng xuất khỏi Mina CMS?"))return;btn.disabled=true;btn.textContent="Đang đăng xuất...";try{["mina_admin_authenticated","mina_admin_session","mina_admin_token","mina_admin_api_key","mina_admin_key"].forEach(function(key){sessionStorage.removeItem(key);localStorage.removeItem(key)});await fetch("/api/admin/logout",{method:"POST",credentials:"same-origin"}).catch(function(){})}finally{window.location.replace("/admin-login.html")}})})();
+  </script>
 </body>
 </html>
