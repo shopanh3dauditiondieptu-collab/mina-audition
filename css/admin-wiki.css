@@ -887,3 +887,39 @@ td {
     font-size: 12px;
   }
 }
+/* Mina CMS - Xếp 2 bộ lọc trên cùng một hàng */
+.wiki-filter-row,
+.filters-row,
+.filter-group-row {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  align-items: center !important;
+}
+
+/* Các ô select bên trong */
+.wiki-filter-row select,
+.filters-row select,
+.filter-group-row select {
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Điện thoại nhỏ vẫn giữ gọn */
+@media (max-width: 480px) {
+  .wiki-filter-row,
+  .filters-row,
+  .filter-group-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .wiki-filter-row select,
+  .filters-row select,
+  .filter-group-row select {
+    font-size: 11px !important;
+    padding: 7px 25px 7px 9px !important;
+  }
+}
