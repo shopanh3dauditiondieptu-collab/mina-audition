@@ -102,5 +102,51 @@
   <script>
     (function(){"use strict";const btn=document.getElementById("minaAdminLogout");if(!btn)return;btn.addEventListener("click",async function(){if(!window.confirm("Bạn có chắc muốn đăng xuất khỏi Mina CMS?"))return;btn.disabled=true;btn.textContent="Đang đăng xuất...";try{["mina_admin_authenticated","mina_admin_session","mina_admin_token","mina_admin_api_key","mina_admin_key"].forEach(function(key){sessionStorage.removeItem(key);localStorage.removeItem(key)});await fetch("/api/admin/logout",{method:"POST",credentials:"same-origin"}).catch(function(){})}finally{window.location.replace("/admin-login.html")}})})();
   </script>
+  <script>
+(function () {
+  "use strict";
+
+  const logoutButton = document.getElementById("minaAdminLogout");
+
+  if (!logoutButton) return;
+
+  logoutButton.addEventListener("click", async function () {
+    const confirmed = window.confirm(
+      "Bạn có chắc muốn đăng xuất khỏi Mina CMS?"
+    );
+
+    if (!confirmed) return;
+
+    logoutButton.disabled = true;
+    logoutButton.textContent = "Đang đăng xuất...";
+
+    try {
+      /*
+       * Xóa dữ liệu phiên cũ trên trình duyệt.
+       * Không xóa khóa quản trị lưu trên Vercel.
+       */
+      sessionStorage.removeItem("mina_admin_authenticated");
+      sessionStorage.removeItem("mina_admin_session");
+      sessionStorage.removeItem("mina_admin_token");
+
+      localStorage.removeItem("mina_admin_authenticated");
+      localStorage.removeItem("mina_admin_session");
+      localStorage.removeItem("mina_admin_token");
+
+      /*
+       * Gọi API đăng xuất nếu hệ thống có hỗ trợ.
+       * Nếu chưa có API này, lỗi sẽ được bỏ qua an toàn.
+       */
+      await fetch("/api/admin/logout", {
+        method: "POST",
+        credentials: "same-origin"
+      }).catch(function () {});
+
+    } finally {
+      window.location.replace("/admin-login.html");
+    }
+  });
+})();
+</script>
 </body>
 </html>
