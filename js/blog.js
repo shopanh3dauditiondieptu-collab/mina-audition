@@ -13,7 +13,14 @@ const sidebar = document.querySelector(".blog-category-box");
 let allPosts = [];
 
 const minaTree = [
-  { name: "TRẢI NGHIỆM GAME", children: [] },
+  { name: "TRẢI NGHIỆM GAME",
+   children: [
+       "Share File Skill D8",
+       "Share File Skill D8Team",
+       "Cách Quay Dựng Video & Ảnh",
+       "Sự Kiện Ingame Audition",
+        "Vấn Đề Khác",
+          ] },
   {
     name: "LỆNH AI TẠO ẢNH 3D",
     children: [
