@@ -433,3 +433,242 @@ th {
     align-items: stretch;
   }
 }
+/* ==============================
+   MINA ADMIN WIKI UI - NEON FIX
+   Dán cuối file css/admin-wiki.css
+================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  color: #fff;
+  background:
+    radial-gradient(circle at top left, rgba(255, 78, 220, .28), transparent 32%),
+    radial-gradient(circle at top right, rgba(120, 71, 255, .28), transparent 35%),
+    linear-gradient(135deg, #12001f 0%, #070012 48%, #1b0638 100%);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size: 42px 42px;
+  opacity: .22;
+}
+
+h1 {
+  margin: 0 0 10px;
+  font-size: clamp(28px, 4vw, 46px);
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: #fff;
+  text-shadow:
+    0 0 8px rgba(255, 87, 230, .75),
+    0 0 22px rgba(157, 91, 255, .5);
+}
+
+h2 {
+  margin-top: 34px;
+  font-size: 28px;
+  color: #fff;
+  text-shadow: 0 0 12px rgba(255, 80, 220, .55);
+}
+
+p {
+  color: #ffd7fb;
+}
+
+/* Khung tổng */
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+body {
+  padding: 32px;
+}
+
+/* Form admin */
+form,
+#skillForm,
+.admin-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  gap: 16px;
+  padding: 22px;
+  margin: 22px 0;
+  border: 1px solid rgba(255, 105, 235, .28);
+  border-radius: 24px;
+  background: rgba(22, 5, 44, .72);
+  box-shadow:
+    0 18px 60px rgba(0,0,0,.35),
+    inset 0 0 0 1px rgba(255,255,255,.04);
+  backdrop-filter: blur(14px);
+}
+
+/* Label */
+label {
+  font-weight: 700;
+  color: #ffd6fb;
+  font-size: 14px;
+}
+
+/* Input / select / textarea */
+input,
+select,
+textarea {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid rgba(255, 135, 235, .3);
+  border-radius: 14px;
+  padding: 10px 13px;
+  color: #fff;
+  background: rgba(8, 0, 20, .76);
+  outline: none;
+  transition: .2s ease;
+}
+
+textarea {
+  min-height: 78px;
+  resize: vertical;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255,255,255,.48);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #ff63df;
+  box-shadow:
+    0 0 0 3px rgba(255, 99, 223, .18),
+    0 0 18px rgba(255, 99, 223, .25);
+}
+
+/* Checkbox */
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  min-height: unset;
+  accent-color: #ff4fde;
+}
+
+/* Button */
+button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff4fde, #8b5cff);
+  box-shadow:
+    0 8px 22px rgba(255, 79, 222, .28),
+    0 0 0 1px rgba(255,255,255,.12) inset;
+  transition: .2s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Nút xoá */
+button.delete,
+button.btn-delete,
+button[onclick*="delete"],
+button[onclick*="remove"] {
+  background: linear-gradient(135deg, #ff3b73, #b21c4b);
+}
+
+/* Bảng danh sách skill */
+table {
+  width: 100%;
+  margin-top: 18px;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  border-radius: 22px;
+  background: rgba(17, 4, 35, .78);
+  box-shadow: 0 18px 50px rgba(0,0,0,.36);
+  border: 1px solid rgba(255, 105, 235, .22);
+}
+
+thead th {
+  padding: 16px 14px;
+  text-align: left;
+  font-size: 14px;
+  color: #ffb8f5;
+  background: linear-gradient(135deg, rgba(255, 79, 222, .18), rgba(139, 92, 255, .16));
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+tbody td {
+  padding: 15px 14px;
+  color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+
+tbody tr {
+  transition: .18s ease;
+}
+
+tbody tr:hover {
+  background: rgba(255, 79, 222, .08);
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Badge hot */
+td {
+  vertical-align: middle;
+}
+
+/* Mobile */
+@media (max-width: 1000px) {
+  body {
+    padding: 18px;
+  }
+
+  form,
+  #skillForm,
+  .admin-form {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  form,
+  #skillForm,
+  .admin-form {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  h1 {
+    font-size: 30px;
+  }
+}
