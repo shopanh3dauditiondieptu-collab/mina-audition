@@ -190,3 +190,35 @@ Xóa bộ lọc
 
 </body>
 </html>
+/* ==================================================
+   MINA WIKI - STYLE VÀ ĐỘ HIẾM CÙNG MỘT HÀNG
+================================================== */
+
+.mina-style-rarity-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 10px !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.mina-style-rarity-row select {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Màn hình điện thoại */
+@media (max-width: 600px) {
+  .mina-style-rarity-row {
+    gap: 6px !important;
+  }
+
+  .mina-style-rarity-row select {
+    padding-left: 10px !important;
+    font-size: 12px !important;
+  }
+}
