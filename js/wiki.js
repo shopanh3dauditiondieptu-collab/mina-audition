@@ -1,13 +1,13 @@
 /* =====================================================
-   WIKI.JS - Mina Wikipedia D8 Audition V2
-   Nâng cấp: search + filter + card đẹp + nút video
+   WIKI.JS - Mina Wikipedia D8 Audition V3
+   Nâng cấp: đồng bộ master-skills.json + search + filter + card đẹp + nút video
    + phân trang + skeleton + modal chi tiết
 ===================================================== */
 
 let wikiSkills = [];
 let filteredSkills = [];
 
-const DATA_URL = "/database/wiki-skills.json?v=" + Date.now();
+const DATA_URL = "/database/master-skills.json?v=" + Date.now();
 const DEFAULT_IMAGE = "/images/wiki/skills/default.webp";
 const ITEMS_PER_PAGE = 8;
 
@@ -24,6 +24,45 @@ const wikiRarityFilter = document.getElementById("wikiRarityFilter");
 =============================== */
 function safeText(value) {
   return value === undefined || value === null ? "" : String(value);
+}
+
+/* ===============================
+   NORMALIZE MASTER DATABASE
+   Hỗ trợ cả cấu trúc cũ và mới
+=============================== */
+function normalizeSkillRecord(skill) {
+  const item = skill && typeof skill === "object" ? skill : {};
+
+  return {
+    ...item,
+    id: item.id ?? "",
+    name: item.name ?? item.title ?? "",
+    type: item.type ?? "",
+    style: item.style ?? "",
+    level: item.level ?? "",
+    bpm: item.bpm ?? item.bpmBest ?? "",
+    bpmBest: item.bpmBest ?? item.bpm ?? "",
+    rarity: item.rarity ?? "",
+    rating: item.rating ?? 5,
+    status: item.status ?? "",
+    image: item.image ?? item.imageUrl ?? "",
+    imageUrl: item.imageUrl ?? item.image ?? "",
+    youtube: item.youtube ?? item.youtubeUrl ?? "",
+    youtubeUrl: item.youtubeUrl ?? item.youtube ?? "",
+    description: item.description ?? item.notes ?? "",
+    notes: item.notes ?? item.description ?? "",
+    tags: Array.isArray(item.tags) ? item.tags : [],
+    reviewed:
+      Boolean(item.reviewed) ||
+      item.status === "verified",
+    hasYoutube:
+      Boolean(item.hasYoutube) ||
+      Boolean(item.youtubeUrl) ||
+      Boolean(item.youtube),
+    hasWiki:
+      item.hasWiki !== false,
+    hot: Boolean(item.hot)
+  };
 }
 
 /* ===============================
@@ -51,11 +90,9 @@ function normalizeImagePath(path) {
 function getYoutubeUrl(skill) {
   if (!skill) return "";
 
-  if (skill.youtube && String(skill.youtube).trim() !== "") {
-    return String(skill.youtube).trim();
-  }
+  const value = skill.youtubeUrl || skill.youtube || "";
 
-  return "";
+  return String(value).trim();
 }
 
 function createYoutubeSearchUrl(skill) {
@@ -100,16 +137,22 @@ async function loadWikiSkills() {
     const response = await fetch(DATA_URL, { cache: "no-store" });
 
     if (!response.ok) {
-      throw new Error("Không tải được database/wiki-skills.json");
+      throw new Error("Không tải được database/master-skills.json");
     }
 
     const data = await response.json();
 
-    if (!Array.isArray(data)) {
-      throw new Error("File wiki-skills.json phải là dạng mảng []");
+    const rawSkills = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.skills)
+        ? data.skills
+        : [];
+
+    if (!Array.isArray(rawSkills)) {
+      throw new Error("Database không có danh sách skills hợp lệ.");
     }
 
-    wikiSkills = data;
+    wikiSkills = rawSkills.map(normalizeSkillRecord);
     filteredSkills = [...wikiSkills];
 
     renderStyleOptions();
@@ -121,7 +164,7 @@ async function loadWikiSkills() {
       wikiGrid.innerHTML = `
         <div class="wiki-error-box">
           <h3>Không thể tải dữ liệu Wikipedia</h3>
-          <p>Hãy kiểm tra file <strong>database/wiki-skills.json</strong></p>
+          <p>Hãy kiểm tra file <strong>database/master-skills.json</strong></p>
           <small>${safeText(error.message)}</small>
         </div>
       `;
@@ -165,8 +208,12 @@ function filterWikiSkills() {
       skill.name,
       skill.style,
       skill.bpm,
+      skill.bpmBest,
       skill.rarity,
       skill.description,
+      skill.notes,
+      skill.type,
+      skill.level,
       ...(Array.isArray(skill.tags) ? skill.tags : [])
     ].join(" ").toLowerCase();
 
@@ -218,6 +265,19 @@ function createSkillCard(skill) {
   const card = document.createElement("article");
   card.className = "wiki-card mina-wiki-card";
 
+  card.dataset.id = safeText(skill.id);
+  card.dataset.skillId = safeText(skill.id);
+  card.dataset.level = safeText(skill.level);
+  card.dataset.type = safeText(skill.type);
+  card.dataset.style = safeText(skill.style);
+  card.dataset.bpm = safeText(skill.bpmBest ?? skill.bpm);
+  card.dataset.rarity = safeText(skill.rarity);
+  card.dataset.rating = safeText(skill.rating);
+  card.dataset.reviewed = String(Boolean(skill.reviewed || skill.status === "verified"));
+  card.dataset.youtube = String(Boolean(skill.hasYoutube || skill.youtubeUrl || skill.youtube));
+  card.dataset.wiki = String(skill.hasWiki !== false);
+  card.dataset.hot = String(Boolean(skill.hot));
+
   const youtubeUrl = getYoutubeUrl(skill);
   const fallbackYoutubeSearch = createYoutubeSearchUrl(skill);
 
@@ -226,7 +286,7 @@ function createSkillCard(skill) {
   card.innerHTML = `
     <div class="wiki-card-img-wrap">
       <img 
-        src="${normalizeImagePath(skill.image)}" 
+        src="${normalizeImagePath(skill.imageUrl || skill.image)}" 
         alt="${safeText(skill.name || "Skill Audition")}"
         loading="lazy"
         decoding="async"
@@ -244,11 +304,11 @@ function createSkillCard(skill) {
 
       <div class="wiki-meta">
         <span>💃 ${safeText(skill.style)}</span>
-        <span>🎵 BPM ${safeText(skill.bpm)}</span>
+        <span>🎵 BPM ${safeText(skill.bpmBest ?? skill.bpm)}</span>
         <span>💎 ${safeText(skill.rarity)}</span>
       </div>
 
-      <p class="wiki-desc">${safeText(skill.description)}</p>
+      <p class="wiki-desc">${safeText(skill.notes || skill.description)}</p>
 
       <div class="wiki-rating">
         ⭐ ${safeText(skill.rating)}/10
@@ -357,7 +417,7 @@ function openSkillModal(skill) {
 
       <div class="wiki-modal-layout">
         <div class="wiki-modal-img">
-          <img src="${normalizeImagePath(skill.image)}" alt="${safeText(skill.name)}">
+          <img src="${normalizeImagePath(skill.imageUrl || skill.image)}" alt="${safeText(skill.name)}">
         </div>
 
         <div class="wiki-modal-info">
@@ -368,12 +428,12 @@ function openSkillModal(skill) {
           <div class="wiki-modal-stats">
             <span>ID: ${safeText(skill.id)}</span>
             <span>Style: ${safeText(skill.style)}</span>
-            <span>BPM: ${safeText(skill.bpm)}</span>
+            <span>BPM: ${safeText(skill.bpmBest ?? skill.bpm)}</span>
             <span>Độ hiếm: ${safeText(skill.rarity)}</span>
             <span>Rating: ⭐ ${safeText(skill.rating)}/10</span>
           </div>
 
-          <p>${safeText(skill.description)}</p>
+          <p>${safeText(skill.notes || skill.description)}</p>
 
           <div class="wiki-modal-tags">
             ${(Array.isArray(skill.tags) ? skill.tags : []).map(tag => `<span>${safeText(tag)}</span>`).join("")}
