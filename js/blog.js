@@ -13,7 +13,18 @@ const sidebar = document.querySelector(".blog-category-box");
 let allPosts = [];
 
 const minaTree = [
-  { name: "KINH NGHIỆM GAME", children: [] },
+  { name: "TRẢI NGHIỆM GAME", children: [] },
+  {
+    name: "LỆNH AI TẠO ẢNH 3D",
+    children: [
+        "Prompt Couple",
+        "Prompt Ảnh Đơn - Boy",
+        "Prompt Ảnh Đơn - Girl",
+        "Prompt Wedding",
+        "Prompt Background",
+        "Prompt Ảnh Nhóm",
+      ]
+},
 
   {
     name: "MIX & MATCH OUTFIT GAME",
