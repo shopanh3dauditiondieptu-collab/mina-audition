@@ -672,3 +672,51 @@ td {
     font-size: 30px;
   }
 }
+.mina-upload-box {
+  margin-top: 10px;
+}
+
+.mina-upload-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ff5bd7, #7c4dff);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(255, 91, 215, 0.45);
+  transition: 0.25s ease;
+}
+
+.mina-upload-label:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 26px rgba(255, 91, 215, 0.7);
+}
+
+.mina-upload-preview {
+  margin-top: 12px;
+  min-height: 90px;
+  border: 1px dashed rgba(255, 120, 230, 0.45);
+  border-radius: 16px;
+  padding: 12px;
+  color: #d9b7ff;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.mina-upload-preview img {
+  width: 86px;
+  height: 86px;
+  object-fit: cover;
+  border-radius: 14px;
+  box-shadow: 0 0 14px rgba(255, 91, 215, 0.45);
+}
+
+.mina-upload-preview p {
+  margin: 0;
+  font-size: 14px;
+  color: #f3d9ff;
+}
