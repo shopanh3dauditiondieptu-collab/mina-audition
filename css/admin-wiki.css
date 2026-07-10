@@ -720,3 +720,170 @@ td {
   font-size: 14px;
   color: #f3d9ff;
 }
+/* =====================================================
+   MINA ADMIN TOPBAR
+===================================================== */
+
+.mina-admin-topbar {
+  width: calc(100% - 48px);
+  max-width: 1580px;
+  margin: 20px auto 10px;
+  padding: 12px 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+
+  background: rgba(20, 7, 42, 0.88);
+  border: 1px solid rgba(227, 69, 220, 0.28);
+  border-radius: 18px;
+
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.25),
+    0 0 24px rgba(180, 71, 255, 0.08);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  position: sticky;
+  top: 12px;
+  z-index: 1000;
+}
+
+.mina-admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  color: #ffffff;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.mina-admin-brand strong {
+  display: block;
+  font-size: 17px;
+  line-height: 1.1;
+}
+
+.mina-admin-brand small {
+  display: block;
+  margin-top: 3px;
+
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 11px;
+}
+
+.mina-admin-logo {
+  width: 40px;
+  height: 40px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 13px;
+  color: #ffffff;
+  font-size: 20px;
+
+  background: linear-gradient(135deg, #f146d7, #784bff);
+
+  box-shadow:
+    0 0 18px rgba(238, 68, 218, 0.38),
+    0 8px 20px rgba(121, 75, 255, 0.24);
+}
+
+.mina-admin-nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mina-admin-nav-link {
+  min-height: 38px;
+  padding: 9px 14px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.055);
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  text-decoration: none;
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.mina-admin-nav-link:hover {
+  transform: translateY(-2px);
+
+  border-color: rgba(238, 69, 218, 0.5);
+
+  background: linear-gradient(
+    135deg,
+    rgba(238, 69, 218, 0.88),
+    rgba(126, 76, 255, 0.88)
+  );
+
+  box-shadow: 0 8px 22px rgba(164, 71, 255, 0.25);
+}
+
+.mina-admin-logout {
+  border-color: rgba(255, 104, 145, 0.22);
+}
+
+.mina-admin-logout:hover {
+  background: linear-gradient(135deg, #e83f84, #a44cff);
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .mina-admin-topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mina-admin-nav {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .mina-admin-topbar {
+    width: calc(100% - 24px);
+    margin-top: 10px;
+    padding: 12px;
+
+    position: static;
+  }
+
+  .mina-admin-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mina-admin-nav-link {
+    width: 100%;
+    padding: 10px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+  }
+}
