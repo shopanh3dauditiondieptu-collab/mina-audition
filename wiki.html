@@ -2,257 +2,101 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mina Wikipedia D8 Audition</title>
-
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
-
-  <link rel="stylesheet" href="/css/wiki.css?v=2.1.1">
+  <link rel="stylesheet" href="/css/wiki.css?v=2.1.2">
 </head>
-
 <body>
 
 <main class="mina-wiki-page">
 
-    <!-- ========================= -->
-    <!-- TOP NAV -->
-    <!-- ========================= -->
+  <!-- TOP NAV -->
+  <nav class="wiki-top-nav">
+    <a href="/index.html" class="wiki-nav-logo">🎵 Mina Audition</a>
 
-    <nav class="wiki-top-nav">
+    <div class="wiki-nav-links">
+      <a href="index.html">Trang chủ</a>
+      <a href="blog.html">Mina Blog</a>
+      <a href="wiki.html" aria-current="page">Wikipedia D8</a>
+      <a href="admin-wiki.html" class="wiki-admin-link">Admin CMS</a>
+      <a href="https://www.youtube.com/@mina.audition" target="_blank" rel="noopener noreferrer">YouTube</a>
+      <a href="index.html#contact">Liên hệ</a>
+    </div>
+  </nav>
 
-        <a href="/index.html" class="wiki-nav-logo">
-            🎵 Mina Audition
-        </a>
+  <!-- HERO -->
+  <section class="wiki-hero">
+    <span class="wiki-badge">MINA WIKIPEDIA</span>
+    <h1>Wikipedia D8 Audition</h1>
+    <p>Kho dữ liệu Skill Audition D8 do Mina xây dựng.</p>
+  </section>
 
-        <div class="wiki-nav-links">
+  <!-- MINA WIKI TOOLS -->
+  <section class="mina-wiki-tools" id="minaWikiTools">
 
-            <a href="index.html">
-                Trang chủ
-            </a>
+    <div class="mina-wiki-search-row">
+      <input
+        type="search"
+        id="wikiSearch"
+        class="mina-wiki-search"
+        placeholder="🔍 Tìm ID, tên Skill, Style, BPM..."
+        autocomplete="off"
+      >
 
-            <a href="blog.html">
-                Mina Blog
-            </a>
-
-            <a href="wiki.html"
-               aria-current="page">
-                Wikipedia D8
-            </a>
-
-            <a href="admin-wiki.html"
-               class="wiki-admin-link">
-                Admin CMS
-            </a>
-
-            <a href="https://www.youtube.com/@mina.audition"
-               target="_blank"
-               rel="noopener noreferrer">
-                YouTube
-            </a>
-
-            <a href="index.html#contact">
-                Liên hệ
-            </a>
-
-        </div>
-
-    </nav>
-
-
-    <!-- ========================= -->
-    <!-- HERO -->
-    <!-- ========================= -->
-
-    <section class="wiki-hero">
-
-        <span class="wiki-badge">
-            MINA WIKIPEDIA
-        </span>
-
-        <h1>
-            Wikipedia D8 Audition
-        </h1>
-
-        <p>
-            Kho dữ liệu Skill Audition D8 do Mina xây dựng.
-        </p>
-
-    </section>
-
-
-
-    <!-- ====================================== -->
-    <!-- MINA WIKI TOOLS V9 -->
-    <!-- ====================================== -->
-
-    <section
-        class="mina-wiki-tools"
-        id="minaWikiTools">
-
-        <div class="mina-wiki-search-row">
-
-            <input
-                type="search"
-                id="wikiSearch"
-                class="mina-wiki-search"
-                placeholder="🔍 Tìm ID, tên Skill, Style, BPM..."
-                autocomplete="off"
-            >
-
-            <select
-                id="wikiSort"
-                class="mina-wiki-select">
-
-                <option value="default">
-                    Sắp xếp
-                </option>
-
-                <option value="newest">
-                    Mới nhất
-                </option>
-
-                <option value="rating">
-                    Đẹp nhất
-                </option>
-
-                <option value="bpm">
-                    BPM tăng dần
-                </option>
-
-                <option value="id">
-                    Theo ID
-                </option>
-
-            </select>
-
-        </div>
-
-
-
-      <div class="filter-row">
-    <div class="filter-group">
-        <select id="danceFilter" class="filter-select">
-            <option value="">Tên Bước Nhảy</option>
-        </select>
+      <select id="wikiSort" class="mina-wiki-select">
+        <option value="default">Sắp xếp</option>
+        <option value="newest">Mới nhất</option>
+        <option value="rating">Đẹp nhất</option>
+        <option value="bpm">BPM tăng dần</option>
+        <option value="id">Theo ID</option>
+      </select>
     </div>
 
-<div class="filter-group">
-        <select id="rateFilter" class="filter-select">
-            <option value="">Rate</option>
-        </select>
+    <!-- Hàng Level + Type. Giữ class/ID để module lọc cũ tiếp tục hoạt động -->
+    <div class="mina-wiki-filter-row" id="minaLevelTypeRow">
+      <select id="levelFilter" class="mina-wiki-select">
+        <option value="">Tất cả Level</option>
+      </select>
+
+      <select id="typeFilter" class="mina-wiki-select">
+        <option value="">Tất cả Type</option>
+      </select>
     </div>
 
-                <option value="">
-                    Rate
-                </option>
+    <!-- Hàng Tên Bước Nhảy + Rate -->
+    <div class="mina-filter-row-two">
+      <select id="danceFilter" class="mina-wiki-select">
+        <option value="">Tên Bước Nhảy</option>
+      </select>
 
-                <option value="S">S</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
+      <select id="rateFilter" class="mina-wiki-select">
+        <option value="">Rate</option>
+        <option value="S">S</option>
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+      </select>
+    </div>
 
-            </select>
+    <div class="mina-wiki-clear-row">
+      <button
+        type="button"
+        id="clearFilters"
+        class="mina-clear-filter-btn"
+        onclick="clearFilters()"
+      >
+        Xóa bộ lọc
+      </button>
+    </div>
 
-<button
-type="button"
-id="clearFilters"
-class="mina-clear-filter-btn"
-onclick="clearFilters()"
->
-Xóa bộ lọc
-</button>
-        </div>
+  </section>
 
-    </section>
-
-
-
-    <!-- ========================= -->
-    <!-- GRID -->
-    <!-- ========================= -->
-
-    <section
-        id="wikiGrid"
-        class="wiki-grid">
-
-    </section>
+  <!-- GRID -->
+  <section id="wikiGrid" class="wiki-grid"></section>
 
 </main>
 
-
 <script src="js/wiki.js"></script>
 <script src="/js/wiki-level-type-filter.js?v=1.0.0"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  const selects = Array.from(document.querySelectorAll("select"));
-
-  const styleSelect = selects.find(function (select) {
-    const text = select.textContent.toLowerCase();
-    return text.includes("tất cả style") ||
-           text.includes("style");
-  });
-
-  const raritySelect = selects.find(function (select) {
-    const text = select.textContent.toLowerCase();
-    return text.includes("tất cả độ hiếm") ||
-           text.includes("độ hiếm");
-  });
-
-  if (!styleSelect || !raritySelect) {
-    console.warn("Mina Wiki: Không tìm thấy ô Style hoặc Độ hiếm.");
-    return;
-  }
-
-  /* Tránh tạo trùng khi script chạy lại */
-  if (
-    styleSelect.parentElement &&
-    styleSelect.parentElement.classList.contains("mina-style-rarity-row")
-  ) {
-    return;
-  }
-
-  const row = document.createElement("div");
-  row.className = "mina-style-rarity-row";
-
-  /* Đặt hàng mới vào đúng vị trí của ô Style */
-  styleSelect.parentNode.insertBefore(row, styleSelect);
-
-  /* Di chuyển hai select vào chung một hàng */
-  row.appendChild(styleSelect);
-  row.appendChild(raritySelect);
-});
-</script>
 </body>
 </html>
-/* ==================================================
-   MINA WIKI - STYLE VÀ ĐỘ HIẾM CÙNG MỘT HÀNG
-================================================== */
-
-.mina-style-rarity-row {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
-  gap: 10px !important;
-  width: 100% !important;
-  margin: 0 !important;
-}
-
-.mina-style-rarity-row select {
-  display: block !important;
-  width: 100% !important;
-  min-width: 0 !important;
-  max-width: none !important;
-  margin: 0 !important;
-  box-sizing: border-box !important;
-}
-
-/* Màn hình điện thoại */
-@media (max-width: 600px) {
-  .mina-style-rarity-row {
-    gap: 6px !important;
-  }
-
-  .mina-style-rarity-row select {
-    padding-left: 10px !important;
-    font-size: 12px !important;
-  }
-}
