@@ -921,3 +921,99 @@ body {
   background: linear-gradient(135deg, #e83fd5, #a64dff);
   color: #ffffff;
 }
+/* =========================================================
+   MINA WIKI - NÚT XÓA BỘ LỌC
+   ========================================================= */
+
+#clearFilters,
+.clear-filters,
+.btn-clear-filter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  min-height: 38px;
+  padding: 9px 16px;
+  margin-top: 10px;
+
+  border: 1px solid rgba(255, 105, 180, 0.55);
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 105, 180, 0.18),
+      rgba(170, 80, 255, 0.18)
+    );
+
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  letter-spacing: 0.2px;
+
+  cursor: pointer;
+  appearance: none;
+
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+#clearFilters::before,
+.clear-filters::before,
+.btn-clear-filter::before {
+  content: "↻";
+  font-size: 17px;
+  line-height: 1;
+  color: #ff9bd5;
+}
+
+#clearFilters:hover,
+.clear-filters:hover,
+.btn-clear-filter:hover {
+  transform: translateY(-2px);
+
+  border-color: rgba(255, 143, 205, 0.95);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 105, 180, 0.32),
+      rgba(170, 80, 255, 0.30)
+    );
+
+  box-shadow:
+    0 9px 24px rgba(255, 75, 170, 0.22),
+    0 0 18px rgba(183, 93, 255, 0.18);
+}
+
+#clearFilters:active,
+.clear-filters:active,
+.btn-clear-filter:active {
+  transform: translateY(0) scale(0.97);
+}
+
+#clearFilters:focus-visible,
+.clear-filters:focus-visible,
+.btn-clear-filter:focus-visible {
+  outline: 3px solid rgba(255, 117, 190, 0.28);
+  outline-offset: 3px;
+}
+
+/* Hiển thị đẹp trên điện thoại */
+@media (max-width: 600px) {
+  #clearFilters,
+  .clear-filters,
+  .btn-clear-filter {
+    width: 100%;
+    min-height: 42px;
+  }
+}
