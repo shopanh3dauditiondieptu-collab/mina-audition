@@ -1,16 +1,6 @@
 (function () {
   "use strict";
 
-  /*
-    Mina Wiki Admin Auth
-    Version: 1.6.0
-    Công dụng:
-    - Chặn truy cập admin-wiki nếu chưa đăng nhập
-    - Hỗ trợ cả URL có .html và không có .html
-    - Lưu trạng thái đăng nhập bằng localStorage
-    - Hỗ trợ nút đăng xuất nếu có id="adminLogoutBtn"
-  */
-
   const ADMIN_USER = "minaadmin";
   const ADMIN_PASS = "123456";
   const AUTH_KEY = "MINA_WIKI_ADMIN_AUTH";
@@ -29,25 +19,23 @@
     page === "admin-login.html";
 
   function isLoggedIn() {
-    return localStorage.getItem(AUTH_KEY) === "yes";
+    return sessionStorage.getItem(AUTH_KEY) === "yes";
   }
 
   function goLogin() {
-    window.location.href = "/admin-login.html";
+    window.location.replace("/admin-login.html");
   }
 
   function goAdmin() {
-    window.location.href = "/admin-wiki.html";
+    window.location.replace("/admin-wiki.html");
   }
 
-  // Chặn vào trang admin nếu chưa đăng nhập
   if (isAdminPage && !isLoggedIn()) {
     goLogin();
     return;
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    // Nếu đã đăng nhập mà vào trang login thì tự chuyển về admin
     if (isLoginPage && isLoggedIn()) {
       goAdmin();
       return;
@@ -59,21 +47,22 @@
     const errorBox = document.getElementById("adminLoginError");
 
     if (form) {
-      form.addEventListener("submit", function (e) {
-        e.preventDefault();
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
 
         const user = userInput ? userInput.value.trim() : "";
         const pass = passInput ? passInput.value.trim() : "";
 
         if (user === ADMIN_USER && pass === ADMIN_PASS) {
-          localStorage.setItem(AUTH_KEY, "yes");
+          sessionStorage.setItem(AUTH_KEY, "yes");
           goAdmin();
+          return;
+        }
+
+        if (errorBox) {
+          errorBox.textContent = "Sai ID hoặc mật khẩu Admin.";
         } else {
-          if (errorBox) {
-            errorBox.textContent = "Sai ID hoặc mật khẩu Admin.";
-          } else {
-            alert("Sai ID hoặc mật khẩu Admin.");
-          }
+          alert("Sai ID hoặc mật khẩu Admin.");
         }
       });
     }
@@ -82,7 +71,7 @@
 
     if (logoutBtn) {
       logoutBtn.addEventListener("click", function () {
-        localStorage.removeItem(AUTH_KEY);
+        sessionStorage.removeItem(AUTH_KEY);
         goLogin();
       });
     }
