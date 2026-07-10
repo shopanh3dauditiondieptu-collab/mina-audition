@@ -1,108 +1,65 @@
 /**
- * Mina Master CMS v1.0.0
- * Module mở rộng cho Admin Wiki Mina.
+ * Mina Master CMS v2.0.0
+ * Bản nâng cấp an toàn, độc lập với cấu trúc HTML hiện tại.
  *
- * Mục tiêu:
- * - Không sửa hoặc thay thế admin-wiki.js.
- * - Tự chèn giao diện Import/Export vào trang Admin hiện tại.
- * - Đọc Excel (.xlsx/.xls/.csv) và JSON.
- * - Chuẩn hoá dữ liệu, kiểm tra lỗi, phát hiện trùng ID/tên.
- * - Hỗ trợ: thêm mới, cập nhật, gộp hoặc thay thế toàn bộ.
- * - Lưu bản nháp an toàn trong trình duyệt.
- * - Có thể đồng bộ qua API backend nếu website đã cấu hình endpoint.
+ * Cách hoạt động:
+ * - Không thay thế admin-wiki.js.
+ * - Tạo nút "Mina CMS" nổi ở góc phải.
+ * - Mở bảng quản trị riêng dạng modal.
+ * - Hỗ trợ Import Excel/CSV/JSON, kiểm tra trùng, xem trước, Export Excel/JSON.
+ * - Có thể đọc dữ liệu từ window, localStorage hoặc database/wiki-skills.json.
+ * - Có thể gọi API backend để lưu nếu đã cấu hình.
  *
  * Yêu cầu:
- * - SheetJS phải được nạp trước file này:
- *   https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js
+ * SheetJS phải được nạp trước file này:
+ * https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js
  */
-(function MinaMasterCMSBootstrap(window, document) {
+(function MinaMasterCMSV2(window, document) {
   'use strict';
 
-  if (window.MinaMasterCMS && window.MinaMasterCMS.version) {
-    console.warn('[Mina Master CMS] Module đã được nạp trước đó.');
+  if (window.MinaMasterCMSV2?.version) {
+    console.warn('[Mina CMS V2] Module đã được nạp trước đó.');
     return;
   }
 
-  const VERSION = '1.0.0';
-  const STORAGE_KEY = 'mina_master_cms_skills_v1';
-  const SETTINGS_KEY = 'mina_master_cms_settings_v1';
-  const HISTORY_KEY = 'mina_master_cms_history_v1';
+  const VERSION = '2.0.0';
+  const DB_PATH_DEFAULT = 'database/wiki-skills.json';
+  const STORAGE_KEY = 'mina_cms_v2_skills';
+  const SETTINGS_KEY = 'mina_cms_v2_settings';
+  const HISTORY_KEY = 'mina_cms_v2_history';
   const MAX_HISTORY = 10;
-  const MAX_PREVIEW_ROWS = 100;
-  const DEFAULT_DATABASE_PATH = 'database/wiki-skills.json';
-
-  const FIELD_ALIASES = {
-    id: [
-      'id', 'skillid', 'idskill', 'ma', 'maskill', 'mã', 'mãskill',
-      'mãskill', 'skill_id', 'skill id', 'id skill'
-    ],
-    name: [
-      'name', 'skillname', 'tenskill', 'tên', 'tênskill', 'ten',
-      'skill_name', 'skill name', 'tên skill'
-    ],
-    level: ['level', 'lv', 'capdo', 'cấpđộ', 'cap', 'cấp', 'levels'],
-    style: ['style', 'phongcach', 'phongcách', 'theloai', 'thểloại', 'type'],
-    gender: ['gender', 'gioitinh', 'giớitính', 'sex'],
-    rarity: ['rarity', 'dohiem', 'độhiếm', 'rank', 'tier'],
-    beauty: ['beauty', 'beautyrating', 'diemdep', 'điểmđẹp', 'rating', 'score'],
-    bpm: ['bpm', 'bestbpm', 'bpmdep', 'bpmđẹp', 'recommendedbpm'],
-    song: ['song', 'recommendedsong', 'baihat', 'bàihát', 'music'],
-    camera: ['camera', 'cameraangle', 'gocmay', 'gócmáy'],
-    capcut: ['capcut', 'editingidea', 'yTuongcapcut', 'ýTưởngcapcut', 'editidea'],
-    youtubeTitle: ['youtubetitle', 'seotitle', 'tieudeyoutube', 'tiêuđềyoutube'],
-    tiktokCaption: ['tiktokcaption', 'captiontiktok'],
-    facebookCaption: ['facebookcaption', 'captionfacebook', 'reelscaption'],
-    pinnedComment: ['pinnedcomment', 'commentghim', 'bìnhluậnghim'],
-    hashtags: ['hashtags', 'hashtag', 'tags'],
-    viralPotential: ['viralpotential', 'tiemnangviral', 'tiềmnăngviral'],
-    status: ['status', 'trangthai', 'trạngthái', 'postingstatus'],
-    description: ['description', 'mota', 'môtả', 'desc', 'note', 'ghichu', 'ghi chú'],
-    image: ['image', 'imageurl', 'anh', 'ảnh', 'thumbnail', 'thumb'],
-    video: ['video', 'videourl', 'youtube', 'youtubeurl', 'reviewurl'],
-    createdAt: ['createdat', 'created_at', 'ngaytao', 'ngàytạo'],
-    updatedAt: ['updatedat', 'updated_at', 'ngaycapnhat', 'ngàycậpnhật']
-  };
-
-  const EXPORT_COLUMNS = [
-    ['id', 'ID Skill'],
-    ['name', 'Tên skill'],
-    ['level', 'Level'],
-    ['style', 'Style'],
-    ['gender', 'Giới tính'],
-    ['beauty', 'Điểm đẹp'],
-    ['rarity', 'Độ hiếm'],
-    ['bpm', 'BPM đẹp nhất'],
-    ['song', 'Bài hát đề xuất'],
-    ['camera', 'Góc máy'],
-    ['capcut', 'Ý tưởng CapCut'],
-    ['youtubeTitle', 'Tiêu đề YouTube SEO'],
-    ['tiktokCaption', 'Caption TikTok'],
-    ['facebookCaption', 'Caption Facebook Reels'],
-    ['pinnedComment', 'Bình luận ghim'],
-    ['hashtags', 'Hashtag'],
-    ['viralPotential', 'Tiềm năng viral'],
-    ['status', 'Trạng thái'],
-    ['description', 'Mô tả'],
-    ['image', 'Ảnh'],
-    ['video', 'Video/YouTube'],
-    ['createdAt', 'Ngày tạo'],
-    ['updatedAt', 'Ngày cập nhật']
-  ];
+  const PREVIEW_LIMIT = 100;
 
   const state = {
-    currentSkills: [],
-    importedRows: [],
-    normalizedRows: [],
-    validation: null,
-    fileName: '',
+    skills: [],
+    imported: [],
+    validation: { errors: [], warnings: [] },
     source: 'unknown',
-    busy: false,
+    fileName: '',
     settings: loadJSON(SETTINGS_KEY, {
-      apiEndpoint: '',
-      databasePath: DEFAULT_DATABASE_PATH,
+      databasePath: DB_PATH_DEFAULT,
+      apiEndpoint: '/api/wiki-skills',
       idPrefix: '',
       autoSaveDraft: true
     })
+  };
+
+  const FIELD_ALIASES = {
+    id: ['id', 'id skill', 'skill id', 'idskill', 'skillid', 'mã skill', 'ma skill', 'mã'],
+    name: ['name', 'tên skill', 'ten skill', 'skill name', 'skillname', 'tên'],
+    level: ['level', 'lv', 'cấp', 'cap', 'cấp độ', 'cap do'],
+    type: ['type', 'loại skill', 'loai skill'],
+    style: ['style', 'phong cách', 'phong cach'],
+    bpm: ['bpm', 'bpm đẹp', 'bpm dep'],
+    rarity: ['rarity', 'độ hiếm', 'do hiem', 'hiếm', 'hiem'],
+    rating: ['rating', 'đánh giá', 'danh gia', 'điểm đẹp', 'diem dep'],
+    image: ['image', 'ảnh', 'anh', 'image url', 'ảnh skill'],
+    youtube: ['youtube', 'link youtube', 'youtube url', 'video'],
+    description: ['description', 'mô tả', 'mo ta', 'ghi chú', 'ghi chu'],
+    reviewed: ['reviewed', 'đã review', 'da review'],
+    hasYoutube: ['has youtube', 'có youtube', 'co youtube'],
+    hasWiki: ['has wiki', 'có wiki', 'co wiki'],
+    hot: ['hot', 'skill hot']
   };
 
   function normalizeKey(value) {
@@ -116,7 +73,7 @@
   }
 
   function safeText(value) {
-    if (value === null || value === undefined) return '';
+    if (value == null) return '';
     if (Array.isArray(value)) return value.join(', ');
     if (typeof value === 'object') return JSON.stringify(value);
     return String(value).trim();
@@ -135,1444 +92,887 @@
     try {
       const raw = localStorage.getItem(key);
       return raw ? JSON.parse(raw) : fallback;
-    } catch (error) {
-      console.warn('[Mina Master CMS] Không thể đọc localStorage:', error);
+    } catch (_) {
       return fallback;
     }
   }
 
-  function saveJSON(key, data) {
+  function saveJSON(key, value) {
     try {
-      localStorage.setItem(key, JSON.stringify(data));
+      localStorage.setItem(key, JSON.stringify(value));
       return true;
     } catch (error) {
-      console.error('[Mina Master CMS] Không thể lưu localStorage:', error);
+      console.error('[Mina CMS V2] localStorage:', error);
       return false;
     }
   }
 
-  function deepClone(data) {
-    if (typeof structuredClone === 'function') {
-      try { return structuredClone(data); } catch (_) {}
-    }
-    return JSON.parse(JSON.stringify(data));
+  function clone(value) {
+    return JSON.parse(JSON.stringify(value));
   }
 
   function nowISO() {
     return new Date().toISOString();
   }
 
-  function debounce(fn, delay) {
-    let timer;
-    return function debounced(...args) {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn.apply(this, args), delay);
-    };
-  }
-
-  function getAliasMap() {
+  const aliasMap = (() => {
     const map = new Map();
     Object.entries(FIELD_ALIASES).forEach(([canonical, aliases]) => {
       map.set(normalizeKey(canonical), canonical);
       aliases.forEach(alias => map.set(normalizeKey(alias), canonical));
     });
     return map;
-  }
+  })();
 
-  const aliasMap = getAliasMap();
-
-  function mapObjectFields(raw) {
-    const mapped = {};
+  function mapFields(raw) {
+    const out = {};
     Object.entries(raw || {}).forEach(([key, value]) => {
       const canonical = aliasMap.get(normalizeKey(key)) || key;
-      if (mapped[canonical] === undefined || mapped[canonical] === '') {
-        mapped[canonical] = value;
-      }
+      if (out[canonical] === undefined || out[canonical] === '') out[canonical] = value;
     });
-    return mapped;
+    return out;
+  }
+
+  function toBoolean(value) {
+    if (typeof value === 'boolean') return value;
+    const text = normalizeKey(value);
+    return ['true', '1', 'yes', 'co', 'x', 'checked'].includes(text);
   }
 
   function parseLevel(value) {
-    if (Array.isArray(value)) {
-      return value
-        .map(v => Number(v))
-        .filter(v => Number.isFinite(v) && v > 0);
-    }
-
+    if (Array.isArray(value)) return value.map(Number).filter(Number.isFinite);
     const text = safeText(value);
-    if (!text) return [];
+    if (!text) return '';
 
     const range = text.match(/(\d+)\s*[-–]\s*(\d+)/);
     if (range) {
       const start = Number(range[1]);
       const end = Number(range[2]);
-      if (start > 0 && end >= start && end - start <= 30) {
-        return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+      if (end >= start && end - start <= 30) {
+        return Array.from({ length: end - start + 1 }, (_, i) => start + i);
       }
     }
 
-    return [...new Set(
-      text.split(/[,\s;/|]+/)
-        .map(part => Number(part.replace(/[^\d.]/g, '')))
-        .filter(value => Number.isFinite(value) && value > 0)
-    )];
+    const parts = text.split(/[,\s;/|]+/)
+      .map(v => Number(v.replace(/[^\d.]/g, '')))
+      .filter(Number.isFinite);
+
+    if (parts.length > 1) return [...new Set(parts)];
+    return parts[0] ?? text;
   }
 
   function parseNumber(value) {
     if (typeof value === 'number' && Number.isFinite(value)) return value;
-    const parsed = Number(String(value ?? '').replace(',', '.').replace(/[^\d.-]/g, ''));
-    return Number.isFinite(parsed) ? parsed : '';
+    const number = Number(String(value ?? '').replace(',', '.').replace(/[^\d.-]/g, ''));
+    return Number.isFinite(number) ? number : '';
   }
 
-  function parseTags(value) {
-    if (Array.isArray(value)) return value.map(safeText).filter(Boolean);
-    const text = safeText(value);
-    if (!text) return [];
-    return [...new Set(
-      text.split(/[,;\n|]+/)
-        .map(tag => tag.trim())
-        .filter(Boolean)
-    )];
-  }
-
-  function normalizeSkill(raw, index) {
-    const item = mapObjectFields(raw);
-    const timestamp = nowISO();
-
-    const normalized = {
+  function normalizeSkill(raw, index = 0) {
+    const item = mapFields(raw);
+    return {
       ...item,
       id: safeText(item.id),
       name: safeText(item.name),
       level: parseLevel(item.level),
+      type: safeText(item.type),
       style: safeText(item.style),
-      gender: safeText(item.gender),
-      beauty: parseNumber(item.beauty),
-      rarity: safeText(item.rarity).toUpperCase(),
       bpm: parseNumber(item.bpm),
-      song: safeText(item.song),
-      camera: safeText(item.camera),
-      capcut: safeText(item.capcut),
-      youtubeTitle: safeText(item.youtubeTitle),
-      tiktokCaption: safeText(item.tiktokCaption),
-      facebookCaption: safeText(item.facebookCaption),
-      pinnedComment: safeText(item.pinnedComment),
-      hashtags: parseTags(item.hashtags),
-      viralPotential: safeText(item.viralPotential),
-      status: safeText(item.status) || 'draft',
-      description: safeText(item.description),
+      rarity: safeText(item.rarity).toUpperCase(),
+      rating: safeText(item.rating),
       image: safeText(item.image),
-      video: safeText(item.video),
-      createdAt: safeText(item.createdAt) || timestamp,
-      updatedAt: timestamp,
+      youtube: safeText(item.youtube),
+      description: safeText(item.description),
+      reviewed: toBoolean(item.reviewed),
+      hasYoutube: toBoolean(item.hasYoutube || item.youtube),
+      hasWiki: item.hasWiki === undefined ? true : toBoolean(item.hasWiki),
+      hot: toBoolean(item.hot),
+      updatedAt: nowISO(),
       _row: index + 2
     };
-
-    Object.keys(normalized).forEach(key => {
-      if (normalized[key] === undefined) delete normalized[key];
-    });
-
-    return normalized;
   }
 
-  function unwrapSkillsPayload(payload) {
+  function cleanSkill(skill) {
+    const out = { ...skill };
+    delete out._row;
+    Object.keys(out).forEach(key => {
+      if (out[key] === '' || out[key] == null) delete out[key];
+      if (Array.isArray(out[key]) && !out[key].length) delete out[key];
+    });
+    return out;
+  }
+
+  function unwrap(payload) {
     if (Array.isArray(payload)) return payload;
     if (!payload || typeof payload !== 'object') return [];
-
-    const candidates = [
-      payload.skills,
-      payload.data,
-      payload.items,
-      payload.records,
-      payload.wikiSkills
-    ];
-
-    for (const candidate of candidates) {
-      if (Array.isArray(candidate)) return candidate;
-      if (candidate && Array.isArray(candidate.skills)) return candidate.skills;
+    for (const key of ['skills', 'data', 'items', 'records', 'wikiSkills']) {
+      if (Array.isArray(payload[key])) return payload[key];
     }
-
     return [];
   }
 
-  function generateNextId(existing, prefix) {
-    const ids = existing.map(item => safeText(item.id)).filter(Boolean);
-    let max = 0;
-
-    ids.forEach(id => {
-      const match = id.match(/(\d+)(?!.*\d)/);
-      if (match) max = Math.max(max, Number(match[1]));
-    });
-
-    let candidate;
-    do {
-      max += 1;
-      candidate = `${prefix || ''}${max}`;
-    } while (ids.includes(candidate));
-
-    return candidate;
-  }
-
-  function assignMissingIds(rows, baseSkills) {
-    const working = [...baseSkills, ...rows.filter(row => row.id)];
-    return rows.map(row => {
-      if (row.id) return row;
-      const id = generateNextId(working, state.settings.idPrefix);
-      const updated = { ...row, id };
-      working.push(updated);
-      return updated;
-    });
-  }
-
-  function validateRows(rows, currentSkills) {
-    const errors = [];
-    const warnings = [];
-    const incomingIds = new Map();
-    const incomingNames = new Map();
-    const currentById = new Map();
-    const currentByName = new Map();
-
-    currentSkills.forEach(skill => {
-      const id = safeText(skill.id);
-      const name = normalizeKey(skill.name);
-      if (id) currentById.set(id, skill);
-      if (name) currentByName.set(name, skill);
-    });
-
-    rows.forEach((skill, index) => {
-      const row = skill._row || index + 2;
-      const id = safeText(skill.id);
-      const nameKey = normalizeKey(skill.name);
-
-      if (!skill.name) {
-        errors.push({ row, field: 'name', message: 'Thiếu tên skill.' });
-      }
-
-      if (!id) {
-        warnings.push({ row, field: 'id', message: 'Thiếu ID; CMS sẽ tự tạo ID.' });
-      } else {
-        if (incomingIds.has(id)) {
-          errors.push({
-            row,
-            field: 'id',
-            message: `Trùng ID "${id}" với dòng ${incomingIds.get(id)} trong file nhập.`
-          });
-        } else {
-          incomingIds.set(id, row);
-        }
-
-        if (currentById.has(id)) {
-          warnings.push({
-            row,
-            field: 'id',
-            message: `ID "${id}" đã có trong database; có thể được cập nhật tuỳ chế độ nhập.`
-          });
-        }
-      }
-
-      if (nameKey) {
-        if (incomingNames.has(nameKey)) {
-          warnings.push({
-            row,
-            field: 'name',
-            message: `Tên skill trùng với dòng ${incomingNames.get(nameKey)} trong file nhập.`
-          });
-        } else {
-          incomingNames.set(nameKey, row);
-        }
-
-        if (currentByName.has(nameKey)) {
-          warnings.push({
-            row,
-            field: 'name',
-            message: `Tên skill "${skill.name}" đã tồn tại trong database.`
-          });
-        }
-      }
-
-      if (skill.level.length && skill.level.some(level => level < 1 || level > 100)) {
-        warnings.push({ row, field: 'level', message: 'Level nằm ngoài khoảng thông thường 1–100.' });
-      }
-
-      if (skill.beauty !== '' && (skill.beauty < 0 || skill.beauty > 10)) {
-        warnings.push({ row, field: 'beauty', message: 'Điểm đẹp thường nên nằm trong khoảng 0–10.' });
-      }
-
-      if (skill.bpm !== '' && (skill.bpm < 1 || skill.bpm > 1000)) {
-        warnings.push({ row, field: 'bpm', message: 'BPM có vẻ không hợp lệ.' });
-      }
-
-      ['image', 'video'].forEach(field => {
-        const value = skill[field];
-        if (value && !/^(https?:\/\/|\/|\.\/|\.\.\/|data:image\/)/i.test(value)) {
-          warnings.push({
-            row,
-            field,
-            message: `${field === 'image' ? 'Ảnh' : 'Video'} không phải URL/đường dẫn quen thuộc.`
-          });
-        }
-      });
-    });
-
-    return {
-      errors,
-      warnings,
-      validCount: rows.length - new Set(errors.map(error => error.row)).size,
-      totalCount: rows.length
-    };
-  }
-
-  function cleanForDatabase(skill) {
-    const cleaned = { ...skill };
-    delete cleaned._row;
-
-    Object.keys(cleaned).forEach(key => {
-      const value = cleaned[key];
-      if (value === '' || value === null || value === undefined) {
-        delete cleaned[key];
-      }
-      if (Array.isArray(value) && value.length === 0) {
-        delete cleaned[key];
-      }
-    });
-
-    return cleaned;
-  }
-
-  function mergeNonEmpty(base, incoming) {
-    const output = { ...base };
-
-    Object.entries(incoming).forEach(([key, value]) => {
-      if (key === '_row') return;
-      const hasUsefulValue =
-        value !== '' &&
-        value !== null &&
-        value !== undefined &&
-        (!Array.isArray(value) || value.length > 0);
-
-      if (hasUsefulValue) output[key] = value;
-    });
-
-    output.updatedAt = nowISO();
-    return output;
-  }
-
-  function applyImportMode(currentSkills, incomingRows, mode) {
-    const incoming = assignMissingIds(incomingRows, currentSkills).map(cleanForDatabase);
-
-    if (mode === 'replace') {
-      return incoming;
-    }
-
-    const result = deepClone(currentSkills);
-    const idIndex = new Map();
-    const nameIndex = new Map();
-
-    result.forEach((skill, index) => {
-      const id = safeText(skill.id);
-      const name = normalizeKey(skill.name);
-      if (id) idIndex.set(id, index);
-      if (name) nameIndex.set(name, index);
-    });
-
-    incoming.forEach(skill => {
-      const id = safeText(skill.id);
-      const name = normalizeKey(skill.name);
-      const idMatch = id ? idIndex.get(id) : undefined;
-      const nameMatch = name ? nameIndex.get(name) : undefined;
-      const matchIndex = idMatch !== undefined ? idMatch : nameMatch;
-
-      if (mode === 'append') {
-        if (matchIndex === undefined) {
-          result.push(skill);
-          idIndex.set(id, result.length - 1);
-          nameIndex.set(name, result.length - 1);
-        }
-        return;
-      }
-
-      if (mode === 'update') {
-        if (matchIndex !== undefined) {
-          result[matchIndex] = mergeNonEmpty(result[matchIndex], skill);
-        }
-        return;
-      }
-
-      // merge: cập nhật bản ghi đã có, thêm bản ghi mới.
-      if (matchIndex !== undefined) {
-        result[matchIndex] = mergeNonEmpty(result[matchIndex], skill);
-      } else {
-        result.push(skill);
-        idIndex.set(id, result.length - 1);
-        nameIndex.set(name, result.length - 1);
-      }
-    });
-
-    return result;
-  }
-
-  function getGlobalSkills() {
+  function findGlobalSkills() {
     const candidates = [
       window.wikiSkills,
       window.skillsData,
       window.WIKI_SKILLS,
       window.MINA_SKILLS,
-      window.__WIKI_SKILLS__
+      window.__WIKI_SKILLS__,
+      window.__MINA_MASTER_CMS_SKILLS__
     ];
 
     for (const candidate of candidates) {
-      if (Array.isArray(candidate)) {
-        return { skills: deepClone(candidate), source: 'window' };
-      }
-      const unwrapped = unwrapSkillsPayload(candidate);
-      if (unwrapped.length) {
-        return { skills: deepClone(unwrapped), source: 'window' };
-      }
+      const rows = unwrap(candidate);
+      if (rows.length) return rows;
+      if (Array.isArray(candidate) && candidate.length) return candidate;
     }
-
-    return null;
+    return [];
   }
 
-  async function fetchDatabaseFile() {
-    const path = state.settings.databasePath || DEFAULT_DATABASE_PATH;
-    const url = `${path}${path.includes('?') ? '&' : '?'}minaCms=${Date.now()}`;
-    const response = await fetch(url, { cache: 'no-store' });
-
-    if (!response.ok) {
-      throw new Error(`Không đọc được ${path} (${response.status}).`);
-    }
-
+  async function fetchDatabase() {
+    const path = state.settings.databasePath || DB_PATH_DEFAULT;
+    const response = await fetch(`${path}${path.includes('?') ? '&' : '?'}v=${Date.now()}`, {
+      cache: 'no-store'
+    });
+    if (!response.ok) throw new Error(`Không đọc được ${path} (${response.status}).`);
     const payload = await response.json();
-    const skills = unwrapSkillsPayload(payload);
-    if (!skills.length && !Array.isArray(payload)) {
-      throw new Error('File JSON không chứa mảng skill hợp lệ.');
-    }
-
-    return Array.isArray(payload) ? payload : skills;
+    const rows = unwrap(payload);
+    if (!rows.length && !Array.isArray(payload)) throw new Error('JSON không chứa mảng skill.');
+    return Array.isArray(payload) ? payload : rows;
   }
 
-  async function loadCurrentSkills(options = {}) {
-    setBusy(true, 'Đang đọc database...');
-
+  async function loadSkills(forceRemote = false) {
+    setBusy(true, 'Đang tải database...');
     try {
-      const globalData = getGlobalSkills();
-      if (globalData && globalData.skills.length) {
-        state.currentSkills = globalData.skills.map((item, index) => normalizeSkill(item, index));
-        state.source = globalData.source;
-        showToast(`Đã đọc ${state.currentSkills.length} skill từ trang Admin.`, 'success');
-        renderStats();
-        renderPreview();
-        return state.currentSkills;
+      const globalRows = findGlobalSkills();
+      if (!forceRemote && globalRows.length) {
+        state.skills = globalRows.map(normalizeSkill);
+        state.source = 'Admin hiện tại';
+      } else {
+        const draft = loadJSON(STORAGE_KEY, []);
+        if (!forceRemote && Array.isArray(draft) && draft.length) {
+          state.skills = draft.map(normalizeSkill);
+          state.source = 'Bản nháp trình duyệt';
+        } else {
+          const remote = await fetchDatabase();
+          state.skills = remote.map(normalizeSkill);
+          state.source = 'File JSON';
+          if (state.settings.autoSaveDraft) saveJSON(STORAGE_KEY, state.skills);
+        }
       }
-
-      const draft = loadJSON(STORAGE_KEY, null);
-      if (!options.forceRemote && Array.isArray(draft) && draft.length) {
-        state.currentSkills = draft.map((item, index) => normalizeSkill(item, index));
-        state.source = 'localStorage';
-        showToast(`Đã khôi phục ${state.currentSkills.length} skill từ bản nháp trình duyệt.`, 'success');
-        renderStats();
-        renderPreview();
-        return state.currentSkills;
-      }
-
-      const remote = await fetchDatabaseFile();
-      state.currentSkills = remote.map((item, index) => normalizeSkill(item, index));
-      state.source = 'json';
-      if (state.settings.autoSaveDraft) saveJSON(STORAGE_KEY, state.currentSkills);
-      showToast(`Đã đọc ${state.currentSkills.length} skill từ file JSON.`, 'success');
-      renderStats();
-      renderPreview();
-      return state.currentSkills;
+      renderAll();
+      toast(`Đã tải ${state.skills.length} skill.`, 'success');
     } catch (error) {
-      console.warn('[Mina Master CMS] Không tải được database:', error);
-      state.currentSkills = [];
-      state.source = 'empty';
-      showToast(
-        'Chưa đọc được database hiện tại. Bạn vẫn có thể nhập file, xem trước và xuất JSON.',
-        'warning'
-      );
-      renderStats();
-      renderPreview();
-      return [];
+      state.skills = [];
+      state.source = 'Chưa có dữ liệu';
+      renderAll();
+      toast(error.message || 'Không tải được dữ liệu.', 'warning');
     } finally {
       setBusy(false);
     }
   }
 
-  function readFileAsArrayBuffer(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = event => resolve(event.target.result);
-      reader.onerror = () => reject(new Error('Không thể đọc file.'));
-      reader.readAsArrayBuffer(file);
-    });
-  }
+  function validateRows(rows) {
+    const errors = [];
+    const warnings = [];
+    const incomingIds = new Map();
+    const incomingNames = new Map();
+    const currentIds = new Set(state.skills.map(x => safeText(x.id)).filter(Boolean));
+    const currentNames = new Set(state.skills.map(x => normalizeKey(x.name)).filter(Boolean));
 
-  function readFileAsText(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = event => resolve(event.target.result);
-      reader.onerror = () => reject(new Error('Không thể đọc file.'));
-      reader.readAsText(file, 'utf-8');
-    });
-  }
+    rows.forEach((skill, index) => {
+      const row = skill._row || index + 2;
+      if (!skill.name) errors.push({ row, message: 'Thiếu tên skill.' });
 
-  async function parseImportFile(file) {
-    if (!file) throw new Error('Bạn chưa chọn file.');
+      if (skill.id) {
+        if (incomingIds.has(skill.id)) {
+          errors.push({ row, message: `Trùng ID "${skill.id}" với dòng ${incomingIds.get(skill.id)}.` });
+        } else incomingIds.set(skill.id, row);
 
-    const extension = file.name.split('.').pop().toLowerCase();
-    state.fileName = file.name;
-
-    if (extension === 'json') {
-      const text = await readFileAsText(file);
-      let payload;
-      try {
-        payload = JSON.parse(text);
-      } catch (_) {
-        throw new Error('File JSON bị lỗi cú pháp.');
+        if (currentIds.has(skill.id)) {
+          warnings.push({ row, message: `ID "${skill.id}" đã tồn tại trong database.` });
+        }
+      } else {
+        warnings.push({ row, message: 'Thiếu ID, CMS sẽ tự tạo.' });
       }
 
-      const rows = Array.isArray(payload) ? payload : unwrapSkillsPayload(payload);
-      if (!rows.length) throw new Error('File JSON không có dữ liệu skill.');
-      return rows;
-    }
+      const nameKey = normalizeKey(skill.name);
+      if (nameKey) {
+        if (incomingNames.has(nameKey)) {
+          warnings.push({ row, message: `Tên skill trùng với dòng ${incomingNames.get(nameKey)}.` });
+        } else incomingNames.set(nameKey, row);
 
-    if (['xlsx', 'xls', 'csv'].includes(extension)) {
-      if (!window.XLSX) {
-        throw new Error('Thư viện XLSX chưa được nạp. Hãy kiểm tra thứ tự các thẻ script.');
+        if (currentNames.has(nameKey)) {
+          warnings.push({ row, message: `Tên "${skill.name}" đã tồn tại.` });
+        }
       }
 
-      const buffer = await readFileAsArrayBuffer(file);
-      const workbook = window.XLSX.read(buffer, { type: 'array', cellDates: true });
-      const sheetName = workbook.SheetNames[0];
+      if (skill.bpm !== '' && (skill.bpm < 1 || skill.bpm > 1000)) {
+        warnings.push({ row, message: 'BPM có vẻ không hợp lệ.' });
+      }
+    });
 
-      if (!sheetName) throw new Error('File Excel không có sheet dữ liệu.');
-
-      const worksheet = workbook.Sheets[sheetName];
-      return window.XLSX.utils.sheet_to_json(worksheet, {
-        defval: '',
-        raw: false
-      });
-    }
-
-    throw new Error('Chỉ hỗ trợ .xlsx, .xls, .csv hoặc .json.');
+    return { errors, warnings };
   }
 
-  async function handleSelectedFile(file) {
-    setBusy(true, 'Đang phân tích file...');
-
-    try {
-      const rows = await parseImportFile(file);
-      state.importedRows = rows;
-      state.normalizedRows = rows.map((row, index) => normalizeSkill(row, index));
-      state.validation = validateRows(state.normalizedRows, state.currentSkills);
-
-      renderStats();
-      renderPreview();
-      renderValidation();
-
-      showToast(
-        `Đã đọc ${state.normalizedRows.length} dòng từ ${file.name}. Hãy kiểm tra trước khi áp dụng.`,
-        state.validation.errors.length ? 'warning' : 'success'
-      );
-    } catch (error) {
-      console.error('[Mina Master CMS] Lỗi import:', error);
-      state.importedRows = [];
-      state.normalizedRows = [];
-      state.validation = null;
-      renderStats();
-      renderPreview();
-      renderValidation();
-      showToast(error.message || 'Không thể đọc file.', 'error');
-    } finally {
-      setBusy(false);
-    }
+  function nextId(existing) {
+    const prefix = state.settings.idPrefix || '';
+    const ids = existing.map(x => safeText(x.id)).filter(Boolean);
+    let max = 0;
+    ids.forEach(id => {
+      const match = id.match(/(\d+)(?!.*\d)/);
+      if (match) max = Math.max(max, Number(match[1]));
+    });
+    let candidate = '';
+    do {
+      max += 1;
+      candidate = `${prefix}${max}`;
+    } while (ids.includes(candidate));
+    return candidate;
   }
 
-  function pushHistory(skills, label) {
+  function mergeSkills(mode) {
+    let incoming = state.imported.map(cleanSkill);
+    const working = [...state.skills];
+
+    incoming = incoming.map(skill => {
+      if (skill.id) return skill;
+      const withId = { ...skill, id: nextId([...working, ...incoming]) };
+      working.push(withId);
+      return withId;
+    });
+
+    if (mode === 'replace') return incoming;
+
+    const result = clone(state.skills).map(cleanSkill);
+    const byId = new Map();
+    const byName = new Map();
+
+    result.forEach((skill, index) => {
+      if (skill.id) byId.set(safeText(skill.id), index);
+      if (skill.name) byName.set(normalizeKey(skill.name), index);
+    });
+
+    incoming.forEach(skill => {
+      const idIndex = skill.id ? byId.get(safeText(skill.id)) : undefined;
+      const nameIndex = skill.name ? byName.get(normalizeKey(skill.name)) : undefined;
+      const match = idIndex !== undefined ? idIndex : nameIndex;
+
+      if (mode === 'append') {
+        if (match === undefined) result.push(skill);
+        return;
+      }
+
+      if (mode === 'update') {
+        if (match !== undefined) result[match] = { ...result[match], ...skill, updatedAt: nowISO() };
+        return;
+      }
+
+      if (match !== undefined) result[match] = { ...result[match], ...skill, updatedAt: nowISO() };
+      else result.push(skill);
+    });
+
+    return result;
+  }
+
+  function pushHistory(label) {
     const history = loadJSON(HISTORY_KEY, []);
     history.unshift({
-      id: Date.now(),
       label,
-      createdAt: nowISO(),
-      count: skills.length,
-      skills: deepClone(skills)
+      at: nowISO(),
+      skills: clone(state.skills).map(cleanSkill)
     });
     saveJSON(HISTORY_KEY, history.slice(0, MAX_HISTORY));
   }
 
-  function applyImportedData() {
-    if (!state.normalizedRows.length) {
-      showToast('Chưa có dữ liệu nhập để áp dụng.', 'warning');
-      return;
-    }
+  function applyImport() {
+    if (!state.imported.length) return toast('Chưa có file nhập.', 'warning');
 
-    const validation = validateRows(state.normalizedRows, state.currentSkills);
-    state.validation = validation;
+    state.validation = validateRows(state.imported);
     renderValidation();
 
-    if (validation.errors.length) {
-      showToast(
-        `Còn ${validation.errors.length} lỗi bắt buộc. Hãy sửa file rồi nhập lại.`,
-        'error'
-      );
-      return;
+    if (state.validation.errors.length) {
+      return toast(`Còn ${state.validation.errors.length} lỗi bắt buộc.`, 'error');
     }
 
-    const mode = getElement('minaImportMode')?.value || 'merge';
-    const modeLabels = {
-      append: 'Chỉ thêm mới',
-      update: 'Chỉ cập nhật',
-      merge: 'Gộp thêm và cập nhật',
-      replace: 'Thay thế toàn bộ'
-    };
+    const mode = byId('minaV2ImportMode').value;
+    if (mode === 'replace' && !confirm('Thay thế toàn bộ database hiện tại?')) return;
 
-    if (mode === 'replace') {
-      const accepted = window.confirm(
-        'Chế độ "Thay thế toàn bộ" sẽ thay database hiện tại bằng dữ liệu trong file. Bạn có chắc chắn không?'
-      );
-      if (!accepted) return;
-    }
-
-    pushHistory(state.currentSkills, `Trước khi áp dụng: ${modeLabels[mode] || mode}`);
-    state.currentSkills = applyImportMode(state.currentSkills, state.normalizedRows, mode);
-    state.source = 'cms';
-
-    if (state.settings.autoSaveDraft) {
-      saveJSON(STORAGE_KEY, state.currentSkills);
-    }
-
-    syncToKnownGlobals(state.currentSkills);
-    notifyExistingAdmin(state.currentSkills);
-
-    state.normalizedRows = [];
-    state.importedRows = [];
-    state.validation = null;
+    pushHistory(`Trước import chế độ ${mode}`);
+    state.skills = mergeSkills(mode).map(normalizeSkill);
+    state.imported = [];
     state.fileName = '';
+    state.validation = { errors: [], warnings: [] };
 
-    const input = getElement('minaImportFile');
-    if (input) input.value = '';
-
-    renderStats();
-    renderPreview();
-    renderValidation();
-
-    showToast(
-      `Đã áp dụng dữ liệu. Database tạm hiện có ${state.currentSkills.length} skill.`,
-      'success'
-    );
+    if (state.settings.autoSaveDraft) saveJSON(STORAGE_KEY, state.skills);
+    syncToPage();
+    renderAll();
+    toast(`Đã áp dụng. Tổng cộng ${state.skills.length} skill.`, 'success');
   }
 
-  function syncToKnownGlobals(skills) {
-    const clone = deepClone(skills).map(cleanForDatabase);
+  function syncToPage() {
+    const cleaned = state.skills.map(cleanSkill);
+    window.__MINA_MASTER_CMS_SKILLS__ = clone(cleaned);
 
-    if (Array.isArray(window.wikiSkills)) window.wikiSkills.splice(0, window.wikiSkills.length, ...clone);
-    if (Array.isArray(window.skillsData)) window.skillsData.splice(0, window.skillsData.length, ...clone);
-    if (Array.isArray(window.WIKI_SKILLS)) window.WIKI_SKILLS.splice(0, window.WIKI_SKILLS.length, ...clone);
-
-    window.__MINA_MASTER_CMS_SKILLS__ = clone;
-  }
-
-  function notifyExistingAdmin(skills) {
-    const detail = { skills: deepClone(skills).map(cleanForDatabase), source: 'mina-master-cms' };
-    window.dispatchEvent(new CustomEvent('mina:skills-updated', { detail }));
-    document.dispatchEvent(new CustomEvent('mina:skills-updated', { detail }));
-
-    const possibleRenderers = [
-      window.renderSkills,
-      window.renderSkillList,
-      window.loadSkills,
-      window.refreshSkills,
-      window.refreshSkillList
-    ];
-
-    possibleRenderers.forEach(renderer => {
-      if (typeof renderer === 'function') {
-        try { renderer(detail.skills); } catch (error) {
-          console.warn('[Mina Master CMS] Renderer cũ báo lỗi:', error);
-        }
+    for (const key of ['wikiSkills', 'skillsData', 'WIKI_SKILLS', 'MINA_SKILLS']) {
+      if (Array.isArray(window[key])) {
+        window[key].splice(0, window[key].length, ...clone(cleaned));
       }
-    });
-  }
-
-  function downloadBlob(content, fileName, mimeType) {
-    const blob = content instanceof Blob
-      ? content
-      : new Blob([content], { type: mimeType || 'application/octet-stream' });
-
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = fileName;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-
-  function exportJSON() {
-    const skills = state.currentSkills.map(cleanForDatabase);
-    const content = JSON.stringify(skills, null, 2);
-    downloadBlob(
-      content,
-      `wiki-skills-${new Date().toISOString().slice(0, 10)}.json`,
-      'application/json;charset=utf-8'
-    );
-    showToast(`Đã xuất JSON gồm ${skills.length} skill.`, 'success');
-  }
-
-  function exportExcel() {
-    if (!window.XLSX) {
-      showToast('Thư viện XLSX chưa được nạp.', 'error');
-      return;
     }
 
-    const rows = state.currentSkills.map(skill => {
-      const output = {};
-      EXPORT_COLUMNS.forEach(([field, title]) => {
-        const value = skill[field];
-        output[title] = Array.isArray(value) ? value.join(', ') : (value ?? '');
-      });
-      return output;
-    });
-
-    const worksheet = window.XLSX.utils.json_to_sheet(rows);
-    worksheet['!cols'] = EXPORT_COLUMNS.map(([, title]) => ({
-      wch: Math.max(14, Math.min(35, title.length + 6))
+    window.dispatchEvent(new CustomEvent('mina:skills-updated', {
+      detail: { skills: clone(cleaned), source: 'mina-cms-v2' }
     }));
 
-    const workbook = window.XLSX.utils.book_new();
-    window.XLSX.utils.book_append_sheet(workbook, worksheet, 'Wiki Skills');
-    window.XLSX.writeFile(
-      workbook,
-      `wiki-skills-${new Date().toISOString().slice(0, 10)}.xlsx`
-    );
-
-    showToast(`Đã xuất Excel gồm ${rows.length} skill.`, 'success');
+    for (const fn of ['renderSkills', 'renderSkillList', 'refreshSkills', 'loadSkills']) {
+      if (typeof window[fn] === 'function') {
+        try { window[fn](clone(cleaned)); } catch (_) {}
+      }
+    }
   }
 
-  function downloadTemplate() {
-    if (!window.XLSX) {
-      showToast('Thư viện XLSX chưa được nạp.', 'error');
-      return;
-    }
-
-    const sample = {};
-    EXPORT_COLUMNS.forEach(([field, title]) => {
-      const values = {
-        id: '10001',
-        name: 'Tên skill mẫu',
-        level: '6, 7, 8, 9, 10, 11',
-        style: 'Poppin',
-        gender: 'Nữ',
-        beauty: 9,
-        rarity: 'S',
-        bpm: 140,
-        song: 'Tên bài hát',
-        camera: 'Góc chính diện',
-        capcut: 'Zoom theo nhịp',
-        youtubeTitle: 'Review skill Audition...',
-        tiktokCaption: 'Caption TikTok...',
-        facebookCaption: 'Caption Facebook Reels...',
-        pinnedComment: 'Bạn chấm skill này bao nhiêu điểm?',
-        hashtags: '#Audition, #MinaAudition',
-        viralPotential: 'Cao',
-        status: 'draft',
-        description: 'Ghi chú mô tả',
-        image: '/images/skills/10001.webp',
-        video: 'https://www.youtube.com/watch?v=...',
-        createdAt: '',
-        updatedAt: ''
-      };
-      sample[title] = values[field] ?? '';
+  function readText(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = () => reject(new Error('Không đọc được file.'));
+      reader.readAsText(file, 'utf-8');
     });
-
-    const worksheet = window.XLSX.utils.json_to_sheet([sample]);
-    worksheet['!cols'] = EXPORT_COLUMNS.map(([, title]) => ({
-      wch: Math.max(16, Math.min(35, title.length + 7))
-    }));
-
-    const workbook = window.XLSX.utils.book_new();
-    window.XLSX.utils.book_append_sheet(workbook, worksheet, 'Mau Import');
-    window.XLSX.writeFile(workbook, 'mina-wiki-skill-template.xlsx');
-    showToast('Đã tải file Excel mẫu.', 'success');
   }
 
-  async function saveToAPI() {
-    const endpoint = safeText(
-      getElement('minaApiEndpoint')?.value || state.settings.apiEndpoint
-    );
+  function readBuffer(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = () => reject(new Error('Không đọc được file.'));
+      reader.readAsArrayBuffer(file);
+    });
+  }
 
-    if (!endpoint) {
-      showToast(
-        'Chưa cấu hình API backend. Dữ liệu hiện chỉ được lưu bản nháp trong trình duyệt; hãy xuất JSON để backup.',
-        'warning'
-      );
-      return;
+  async function parseFile(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext === 'json') {
+      const payload = JSON.parse(await readText(file));
+      return Array.isArray(payload) ? payload : unwrap(payload);
     }
 
-    const skills = state.currentSkills.map(cleanForDatabase);
-    setBusy(true, 'Đang đồng bộ lên máy chủ...');
+    if (!['xlsx', 'xls', 'csv'].includes(ext)) {
+      throw new Error('Chỉ hỗ trợ XLSX, XLS, CSV hoặc JSON.');
+    }
 
+    if (!window.XLSX) throw new Error('Thư viện XLSX chưa được nạp.');
+    const workbook = window.XLSX.read(await readBuffer(file), { type: 'array' });
+    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+    return window.XLSX.utils.sheet_to_json(firstSheet, { defval: '', raw: false });
+  }
+
+  async function handleFile(file) {
+    setBusy(true, 'Đang phân tích file...');
     try {
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Mina-CMS-Version': VERSION
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify({
-          action: 'save',
-          path: state.settings.databasePath || DEFAULT_DATABASE_PATH,
-          skills
-        })
-      });
-
-      const text = await response.text();
-      let result = {};
-      try { result = text ? JSON.parse(text) : {}; } catch (_) {}
-
-      if (!response.ok || result.success === false) {
-        throw new Error(
-          result.message ||
-          result.error ||
-          `Máy chủ trả về lỗi ${response.status}.`
-        );
-      }
-
-      pushHistory(skills, 'Trước lần đồng bộ API');
-      saveJSON(STORAGE_KEY, skills);
-      showToast(
-        result.message || `Đã đồng bộ ${skills.length} skill lên máy chủ.`,
-        'success'
-      );
+      const rows = await parseFile(file);
+      if (!rows.length) throw new Error('File không có dữ liệu.');
+      state.fileName = file.name;
+      state.imported = rows.map(normalizeSkill);
+      state.validation = validateRows(state.imported);
+      renderAll();
+      toast(`Đã đọc ${state.imported.length} dòng từ ${file.name}.`, 'success');
     } catch (error) {
-      console.error('[Mina Master CMS] Lỗi API:', error);
-      showToast(
-        `Không thể đồng bộ API: ${error.message}. Bản nháp trong trình duyệt vẫn được giữ nguyên.`,
-        'error'
-      );
+      state.imported = [];
+      state.validation = { errors: [], warnings: [] };
+      renderAll();
+      toast(error.message || 'Không thể đọc file.', 'error');
     } finally {
       setBusy(false);
     }
   }
 
-  function saveSettings() {
-    state.settings.apiEndpoint = safeText(getElement('minaApiEndpoint')?.value);
-    state.settings.databasePath =
-      safeText(getElement('minaDatabasePath')?.value) || DEFAULT_DATABASE_PATH;
-    state.settings.idPrefix = safeText(getElement('minaIdPrefix')?.value);
-    state.settings.autoSaveDraft = Boolean(getElement('minaAutoSaveDraft')?.checked);
-
-    saveJSON(SETTINGS_KEY, state.settings);
-    showToast('Đã lưu cấu hình Mina Master CMS.', 'success');
+  function downloadBlob(content, fileName, type) {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  function restorePreviousVersion() {
-    const history = loadJSON(HISTORY_KEY, []);
-    if (!history.length) {
-      showToast('Chưa có phiên bản lịch sử để khôi phục.', 'warning');
-      return;
+  function exportJSON() {
+    downloadBlob(
+      JSON.stringify(state.skills.map(cleanSkill), null, 2),
+      `wiki-skills-${new Date().toISOString().slice(0, 10)}.json`,
+      'application/json;charset=utf-8'
+    );
+    toast('Đã xuất JSON.', 'success');
+  }
+
+  function exportExcel() {
+    if (!window.XLSX) return toast('Thư viện XLSX chưa được nạp.', 'error');
+
+    const rows = state.skills.map(skill => ({
+      'ID Skill': skill.id || '',
+      'Tên Skill': skill.name || '',
+      'Level': Array.isArray(skill.level) ? skill.level.join(', ') : (skill.level || ''),
+      'Loại Skill': skill.type || '',
+      'Style': skill.style || '',
+      'BPM đẹp': skill.bpm || '',
+      'Độ hiếm': skill.rarity || '',
+      'Đánh giá': skill.rating || '',
+      'Ảnh Skill': skill.image || '',
+      'Link YouTube': skill.youtube || '',
+      'Mô tả': skill.description || '',
+      'Đã review': skill.reviewed ? 'Có' : '',
+      'Có YouTube': skill.hasYoutube ? 'Có' : '',
+      'Có Wiki': skill.hasWiki ? 'Có' : '',
+      'Skill hot': skill.hot ? 'Có' : ''
+    }));
+
+    const ws = window.XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = Object.keys(rows[0] || {'ID Skill': ''}).map(() => ({ wch: 20 }));
+    const wb = window.XLSX.utils.book_new();
+    window.XLSX.utils.book_append_sheet(wb, ws, 'Wiki Skills');
+    window.XLSX.writeFile(wb, `wiki-skills-${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast('Đã xuất Excel.', 'success');
+  }
+
+  function downloadTemplate() {
+    if (!window.XLSX) return toast('Thư viện XLSX chưa được nạp.', 'error');
+
+    const sample = [{
+      'ID Skill': '47767',
+      'Tên Skill': 'Wave',
+      'Level': '6, 7, 8, 9, 10, 11',
+      'Loại Skill': '4K',
+      'Style': 'HipHop',
+      'BPM đẹp': 128,
+      'Độ hiếm': 'S',
+      'Đánh giá': '5 sao',
+      'Ảnh Skill': 'images/wiki/47767.webp',
+      'Link YouTube': '',
+      'Mô tả': 'Mô tả ngắn về skill',
+      'Đã review': '',
+      'Có YouTube': '',
+      'Có Wiki': 'Có',
+      'Skill hot': ''
+    }];
+
+    const ws = window.XLSX.utils.json_to_sheet(sample);
+    ws['!cols'] = Object.keys(sample[0]).map(() => ({ wch: 22 }));
+    const wb = window.XLSX.utils.book_new();
+    window.XLSX.utils.book_append_sheet(wb, ws, 'Mau Import');
+    window.XLSX.writeFile(wb, 'mina-wiki-skill-template.xlsx');
+  }
+
+  async function saveAPI() {
+    const endpoint = safeText(byId('minaV2Api').value);
+    if (!endpoint) return toast('Chưa cấu hình API.', 'warning');
+
+    setBusy(true, 'Đang đồng bộ...');
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          action: 'save',
+          path: state.settings.databasePath,
+          skills: state.skills.map(cleanSkill)
+        })
+      });
+
+      const text = await response.text();
+      let data = {};
+      try { data = text ? JSON.parse(text) : {}; } catch (_) {}
+
+      if (!response.ok || data.success === false) {
+        throw new Error(data.message || data.error || `HTTP ${response.status}`);
+      }
+
+      saveJSON(STORAGE_KEY, state.skills);
+      toast(data.message || 'Đã đồng bộ lên máy chủ.', 'success');
+    } catch (error) {
+      toast(`Không thể đồng bộ: ${error.message}`, 'error');
+    } finally {
+      setBusy(false);
     }
+  }
+
+  function restoreHistory() {
+    const history = loadJSON(HISTORY_KEY, []);
+    if (!history.length) return toast('Chưa có lịch sử.', 'warning');
 
     const latest = history[0];
-    const accepted = window.confirm(
-      `Khôi phục phiên bản "${latest.label}" gồm ${latest.count} skill, tạo lúc ${new Date(latest.createdAt).toLocaleString('vi-VN')}?`
-    );
-    if (!accepted) return;
+    if (!confirm(`Khôi phục phiên bản ${latest.skills.length} skill lúc ${new Date(latest.at).toLocaleString('vi-VN')}?`)) return;
 
-    pushHistory(state.currentSkills, 'Trước khi khôi phục');
-    state.currentSkills = latest.skills.map((item, index) => normalizeSkill(item, index));
-    saveJSON(STORAGE_KEY, state.currentSkills);
-    syncToKnownGlobals(state.currentSkills);
-    notifyExistingAdmin(state.currentSkills);
-    renderStats();
-    renderPreview();
-    showToast(`Đã khôi phục ${state.currentSkills.length} skill.`, 'success');
+    pushHistory('Trước khi khôi phục');
+    state.skills = latest.skills.map(normalizeSkill);
+    saveJSON(STORAGE_KEY, state.skills);
+    syncToPage();
+    renderAll();
+    toast('Đã khôi phục phiên bản gần nhất.', 'success');
   }
 
-  function clearDraft() {
-    const accepted = window.confirm(
-      'Xóa bản nháp Mina Master CMS trong trình duyệt? File database trên GitHub/máy chủ sẽ không bị xóa.'
-    );
-    if (!accepted) return;
-
-    localStorage.removeItem(STORAGE_KEY);
-    state.currentSkills = [];
-    state.source = 'empty';
-    renderStats();
-    renderPreview();
-    showToast('Đã xóa bản nháp trong trình duyệt.', 'success');
+  function saveSettings() {
+    state.settings.databasePath = safeText(byId('minaV2DbPath').value) || DB_PATH_DEFAULT;
+    state.settings.apiEndpoint = safeText(byId('minaV2Api').value);
+    state.settings.idPrefix = safeText(byId('minaV2Prefix').value);
+    state.settings.autoSaveDraft = byId('minaV2AutoDraft').checked;
+    saveJSON(SETTINGS_KEY, state.settings);
+    toast('Đã lưu cấu hình.', 'success');
   }
 
-  function getElement(id) {
+  function byId(id) {
     return document.getElementById(id);
   }
 
-  function setBusy(value, message = '') {
-    state.busy = value;
-    const overlay = getElement('minaCmsBusy');
-    if (!overlay) return;
-
-    overlay.hidden = !value;
-    const text = overlay.querySelector('[data-busy-text]');
-    if (text) text.textContent = message || 'Đang xử lý...';
-
-    document.querySelectorAll('#minaMasterCms button, #minaMasterCms input, #minaMasterCms select')
-      .forEach(element => {
-        if (element.id !== 'minaCmsCloseToast') element.disabled = value;
-      });
+  function toast(message, type = 'info') {
+    const el = byId('minaV2Toast');
+    if (!el) return console.log('[Mina CMS V2]', message);
+    el.textContent = message;
+    el.className = `mina-v2-toast ${type}`;
+    el.hidden = false;
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => { el.hidden = true; }, 5000);
   }
 
-  function showToast(message, type = 'info') {
-    const toast = getElement('minaCmsToast');
-    if (!toast) {
-      console.log(`[Mina Master CMS] ${message}`);
-      return;
-    }
-
-    toast.className = `mina-cms-toast is-${type}`;
-    toast.textContent = message;
-    toast.hidden = false;
-
-    clearTimeout(showToast.timer);
-    showToast.timer = setTimeout(() => {
-      toast.hidden = true;
-    }, 6000);
+  function setBusy(value, text = '') {
+    const el = byId('minaV2Busy');
+    if (!el) return;
+    el.hidden = !value;
+    const label = el.querySelector('span');
+    if (label) label.textContent = text || 'Đang xử lý...';
   }
 
   function renderStats() {
-    const currentCount = getElement('minaCurrentCount');
-    const importCount = getElement('minaImportCount');
-    const errorCount = getElement('minaErrorCount');
-    const warningCount = getElement('minaWarningCount');
-    const source = getElement('minaDataSource');
-
-    if (currentCount) currentCount.textContent = state.currentSkills.length.toLocaleString('vi-VN');
-    if (importCount) importCount.textContent = state.normalizedRows.length.toLocaleString('vi-VN');
-    if (errorCount) errorCount.textContent = (state.validation?.errors.length || 0).toLocaleString('vi-VN');
-    if (warningCount) warningCount.textContent = (state.validation?.warnings.length || 0).toLocaleString('vi-VN');
-    if (source) {
-      const labels = {
-        window: 'Admin hiện tại',
-        localStorage: 'Bản nháp trình duyệt',
-        json: 'File JSON',
-        cms: 'Mina Master CMS',
-        empty: 'Chưa có dữ liệu',
-        unknown: 'Đang xác định'
-      };
-      source.textContent = labels[state.source] || state.source;
-    }
+    byId('minaV2Count').textContent = state.skills.length.toLocaleString('vi-VN');
+    byId('minaV2ImportCount').textContent = state.imported.length.toLocaleString('vi-VN');
+    byId('minaV2Errors').textContent = state.validation.errors.length.toLocaleString('vi-VN');
+    byId('minaV2Warnings').textContent = state.validation.warnings.length.toLocaleString('vi-VN');
+    byId('minaV2Source').textContent = state.source;
   }
 
   function renderValidation() {
-    const container = getElement('minaValidation');
-    if (!container) return;
+    const el = byId('minaV2Validation');
+    const all = [
+      ...state.validation.errors.map(x => ({ ...x, type: 'error' })),
+      ...state.validation.warnings.map(x => ({ ...x, type: 'warning' }))
+    ];
 
-    if (!state.validation) {
-      container.innerHTML = '<p class="mina-cms-empty">Chưa có báo cáo kiểm tra.</p>';
+    if (!all.length) {
+      el.innerHTML = '<div class="mina-v2-ok">✓ Chưa phát hiện lỗi hoặc cảnh báo.</div>';
       return;
     }
 
-    const { errors, warnings } = state.validation;
-    const combined = [
-      ...errors.map(item => ({ ...item, type: 'error' })),
-      ...warnings.map(item => ({ ...item, type: 'warning' }))
-    ].slice(0, 100);
-
-    if (!combined.length) {
-      container.innerHTML = `
-        <div class="mina-cms-valid">
-          ✓ Dữ liệu hợp lệ, chưa phát hiện lỗi hoặc cảnh báo.
-        </div>`;
-      return;
-    }
-
-    container.innerHTML = `
-      <div class="mina-cms-validation-summary">
-        <strong>${errors.length} lỗi</strong>
-        <span>•</span>
-        <strong>${warnings.length} cảnh báo</strong>
+    el.innerHTML = all.slice(0, 100).map(issue => `
+      <div class="mina-v2-issue ${issue.type}">
+        <b>${issue.type === 'error' ? 'Lỗi' : 'Cảnh báo'}</b>
+        <span>Dòng ${issue.row}: ${escapeHTML(issue.message)}</span>
       </div>
-      <div class="mina-cms-issues">
-        ${combined.map(issue => `
-          <div class="mina-cms-issue is-${issue.type}">
-            <span class="mina-cms-issue-badge">${issue.type === 'error' ? 'Lỗi' : 'Cảnh báo'}</span>
-            <span>Dòng ${issue.row}${issue.field ? ` · ${escapeHTML(issue.field)}` : ''}: ${escapeHTML(issue.message)}</span>
-          </div>
-        `).join('')}
-      </div>
-      ${errors.length + warnings.length > combined.length
-        ? `<p class="mina-cms-muted">Chỉ hiển thị 100 thông báo đầu tiên.</p>`
-        : ''}
-    `;
+    `).join('');
   }
 
-  function renderPreview() {
-    const tableBody = getElement('minaPreviewBody');
-    const previewTitle = getElement('minaPreviewTitle');
-    if (!tableBody || !previewTitle) return;
-
-    const rows = state.normalizedRows.length ? state.normalizedRows : state.currentSkills;
-    const isImport = state.normalizedRows.length > 0;
-
-    previewTitle.textContent = isImport
-      ? `Xem trước file nhập: ${state.fileName || 'chưa đặt tên'}`
+  function renderTable() {
+    const rows = state.imported.length ? state.imported : state.skills;
+    byId('minaV2PreviewTitle').textContent = state.imported.length
+      ? `Xem trước file nhập: ${state.fileName}`
       : 'Dữ liệu hiện tại';
 
-    if (!rows.length) {
-      tableBody.innerHTML = `
+    byId('minaV2Body').innerHTML = rows.length
+      ? rows.slice(0, PREVIEW_LIMIT).map((skill, index) => `
         <tr>
-          <td colspan="8" class="mina-cms-empty-cell">Chưa có dữ liệu để hiển thị.</td>
-        </tr>`;
-      return;
-    }
-
-    tableBody.innerHTML = rows.slice(0, MAX_PREVIEW_ROWS).map((skill, index) => `
-      <tr>
-        <td>${index + 1}</td>
-        <td><code>${escapeHTML(skill.id || 'Tự tạo')}</code></td>
-        <td class="mina-cms-name">${escapeHTML(skill.name)}</td>
-        <td>${escapeHTML(Array.isArray(skill.level) ? skill.level.join(', ') : skill.level)}</td>
-        <td>${escapeHTML(skill.style)}</td>
-        <td>${escapeHTML(skill.rarity)}</td>
-        <td>${escapeHTML(skill.bpm)}</td>
-        <td>${escapeHTML(skill.status)}</td>
-      </tr>
-    `).join('');
-
-    if (rows.length > MAX_PREVIEW_ROWS) {
-      tableBody.insertAdjacentHTML(
-        'beforeend',
-        `<tr><td colspan="8" class="mina-cms-empty-cell">
-          Đang hiển thị ${MAX_PREVIEW_ROWS}/${rows.length} dòng.
-        </td></tr>`
-      );
-    }
+          <td>${index + 1}</td>
+          <td>${escapeHTML(skill.id || 'Tự tạo')}</td>
+          <td>${escapeHTML(skill.name)}</td>
+          <td>${escapeHTML(Array.isArray(skill.level) ? skill.level.join(', ') : skill.level)}</td>
+          <td>${escapeHTML(skill.type)}</td>
+          <td>${escapeHTML(skill.style)}</td>
+          <td>${escapeHTML(skill.bpm)}</td>
+          <td>${escapeHTML(skill.rarity)}</td>
+        </tr>
+      `).join('')
+      : '<tr><td colspan="8" class="mina-v2-empty">Chưa có dữ liệu.</td></tr>';
   }
 
-  function injectStyles() {
-    if (getElement('minaMasterCmsStyles')) return;
+  function renderAll() {
+    if (!byId('minaV2Panel')) return;
+    renderStats();
+    renderValidation();
+    renderTable();
+  }
 
+  function injectStyle() {
+    if (byId('minaV2Style')) return;
     const style = document.createElement('style');
-    style.id = 'minaMasterCmsStyles';
+    style.id = 'minaV2Style';
     style.textContent = `
-      #minaMasterCms {
-        --mina-primary: #7c3aed;
-        --mina-primary-soft: #f3e8ff;
-        --mina-border: #e5e7eb;
-        --mina-text: #1f2937;
-        --mina-muted: #6b7280;
-        --mina-success: #16803c;
-        --mina-warning: #b45309;
-        --mina-danger: #c62828;
-        position: relative;
-        color: var(--mina-text);
+      #minaV2Launcher{
+        position:fixed;right:20px;bottom:20px;z-index:99990;
+        border:0;border-radius:999px;padding:13px 18px;cursor:pointer;
+        font-weight:800;color:#fff;background:linear-gradient(135deg,#ef3fd7,#8b5cf6);
+        box-shadow:0 12px 35px rgba(168,85,247,.45)
       }
-      #minaMasterCms * { box-sizing: border-box; }
-      #minaMasterCms .mina-cms-header {
-        display: flex; justify-content: space-between; align-items: flex-start;
-        gap: 16px; margin-bottom: 18px;
+      #minaV2Backdrop{
+        position:fixed;inset:0;z-index:99991;background:rgba(3,0,15,.74);
+        backdrop-filter:blur(5px);padding:22px;overflow:auto
       }
-      #minaMasterCms .mina-cms-title { margin: 0 0 6px; font-size: 22px; }
-      #minaMasterCms .mina-cms-subtitle { margin: 0; color: var(--mina-muted); line-height: 1.55; }
-      #minaMasterCms .mina-cms-version {
-        white-space: nowrap; padding: 5px 9px; border-radius: 999px;
-        background: var(--mina-primary-soft); color: var(--mina-primary);
-        font-size: 12px; font-weight: 700;
+      #minaV2Backdrop[hidden]{display:none}
+      #minaV2Panel{
+        max-width:1280px;margin:0 auto;background:#13051e;color:#fff;
+        border:1px solid rgba(236,72,153,.4);border-radius:20px;
+        box-shadow:0 30px 80px rgba(0,0,0,.55);overflow:hidden;position:relative
       }
-      #minaMasterCms .mina-cms-stats {
-        display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 10px; margin-bottom: 16px;
+      #minaV2Panel *{box-sizing:border-box}
+      .mina-v2-head{
+        display:flex;justify-content:space-between;align-items:center;padding:20px 22px;
+        background:linear-gradient(135deg,#42104f,#1a0c45)
       }
-      #minaMasterCms .mina-cms-stat {
-        border: 1px solid var(--mina-border); border-radius: 12px;
-        padding: 12px; background: #fff;
+      .mina-v2-head h2{margin:0 0 4px;font-size:24px}
+      .mina-v2-head p{margin:0;color:#d8b4fe}
+      .mina-v2-close{border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:10px;
+        width:42px;height:42px;font-size:22px;cursor:pointer}
+      .mina-v2-content{padding:18px}
+      .mina-v2-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+      .mina-v2-stat{padding:13px;border:1px solid #4b1d63;border-radius:12px;background:#1b0a29}
+      .mina-v2-stat span{display:block;color:#c4b5fd;font-size:12px}
+      .mina-v2-stat strong{display:block;margin-top:5px;font-size:19px}
+      .mina-v2-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+      .mina-v2-card{border:1px solid #4b1d63;border-radius:14px;padding:15px;background:#190824}
+      .mina-v2-card h3{margin:0 0 12px}
+      .mina-v2-drop{display:block;border:2px dashed #a855f7;border-radius:12px;padding:20px;text-align:center;
+        background:rgba(168,85,247,.08);cursor:pointer}
+      .mina-v2-drop input{display:none}
+      .mina-v2-field{margin-top:11px}
+      .mina-v2-field label{display:block;margin-bottom:6px;font-weight:700;font-size:13px}
+      .mina-v2-field input,.mina-v2-field select{
+        width:100%;padding:10px;border-radius:9px;border:1px solid #5b2773;background:#0f0518;color:#fff
       }
-      #minaMasterCms .mina-cms-stat strong { display: block; font-size: 20px; margin-top: 4px; }
-      #minaMasterCms .mina-cms-stat span { color: var(--mina-muted); font-size: 12px; }
-      #minaMasterCms .mina-cms-grid {
-        display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;
-      }
-      #minaMasterCms .mina-cms-card {
-        border: 1px solid var(--mina-border); border-radius: 14px;
-        background: #fff; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,.035);
-      }
-      #minaMasterCms .mina-cms-card h4 { margin: 0 0 12px; font-size: 16px; }
-      #minaMasterCms .mina-cms-dropzone {
-        display: block; border: 2px dashed #c4b5fd; border-radius: 12px;
-        padding: 22px; text-align: center; background: #faf7ff; cursor: pointer;
-      }
-      #minaMasterCms .mina-cms-dropzone:hover,
-      #minaMasterCms .mina-cms-dropzone.is-dragover {
-        border-color: var(--mina-primary); background: var(--mina-primary-soft);
-      }
-      #minaMasterCms .mina-cms-dropzone input { display: none; }
-      #minaMasterCms .mina-cms-dropzone strong { display: block; margin-bottom: 5px; }
-      #minaMasterCms .mina-cms-muted { color: var(--mina-muted); font-size: 13px; }
-      #minaMasterCms .mina-cms-field { margin-top: 12px; }
-      #minaMasterCms .mina-cms-field label {
-        display: block; font-weight: 600; font-size: 13px; margin-bottom: 6px;
-      }
-      #minaMasterCms input[type="text"],
-      #minaMasterCms select {
-        width: 100%; border: 1px solid #d1d5db; border-radius: 9px;
-        padding: 10px 11px; background: #fff; color: var(--mina-text);
-      }
-      #minaMasterCms .mina-cms-check {
-        display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 13px;
-      }
-      #minaMasterCms .mina-cms-actions {
-        display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;
-      }
-      #minaMasterCms .mina-cms-btn {
-        border: 1px solid #d1d5db; border-radius: 9px; padding: 9px 12px;
-        background: #fff; color: #374151; cursor: pointer; font-weight: 650;
-      }
-      #minaMasterCms .mina-cms-btn:hover { transform: translateY(-1px); }
-      #minaMasterCms .mina-cms-btn.primary {
-        background: var(--mina-primary); color: #fff; border-color: var(--mina-primary);
-      }
-      #minaMasterCms .mina-cms-btn.success {
-        background: var(--mina-success); color: #fff; border-color: var(--mina-success);
-      }
-      #minaMasterCms .mina-cms-btn.danger {
-        color: var(--mina-danger); border-color: #fecaca; background: #fff7f7;
-      }
-      #minaMasterCms .mina-cms-btn:disabled { opacity: .55; cursor: wait; transform: none; }
-      #minaMasterCms .mina-cms-validation-summary {
-        display: flex; gap: 8px; align-items: center; margin-bottom: 10px;
-      }
-      #minaMasterCms .mina-cms-issues { max-height: 240px; overflow: auto; }
-      #minaMasterCms .mina-cms-issue {
-        display: flex; gap: 8px; align-items: flex-start; padding: 8px 0;
-        border-bottom: 1px solid #f1f5f9; font-size: 13px;
-      }
-      #minaMasterCms .mina-cms-issue-badge {
-        min-width: 62px; text-align: center; padding: 2px 6px;
-        border-radius: 999px; font-size: 11px; font-weight: 700;
-      }
-      #minaMasterCms .mina-cms-issue.is-error .mina-cms-issue-badge {
-        color: var(--mina-danger); background: #fee2e2;
-      }
-      #minaMasterCms .mina-cms-issue.is-warning .mina-cms-issue-badge {
-        color: var(--mina-warning); background: #fef3c7;
-      }
-      #minaMasterCms .mina-cms-valid {
-        padding: 12px; border-radius: 10px; color: var(--mina-success); background: #ecfdf3;
-      }
-      #minaMasterCms .mina-cms-table-wrap {
-        overflow: auto; max-height: 520px; border: 1px solid var(--mina-border); border-radius: 10px;
-      }
-      #minaMasterCms table { width: 100%; border-collapse: collapse; min-width: 860px; }
-      #minaMasterCms th, #minaMasterCms td {
-        text-align: left; padding: 9px 10px; border-bottom: 1px solid #eef2f7;
-        font-size: 13px; vertical-align: top;
-      }
-      #minaMasterCms th {
-        position: sticky; top: 0; z-index: 1; background: #f8fafc; font-weight: 700;
-      }
-      #minaMasterCms .mina-cms-name { min-width: 210px; font-weight: 600; }
-      #minaMasterCms .mina-cms-empty,
-      #minaMasterCms .mina-cms-empty-cell { color: var(--mina-muted); text-align: center; padding: 18px; }
-      #minaMasterCms .mina-cms-toast {
-        position: fixed; right: 22px; bottom: 22px; z-index: 99999;
-        max-width: 420px; padding: 13px 16px; border-radius: 11px;
-        color: #fff; background: #334155; box-shadow: 0 12px 35px rgba(0,0,0,.22);
-      }
-      #minaMasterCms .mina-cms-toast.is-success { background: var(--mina-success); }
-      #minaMasterCms .mina-cms-toast.is-warning { background: var(--mina-warning); }
-      #minaMasterCms .mina-cms-toast.is-error { background: var(--mina-danger); }
-      #minaMasterCms .mina-cms-busy {
-        position: absolute; inset: 0; z-index: 10; display: grid; place-items: center;
-        background: rgba(255,255,255,.72); backdrop-filter: blur(2px); border-radius: 14px;
-      }
-      #minaMasterCms .mina-cms-busy[hidden] { display: none; }
-      #minaMasterCms .mina-cms-spinner {
-        width: 30px; height: 30px; border: 3px solid #ddd6fe;
-        border-top-color: var(--mina-primary); border-radius: 50%;
-        animation: minaCmsSpin .8s linear infinite; margin: 0 auto 9px;
-      }
-      @keyframes minaCmsSpin { to { transform: rotate(360deg); } }
-      @media (max-width: 900px) {
-        #minaMasterCms .mina-cms-stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
-        #minaMasterCms .mina-cms-grid { grid-template-columns: 1fr; }
-        #minaMasterCms .mina-cms-header { flex-direction: column; }
+      .mina-v2-check{display:flex;gap:8px;align-items:center;margin-top:12px}
+      .mina-v2-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+      .mina-v2-btn{border:1px solid #6b2c85;background:#2a1038;color:#fff;border-radius:9px;padding:9px 12px;
+        font-weight:700;cursor:pointer}
+      .mina-v2-btn.primary{background:linear-gradient(135deg,#ec4899,#8b5cf6);border:0}
+      .mina-v2-btn.success{background:#16803c;border:0}
+      .mina-v2-btn.danger{background:#7f1d1d;border:0}
+      .mina-v2-ok{padding:11px;border-radius:9px;background:rgba(22,128,60,.2);color:#86efac}
+      .mina-v2-issue{display:flex;gap:8px;padding:8px;border-bottom:1px solid #351443;font-size:13px}
+      .mina-v2-issue.error b{color:#fca5a5}.mina-v2-issue.warning b{color:#fde68a}
+      .mina-v2-table{overflow:auto;max-height:460px;border:1px solid #4b1d63;border-radius:11px}
+      .mina-v2-table table{width:100%;border-collapse:collapse;min-width:900px}
+      .mina-v2-table th,.mina-v2-table td{padding:9px 10px;border-bottom:1px solid #351443;text-align:left;font-size:13px}
+      .mina-v2-table th{position:sticky;top:0;background:#2b0c3d}
+      .mina-v2-empty{text-align:center;color:#c4b5fd;padding:20px!important}
+      .mina-v2-toast{position:fixed;right:22px;bottom:80px;z-index:99999;max-width:420px;padding:13px 16px;
+        border-radius:10px;background:#334155;color:#fff;box-shadow:0 12px 35px rgba(0,0,0,.35)}
+      .mina-v2-toast.success{background:#16803c}.mina-v2-toast.warning{background:#b45309}.mina-v2-toast.error{background:#b91c1c}
+      .mina-v2-busy{position:absolute;inset:0;z-index:10;display:grid;place-items:center;background:rgba(15,5,24,.8)}
+      .mina-v2-busy[hidden]{display:none}
+      .mina-v2-spinner{width:34px;height:34px;border:3px solid #6b2c85;border-top-color:#f0abfc;border-radius:50%;
+        animation:minaV2Spin .8s linear infinite;margin:0 auto 10px}
+      @keyframes minaV2Spin{to{transform:rotate(360deg)}}
+      @media(max-width:900px){
+        .mina-v2-stats{grid-template-columns:repeat(2,1fr)}
+        .mina-v2-grid{grid-template-columns:1fr}
+        #minaV2Backdrop{padding:8px}
       }
     `;
     document.head.appendChild(style);
   }
 
   function createUI() {
-    if (getElement('minaMasterCms')) return getElement('minaMasterCms');
+    if (byId('minaV2Launcher')) return;
 
-    const root = document.createElement('section');
-    root.id = 'minaMasterCms';
-    root.className = 'cms-panel';
-    root.innerHTML = `
-      <div class="mina-cms-busy" id="minaCmsBusy" hidden>
-        <div>
-          <div class="mina-cms-spinner"></div>
-          <strong data-busy-text>Đang xử lý...</strong>
-        </div>
-      </div>
+    const launcher = document.createElement('button');
+    launcher.id = 'minaV2Launcher';
+    launcher.type = 'button';
+    launcher.textContent = '✨ Mina CMS';
+    document.body.appendChild(launcher);
 
-      <div class="mina-cms-header">
-        <div>
-          <h3 class="mina-cms-title">Mina Master CMS</h3>
-          <p class="mina-cms-subtitle">
-            Import hàng loạt bằng Excel/JSON, kiểm tra dữ liệu, backup và đồng bộ mà không thay đổi cấu trúc Admin hiện tại.
-          </p>
-        </div>
-        <span class="mina-cms-version">v${VERSION}</span>
-      </div>
-
-      <div class="mina-cms-stats">
-        <div class="mina-cms-stat"><span>Skill hiện tại</span><strong id="minaCurrentCount">0</strong></div>
-        <div class="mina-cms-stat"><span>Dòng chuẩn bị nhập</span><strong id="minaImportCount">0</strong></div>
-        <div class="mina-cms-stat"><span>Lỗi bắt buộc</span><strong id="minaErrorCount">0</strong></div>
-        <div class="mina-cms-stat"><span>Cảnh báo</span><strong id="minaWarningCount">0</strong></div>
-        <div class="mina-cms-stat"><span>Nguồn dữ liệu</span><strong id="minaDataSource" style="font-size:14px">Đang xác định</strong></div>
-      </div>
-
-      <div class="mina-cms-grid">
-        <div class="mina-cms-card">
-          <h4>1. Nhập dữ liệu</h4>
-          <label class="mina-cms-dropzone" id="minaDropzone">
-            <input id="minaImportFile" type="file" accept=".xlsx,.xls,.csv,.json">
-            <strong>Chọn hoặc kéo thả file vào đây</strong>
-            <span class="mina-cms-muted">Hỗ trợ .xlsx, .xls, .csv và .json</span>
-          </label>
-
-          <div class="mina-cms-field">
-            <label for="minaImportMode">Cách áp dụng dữ liệu</label>
-            <select id="minaImportMode">
-              <option value="merge">Gộp: thêm mới và cập nhật bản ghi đã có</option>
-              <option value="append">Chỉ thêm skill chưa tồn tại</option>
-              <option value="update">Chỉ cập nhật skill đã tồn tại</option>
-              <option value="replace">Thay thế toàn bộ database</option>
-            </select>
-          </div>
-
-          <div class="mina-cms-actions">
-            <button type="button" class="mina-cms-btn" id="minaDownloadTemplate">Tải file Excel mẫu</button>
-            <button type="button" class="mina-cms-btn primary" id="minaApplyImport">Áp dụng dữ liệu đã kiểm tra</button>
-          </div>
+    const backdrop = document.createElement('div');
+    backdrop.id = 'minaV2Backdrop';
+    backdrop.hidden = true;
+    backdrop.innerHTML = `
+      <section id="minaV2Panel">
+        <div id="minaV2Busy" class="mina-v2-busy" hidden>
+          <div><div class="mina-v2-spinner"></div><span>Đang xử lý...</span></div>
         </div>
 
-        <div class="mina-cms-card">
-          <h4>2. Backup và đồng bộ</h4>
-          <p class="mina-cms-muted">
-            Luôn xuất JSON trước khi thay đổi lớn. Nút đồng bộ API chỉ hoạt động khi backend của website đã được cấu hình.
-          </p>
-          <div class="mina-cms-actions">
-            <button type="button" class="mina-cms-btn" id="minaReloadDatabase">Đọc lại database</button>
-            <button type="button" class="mina-cms-btn" id="minaExportExcel">Xuất Excel</button>
-            <button type="button" class="mina-cms-btn" id="minaExportJson">Xuất JSON</button>
-            <button type="button" class="mina-cms-btn success" id="minaSaveApi">Đồng bộ lên máy chủ</button>
-            <button type="button" class="mina-cms-btn" id="minaRestoreHistory">Khôi phục phiên bản gần nhất</button>
+        <header class="mina-v2-head">
+          <div>
+            <h2>Mina Master CMS V2</h2>
+            <p>Quản lý skill hàng loạt mà không thay đổi cấu trúc Admin hiện tại.</p>
+          </div>
+          <button id="minaV2Close" class="mina-v2-close" type="button">×</button>
+        </header>
+
+        <div class="mina-v2-content">
+          <div class="mina-v2-stats">
+            <div class="mina-v2-stat"><span>Skill hiện tại</span><strong id="minaV2Count">0</strong></div>
+            <div class="mina-v2-stat"><span>Dòng chuẩn bị nhập</span><strong id="minaV2ImportCount">0</strong></div>
+            <div class="mina-v2-stat"><span>Lỗi</span><strong id="minaV2Errors">0</strong></div>
+            <div class="mina-v2-stat"><span>Cảnh báo</span><strong id="minaV2Warnings">0</strong></div>
+            <div class="mina-v2-stat"><span>Nguồn dữ liệu</span><strong id="minaV2Source" style="font-size:13px">...</strong></div>
+          </div>
+
+          <div class="mina-v2-grid">
+            <div class="mina-v2-card">
+              <h3>Import dữ liệu</h3>
+              <label class="mina-v2-drop" id="minaV2Drop">
+                <input id="minaV2File" type="file" accept=".xlsx,.xls,.csv,.json">
+                <b>Chọn hoặc kéo file vào đây</b><br>
+                <small>XLSX, XLS, CSV hoặc JSON</small>
+              </label>
+
+              <div class="mina-v2-field">
+                <label>Cách áp dụng</label>
+                <select id="minaV2ImportMode">
+                  <option value="merge">Gộp: thêm mới và cập nhật</option>
+                  <option value="append">Chỉ thêm mới</option>
+                  <option value="update">Chỉ cập nhật</option>
+                  <option value="replace">Thay thế toàn bộ</option>
+                </select>
+              </div>
+
+              <div class="mina-v2-actions">
+                <button id="minaV2Template" class="mina-v2-btn">Tải Excel mẫu</button>
+                <button id="minaV2Apply" class="mina-v2-btn primary">Áp dụng dữ liệu</button>
+              </div>
+            </div>
+
+            <div class="mina-v2-card">
+              <h3>Backup và đồng bộ</h3>
+              <div class="mina-v2-actions">
+                <button id="minaV2Reload" class="mina-v2-btn">Đọc lại database</button>
+                <button id="minaV2ExportExcel" class="mina-v2-btn">Xuất Excel</button>
+                <button id="minaV2ExportJson" class="mina-v2-btn">Xuất JSON</button>
+                <button id="minaV2SaveApi" class="mina-v2-btn success">Đồng bộ máy chủ</button>
+                <button id="minaV2Restore" class="mina-v2-btn">Khôi phục gần nhất</button>
+              </div>
+
+              <details style="margin-top:14px">
+                <summary><b>Cấu hình nâng cao</b></summary>
+                <div class="mina-v2-field">
+                  <label>Đường dẫn database</label>
+                  <input id="minaV2DbPath" value="${escapeHTML(state.settings.databasePath)}">
+                </div>
+                <div class="mina-v2-field">
+                  <label>API lưu dữ liệu</label>
+                  <input id="minaV2Api" value="${escapeHTML(state.settings.apiEndpoint)}">
+                </div>
+                <div class="mina-v2-field">
+                  <label>Tiền tố ID</label>
+                  <input id="minaV2Prefix" value="${escapeHTML(state.settings.idPrefix)}">
+                </div>
+                <label class="mina-v2-check">
+                  <input id="minaV2AutoDraft" type="checkbox" ${state.settings.autoSaveDraft ? 'checked' : ''}>
+                  Tự lưu bản nháp trong trình duyệt
+                </label>
+                <div class="mina-v2-actions">
+                  <button id="minaV2SaveSettings" class="mina-v2-btn primary">Lưu cấu hình</button>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="mina-v2-card" style="margin-bottom:14px">
+            <h3>Báo cáo kiểm tra</h3>
+            <div id="minaV2Validation"></div>
+          </div>
+
+          <div class="mina-v2-card">
+            <h3 id="minaV2PreviewTitle">Dữ liệu hiện tại</h3>
+            <div class="mina-v2-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>STT</th><th>ID</th><th>Tên</th><th>Level</th>
+                    <th>Loại</th><th>Style</th><th>BPM</th><th>Hiếm</th>
+                  </tr>
+                </thead>
+                <tbody id="minaV2Body"></tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div class="mina-cms-grid">
-        <div class="mina-cms-card">
-          <h4>3. Báo cáo kiểm tra</h4>
-          <div id="minaValidation">
-            <p class="mina-cms-empty">Chưa có báo cáo kiểm tra.</p>
-          </div>
-        </div>
-
-        <details class="mina-cms-card">
-          <summary><strong>4. Cấu hình nâng cao</strong></summary>
-
-          <div class="mina-cms-field">
-            <label for="minaDatabasePath">Đường dẫn file database</label>
-            <input id="minaDatabasePath" type="text" value="${escapeHTML(state.settings.databasePath)}">
-          </div>
-
-          <div class="mina-cms-field">
-            <label for="minaApiEndpoint">API backend dùng để lưu dữ liệu</label>
-            <input id="minaApiEndpoint" type="text" value="${escapeHTML(state.settings.apiEndpoint)}" placeholder="/api/wiki-skills">
-          </div>
-
-          <div class="mina-cms-field">
-            <label for="minaIdPrefix">Tiền tố ID tự động, có thể để trống</label>
-            <input id="minaIdPrefix" type="text" value="${escapeHTML(state.settings.idPrefix)}" placeholder="SKILL-">
-          </div>
-
-          <label class="mina-cms-check">
-            <input id="minaAutoSaveDraft" type="checkbox" ${state.settings.autoSaveDraft ? 'checked' : ''}>
-            Tự động lưu bản nháp trong trình duyệt
-          </label>
-
-          <div class="mina-cms-actions">
-            <button type="button" class="mina-cms-btn primary" id="minaSaveSettings">Lưu cấu hình</button>
-            <button type="button" class="mina-cms-btn danger" id="minaClearDraft">Xóa bản nháp trình duyệt</button>
-          </div>
-        </details>
-      </div>
-
-      <div class="mina-cms-card">
-        <h4 id="minaPreviewTitle">Dữ liệu hiện tại</h4>
-        <div class="mina-cms-table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>STT</th>
-                <th>ID</th>
-                <th>Tên skill</th>
-                <th>Level</th>
-                <th>Style</th>
-                <th>Độ hiếm</th>
-                <th>BPM</th>
-                <th>Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody id="minaPreviewBody">
-              <tr><td colspan="8" class="mina-cms-empty-cell">Chưa có dữ liệu.</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="mina-cms-toast" id="minaCmsToast" hidden></div>
+      </section>
     `;
 
-    return root;
-  }
+    document.body.appendChild(backdrop);
 
-  function findMountPoint() {
-    const backupTab = getElement('tab-backup');
-    if (backupTab) return backupTab;
-
-    const main = document.querySelector('main');
-    if (main) return main;
-
-    const app = document.querySelector('.cms-main, .admin-main, #app');
-    if (app) return app;
-
-    return document.body;
+    const toastEl = document.createElement('div');
+    toastEl.id = 'minaV2Toast';
+    toastEl.className = 'mina-v2-toast';
+    toastEl.hidden = true;
+    document.body.appendChild(toastEl);
   }
 
   function bindEvents() {
-    const fileInput = getElement('minaImportFile');
-    const dropzone = getElement('minaDropzone');
+    byId('minaV2Launcher').addEventListener('click', () => {
+      byId('minaV2Backdrop').hidden = false;
+      renderAll();
+    });
 
-    fileInput?.addEventListener('change', event => {
+    byId('minaV2Close').addEventListener('click', () => {
+      byId('minaV2Backdrop').hidden = true;
+    });
+
+    byId('minaV2Backdrop').addEventListener('click', event => {
+      if (event.target.id === 'minaV2Backdrop') byId('minaV2Backdrop').hidden = true;
+    });
+
+    byId('minaV2File').addEventListener('change', event => {
       const file = event.target.files?.[0];
-      if (file) handleSelectedFile(file);
+      if (file) handleFile(file);
     });
 
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropzone?.addEventListener(eventName, event => {
-        event.preventDefault();
-        dropzone.classList.add('is-dragover');
-      });
+    const drop = byId('minaV2Drop');
+    ['dragenter', 'dragover'].forEach(name => drop.addEventListener(name, e => e.preventDefault()));
+    drop.addEventListener('drop', e => {
+      e.preventDefault();
+      const file = e.dataTransfer?.files?.[0];
+      if (file) handleFile(file);
     });
 
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropzone?.addEventListener(eventName, event => {
-        event.preventDefault();
-        dropzone.classList.remove('is-dragover');
-      });
-    });
-
-    dropzone?.addEventListener('drop', event => {
-      const file = event.dataTransfer?.files?.[0];
-      if (file) handleSelectedFile(file);
-    });
-
-    getElement('minaDownloadTemplate')?.addEventListener('click', downloadTemplate);
-    getElement('minaApplyImport')?.addEventListener('click', applyImportedData);
-    getElement('minaExportExcel')?.addEventListener('click', exportExcel);
-    getElement('minaExportJson')?.addEventListener('click', exportJSON);
-    getElement('minaSaveApi')?.addEventListener('click', saveToAPI);
-    getElement('minaSaveSettings')?.addEventListener('click', saveSettings);
-    getElement('minaRestoreHistory')?.addEventListener('click', restorePreviousVersion);
-    getElement('minaClearDraft')?.addEventListener('click', clearDraft);
-    getElement('minaReloadDatabase')?.addEventListener('click', () => loadCurrentSkills({ forceRemote: true }));
-
-    const saveDraftDebounced = debounce(() => {
-      if (state.settings.autoSaveDraft) saveJSON(STORAGE_KEY, state.currentSkills);
-    }, 500);
-
-    window.addEventListener('beforeunload', saveDraftDebounced);
-  }
-
-  function enhanceExistingExportButton() {
-    const oldExportButton = getElement('exportJsonBtn');
-    if (!oldExportButton || oldExportButton.dataset.minaCmsEnhanced === 'true') return;
-
-    oldExportButton.dataset.minaCmsEnhanced = 'true';
-    oldExportButton.addEventListener('click', () => {
-      if (state.currentSkills.length) {
-        saveJSON(STORAGE_KEY, state.currentSkills);
-      }
-    });
+    byId('minaV2Template').addEventListener('click', downloadTemplate);
+    byId('minaV2Apply').addEventListener('click', applyImport);
+    byId('minaV2Reload').addEventListener('click', () => loadSkills(true));
+    byId('minaV2ExportExcel').addEventListener('click', exportExcel);
+    byId('minaV2ExportJson').addEventListener('click', exportJSON);
+    byId('minaV2SaveApi').addEventListener('click', saveAPI);
+    byId('minaV2Restore').addEventListener('click', restoreHistory);
+    byId('minaV2SaveSettings').addEventListener('click', saveSettings);
   }
 
   async function init() {
-    injectStyles();
-
-    const root = createUI();
-    const mountPoint = findMountPoint();
-
-    if (mountPoint.id === 'tab-backup') {
-      mountPoint.appendChild(root);
-    } else {
-      mountPoint.appendChild(root);
-    }
-
+    injectStyle();
+    createUI();
     bindEvents();
-    enhanceExistingExportButton();
-    renderStats();
-    renderPreview();
-    renderValidation();
+    renderAll();
+    await loadSkills(false);
 
-    await loadCurrentSkills();
-
-    console.info(`[Mina Master CMS] v${VERSION} đã khởi động.`);
-    window.dispatchEvent(new CustomEvent('mina:master-cms-ready', {
+    console.info(`[Mina Master CMS V2] v${VERSION} đã khởi động.`);
+    window.dispatchEvent(new CustomEvent('mina:master-cms-v2-ready', {
       detail: { version: VERSION }
     }));
   }
 
-  window.MinaMasterCMS = {
+  window.MinaMasterCMSV2 = {
     version: VERSION,
     init,
-    getSkills() {
-      return deepClone(state.currentSkills).map(cleanForDatabase);
+    getSkills: () => clone(state.skills).map(cleanSkill),
+    setSkills(skills) {
+      if (!Array.isArray(skills)) throw new TypeError('setSkills yêu cầu mảng.');
+      pushHistory('Trước setSkills');
+      state.skills = skills.map(normalizeSkill);
+      saveJSON(STORAGE_KEY, state.skills);
+      syncToPage();
+      renderAll();
+      return this.getSkills();
     },
-    setSkills(skills, options = {}) {
-      if (!Array.isArray(skills)) {
-        throw new TypeError('setSkills yêu cầu một mảng skill.');
-      }
-
-      if (options.history !== false) {
-        pushHistory(state.currentSkills, 'Trước khi gọi setSkills');
-      }
-
-      state.currentSkills = skills.map((item, index) => normalizeSkill(item, index));
-      state.source = options.source || 'external';
-      saveJSON(STORAGE_KEY, state.currentSkills);
-      syncToKnownGlobals(state.currentSkills);
-      notifyExistingAdmin(state.currentSkills);
-      renderStats();
-      renderPreview();
-      return window.MinaMasterCMS.getSkills();
-    },
-    reload() {
-      return loadCurrentSkills({ forceRemote: true });
-    },
+    reload: () => loadSkills(true),
     exportJSON,
     exportExcel,
-    validate(skills) {
-      const normalized = (skills || []).map((item, index) => normalizeSkill(item, index));
-      return validateRows(normalized, state.currentSkills);
-    },
-    saveToAPI
+    validate: rows => validateRows((rows || []).map(normalizeSkill)),
+    saveAPI
   };
 
   if (document.readyState === 'loading') {
