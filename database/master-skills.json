@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "updatedAt": null,
+  "skills": [
+    {
+      "id": "SAMPLE-001",
+      "name": "B-Funky",
+      "alias": "",
+      "style": "",
+      "level": "",
+      "bpmBest": "",
+      "rarity": "",
+      "status": "needs_review",
+      "imageUrl": "",
+      "youtubeUrl": "",
+      "cameraAngle": "",
+      "song": "",
+      "tags": [
+        "Audition",
+        "needs-review"
+      ],
+      "notes": "Dòng mẫu; có thể sửa hoặc xóa trong Admin.",
+      "createdAt": "2026-07-10T00:00:00.000Z",
+      "updatedAt": "2026-07-10T00:00:00.000Z"
+    }
+  ]
+}
