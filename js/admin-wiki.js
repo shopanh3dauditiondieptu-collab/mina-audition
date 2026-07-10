@@ -355,3 +355,57 @@
     remove: removeSkill
   };
 })();
+// MINA ADMIN - Upload ảnh từ máy tính cho skill
+function initMinaImageUpload() {
+  const imageInput = document.querySelector(
+    'input[name="image"], input[name="imageUrl"], input#image, input#skillImage'
+  );
+
+  if (!imageInput) return;
+
+  imageInput.type = "hidden";
+
+  const box = document.createElement("div");
+  box.className = "mina-upload-box";
+  box.innerHTML = `
+    <label class="mina-upload-label">
+      📷 Chọn ảnh từ máy tính
+      <input type="file" accept="image/*" hidden>
+    </label>
+    <div class="mina-upload-preview">
+      <span>Chưa có ảnh</span>
+    </div>
+  `;
+
+  imageInput.parentNode.insertBefore(box, imageInput.nextSibling);
+
+  const fileInput = box.querySelector('input[type="file"]');
+  const preview = box.querySelector(".mina-upload-preview");
+
+  fileInput.addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Vui lòng chọn đúng file ảnh.");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      const base64Image = e.target.result;
+
+      imageInput.value = base64Image;
+
+      preview.innerHTML = `
+        <img src="${base64Image}" alt="Preview skill">
+        <p>Đã chọn: ${file.name}</p>
+      `;
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", initMinaImageUpload);
