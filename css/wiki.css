@@ -1125,98 +1125,75 @@ body {
     transform:scale(.96);
 
 }
-/* ==================================================
-   MINA WIKI - TÊN BƯỚC NHẢY + RATE CÙNG MỘT HÀNG
-================================================== */
 
+/* =====================================================
+   MINA WIKI - BỘ LỌC 2 HÀNG ỔN ĐỊNH
+   Giữ nguyên cấu trúc web, đồng bộ giao diện các ô select
+===================================================== */
+
+/* Hàng chứa Level + Type và hàng chứa Tên Bước Nhảy + Rate */
+.mina-wiki-filter-row,
 .mina-filter-row-two {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
   width: 100%;
+  margin-top: 10px;
 }
 
-.mina-filter-row-two select {
+/* Bảo đảm các ô có cùng kích thước và phong cách Mina */
+.mina-wiki-filter-row .mina-wiki-select,
+.mina-filter-row-two .mina-wiki-select {
+  display: block;
   width: 100%;
   min-width: 0;
+  min-height: 42px;
+  margin: 0;
+  padding: 0 13px;
+  box-sizing: border-box;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 13px;
+  outline: none;
+  color: #fff;
+  background: rgba(12,8,28,.86);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
 }
 
-/* Điện thoại: tự động trở lại thành 2 hàng */
-@media (max-width: 768px) {
+.mina-wiki-filter-row .mina-wiki-select:focus,
+.mina-filter-row-two .mina-wiki-select:focus {
+  border-color: rgba(255,105,210,.72);
+  box-shadow: 0 0 0 3px rgba(255,105,210,.15);
+}
+
+.mina-wiki-filter-row .mina-wiki-select option,
+.mina-filter-row-two .mina-wiki-select option {
+  color: #111;
+  background: #fff;
+}
+
+/* Nút xóa bộ lọc nằm trọn một hàng phía dưới */
+.mina-wiki-clear-row {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.mina-wiki-clear-row .mina-clear-filter-btn {
+  width: 100%;
+  margin-top: 0;
+}
+
+/* Không cho pseudo-element cũ tạo thêm mũi tên giả */
+.mina-filter-row-two .filter-group::after,
+.mina-wiki-filter-row .filter-group::after {
+  content: none !important;
+}
+
+/* Điện thoại: xếp dọc để không bị bóp chữ */
+@media (max-width: 640px) {
+  .mina-wiki-filter-row,
   .mina-filter-row-two {
     grid-template-columns: 1fr;
   }
-}
-/* ===========================================
-   MINA WIKI
-   Dance + Rate giống Level và Type
-=========================================== */
-
-.filter-row{
-    display:flex;
-    gap:12px;
-    width:100%;
-    margin-top:12px;
-}
-
-.filter-row .filter-group{
-    flex:1;
-}
-
-.filter-row .filter-select{
-    width:100%;
-    height:52px;
-
-    background:#171328;
-    color:#fff;
-
-    border:1px solid rgba(255,255,255,.12);
-    border-radius:14px;
-
-    padding:0 18px;
-
-    font-size:15px;
-    font-weight:600;
-
-    appearance:none;
-    -webkit-appearance:none;
-
-    transition:.25s;
-}
-
-.filter-row .filter-select:hover{
-    border-color:#d85cff;
-}
-
-.filter-row .filter-select:focus{
-    outline:none;
-    border-color:#d85cff;
-    box-shadow:0 0 0 3px rgba(216,92,255,.18);
-}
-
-/* icon mũi tên */
-
-.filter-row .filter-group{
-    position:relative;
-}
-
-.filter-row .filter-group::after{
-    content:"⌄";
-    position:absolute;
-    right:18px;
-    top:50%;
-    transform:translateY(-50%);
-    color:#bbb;
-    pointer-events:none;
-    font-size:18px;
-}
-
-/* Mobile */
-
-@media(max-width:768px){
-
-    .filter-row{
-        flex-direction:column;
-    }
-
 }
