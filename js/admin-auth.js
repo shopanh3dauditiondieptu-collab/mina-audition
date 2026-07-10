@@ -1,79 +1,56 @@
-(function () {
+/* Mina CMS V2 - Auth/session/logout */
+(function (window, document) {
   "use strict";
 
-  const ADMIN_USER = "minaadmin";
-  const ADMIN_PASS = "123456";
-  const AUTH_KEY = "MINA_WIKI_ADMIN_AUTH";
+  const CMS = () => window.MinaCMS;
+  const CONFIG = () => window.MinaCMSConfig;
 
-  const path = window.location.pathname.replace(/\/+$/, "");
-  const page = path.split("/").pop();
-
-  const isAdminPage =
-    page === "admin-wiki" ||
-    page === "admin-wiki.html" ||
-    page === "admin" ||
-    page === "admin.html";
-
-  const isLoginPage =
-    page === "admin-login" ||
-    page === "admin-login.html";
-
-  function isLoggedIn() {
-    return sessionStorage.getItem(AUTH_KEY) === "yes";
-  }
-
-  function goLogin() {
-    window.location.replace("/admin-login.html");
-  }
-
-  function goAdmin() {
-    window.location.replace("/admin-wiki.html");
-  }
-
-  if (isAdminPage && !isLoggedIn()) {
-    goLogin();
-    return;
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    if (isLoginPage && isLoggedIn()) {
-      goAdmin();
-      return;
-    }
-
-    const form = document.getElementById("adminLoginForm");
-    const userInput = document.getElementById("adminUser");
-    const passInput = document.getElementById("adminPass");
-    const errorBox = document.getElementById("adminLoginError");
-
-    if (form) {
-      form.addEventListener("submit", function (event) {
-        event.preventDefault();
-
-        const user = userInput ? userInput.value.trim() : "";
-        const pass = passInput ? passInput.value.trim() : "";
-
-        if (user === ADMIN_USER && pass === ADMIN_PASS) {
-          sessionStorage.setItem(AUTH_KEY, "yes");
-          goAdmin();
-          return;
+  async function checkSession() {
+    try {
+      const result = await CMS().request(CONFIG().api.session, { method: "GET" });
+      if (result?.authenticated === false || result?.ok === false) throw new Error("Phiên đăng nhập không hợp lệ.");
+      CMS().emit("auth:ready", result || { authenticated: true });
+      return true;
+    } catch (error) {
+      if (error.status === 404) {
+        // Tương thích hệ thống cũ đang dùng API key trong sessionStorage.
+        const key = sessionStorage.getItem(CONFIG().storage.sessionKey);
+        if (key) {
+          CMS().emit("auth:ready", { authenticated: true, fallback: true });
+          return true;
         }
-
-        if (errorBox) {
-          errorBox.textContent = "Sai ID hoặc mật khẩu Admin.";
-        } else {
-          alert("Sai ID hoặc mật khẩu Admin.");
-        }
-      });
+      }
+      sessionStorage.removeItem(CONFIG().storage.sessionKey);
+      window.location.replace(CONFIG().routes.login);
+      return false;
     }
+  }
 
-    const logoutBtn = document.getElementById("adminLogoutBtn");
-
-    if (logoutBtn) {
-      logoutBtn.addEventListener("click", function () {
-        sessionStorage.removeItem(AUTH_KEY);
-        goLogin();
+  async function logout() {
+    if (!window.confirm("Bạn có chắc muốn đăng xuất khỏi Mina CMS?")) return;
+    CMS().setBusy(true, "Đang đăng xuất...");
+    try {
+      await CMS().request(CONFIG().api.logout, { method: "POST", body: "{}" }).catch(() => null);
+    } finally {
+      sessionStorage.removeItem(CONFIG().storage.sessionKey);
+      ["mina_admin_authenticated","mina_admin_session","mina_admin_token","mina_admin_key"].forEach(key => {
+        sessionStorage.removeItem(key);
+        localStorage.removeItem(key);
       });
+      window.location.replace(CONFIG().routes.login);
     }
-  });
-})();
+  }
+
+  function bind() {
+    document.getElementById("minaLogoutBtn")?.addEventListener("click", logout);
+    document.getElementById("minaAdminLogout")?.addEventListener("click", logout);
+  }
+
+  async function init() {
+    bind();
+    await checkSession();
+  }
+
+  window.MinaAdminAuth = { init, checkSession, logout };
+  document.addEventListener("DOMContentLoaded", init, { once: true });
+})(window, document);
