@@ -5,8 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Đăng nhập Mina CMS</title>
 
-  <script src="js/admin-auth.js?v=1.6.0" defer></script>
-
   <style>
     *{box-sizing:border-box}
     body{
@@ -43,21 +41,9 @@
       box-shadow:0 0 28px rgba(255,79,227,.45);
       font-size:28px;
     }
-    h1{
-      margin:0 0 8px;
-      font-size:30px;
-      font-weight:900;
-    }
-    p{
-      margin:0 0 24px;
-      color:#d8c8ff;
-      font-size:14px;
-    }
-    .field{
-      width:100%;
-      margin-bottom:14px;
-      text-align:left;
-    }
+    h1{margin:0 0 8px;font-size:30px;font-weight:900}
+    p{margin:0 0 24px;color:#d8c8ff;font-size:14px}
+    .field{width:100%;margin-bottom:14px;text-align:left}
     label{
       display:block;
       margin-bottom:7px;
@@ -90,10 +76,7 @@
       font-size:14px;
       text-align:left;
     }
-    .remember input{
-      width:16px;
-      height:16px;
-    }
+    .remember input{width:16px;height:16px}
     button{
       width:100%;
       height:48px;
@@ -107,6 +90,7 @@
       box-shadow:0 12px 34px rgba(255,79,227,.32);
     }
     button:hover{filter:brightness(1.08)}
+    button:disabled{cursor:not-allowed;opacity:.65;filter:none}
     #adminLoginError{
       margin-top:14px;
       min-height:20px;
@@ -131,15 +115,29 @@
     <h1>Mina CMS</h1>
     <p>Đăng nhập để quản lý Wiki Skill</p>
 
-    <form id="adminLoginForm">
+    <form id="adminLoginForm" novalidate>
       <div class="field">
         <label for="adminUser">Tài khoản admin</label>
-        <input id="adminUser" type="text" placeholder="Nhập tài khoản" autocomplete="username" required />
+        <input
+          id="adminUser"
+          name="username"
+          type="text"
+          placeholder="Nhập tài khoản"
+          autocomplete="username"
+          required
+        />
       </div>
 
       <div class="field">
         <label for="adminPass">Mật khẩu</label>
-        <input id="adminPass" type="password" placeholder="Nhập mật khẩu" autocomplete="current-password" required />
+        <input
+          id="adminPass"
+          name="password"
+          type="password"
+          placeholder="Nhập mật khẩu"
+          autocomplete="current-password"
+          required
+        />
       </div>
 
       <label class="remember">
@@ -147,12 +145,142 @@
         Ghi nhớ đăng nhập
       </label>
 
-      <button type="submit">Đăng nhập</button>
-
-      <div id="adminLoginError"></div>
+      <button id="adminLoginButton" type="submit">Đăng nhập</button>
+      <div id="adminLoginError" role="alert" aria-live="polite"></div>
     </form>
 
-    <a href="/wiki.html">← Quay lại Wiki Mina</a>
+    <a class="back-link" href="/wiki.html">← Quay lại Wiki Mina</a>
   </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const form = document.getElementById("adminLoginForm");
+      const userInput = document.getElementById("adminUser");
+      const passInput = document.getElementById("adminPass");
+      const rememberInput = document.getElementById("rememberAdmin");
+      const button = document.getElementById("adminLoginButton");
+      const errorBox = document.getElementById("adminLoginError");
+
+      const SESSION_KEY = "mina_admin_api_key_session";
+      const LEGACY_KEYS = [
+        "mina_admin_authenticated",
+        "mina_admin_session",
+        "mina_admin_token",
+        "mina_admin_key"
+      ];
+
+      function showError(message) {
+        errorBox.textContent = message || "";
+      }
+
+      function setBusy(isBusy) {
+        button.disabled = isBusy;
+        button.textContent = isBusy ? "Đang đăng nhập..." : "Đăng nhập";
+      }
+
+      function saveSession(apiKey, remember) {
+        const target = remember ? localStorage : sessionStorage;
+        const other = remember ? sessionStorage : localStorage;
+
+        other.removeItem(SESSION_KEY);
+        LEGACY_KEYS.forEach(key => other.removeItem(key));
+
+        target.setItem(SESSION_KEY, apiKey);
+        target.setItem("mina_admin_authenticated", "true");
+        target.setItem("mina_admin_session", "true");
+        target.setItem("mina_admin_token", apiKey);
+        target.setItem("mina_admin_key", apiKey);
+
+        /*
+         * Mina CMS V2 đọc sessionStorage trước.
+         * Nếu người dùng chọn ghi nhớ, vẫn sao chép khóa vào sessionStorage
+         * cho phiên hiện tại; localStorage giữ lại cho lần mở trình duyệt sau.
+         */
+        sessionStorage.setItem(SESSION_KEY, apiKey);
+        sessionStorage.setItem("mina_admin_authenticated", "true");
+      }
+
+      function restoreRememberedSession() {
+        const remembered =
+          localStorage.getItem(SESSION_KEY) ||
+          localStorage.getItem("mina_admin_token") ||
+          localStorage.getItem("mina_admin_key");
+
+        if (remembered) {
+          sessionStorage.setItem(SESSION_KEY, remembered);
+          sessionStorage.setItem("mina_admin_authenticated", "true");
+        }
+      }
+
+      restoreRememberedSession();
+
+      form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        showError("");
+
+        const username = userInput.value.trim();
+        const password = passInput.value;
+
+        if (!username || !password) {
+          showError("Vui lòng nhập đầy đủ tài khoản và mật khẩu.");
+          return;
+        }
+
+        setBusy(true);
+
+        try {
+          const response = await fetch("/api/admin/login", {
+            method: "POST",
+            credentials: "same-origin",
+            cache: "no-store",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              username,
+              password,
+              remember: rememberInput.checked
+            })
+          });
+
+          let result = {};
+          try {
+            result = await response.json();
+          } catch (_) {}
+
+          if (!response.ok || result.success === false) {
+            throw new Error(
+              result.message ||
+              result.error ||
+              "Tài khoản hoặc mật khẩu không chính xác."
+            );
+          }
+
+          const apiKey =
+            result.apiKey ||
+            result.token ||
+            result.sessionToken;
+
+          if (!apiKey) {
+            throw new Error(
+              "Máy chủ chưa trả về khóa phiên đăng nhập."
+            );
+          }
+
+          saveSession(apiKey, rememberInput.checked);
+          window.location.replace("/admin-wiki.html");
+        } catch (error) {
+          showError(
+            error.message ||
+            "Không thể đăng nhập. Vui lòng thử lại."
+          );
+        } finally {
+          setBusy(false);
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
