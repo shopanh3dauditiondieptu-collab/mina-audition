@@ -293,7 +293,6 @@
           </article>
         </div>
       </section>
-
       <!-- FEATURED CONTENT -->
       <section class="section featured-section" aria-labelledby="featured-title">
         <div class="section-title">
@@ -303,46 +302,71 @@
         </div>
 
         <div class="feature-grid">
+
+          <!-- DANCE PERFORMANCE -->
           <article class="featured-card">
-  <a
-    href="https://www.youtube.com/playlist?list=PLaQchUKgIuMUYwQKEPraUWVkxT8793iVT"
-    target="_blank"
-    rel="noopener noreferrer"
-    class="feature-link"
-    aria-label="Xem playlist Dance Performance của Mina"
-  >
-    <img
-      src="images/dance-performance.png"
-      alt="Dance Performance"
-    />
+            <a
+              href="https://www.youtube.com/playlist?list=PLaQchUKgIuMUYwQKEPraUWVkxT8793iVT"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="feature-link"
+              aria-label="Mở playlist Dance Performance"
+            >
+              <img src="images/dance-performance.png" alt="Dance Performance" />
+              <h3>DANCE PERFORMANCE</h3>
+              <p>Những màn trình diễn dance đỉnh cao cùng bộ Skill HOT.</p>
+            </a>
+          </article>
 
-    <h3>DANCE PERFORMANCE</h3>
+          <!-- MINA BLOG -->
+          <article class="featured-card">
+            <a
+              href="https://www.facebook.com/profile.php?id=61590867037910"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="feature-link"
+              aria-label="Mở trang Mina Blog"
+            >
+              <img src="images/review-skill.png" alt="Mina Blog" />
+              <h3>MINA BLOG</h3>
+              <p>Review chi tiết các skill đẹp, hiếm và bắt mắt.</p>
+            </a>
+          </article>
 
-    <p>
-      Những màn trình diễn dance đỉnh cao cùng bộ Skill HOT.
-    </p>
-  </a>
-</article>
-
-          <article id="d8team">
-            <a href="https://www.youtube.com/watch?v=Bh7v-eQKhCQ&list=PLaQchUKgIuMX_Xtz5WcS_TWdq2hFb-jHr" target="_blank" rel="noopener noreferrer" class="feature-link">
+          <!-- D8 TEAM -->
+          <article class="featured-card" id="d8team">
+            <a
+              href="https://www.youtube.com/playlist?list=PLaQchUKgIuMX_Xtz5WcS_TWdq2hFb-jHr"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="feature-link"
+              aria-label="Mở playlist D8 Team"
+            >
               <img src="images/d8-team.png" alt="D8 Team" />
               <h3>D8 TEAM</h3>
               <p>Giao lưu, luyện tập và cháy cùng Fam D8Team Sociu.</p>
             </a>
           </article>
 
-          <article>
-            <a href="https://www.facebook.com/profile.php?id=61590642787182" target="_blank" rel="noopener noreferrer" class="feature-link">
-              <img src="images/mixmatchoutfit.png" alt="Mix Match" />
-              <h3>MIX & MATCH</h3>
+          <!-- MIX & MATCH -->
+          <article class="featured-card">
+            <a
+              href="https://www.facebook.com/profile.php?id=61590642787182"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="feature-link"
+              aria-label="Mở trang Mix and Match"
+            >
+              <img src="images/mixmatchoutfit.png" alt="Mix and Match" />
+              <h3>MIX &amp; MATCH</h3>
               <p>Giao lưu Mix Match Outfit Audition VTC.</p>
             </a>
           </article>
+
         </div>
       </section>
 
-      <!-- WIKI SKILL -->
+<!-- WIKI SKILL -->
       <section class="section wiki-section" aria-labelledby="wiki-title">
         <div class="section-title">
           <span>◆ ◆ ◆</span>
@@ -488,5 +512,15 @@
 <script src="js/core/animation.js"></script>
 <script src="js/mina-v7.js"></script>
 <script src="assets/js/wiki-skills.js"></script>
+
+  <script>
+    // MINA FEATURED LINKS - FINAL GUARD
+    document.querySelectorAll(".featured-section .feature-link").forEach(function (link) {
+      link.addEventListener("click", function (event) {
+        event.stopPropagation();
+      });
+    });
+  </script>
+
 </body>
 </html>
