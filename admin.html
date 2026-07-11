@@ -49,6 +49,7 @@
       </div>
 
       <div class="top-actions">
+        <a href="#featuredPostsManager" class="home-link">Quản lý bài ghim</a>
         <a href="/" class="home-link">Về trang chủ</a>
         <button id="logoutBtn" type="button">Đăng xuất</button>
       </div>
@@ -88,45 +89,6 @@
         </div>
       </div>
     </section>
-
-
-    <!-- FEATURED POSTS MANAGER -->
-    <section class="panel mina-featured-manager" id="featuredPostsManager">
-      <div class="panel-title">
-        <div>
-          <h2>📌 Bài viết ghim trên Trang Chủ</h2>
-          <p class="muted">
-            Chọn tối đa 8 bài và sắp xếp vị trí. Bài mới đăng sẽ không tự thay đổi khu vực này.
-          </p>
-        </div>
-
-        <div class="mina-featured-counter">
-          <strong id="featuredCount">0 / 8</strong>
-          <span>đang ghim</span>
-        </div>
-      </div>
-
-      <div class="mina-featured-toolbar">
-        <input
-          type="text"
-          id="featuredSearch"
-          class="search-input"
-          placeholder="Tìm tiêu đề hoặc ID bài viết..."
-        >
-
-        <button type="button" id="reloadFeaturedPosts" class="secondary-btn">
-          Tải lại
-        </button>
-
-        <button type="button" id="saveFeaturedPosts">
-          Lưu danh sách ghim
-        </button>
-      </div>
-
-      <p id="featuredManagerMessage" class="muted"></p>
-      <div id="featuredPostsList" class="mina-featured-list"></div>
-    </section>
-
 
     <!-- CONTENT LAYOUT -->
     <section class="admin-layout">
@@ -278,6 +240,45 @@
       </div>
 
       <div id="postList" class="post-list"></div>
+    </section>
+
+
+    <!-- FEATURED POSTS MANAGER - ĐƯA XUỐNG CUỐI TRANG ĐỂ KHÔNG CẢN TRỞ ĐĂNG BÀI -->
+<!-- FEATURED POSTS MANAGER -->
+    <section class="panel mina-featured-manager" id="featuredPostsManager">
+      <div class="panel-title">
+        <div>
+          <h2>📌 Bài viết ghim trên Trang Chủ</h2>
+          <p class="muted">
+            Chọn tối đa 8 bài và sắp xếp vị trí. Bài mới đăng sẽ không tự thay đổi khu vực này.
+          </p>
+        </div>
+
+        <div class="mina-featured-counter">
+          <strong id="featuredCount">0 / 8</strong>
+          <span>đang ghim</span>
+        </div>
+      </div>
+
+      <div class="mina-featured-toolbar">
+        <input
+          type="text"
+          id="featuredSearch"
+          class="search-input"
+          placeholder="Tìm tiêu đề hoặc ID bài viết..."
+        >
+
+        <button type="button" id="reloadFeaturedPosts" class="secondary-btn">
+          Tải lại
+        </button>
+
+        <button type="button" id="saveFeaturedPosts">
+          Lưu danh sách ghim
+        </button>
+      </div>
+
+      <p id="featuredManagerMessage" class="muted"></p>
+      <div id="featuredPostsList" class="mina-featured-list"></div>
     </section>
 
   </main>
