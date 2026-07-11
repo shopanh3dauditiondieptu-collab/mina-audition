@@ -78,3 +78,15 @@
     flex-direction: column;
   }
 }
+
+
+.mina-category-actions-v31 {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+#minaRestoreBlogCategoriesV31 {
+  white-space: nowrap;
+}
