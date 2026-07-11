@@ -1,5 +1,4 @@
 import {
-  CATEGORIES_API,
   ADMIN_KEY_SESSION
 } from "./config.js";
 
@@ -11,10 +10,13 @@ import {
 } from "./utils.js";
 
 import {
-  MINA_DEFAULT_CATEGORIES,
-  MINA_DEFAULT_TAGS,
-  cloneMinaCategories
-} from "../mina-categories-data.js";
+  getCategories,
+  saveCategories,
+  flattenCategories,
+  findCategoryById,
+  findCategoryByValue,
+  getFallbackCategories
+} from "../category-service.js";
 
 let state = {
   categories: [],
@@ -24,72 +26,21 @@ let state = {
 
 let categoryInput = null;
 let categorySelect = null;
-let categoryPath = [];
-let ready = false;
+let currentPath = [];
+let initialized = false;
 
-function flatten(nodes = [], parentPath = []) {
-  let result = [];
-
-  for (const node of nodes) {
-    const path = [...parentPath, node.name];
-
-    result.push({
-      ...node,
-      path,
-      fullName: path.join("/")
-    });
-
-    if (Array.isArray(node.children) && node.children.length) {
-      result = result.concat(flatten(node.children, path));
-    }
-  }
-
-  return result;
-}
-
-function normalizeNode(node = {}) {
-  return {
-    id: node.id || slugify(node.name || ""),
-    name: String(node.name || "").trim(),
-    icon: String(node.icon || "📁").trim() || "📁",
-    parentId: node.parentId || "",
-    children: Array.isArray(node.children)
-      ? node.children.map(normalizeNode)
-      : []
-  };
-}
-
-function buildTree(flatItems = []) {
-  const map = new Map();
-  const roots = [];
-
-  flatItems.forEach(item => {
-    map.set(item.id, {
-      id: item.id,
-      name: item.name,
-      icon: item.icon || "📁",
-      parentId: item.parentId || "",
-      children: []
-    });
-  });
-
-  map.forEach(item => {
-    if (item.parentId && map.has(item.parentId)) {
-      map.get(item.parentId).children.push(item);
-    } else {
-      roots.push(item);
-    }
-  });
-
-  return roots;
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
 }
 
 function findNode(nodes, id) {
   for (const node of nodes) {
     if (node.id === id) return node;
+
     const found = findNode(node.children || [], id);
     if (found) return found;
   }
+
   return null;
 }
 
@@ -102,96 +53,121 @@ function removeNode(nodes, id) {
     }));
 }
 
-function getApiKey() {
+function getAdminKey() {
   let key = sessionStorage.getItem(ADMIN_KEY_SESSION) || "";
 
   if (!key) {
     key = prompt(
       "Nhập MINA_ADMIN_API_KEY để lưu danh mục.\n" +
-      "Khóa chỉ được giữ trong tab trình duyệt hiện tại."
+      "Khóa chỉ được giữ trong tab hiện tại."
     ) || "";
 
-    if (key) sessionStorage.setItem(ADMIN_KEY_SESSION, key);
+    if (key) {
+      sessionStorage.setItem(ADMIN_KEY_SESSION, key);
+    }
   }
 
   return key;
 }
 
-function createManagerCard() {
-  if (document.getElementById("minaCategoryManagerV3")) return;
+function createManager() {
+  if (document.getElementById("minaCategoryManagerV4")) return;
 
   const form = document.getElementById("postForm");
   const firstGrid = form?.querySelector(".form-grid");
+
   if (!form || !firstGrid) return;
 
-  const card = document.createElement("section");
-  card.id = "minaCategoryManagerV3";
-  card.className = "mina-cms-category-manager";
+  const section = document.createElement("section");
+  section.id = "minaCategoryManagerV4";
+  section.className = "mina-cms-category-manager";
 
-  card.innerHTML = `
+  section.innerHTML = `
     <div class="mina-cms-manager-head">
       <div>
         <h3>📂 Quản lý danh mục CMS</h3>
-        <p class="muted">Thêm danh mục chính, danh mục con và tag mà không sửa HTML.</p>
+        <p class="muted">
+          Admin và Mina Blog dùng chung một nguồn danh mục.
+        </p>
       </div>
-      <div class="mina-category-actions-v31">
-        <button type="button" id="minaRestoreBlogCategoriesV31" class="secondary-btn">
+
+      <div class="mina-category-actions-v4">
+        <button type="button" id="minaRestoreCategoriesV4" class="secondary-btn">
           Khôi phục danh mục Mina Blog
         </button>
-        <button type="button" id="minaSaveCategoriesV3">Lưu danh mục</button>
+
+        <button type="button" id="minaReloadCategoriesV4" class="secondary-btn">
+          Tải lại
+        </button>
+
+        <button type="button" id="minaSaveCategoriesV4">
+          Lưu danh mục
+        </button>
       </div>
     </div>
 
     <div class="mina-cms-manager-grid">
       <label>
         <span>Tên danh mục</span>
-        <input id="minaCategoryNameV3" type="text" placeholder="Ví dụ: Prompt Avatar">
+        <input id="minaCategoryNameV4" type="text"
+          placeholder="Ví dụ: Prompt Avatar">
       </label>
 
       <label>
         <span>Biểu tượng</span>
-        <input id="minaCategoryIconV3" type="text" value="📁" maxlength="8">
+        <input id="minaCategoryIconV4" type="text"
+          value="📁" maxlength="8">
       </label>
 
       <label>
         <span>Danh mục cha</span>
-        <select id="minaParentCategoryV3">
+        <select id="minaParentCategoryV4">
           <option value="">— Danh mục chính —</option>
         </select>
       </label>
 
-      <button type="button" id="minaAddCategoryV3">+ Thêm danh mục</button>
+      <button type="button" id="minaAddCategoryV4">
+        + Thêm danh mục
+      </button>
     </div>
 
-    <label class="mina-default-tags-v3">
+    <label class="mina-default-tags-v4">
       <span>Danh sách tag mặc định</span>
-      <input id="minaDefaultTagsV3" type="text" placeholder="Audition, D8, Mina, Ảnh 3D">
+      <input id="minaDefaultTagsV4" type="text">
     </label>
 
-    <p id="minaCategoryMessageV3" class="muted"></p>
-    <div id="minaCategoryListV3" class="mina-category-list-v3"></div>
+    <p id="minaCategoryMessageV4" class="muted"></p>
+    <div id="minaCategoryListV4" class="mina-category-list-v3"></div>
   `;
 
-  firstGrid.insertAdjacentElement("beforebegin", card);
+  firstGrid.insertAdjacentElement("beforebegin", section);
 }
 
-function createCategorySelector() {
+function createSelector() {
   categoryInput = document.getElementById("category");
-  if (!categoryInput || document.getElementById("minaCategorySelectV3")) return;
+
+  if (!categoryInput || document.getElementById("minaCategorySelectV4")) {
+    return;
+  }
 
   categoryInput.type = "hidden";
 
   categorySelect = document.createElement("select");
-  categorySelect.id = "minaCategorySelectV3";
-  categorySelect.innerHTML = `<option value="">Chọn danh mục bài viết</option>`;
+  categorySelect.id = "minaCategorySelectV4";
+  categorySelect.innerHTML =
+    `<option value="">Chọn danh mục bài viết</option>`;
 
   categoryInput.insertAdjacentElement("afterend", categorySelect);
 
   safeOn(categorySelect, "change", () => {
     state.selectedId = categorySelect.value;
-    const selected = flatten(state.categories).find(item => item.id === state.selectedId);
 
-    categoryPath = selected?.path || [];
+    const selected = findCategoryById(
+      state.categories,
+      state.selectedId
+    );
+
+    currentPath = selected?.path || [];
     categoryInput.value = selected?.fullName || "";
 
     updateBreadcrumb();
@@ -199,14 +175,15 @@ function createCategorySelector() {
 }
 
 function createSeoBox() {
-  if (document.getElementById("minaSeoBoxV3")) return;
+  if (document.getElementById("minaSeoBoxV4")) return;
 
   const form = document.getElementById("postForm");
   const firstGrid = form?.querySelector(".form-grid");
+
   if (!form || !firstGrid) return;
 
   const box = document.createElement("section");
-  box.id = "minaSeoBoxV3";
+  box.id = "minaSeoBoxV4";
   box.className = "mina-cms-seo-box";
 
   box.innerHTML = `
@@ -215,16 +192,18 @@ function createSeoBox() {
     <div class="form-grid">
       <label>
         <span>URL SEO</span>
-        <input id="minaSeoSlugV3" type="text" placeholder="Tự sinh từ tiêu đề">
+        <input id="minaSeoSlugV4" type="text"
+          placeholder="Tự sinh từ tiêu đề">
       </label>
 
       <label>
         <span>Tag</span>
-        <input id="minaPostTagsV3" type="text" placeholder="Nhập tag, cách nhau bằng dấu phẩy">
+        <input id="minaPostTagsV4" type="text"
+          placeholder="Nhập tag, cách nhau bằng dấu phẩy">
       </label>
     </div>
 
-    <p id="minaBreadcrumbV3" class="mina-breadcrumb-preview-v3">
+    <p id="minaBreadcrumbV4" class="mina-breadcrumb-preview-v3">
       <strong>Breadcrumb:</strong> Trang chủ
     </p>
   `;
@@ -232,7 +211,7 @@ function createSeoBox() {
   firstGrid.insertAdjacentElement("afterend", box);
 
   const title = document.getElementById("title");
-  const slugInput = document.getElementById("minaSeoSlugV3");
+  const slugInput = document.getElementById("minaSeoSlugV4");
 
   safeOn(title, "input", () => {
     if (!slugInput.dataset.manual) {
@@ -246,19 +225,23 @@ function createSeoBox() {
 }
 
 function updateBreadcrumb() {
-  const box = document.getElementById("minaBreadcrumbV3");
+  const box = document.getElementById("minaBreadcrumbV4");
   if (!box) return;
 
   box.innerHTML = `
     <strong>Breadcrumb:</strong>
-    Trang chủ${categoryPath.length ? " → " + categoryPath.map(escapeHTML).join(" → ") : ""}
+    Trang chủ${
+      currentPath.length
+        ? " → " + currentPath.map(escapeHTML).join(" → ")
+        : ""
+    }
   `;
 }
 
 function renderSelects() {
-  const flat = flatten(state.categories);
+  const flat = flattenCategories(state.categories);
+  const parent = document.getElementById("minaParentCategoryV4");
 
-  const parent = document.getElementById("minaParentCategoryV3");
   if (parent) {
     parent.innerHTML = `
       <option value="">— Danh mục chính —</option>
@@ -289,13 +272,14 @@ function renderSelects() {
 }
 
 function renderList() {
-  const box = document.getElementById("minaCategoryListV3");
+  const box = document.getElementById("minaCategoryListV4");
   if (!box) return;
 
-  const flat = flatten(state.categories);
+  const flat = flattenCategories(state.categories);
 
   if (!flat.length) {
-    box.innerHTML = `<p class="muted">Chưa có danh mục. Hãy thêm danh mục đầu tiên.</p>`;
+    box.innerHTML =
+      `<p class="muted">Chưa có danh mục.</p>`;
     return;
   }
 
@@ -308,7 +292,8 @@ function renderList() {
 
       <code>${escapeHTML(item.id)}</code>
 
-      <button type="button" data-delete-category="${escapeHTML(item.id)}">
+      <button type="button"
+        data-delete-category="${escapeHTML(item.id)}">
         Xóa
       </button>
     </div>
@@ -317,16 +302,19 @@ function renderList() {
   box.querySelectorAll("[data-delete-category]").forEach(button => {
     safeOn(button, "click", () => {
       const id = button.dataset.deleteCategory;
-      const node = findNode(state.categories, id);
-      if (!node) return;
+      const item = findCategoryById(state.categories, id);
 
-      if (!confirm(`Xóa danh mục "${node.name}" và toàn bộ danh mục con?`)) return;
+      if (!item) return;
+
+      if (!confirm(
+        `Xóa "${item.name}" và toàn bộ danh mục con?`
+      )) return;
 
       state.categories = removeNode(state.categories, id);
 
       if (state.selectedId === id) {
         state.selectedId = "";
-        categoryPath = [];
+        currentPath = [];
         categoryInput.value = "";
       }
 
@@ -339,33 +327,44 @@ function renderAll() {
   renderSelects();
   renderList();
 
-  const tags = document.getElementById("minaDefaultTagsV3");
+  const tags = document.getElementById("minaDefaultTagsV4");
   if (tags) tags.value = state.tags.join(", ");
 
   updateBreadcrumb();
 }
 
+function setMessage(text, isError = false) {
+  const box = document.getElementById("minaCategoryMessageV4");
+  if (!box) return;
+
+  box.textContent = text;
+  box.style.color = isError ? "#ff4fd8" : "";
+}
+
 function addCategory() {
-  const nameInput = document.getElementById("minaCategoryNameV3");
-  const iconInput = document.getElementById("minaCategoryIconV3");
-  const parentInput = document.getElementById("minaParentCategoryV3");
-  const message = document.getElementById("minaCategoryMessageV3");
+  const nameInput = document.getElementById("minaCategoryNameV4");
+  const iconInput = document.getElementById("minaCategoryIconV4");
+  const parentInput = document.getElementById("minaParentCategoryV4");
 
   const name = nameInput?.value.trim() || "";
   const icon = iconInput?.value.trim() || "📁";
   const parentId = parentInput?.value || "";
 
   if (!name) {
-    if (message) message.textContent = "Bạn cần nhập tên danh mục.";
+    setMessage("Bạn cần nhập tên danh mục.", true);
     nameInput?.focus();
     return;
   }
 
   let id = slugify(name);
-  const existingIds = new Set(flatten(state.categories).map(item => item.id));
+  const ids = new Set(
+    flattenCategories(state.categories).map(item => item.id)
+  );
 
   if (!id) id = `category-${Date.now()}`;
-  if (existingIds.has(id)) id = `${id}-${Date.now().toString().slice(-4)}`;
+  if (ids.has(id)) {
+    id = `${id}-${Date.now().toString().slice(-4)}`;
+  }
 
   const item = {
     id,
@@ -377,8 +376,9 @@ function addCategory() {
 
   if (parentId) {
     const parent = findNode(state.categories, parentId);
+
     if (!parent) {
-      if (message) message.textContent = "Không tìm thấy danh mục cha.";
+      setMessage("Không tìm thấy danh mục cha.", true);
       return;
     }
 
@@ -388,187 +388,169 @@ function addCategory() {
     state.categories.push(item);
   }
 
-  if (nameInput) nameInput.value = "";
-  if (message) message.textContent = `Đã thêm "${name}". Hãy bấm Lưu danh mục.`;
-
+  nameInput.value = "";
+  setMessage(`Đã thêm "${name}". Hãy bấm Lưu danh mục.`);
   renderAll();
 }
 
+function restoreCategories() {
+  const fallback = getFallbackCategories();
 
-function restoreBlogCategories() {
-  const hasCurrent = flatten(state.categories).length > 0;
+  if (
+    flattenCategories(state.categories).length &&
+    !confirm("Thay danh mục hiện tại bằng bản Mina Blog dự phòng?")
+  ) return;
 
-  if (hasCurrent) {
-    const ok = confirm(
-      "Danh mục hiện tại sẽ được thay bằng bộ danh mục đang dùng trên Mina Blog. Tiếp tục?"
-    );
-    if (!ok) return;
-  }
-
-  state.categories = cloneMinaCategories(MINA_DEFAULT_CATEGORIES);
-  state.tags = [...MINA_DEFAULT_TAGS];
+  state.categories = clone(fallback.categories);
+  state.tags = [...fallback.tags];
   state.selectedId = "";
-  categoryPath = [];
+  currentPath = [];
 
   if (categoryInput) categoryInput.value = "";
 
   renderAll();
-
-  const message = document.getElementById("minaCategoryMessageV3");
-  if (message) {
-    message.textContent =
-      "Đã khôi phục danh mục Mina Blog vào Admin. Bấm “Lưu danh mục” để đồng bộ lên GitHub.";
-  }
+  setMessage(
+    "Đã khôi phục danh mục Mina Blog. Hãy bấm Lưu danh mục."
+  );
 }
 
-async function loadCategories() {
-  const message = document.getElementById("minaCategoryMessageV3");
+async function loadFromService(force = false) {
+  setMessage("Đang tải danh mục...");
 
   try {
-    const response = await fetch(CATEGORIES_API, {
-      headers: { Accept: "application/json" },
-      cache: "no-store"
+    const data = await getCategories({
+      force,
+      allowFallback: true
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || `HTTP ${response.status}`);
-    }
-
-    const apiCategories = Array.isArray(data.categories)
-      ? data.categories.map(normalizeNode)
-      : [];
-
-    const apiTags = Array.isArray(data.tags) ? data.tags : [];
-
-    // Nếu API đang rỗng, tự động nạp bản danh mục Mina Blog dự phòng
-    // để dropdown Admin có thể sử dụng ngay, không cần bấm nút ẩn.
-    if (apiCategories.length === 0) {
-      state.categories = cloneMinaCategories(MINA_DEFAULT_CATEGORIES);
-      state.tags = apiTags.length ? apiTags : [...MINA_DEFAULT_TAGS];
-
-      renderAll();
-
-      if (message) {
-        message.textContent =
-          "Đã tự động nạp bản danh mục Mina Blog dự phòng. Bấm “Lưu danh mục” để đồng bộ lên GitHub.";
-      }
-
-      return;
-    }
-
-    state.categories = apiCategories;
-    state.tags = apiTags.length ? apiTags : [...MINA_DEFAULT_TAGS];
+    state.categories = clone(data.categories);
+    state.tags = [...data.tags];
 
     renderAll();
 
-    if (message) {
-      message.textContent = "Đã tải danh mục từ GitHub.";
-    }
+    setMessage(
+      data.source === "fallback"
+        ? "Đang dùng danh mục dự phòng. Bấm Lưu danh mục để đồng bộ GitHub."
+        : "Đã tải danh mục dùng chung cho Admin và Mina Blog."
+    );
   } catch (error) {
-    console.error("Mina categories load:", error);
-    if (message) message.textContent = `Không tải được danh mục: ${error.message}`;
+    console.error(error);
+    setMessage(`Không tải được danh mục: ${error.message}`, true);
   }
 }
 
-async function saveCategories() {
-  const message = document.getElementById("minaCategoryMessageV3");
-  const key = getApiKey();
+async function saveToService() {
+  const key = getAdminKey();
+  if (!key) return;
 
-  if (!key) {
-    if (message) message.textContent = "Chưa có MINA_ADMIN_API_KEY.";
-    return;
-  }
+  state.tags = parseTags(
+    document.getElementById("minaDefaultTagsV4")?.value || ""
+  );
 
-  state.tags = parseTags(document.getElementById("minaDefaultTagsV3")?.value || "");
-
-  if (message) message.textContent = "Đang lưu danh mục...";
+  setMessage("Đang lưu danh mục...");
 
   try {
-    const response = await fetch(CATEGORIES_API, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-admin-key": key
-      },
-      body: JSON.stringify({
-        version: 3,
-        categories: state.categories,
-        tags: state.tags
-      })
-    });
+    const saved = await saveCategories({
+      categories: state.categories,
+      tags: state.tags
+    }, key);
 
-    const data = await response.json();
+    state.categories = clone(saved.data.categories);
+    state.tags = [...saved.data.tags];
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        sessionStorage.removeItem(ADMIN_KEY_SESSION);
-      }
+    renderAll();
+    setMessage(
+      "Đã đồng bộ danh mục thành công. Admin và Mina Blog đang dùng chung dữ liệu."
+    );
+  } catch (error) {
+    console.error(error);
 
-      throw new Error(data.error || `HTTP ${response.status}`);
+    if (error.status === 401) {
+      sessionStorage.removeItem(ADMIN_KEY_SESSION);
     }
 
-    if (message) message.textContent = "Đã lưu danh mục lên GitHub thành công.";
-    await loadCategories();
-  } catch (error) {
-    console.error("Mina categories save:", error);
-    if (message) message.textContent = `Lưu thất bại: ${error.message}`;
+    setMessage(`Lưu thất bại: ${error.message}`, true);
   }
 }
 
 export async function initCategories() {
-  if (ready) return;
+  if (initialized) return;
 
-  createManagerCard();
-  createCategorySelector();
+  createManager();
+  createSelector();
   createSeoBox();
 
-  safeOn(document.getElementById("minaAddCategoryV3"), "click", addCategory);
-  safeOn(document.getElementById("minaSaveCategoriesV3"), "click", saveCategories);
   safeOn(
-    document.getElementById("minaRestoreBlogCategoriesV31"),
+    document.getElementById("minaAddCategoryV4"),
     "click",
-    restoreBlogCategories
+    addCategory
   );
 
-  await loadCategories();
-  ready = true;
+  safeOn(
+    document.getElementById("minaSaveCategoriesV4"),
+    "click",
+    saveToService
+  );
+
+  safeOn(
+    document.getElementById("minaRestoreCategoriesV4"),
+    "click",
+    restoreCategories
+  );
+
+  safeOn(
+    document.getElementById("minaReloadCategoriesV4"),
+    "click",
+    () => loadFromService(true)
+  );
+
+  await loadFromService(false);
+  initialized = true;
 }
 
 export function getCategoryPayload() {
-  const selected = flatten(state.categories).find(item => item.id === state.selectedId);
-  const slugInput = document.getElementById("minaSeoSlugV3");
-  const tagsInput = document.getElementById("minaPostTagsV3");
+  const selected = findCategoryById(
+    state.categories,
+    state.selectedId
+  );
+
+  const slugInput = document.getElementById("minaSeoSlugV4");
+  const tagsInput = document.getElementById("minaPostTagsV4");
 
   return {
     category: selected?.fullName || categoryInput?.value || "",
     categoryId: selected?.id || "",
     categoryName: selected?.name || "",
     categoryPath: selected?.path || [],
-    categoryFullName: selected?.fullName || categoryInput?.value || "",
-    slug: slugify(slugInput?.value || document.getElementById("title")?.value || ""),
+    categoryFullName:
+      selected?.fullName || categoryInput?.value || "",
+    slug: slugify(
+      slugInput?.value ||
+      document.getElementById("title")?.value ||
+      ""
+    ),
     tags: parseTags(tagsInput?.value || "")
   };
 }
 
 export function setCategoryPayload(post = {}) {
-  const flat = flatten(state.categories);
   const wanted =
     post.categoryId ||
-    flat.find(item =>
-      item.fullName === post.categoryFullName ||
-      item.fullName === post.category ||
-      item.name === post.categoryName
+    findCategoryByValue(
+      state.categories,
+      post.categoryFullName ||
+      post.category ||
+      post.categoryName ||
+      ""
     )?.id ||
     "";
 
   state.selectedId = wanted;
-
   if (categorySelect) categorySelect.value = wanted;
 
-  const selected = flat.find(item => item.id === wanted);
-  categoryPath = selected?.path || post.categoryPath || [];
+  const selected = findCategoryById(state.categories, wanted);
+
+  currentPath = selected?.path || post.categoryPath || [];
 
   if (categoryInput) {
     categoryInput.value =
@@ -578,15 +560,17 @@ export function setCategoryPayload(post = {}) {
       "";
   }
 
-  const slugInput = document.getElementById("minaSeoSlugV3");
+  const slugInput = document.getElementById("minaSeoSlugV4");
   if (slugInput) {
-    slugInput.value = post.slug || slugify(post.title || "");
+    slugInput.value =
+      post.slug || slugify(post.title || "");
     slugInput.dataset.manual = post.slug ? "1" : "";
   }
 
-  const tagsInput = document.getElementById("minaPostTagsV3");
+  const tagsInput = document.getElementById("minaPostTagsV4");
   if (tagsInput) {
-    tagsInput.value = Array.isArray(post.tags) ? post.tags.join(", ") : "";
+    tagsInput.value =
+      Array.isArray(post.tags) ? post.tags.join(", ") : "";
   }
 
   updateBreadcrumb();
@@ -594,18 +578,18 @@ export function setCategoryPayload(post = {}) {
 
 export function resetCategoryPayload() {
   state.selectedId = "";
-  categoryPath = [];
+  currentPath = [];
 
   if (categorySelect) categorySelect.value = "";
   if (categoryInput) categoryInput.value = "";
 
-  const slugInput = document.getElementById("minaSeoSlugV3");
+  const slugInput = document.getElementById("minaSeoSlugV4");
   if (slugInput) {
     slugInput.value = "";
     slugInput.dataset.manual = "";
   }
 
-  const tagsInput = document.getElementById("minaPostTagsV3");
+  const tagsInput = document.getElementById("minaPostTagsV4");
   if (tagsInput) tagsInput.value = "";
 
   updateBreadcrumb();
