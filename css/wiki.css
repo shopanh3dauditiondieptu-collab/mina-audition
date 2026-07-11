@@ -1283,3 +1283,95 @@ body {
   .mina-wiki-modal{padding:12px}
   .mina-wiki-detail-grid{grid-template-columns:1fr;padding:18px;gap:18px}
 }
+
+/* =========================================================
+   MINA WIKI V10 — FINAL MODAL VISIBILITY FIX
+   Sửa lỗi lớp phủ đen toàn trang khi modal cũ có thuộc tính hidden.
+   Giữ nguyên toàn bộ HTML/JS/CMS hiện tại.
+========================================================= */
+
+/* Bắt buộc ẩn mọi modal cũ/mới khi có thuộc tính hidden */
+.wiki-modal[hidden],
+.mina-wiki-modal[hidden],
+.mina-skill-detail-modal[hidden],
+#minaSkillDetailModal[hidden],
+#minaWikiModal[hidden] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Chỉ cho modal cũ hiển thị khi thuộc tính hidden đã được JS gỡ bỏ */
+.wiki-modal:not([hidden]) {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Chỉ cho modal mới hiển thị khi thuộc tính hidden đã được JS gỡ bỏ */
+.mina-wiki-modal:not([hidden]) {
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Khóa cuộn chỉ khi modal thực sự đang mở */
+body:not(.mina-modal-open) {
+  overflow-y: auto;
+}
+
+/* Chuẩn hóa modal cũ để không đẩy nội dung xuống cuối trang */
+.wiki-modal {
+  box-sizing: border-box;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+}
+
+.wiki-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 2, 14, 0.84);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.wiki-modal-box {
+  position: relative;
+  z-index: 1;
+  width: min(940px, calc(100vw - 32px));
+  max-height: min(90vh, 860px);
+  overflow: auto;
+}
+
+/* Ảnh chi tiết không kéo modal quá dài */
+.wiki-modal-img img,
+.mina-wiki-detail-media img {
+  max-height: 68vh;
+  object-fit: contain;
+  background: rgba(255,255,255,.035);
+}
+
+@media (max-width: 760px) {
+  .wiki-modal,
+  .mina-wiki-modal {
+    padding: 12px;
+  }
+
+  .wiki-modal-box,
+  .mina-wiki-modal-panel {
+    width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+  }
+
+  .wiki-modal-layout,
+  .mina-wiki-detail-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
