@@ -1,0 +1,24 @@
+/* Mina CMS V4.1 - Thu gọn danh sách danh mục */
+#minaCategoryListV4 {
+  overflow: hidden;
+  transition: max-height .28s ease, opacity .22s ease, margin .22s ease;
+  max-height: 5000px;
+  opacity: 1;
+}
+
+#minaCategoryListV4.mina-category-list-collapsed-v41 {
+  max-height: 0 !important;
+  opacity: 0;
+  margin-top: 0 !important;
+  pointer-events: none;
+}
+
+#minaToggleCategoryListV41 {
+  color: #11162d !important;
+  background: linear-gradient(90deg, #86ecff, #f056d8) !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  font-weight: 800 !important;
+  padding: 10px 16px !important;
+  white-space: nowrap;
+}
