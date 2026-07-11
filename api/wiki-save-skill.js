@@ -1,5 +1,5 @@
 /* =====================================================
-   MINA WIKI SAVE SKILL API - V3 SECURITY FIX
+   MINA WIKI SAVE SKILL API - V4 UPDATE FIX
    File: api/wiki-save-skill.js
 
    Yêu cầu Environment Variables:
@@ -121,10 +121,26 @@ async function writeDatabase(data, sha, message) {
   return response.json();
 }
 
+function numberOrBlank(value) {
+  if (value === "" || value === null || value === undefined) return "";
+  const matched = String(value).match(/-?\d+(?:\.\d+)?/);
+  if (!matched) return "";
+  const number = Number(matched[0]);
+  return Number.isFinite(number) ? number : "";
+}
+
+function firstText(...values) {
+  for (const value of values) {
+    const text = String(value ?? "").trim();
+    if (text) return text;
+  }
+  return "";
+}
+
 function normalizeSkill(input = {}, imageUrl = "") {
   const now = new Date().toISOString();
-  const id = String(input.id || input.skillId || "").trim();
-  const name = String(input.name || input.skillName || "").trim();
+  const id = firstText(input.id, input.skillId, input.idSkill);
+  const name = firstText(input.name, input.skillName, input.tenSkill);
 
   if (!id) throw new Error("Thiếu ID skill");
   if (!name) throw new Error("Thiếu tên skill");
@@ -135,24 +151,54 @@ function normalizeSkill(input = {}, imageUrl = "") {
     alias: String(input.alias || "").trim(),
     type: String(input.type || "").trim(),
     style: String(input.style || "").trim(),
-    level: input.level === "" || input.level == null ? "" : Number(input.level),
-    bpmBest:
-      input.bpmBest === "" || input.bpmBest == null
-        ? ""
-        : Number(input.bpmBest),
-    rarity: String(input.rarity || "").trim(),
-    rating:
-      input.rating === "" || input.rating == null ? "" : Number(input.rating),
+    level: numberOrBlank(input.level ?? input.capDo),
+    bpmBest: numberOrBlank(
+      input.bpmBest ??
+      input.bpm ??
+      input.bpmDepNhat
+    ),
+    rarity: firstText(input.rarity, input.doHiem).toUpperCase(),
+    rating: numberOrBlank(
+      input.rating ??
+      input.diem ??
+      input.diemDep
+    ),
     status: String(
       input.status ||
       input.verifiedStatus ||
       (input.reviewed ? "verified" : "needs_review")
     ).trim(),
-    imageUrl: String(imageUrl || input.imageUrl || input.image || "").trim(),
-    youtubeUrl: String(input.youtubeUrl || "").trim(),
-    cameraAngle: String(input.cameraAngle || "").trim(),
-    song: String(input.song || input.recommendedSong || "").trim(),
-    hasYoutube: Boolean(input.hasYoutube || input.youtubeUrl),
+    imageUrl: firstText(
+      imageUrl,
+      input.imageUrl,
+      input.image,
+      input.thumbnail,
+      input.hinhAnh
+    ),
+    youtubeUrl: firstText(
+      input.youtubeUrl,
+      input.youtube,
+      input.video,
+      input.videoUrl
+    ),
+    cameraAngle: firstText(
+      input.cameraAngle,
+      input.camera,
+      input.gocMay
+    ),
+    song: firstText(
+      input.song,
+      input.recommendedSong,
+      input.music,
+      input.baiHat
+    ),
+    hasYoutube: Boolean(
+      input.hasYoutube ||
+      input.youtubeUrl ||
+      input.youtube ||
+      input.video ||
+      input.videoUrl
+    ),
     hasWiki: input.hasWiki !== false,
     hot: Boolean(input.hot),
     homePinned: input.homePinned === true || input.homePinned === "true",
@@ -163,7 +209,12 @@ function normalizeSkill(input = {}, imageUrl = "") {
           .split(",")
           .map(v => v.trim())
           .filter(Boolean),
-    notes: String(input.notes || input.description || "").trim(),
+    notes: firstText(
+      input.notes,
+      input.description,
+      input.desc,
+      input.ghiChu
+    ),
     createdAt: input.createdAt || now,
     updatedAt: now
   };
