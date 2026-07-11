@@ -1,42 +1,192 @@
-"use strict";
-
-/* =========================================================
-   MINA WIKI SAVE SKILL API V5
+/* =====================================================
+   MINA WIKI SAVE SKILL API - V3 SECURITY FIX
    File: api/wiki-save-skill.js
-   API tương thích cho Admin cũ, có upload ảnh Cloudinary.
-========================================================= */
+
+   Yêu cầu Environment Variables:
+   GITHUB_TOKEN
+   GITHUB_OWNER
+   GITHUB_REPO
+   GITHUB_BRANCH=main
+   MINA_DB_PATH=database/master-skills.json
+   MINA_ADMIN_API_KEY
+
+   Cloudinary (chỉ cần khi upload ảnh từ máy):
+   CLOUDINARY_CLOUD_NAME
+   CLOUDINARY_API_KEY
+   CLOUDINARY_API_SECRET
+===================================================== */
 
 const crypto = require("crypto");
-const wikiSkillsHandler = require("./wiki-skills");
 
-function requiredEnv(name) {
+const GH_API = "https://api.github.com";
+const DB_PATH = process.env.MINA_DB_PATH || "database/master-skills.json";
+
+function env(name) {
   const value = process.env[name];
   if (!value) throw new Error(`Thiếu biến môi trường ${name}`);
   return value;
 }
 
-function sendJson(res, status, body) {
-  if (typeof res.status === "function") res.status(status);
-  else res.statusCode = status;
+function json(res, status, body) {
+  res.status(status);
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("Cache-Control", "no-store");
-  return res.end(JSON.stringify(body));
+  res.end(JSON.stringify(body));
+}
+
+function requireAdmin(req) {
+  const configured = env("MINA_ADMIN_API_KEY");
+  const received =
+    req.headers["x-mina-admin-key"] ||
+    (req.body && (req.body.adminApiKey || req.body.adminPassword)) ||
+    "";
+
+  if (String(received) !== String(configured)) {
+    const err = new Error("Sai khóa quản trị");
+    err.statusCode = 401;
+    throw err;
+  }
+}
+
+function repoInfo() {
+  return {
+    owner: env("GITHUB_OWNER"),
+    repo: env("GITHUB_REPO"),
+    branch: process.env.GITHUB_BRANCH || "main"
+  };
+}
+
+function ghHeaders() {
+  return {
+    Authorization: `Bearer ${env("GITHUB_TOKEN")}`,
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "Content-Type": "application/json"
+  };
+}
+
+function contentUrl() {
+  const { owner, repo } = repoInfo();
+  return `${GH_API}/repos/${owner}/${repo}/contents/${DB_PATH}`;
+}
+
+async function readDatabase() {
+  const { branch } = repoInfo();
+  const response = await fetch(`${contentUrl()}?ref=${encodeURIComponent(branch)}`, {
+    headers: ghHeaders()
+  });
+
+  if (response.status === 404) {
+    return { sha: null, data: { version: 1, updatedAt: null, skills: [] } };
+  }
+
+  if (!response.ok) {
+    throw new Error(`GitHub GET lỗi ${response.status}: ${await response.text()}`);
+  }
+
+  const payload = await response.json();
+  const decoded = Buffer.from(
+    String(payload.content || "").replace(/\n/g, ""),
+    "base64"
+  ).toString("utf8");
+
+  const data = JSON.parse(decoded);
+  if (!data || !Array.isArray(data.skills)) {
+    throw new Error("master-skills.json phải có cấu trúc { skills: [] }");
+  }
+
+  return { sha: payload.sha, data };
+}
+
+async function writeDatabase(data, sha, message) {
+  const { branch } = repoInfo();
+  const body = {
+    message,
+    branch,
+    content: Buffer.from(JSON.stringify(data, null, 2), "utf8").toString("base64")
+  };
+
+  if (sha) body.sha = sha;
+
+  const response = await fetch(contentUrl(), {
+    method: "PUT",
+    headers: ghHeaders(),
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub PUT lỗi ${response.status}: ${await response.text()}`);
+  }
+
+  return response.json();
+}
+
+function normalizeSkill(input = {}, imageUrl = "") {
+  const now = new Date().toISOString();
+  const id = String(input.id || input.skillId || "").trim();
+  const name = String(input.name || input.skillName || "").trim();
+
+  if (!id) throw new Error("Thiếu ID skill");
+  if (!name) throw new Error("Thiếu tên skill");
+
+  return {
+    id,
+    name,
+    alias: String(input.alias || "").trim(),
+    type: String(input.type || "").trim(),
+    style: String(input.style || "").trim(),
+    level: input.level === "" || input.level == null ? "" : Number(input.level),
+    bpmBest:
+      input.bpmBest === "" || input.bpmBest == null
+        ? ""
+        : Number(input.bpmBest),
+    rarity: String(input.rarity || "").trim(),
+    rating:
+      input.rating === "" || input.rating == null ? "" : Number(input.rating),
+    status: String(
+      input.status ||
+      input.verifiedStatus ||
+      (input.reviewed ? "verified" : "needs_review")
+    ).trim(),
+    imageUrl: String(imageUrl || input.imageUrl || input.image || "").trim(),
+    youtubeUrl: String(input.youtubeUrl || "").trim(),
+    cameraAngle: String(input.cameraAngle || "").trim(),
+    song: String(input.song || input.recommendedSong || "").trim(),
+    hasYoutube: Boolean(input.hasYoutube || input.youtubeUrl),
+    hasWiki: input.hasWiki !== false,
+    hot: Boolean(input.hot),
+    tags: Array.isArray(input.tags)
+      ? input.tags.map(String).map(v => v.trim()).filter(Boolean)
+      : String(input.tags || "")
+          .split(",")
+          .map(v => v.trim())
+          .filter(Boolean),
+    notes: String(input.notes || input.description || "").trim(),
+    createdAt: input.createdAt || now,
+    updatedAt: now
+  };
 }
 
 async function uploadCloudinary(dataUrl, publicId) {
   if (!dataUrl) return "";
-  if (!/^data:image\/(png|jpe?g|webp|gif);base64,/i.test(dataUrl)) {
-    throw new Error("Dữ liệu ảnh không hợp lệ");
-  }
 
-  const cloudName = requiredEnv("CLOUDINARY_CLOUD_NAME");
-  const apiKey = requiredEnv("CLOUDINARY_API_KEY");
-  const apiSecret = requiredEnv("CLOUDINARY_API_SECRET");
+  const cloudName = env("CLOUDINARY_CLOUD_NAME");
+  const apiKey = env("CLOUDINARY_API_KEY");
+  const apiSecret = env("CLOUDINARY_API_SECRET");
+
   const timestamp = Math.floor(Date.now() / 1000);
   const folder = "mina/wiki-skills";
-  const cleanPublicId = String(publicId || `skill-${Date.now()}`).replace(/[^a-zA-Z0-9_-]/g, "-");
-  const signatureBase = `folder=${folder}&overwrite=true&public_id=${cleanPublicId}&timestamp=${timestamp}${apiSecret}`;
-  const signature = crypto.createHash("sha1").update(signatureBase).digest("hex");
+  const cleanPublicId = String(publicId || `skill-${Date.now()}`)
+    .replace(/[^a-zA-Z0-9_-]/g, "-");
+
+  const signatureBase =
+    `folder=${folder}&overwrite=true&public_id=${cleanPublicId}` +
+    `&timestamp=${timestamp}${apiSecret}`;
+
+  const signature = crypto
+    .createHash("sha1")
+    .update(signatureBase)
+    .digest("hex");
 
   const form = new FormData();
   form.append("file", dataUrl);
@@ -47,35 +197,77 @@ async function uploadCloudinary(dataUrl, publicId) {
   form.append("overwrite", "true");
   form.append("signature", signature);
 
-  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-    method: "POST",
-    body: form
-  });
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+    { method: "POST", body: form }
+  );
+
   const payload = await response.json();
-  if (!response.ok) throw new Error(payload?.error?.message || `Cloudinary lỗi ${response.status}`);
+  if (!response.ok) {
+    throw new Error(
+      payload?.error?.message || `Cloudinary lỗi ${response.status}`
+    );
+  }
+
   return payload.secure_url || "";
 }
 
 module.exports = async function handler(req, res) {
   try {
-    if (req.method !== "POST") return sendJson(res, 405, { ok: false, error: "Method not allowed" });
-
-    const body = req.body || {};
-    const rawSkill = { ...(body.skillData || body.skill || body) };
-    if (body.imageBase64) {
-      rawSkill.imageUrl = await uploadCloudinary(
-        body.imageBase64,
-        body.imageName || `skill-${rawSkill.id || rawSkill.skillId || Date.now()}`
-      );
+    if (req.method !== "POST") {
+      return json(res, 405, { ok: false, error: "Method not allowed" });
     }
 
-    req.body = {
-      ...body,
-      skillData: rawSkill
+    requireAdmin(req);
+
+    const body = req.body || {};
+    const rawSkill = body.skillData || body.skill || {};
+    const imageUrl = body.imageBase64
+      ? await uploadCloudinary(body.imageBase64, body.imageName || `skill-${rawSkill.id}`)
+      : "";
+
+    const skill = normalizeSkill(rawSkill, imageUrl);
+    const { sha, data } = await readDatabase();
+    const skills = [...data.skills];
+
+    const index = skills.findIndex(
+      item => String(item.id).toLowerCase() === skill.id.toLowerCase()
+    );
+
+    if (index >= 0) {
+      skill.createdAt = skills[index].createdAt || skill.createdAt;
+      skills[index] = { ...skills[index], ...skill };
+    } else {
+      skills.push(skill);
+    }
+
+    const next = {
+      ...data,
+      version: data.version || 1,
+      updatedAt: new Date().toISOString(),
+      skills
     };
-    return wikiSkillsHandler(req, res);
+
+    await writeDatabase(
+      next,
+      sha,
+      index >= 0
+        ? `Update skill ${skill.id} - ${skill.name}`
+        : `Add skill ${skill.id} - ${skill.name}`
+    );
+
+    return json(res, index >= 0 ? 200 : 201, {
+      ok: true,
+      mode: index >= 0 ? "updated" : "created",
+      skill,
+      image: skill.imageUrl,
+      total: skills.length
+    });
   } catch (error) {
-    console.error("[api/wiki-save-skill]", error);
-    return sendJson(res, error.statusCode || 500, { ok: false, error: error.message || "Lỗi máy chủ" });
+    console.error("[wiki-save-skill]", error);
+    return json(res, error.statusCode || 500, {
+      ok: false,
+      error: error.message || "Lỗi máy chủ"
+    });
   }
 };
