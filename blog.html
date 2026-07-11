@@ -11,7 +11,7 @@
   <div class="site-shell">
     <header class="site-header">
       <a class="brand" href="index.html">
-        <img src="images/logo.png" onerror="this.style.display='none'">
+        <img src="images/logo.png" alt="Mina Audition" onerror="this.style.display='none'">
         <span>Mina Audition</span>
       </a>
 
@@ -25,22 +25,20 @@
 
     <main class="page">
       <h1>Mina Blog</h1>
+
       <p class="muted">
-  Khám phá những bài viết mới nhất về Audition, Review Skill, hướng dẫn và kinh nghiệm từ Mina Audition.
-</p>
+        Khám phá những bài viết mới nhất về Audition, Review Skill,
+        hướng dẫn và kinh nghiệm từ Mina Audition.
+      </p>
 
       <div class="blog-layout">
+        <aside class="blog-category-box">
+          <h3>📁 DANH MỤC MINA BLOG</h3>
+          <p class="muted">Đang tải danh mục...</p>
+        </aside>
 
-    <!-- Sidebar -->
-    <aside class="blog-category-box">
-    <h3>📁 PLAYLIST MINA BLOG</h3>
-</aside>
-
-    <!-- Danh sách bài -->
-
-    <div id="blogPosts" class="post-list"></div>
-
-</div>
+        <div id="blogPosts" class="post-list"></div>
+      </div>
     </main>
 
     <footer class="footer">
@@ -51,24 +49,22 @@
     </footer>
   </div>
 
-  <script type="module" src="js/blog.js"></script>
+  <script type="module" src="js/blog.js?v=5.0.0"></script>
+
   <script>
-function minaLike(button){
-  const count = button.querySelector("span");
-  let number = parseInt(count.innerText);
-  number++;
-  count.innerText = number;
-  button.classList.add("liked");
-}
+    function minaLike(button) {
+      const count = button.querySelector("span");
+      const number = Number.parseInt(count?.innerText || "0", 10) + 1;
 
-function copyPostLink(){
-  const link = window.location.href;
+      if (count) count.innerText = number;
+      button.classList.add("liked");
+    }
 
-  navigator.clipboard.writeText(link).then(function(){
-    alert("Đã sao chép link bài viết Mina!");
-  });
-}
-</script>
-  <script src="/js/mina-blog-categories.js?v=1.0.0"></script>
+    function copyPostLink() {
+      navigator.clipboard
+        .writeText(window.location.href)
+        .then(() => alert("Đã sao chép link bài viết Mina!"));
+    }
+  </script>
 </body>
 </html>
