@@ -77,9 +77,17 @@ async function getPinnedPosts() {
 }
 
 function getPostUrl(post) {
-  if (post.link) return post.link;
+  // Luôn ưu tiên trang bài viết nội bộ của Mina.
+  // Trường "link" chỉ còn dùng cho nút Facebook riêng.
   if (post.id) return `post.html?id=${encodeURIComponent(post.id)}`;
   return "blog.html";
+}
+
+function getFacebookUrl(post) {
+  const value = String(post.link || "").trim();
+  return /^https?:\/\/(www\.)?(facebook\.com|fb\.watch)\//i.test(value)
+    ? value
+    : "";
 }
 
 function escapeHTML(value = "") {
@@ -93,19 +101,19 @@ function escapeHTML(value = "") {
 
 function createPostCard(post) {
   const postUrl = getPostUrl(post);
-  const isExternal = Boolean(post.link);
+  const facebookUrl = getFacebookUrl(post);
 
   const title = escapeHTML(post.title || "Bài viết Mina Audition");
   const category = escapeHTML(post.category || "Bài viết");
   const description = escapeHTML(post.desc || "");
   const image = escapeHTML(post.image || "images/default-post.svg");
   const safeUrl = escapeHTML(postUrl);
+  const safeFacebookUrl = escapeHTML(facebookUrl);
 
   return `
     <article
       class="post-card mina-home-post-card"
       data-post-url="${safeUrl}"
-      data-external="${isExternal ? "true" : "false"}"
       tabindex="0"
       role="link"
       aria-label="Mở bài viết: ${title}"
@@ -122,13 +130,21 @@ function createPostCard(post) {
         <h3>${title}</h3>
         <p>${description}</p>
 
-        <a
-          class="btn ghost"
-          href="${safeUrl}"
-          ${isExternal ? 'target="_blank" rel="noopener noreferrer"' : ""}
-        >
-          ${isExternal ? "Xem thêm" : "Đọc bài"}
-        </a>
+        <div class="mina-post-actions">
+          <a class="btn ghost" href="${safeUrl}">Đọc bài</a>
+
+          ${facebookUrl ? `
+            <a
+              class="btn ghost mina-facebook-link"
+              href="${safeFacebookUrl}"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Mở bài đăng Facebook liên quan"
+            >
+              Facebook
+            </a>
+          ` : ""}
+        </div>
       </div>
     </article>
   `;
@@ -136,15 +152,7 @@ function createPostCard(post) {
 
 function openCard(card) {
   const postUrl = card.dataset.postUrl;
-  const isExternal = card.dataset.external === "true";
-
-  if (!postUrl) return;
-
-  if (isExternal) {
-    window.open(postUrl, "_blank", "noopener,noreferrer");
-  } else {
-    window.location.href = postUrl;
-  }
+  if (postUrl) window.location.href = postUrl;
 }
 
 function bindPostCardEvents(container) {
