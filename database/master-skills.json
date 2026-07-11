@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-11T23:58:39.683Z",
+  "updatedAt": "2026-07-11T23:59:25.556Z",
   "skills": [
     {
       "id": "4K_6_0002",
@@ -45,16 +45,16 @@
       "rating": "",
       "status": "needs_review",
       "imageUrl": "https://res.cloudinary.com/rpwcnrfg/image/upload/v1783776791/mina/wiki/skills/lv8_642848_4k.webp",
-      "youtubeUrl": "",
+      "youtubeUrl": "120",
       "cameraAngle": "",
       "song": "",
-      "hasYoutube": false,
+      "hasYoutube": true,
       "hasWiki": true,
       "hot": false,
       "tags": [],
       "notes": "⭐ Best D8 Popping Cool LV8 \"642848\" | 4K Skill Showcase | Audition VTC | Mina",
       "createdAt": "2026-07-11T13:34:23.451Z",
-      "updatedAt": "2026-07-11T23:58:39.416Z",
+      "updatedAt": "2026-07-11T23:59:21.949Z",
       "homePinned": true,
       "homeOrder": 3
     }
