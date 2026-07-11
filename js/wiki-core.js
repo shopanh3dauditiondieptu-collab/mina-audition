@@ -20,6 +20,8 @@ function normalizeSkill(raw={},index=0){
   level:raw.level===""||raw.level==null?"":String(raw.level), bpm:numberOrBlank(raw.bpmBest??raw.bpm),
   rarity:String(raw.rarity||raw.rank||"").trim().toUpperCase(), rating:numberOrBlank(raw.rating),
   status, verified:status==="verified", hot:Boolean(raw.hot),
+  homePinned: raw.homePinned === true || raw.homePinned === "true" || raw.pinned === true,
+  homeOrder: (()=>{const n=Number(raw.homeOrder??raw.pinOrder);return Number.isInteger(n)&&n>=1&&n<=8?n:"";})(),
   image:safeImage(raw.imageUrl||raw.image||raw.thumbnail), youtube:safeUrl(raw.youtubeUrl||raw.youtube||raw.video),
   danceName:String(raw.danceName||raw.name||"").trim(), quality:String(raw.quality||"").trim(),
   description:String(raw.notes||raw.description||raw.desc||"Dữ liệu Skill Audition D8.").trim(),
