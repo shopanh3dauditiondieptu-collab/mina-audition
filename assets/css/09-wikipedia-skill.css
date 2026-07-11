@@ -1,166 +1,65 @@
-/* ============================================================
-   MINA WIKIPEDIA SKILL DANCE V2
-   Chỉ tác động khu vực .wiki-section và popup Skill.
-============================================================ */
-.wiki-section {
-  position: relative;
-  text-align: center;
-}
-
-.wiki-section .search-box {
-  box-sizing: border-box;
-  min-height: 62px;
-  padding: 0 26px;
-  color: #fff;
-  font: inherit;
-  font-weight: 800;
-  background: rgba(22, 24, 47, .88);
-  border: 1px solid rgba(88, 225, 255, .55);
-  border-radius: 999px;
-  outline: none;
-  box-shadow: 0 0 25px rgba(58, 214, 255, .14);
-}
-
-.wiki-section .search-box:focus {
-  border-color: rgba(255, 83, 222, .82);
-  box-shadow: 0 0 0 4px rgba(255, 83, 222, .12), 0 0 30px rgba(76, 222, 255, .2);
-}
-
-.skill-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 22px;
-  margin-top: 28px;
-  text-align: left;
-}
-
-.mina-skill-card {
-  min-width: 0;
-  padding: 27px 26px 24px;
-  border: 1px solid rgba(83, 216, 255, .35);
-  border-radius: 24px;
-  background:
-    radial-gradient(circle at 100% 100%, rgba(63, 221, 255, .09), transparent 38%),
-    linear-gradient(145deg, rgba(29, 30, 55, .96), rgba(15, 16, 34, .96));
-  box-shadow: 0 18px 42px rgba(0, 0, 0, .25);
-}
-
-.mina-skill-card:first-child {
-  border-color: rgba(255, 75, 212, .56);
-}
-
-.mina-skill-card-head h3 {
-  margin: 0 0 12px;
-  color: #fff;
-  font-size: clamp(22px, 2vw, 27px);
-  line-height: 1.15;
-}
-
-.mina-skill-card-head strong {
-  color: rgba(255, 255, 255, .96);
-  font-size: 15px;
-}
-
-.mina-skill-summary {
-  min-height: 72px;
-  margin: 23px 0 16px;
-  color: rgba(255, 255, 255, .88);
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.55;
-}
-
-.mina-skill-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 18px;
-}
-
-.mina-skill-tags span {
-  padding: 7px 12px;
-  color: #aaf9ff;
-  font-size: 12px;
-  font-weight: 900;
-  border: 1px solid rgba(83, 216, 255, .38);
-  border-radius: 999px;
-  background: rgba(49, 118, 139, .25);
-}
-
+/* =========================================================
+   MINA HOMEPAGE WIKI SKILL V3 - VIDEO + DETAIL MODAL
+========================================================= */
 .mina-skill-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 6px;
+  margin-top: 22px;
 }
 
 .mina-skill-actions button,
-.mina-skill-actions a {
+.mina-modal-video-btn {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  min-height: 41px;
-  padding: 0 17px;
+  gap: 8px;
   color: #fff;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 900;
-  text-decoration: none;
   cursor: pointer;
-  border-radius: 999px;
-  transition: transform .2s ease, filter .2s ease;
+  transition: transform .2s ease, box-shadow .2s ease;
 }
 
-.mina-skill-detail-btn {
-  border: 0;
-  background: linear-gradient(135deg, #f54fdc, #a568ff 52%, #55dcff);
-  box-shadow: 0 8px 25px rgba(91, 218, 255, .22);
+.skill-detail-btn {
+  background: linear-gradient(135deg, #e64cdf, #55d8ff);
+  box-shadow: 0 8px 24px rgba(85, 216, 255, .2);
 }
 
-.mina-skill-video-btn {
-  border: 1px solid rgba(88, 225, 255, .34);
-  background: rgba(255, 255, 255, .055);
+.skill-video-btn {
+  background: linear-gradient(135deg, #ff2d55, #ff0033);
+  box-shadow: 0 8px 24px rgba(255, 0, 51, .22);
 }
 
-.mina-skill-actions button:hover:not(:disabled),
-.mina-skill-actions a:hover {
+.mina-skill-actions button:hover,
+.mina-modal-video-btn:hover {
   transform: translateY(-2px);
-  filter: brightness(1.12);
 }
 
-.mina-skill-video-btn.is-disabled {
-  opacity: .45;
-  cursor: not-allowed;
-}
-
-.mina-skill-state {
+.mina-skill-empty {
   grid-column: 1 / -1;
+  min-height: 120px;
   padding: 28px;
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, .12);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: rgba(255,255,255,.78);
+  background: rgba(255,255,255,.04);
   text-align: center;
 }
 
-.mina-skill-error span {
-  display: block;
-  margin-top: 8px;
-  color: rgba(255, 255, 255, .7);
-}
+.mina-skill-empty strong { color: #fff; font-size: 18px; }
 
-.mina-skill-loading-line {
-  height: 15px;
-  margin: 13px 0;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .09);
-}
-.mina-skill-loading-line.is-title { width: 72%; height: 24px; }
-.mina-skill-loading-line.is-short { width: 45%; }
-
-/* Modal */
-body.mina-skill-modal-open { overflow: hidden; }
+.mina-modal-open { overflow: hidden; }
 
 .mina-skill-modal[hidden] { display: none !important; }
 
@@ -171,226 +70,144 @@ body.mina-skill-modal-open { overflow: hidden; }
   display: grid;
   place-items: center;
   padding: 22px;
-  opacity: 0;
-  transition: opacity .18s ease;
 }
-
-.mina-skill-modal.is-open { opacity: 1; }
 
 .mina-skill-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(2, 3, 14, .84);
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: rgba(0,0,0,.78);
   backdrop-filter: blur(10px);
+  cursor: pointer;
 }
 
-.mina-skill-modal-dialog {
+.mina-skill-modal-box {
   position: relative;
   z-index: 1;
-  width: min(1040px, 100%);
-  max-height: min(760px, calc(100vh - 44px));
+  width: min(940px, 100%);
+  max-height: 90vh;
   overflow: auto;
-  color: #fff;
-  border: 1px solid rgba(95, 226, 255, .4);
+  border: 1px solid rgba(255,255,255,.14);
   border-radius: 28px;
-  outline: none;
-  background:
-    radial-gradient(circle at 0 0, rgba(255, 70, 214, .15), transparent 38%),
-    radial-gradient(circle at 100% 100%, rgba(71, 222, 255, .13), transparent 42%),
-    linear-gradient(145deg, #191a35, #090b1e);
-  box-shadow: 0 28px 90px rgba(0, 0, 0, .62), 0 0 42px rgba(80, 219, 255, .14);
-  transform: translateY(16px) scale(.985);
-  transition: transform .18s ease;
+  background: radial-gradient(circle at top left, rgba(232,76,223,.2), transparent 34%), linear-gradient(180deg,#1b1a31,#090914);
+  box-shadow: 0 35px 100px rgba(0,0,0,.65);
 }
 
-.mina-skill-modal.is-open .mina-skill-modal-dialog {
-  transform: translateY(0) scale(1);
-}
-
-.mina-skill-modal-x {
+.mina-skill-modal-close {
   position: absolute;
   top: 14px;
-  right: 16px;
-  z-index: 4;
+  right: 14px;
+  z-index: 2;
   width: 42px;
   height: 42px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 50%;
   color: #fff;
-  font-size: 30px;
+  background: rgba(0,0,0,.35);
+  font-size: 28px;
   line-height: 1;
   cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, .16);
-  border-radius: 50%;
-  background: rgba(4, 5, 20, .65);
 }
 
 .mina-skill-modal-layout {
   display: grid;
-  grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
+  grid-template-columns: minmax(280px, 360px) 1fr;
   gap: 30px;
   padding: 34px;
 }
 
-.mina-skill-modal-media {
-  align-self: stretch;
+.mina-skill-modal-image {
+  min-height: 380px;
   overflow: hidden;
-  min-height: 470px;
-  border: 1px solid rgba(255, 255, 255, .12);
   border-radius: 22px;
-  background: rgba(5, 6, 20, .75);
-  box-shadow: inset 0 0 32px rgba(74, 222, 255, .08);
+  background: rgba(255,255,255,.05);
 }
 
-.mina-skill-modal-media img {
+.mina-skill-modal-image img {
   width: 100%;
   height: 100%;
-  min-height: 420px;
-  max-height: 570px;
+  min-height: 380px;
   display: block;
-  object-fit: contain;
-  background: #080917;
-}
-
-.mina-skill-image-caption {
-  padding: 11px 15px;
-  color: #aaf9ff;
-  font-size: 13px;
-  font-weight: 900;
-  text-align: center;
-  background: rgba(20, 22, 46, .94);
-}
-
-.mina-skill-modal-info {
-  align-self: center;
-  min-width: 0;
+  object-fit: cover;
 }
 
 .mina-skill-modal-label {
   display: inline-flex;
-  padding: 7px 11px;
-  color: #9cf6ff;
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: .8px;
-  border: 1px solid rgba(86, 224, 255, .3);
+  padding: 8px 13px;
   border-radius: 999px;
-  background: rgba(67, 197, 222, .12);
+  background: linear-gradient(135deg,#e64cdf,#55d8ff);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
 }
 
 .mina-skill-modal-info h2 {
-  margin: 16px 44px 7px 0;
-  font-size: clamp(29px, 4vw, 42px);
-  line-height: 1.05;
+  margin: 15px 0 18px;
+  color: #fff;
+  font-size: clamp(28px, 4vw, 40px);
 }
 
-.mina-skill-modal-subtitle {
-  margin: 0 0 20px;
-  color: #f6b0ee;
-  font-size: 16px;
-  font-weight: 850;
-}
+.mina-skill-modal-info h3 { margin: 24px 0 8px; color: #fff; }
+.mina-skill-modal-info p { color: rgba(255,255,255,.82); line-height: 1.7; }
 
 .mina-skill-stat-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0,1fr));
   gap: 10px;
 }
 
-.mina-skill-stat {
-  min-width: 0;
-  padding: 11px 13px;
-  border: 1px solid rgba(255, 255, 255, .1);
+.mina-skill-stat-grid div {
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,.09);
   border-radius: 14px;
-  background: rgba(255, 255, 255, .055);
+  background: rgba(255,255,255,.055);
 }
 
-.mina-skill-stat span,
-.mina-skill-stat strong {
-  display: block;
+.mina-skill-stat-grid span,
+.mina-skill-stat-grid strong { display: block; }
+.mina-skill-stat-grid span { color: rgba(255,255,255,.55); font-size: 12px; }
+.mina-skill-stat-grid strong { margin-top: 4px; color: #fff; }
+
+.mina-modal-video-btn { margin-top: 20px; }
+
+.mina-video-modal-box { width: min(980px, 100%); }
+.mina-video-modal-content { padding: 32px; }
+.mina-video-modal-content h2 { margin: 0 52px 20px 0; color: #fff; }
+
+.mina-video-frame-wrap {
+  width: 100%;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #050509;
+  display: grid;
+  place-items: center;
 }
 
-.mina-skill-stat span {
-  margin-bottom: 4px;
-  color: rgba(255, 255, 255, .58);
-  font-size: 11px;
-  font-weight: 800;
-}
+.mina-video-frame-wrap iframe { width: 100%; height: 100%; border: 0; }
 
-.mina-skill-stat strong {
-  overflow-wrap: anywhere;
-  color: #fff;
-  font-size: 14px;
-}
-
-.mina-skill-review-box {
-  margin-top: 16px;
-  padding: 15px 17px;
-  border-left: 3px solid #f457d6;
-  border-radius: 5px 14px 14px 5px;
-  background: rgba(255, 255, 255, .045);
-}
-
-.mina-skill-review-box h3 {
-  margin: 0 0 7px;
-  font-size: 15px;
-}
-
-.mina-skill-review-box p {
-  margin: 0;
-  color: rgba(255, 255, 255, .8);
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.mina-skill-modal-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.mina-skill-modal-actions a,
-.mina-skill-modal-actions button {
+.mina-youtube-search-link {
+  max-width: 520px;
+  padding: 16px 22px;
+  border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 44px;
-  padding: 0 18px;
+  gap: 10px;
   color: #fff;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 900;
   text-decoration: none;
-  cursor: pointer;
-  border-radius: 999px;
+  font-weight: 900;
+  background: linear-gradient(135deg,#ff2d55,#ff0033);
 }
 
-.mina-skill-modal-video {
-  border: 0;
-  background: linear-gradient(135deg, #f34ed9, #9b62ff 52%, #50dcff);
-}
-
-.mina-skill-modal-close {
-  border: 1px solid rgba(255, 255, 255, .16);
-  background: rgba(255, 255, 255, .06);
-}
-
-@media (max-width: 900px) {
-  .skill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .mina-skill-modal-layout { grid-template-columns: 1fr; padding: 25px; }
-  .mina-skill-modal-media { min-height: 300px; }
-  .mina-skill-modal-media img { min-height: 280px; max-height: 420px; }
-}
-
-@media (max-width: 620px) {
-  .skill-grid { grid-template-columns: 1fr; }
-  .mina-skill-card { padding: 22px 20px; }
-  .mina-skill-summary { min-height: 0; }
+@media (max-width: 760px) {
   .mina-skill-actions { flex-direction: column; }
-  .mina-skill-actions button, .mina-skill-actions a { width: 100%; box-sizing: border-box; }
-  .mina-skill-modal { padding: 10px; }
-  .mina-skill-modal-layout { padding: 18px; gap: 20px; }
+  .mina-skill-actions button { width: 100%; }
+  .mina-skill-modal-layout { grid-template-columns: 1fr; padding: 22px; }
+  .mina-skill-modal-image,
+  .mina-skill-modal-image img { min-height: 260px; max-height: 360px; }
   .mina-skill-stat-grid { grid-template-columns: 1fr; }
-  .mina-skill-modal-actions { flex-direction: column; }
-  .mina-skill-modal-actions a, .mina-skill-modal-actions button { width: 100%; box-sizing: border-box; }
+  .mina-video-modal-content { padding: 22px; }
 }
