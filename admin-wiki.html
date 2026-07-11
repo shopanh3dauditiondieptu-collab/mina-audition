@@ -91,75 +91,33 @@
       </section>
 
       <section class="cms-tab" id="tab-backup">
-        <div class="cms-panel"><h3>Backup dữ liệu</h3><div class="backup-actions"><button id="exportJsonBtn2" class="cms-btn primary">Xuất JSON</button><button id="clearBtn" class="cms-btn danger">Xoá dữ liệu tạm</button></div><p class="muted">Sau khi xuất file, hãy upload đè vào: <b>database/wiki-skills.json</b></p></div>
+        <div class="cms-panel"><h3>Backup dữ liệu</h3><div class="backup-actions"><button id="exportJsonBtn2" class="cms-btn primary">Xuất JSON</button><button id="clearBtn" class="cms-btn danger">Xoá dữ liệu tạm</button></div><p class="muted">Dữ liệu chính được đồng bộ tự động vào <b>database/master-skills.json</b>. File xuất chỉ dùng để backup.</p></div>
       </section>
     </main>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-   
+  <script src="/js/mina-cms-config.js?v=3.0.0"></script>
+  <script src="/js/admin-core.js?v=2.1.0"></script>
+  <script src="/js/admin-layout.js?v=2.1.0"></script>
+  <script src="/js/admin-auth.js?v=2.1.0"></script>
+  <script src="/js/admin-wiki.js?v=20260711-v6-clean"></script>
+  <script src="/js/mina-master-cms.js?v=20260711-v6-clean"></script>
+  <script src="/js/admin-image-upload.js?v=3.0.0"></script>
+  <script src="/js/admin-skill-fields.js?v=20260711-v6-clean"></script>
+  <script src="/js/admin-rarity-select.js?v=2.1.5"></script>
   <script>
-    (function(){"use strict";const btn=document.getElementById("minaAdminLogout");if(!btn)return;btn.addEventListener("click",async function(){if(!window.confirm("Bạn có chắc muốn đăng xuất khỏi Mina CMS?"))return;btn.disabled=true;btn.textContent="Đang đăng xuất...";try{["mina_admin_authenticated","mina_admin_session","mina_admin_token","mina_admin_api_key","mina_admin_key"].forEach(function(key){sessionStorage.removeItem(key);localStorage.removeItem(key)});await fetch("/api/admin/logout",{method:"POST",credentials:"same-origin"}).catch(function(){})}finally{window.location.replace("/admin-login.html")}})})();
-  </script>
-  <script>
-(function () {
-  "use strict";
-
-  const logoutButton = document.getElementById("minaAdminLogout");
-
-  if (!logoutButton) return;
-
-  logoutButton.addEventListener("click", async function () {
-    const confirmed = window.confirm(
-      "Bạn có chắc muốn đăng xuất khỏi Mina CMS?"
-    );
-
-    if (!confirmed) return;
-
-    logoutButton.disabled = true;
-    logoutButton.textContent = "Đang đăng xuất...";
-
-    try {
-      /*
-       * Xóa dữ liệu phiên cũ trên trình duyệt.
-       * Không xóa khóa quản trị lưu trên Vercel.
-       */
-      sessionStorage.removeItem("mina_admin_authenticated");
-      sessionStorage.removeItem("mina_admin_session");
-      sessionStorage.removeItem("mina_admin_token");
-
-      localStorage.removeItem("mina_admin_authenticated");
-      localStorage.removeItem("mina_admin_session");
-      localStorage.removeItem("mina_admin_token");
-
-      /*
-       * Gọi API đăng xuất nếu hệ thống có hỗ trợ.
-       * Nếu chưa có API này, lỗi sẽ được bỏ qua an toàn.
-       */
-      await fetch("/api/admin/logout", {
-        method: "POST",
-        credentials: "same-origin"
-      }).catch(function () {});
-
-    } finally {
+  (function(){
+    const button=document.getElementById("minaAdminLogout");
+    if(!button)return;
+    button.addEventListener("click",async function(){
+      if(!window.confirm("Bạn có chắc muốn đăng xuất khỏi Mina CMS?"))return;
+      button.disabled=true; button.textContent="Đang đăng xuất...";
+      ["mina_admin_authenticated","mina_admin_session","mina_admin_token","mina_admin_api_key","mina_admin_key"].forEach(function(key){sessionStorage.removeItem(key);localStorage.removeItem(key);});
+      await fetch("/api/admin/logout",{method:"POST",credentials:"same-origin"}).catch(function(){});
       window.location.replace("/admin-login.html");
-    }
-  });
-})();
-</script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-<script src="/js/mina-cms-config.js?v=3.0.0"></script>
-<script src="/js/admin-core.js?v=2.1.0"></script>
-<script src="/js/admin-layout.js?v=2.1.0"></script>
-<script src="/js/admin-auth.js?v=2.1.0"></script>
-<script src="/js/admin-wiki.js?v=2.1.0"></script>
-<script src="/js/mina-master-cms.js?v=2.1.0"></script>
-
-<!-- Upload mới -->
-<script src="/js/admin-image-upload.js?v=3.0.0"></script>
-
-<script src="/js/admin-skill-fields.js?v=2.1.4"></script>
-<script src="/js/admin-rarity-select.js?v=2.1.5"></script>
+    });
+  })();
+  </script>
 </body>
 </html>
