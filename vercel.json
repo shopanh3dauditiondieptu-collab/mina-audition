@@ -1,0 +1,36 @@
+{
+  "cleanUrls": false,
+  "rewrites": [
+    {
+      "source": "/wiki",
+      "destination": "/wiki.html"
+    },
+    {
+      "source": "/blog",
+      "destination": "/blog.html"
+    },
+    {
+      "source": "/post",
+      "destination": "/post.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/admin-wiki",
+      "destination": "/admin-wiki.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/database/wiki-skills.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ]
+}
