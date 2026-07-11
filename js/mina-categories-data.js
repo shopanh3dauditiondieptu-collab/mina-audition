@@ -334,6 +334,9 @@ export const MINA_DEFAULT_TAGS = [
   "Mix & Match",
   "Prompt",
   "D8Team"
+  "SHOP ẢNH 2D/3D AU",
+  "Avatar 2D",
+  "Avatar 3D",
 ];
 
 export function cloneMinaCategories(value = MINA_DEFAULT_CATEGORIES) {
