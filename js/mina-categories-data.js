@@ -1,5 +1,11 @@
 export const MINA_DEFAULT_CATEGORIES = [
   {
+    id: "shop-anh-2d-3d-au",
+    name: "SHOP ẢNH 2D/3D AU",
+    icon: "🛍️",
+    children: []
+}
+  {
     "id": "trai-nghiem-game",
     "name": "TRẢI NGHIỆM GAME",
     "icon": "🎮",
