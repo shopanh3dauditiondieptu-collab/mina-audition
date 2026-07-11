@@ -4,50 +4,71 @@ import {
   collection,
   getDocs,
   query,
-  orderBy,
-  limit
+  orderBy
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 /* =====================================================
-   MINA HOME - 8 BÀI VIẾT MỚI NHẤT
+   MINA HOME V5 - BÀI VIẾT DO ADMIN TỰ GHIM
+   - Chỉ hiển thị bài có featured === true
+   - Sắp xếp theo featuredOrder từ 1 đến 8
+   - Bài mới đăng không tự chen vào Trang Chủ
+   - Không cần tạo Firestore composite index
 ===================================================== */
 
 const HOME_POST_LIMIT = 8;
 
 const fallbackPosts = [
   {
-    title: "Share bảng skill Poppin D8 đẹp cho người mới",
-    category: "Share Skill",
+    title: "Chưa có bài viết nào được ghim",
+    category: "Mina Audition",
     image: "images/default-post.svg",
-    desc: "Gợi ý cách chọn skill Poppin đẹp để quay video Audition và làm nội dung ngắn.",
+    desc: "Hãy vào Admin → Bài viết ghim trên Trang Chủ để chọn tối đa 8 bài.",
     link: "blog.html",
     featured: true,
-    date: "07/07/2026"
+    featuredOrder: 1
   }
 ];
 
-/**
- * Tải các bài viết mới nhất từ Firestore.
- */
-async function getPosts() {
+function normalizeOrder(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? number : 999;
+}
+
+function isPublished(post) {
+  return post.status !== "draft";
+}
+
+async function getPinnedPosts() {
   try {
     const postsQuery = query(
       collection(db, "posts"),
-      orderBy("createdAt", "desc"),
-      limit(HOME_POST_LIMIT)
+      orderBy("createdAt", "desc")
     );
 
     const snapshot = await getDocs(postsQuery);
 
-    const posts = snapshot.docs.map((docItem) => ({
-      id: docItem.id,
-      ...docItem.data()
-    }));
+    const pinnedPosts = snapshot.docs
+      .map((docItem) => ({
+        id: docItem.id,
+        ...docItem.data()
+      }))
+      .filter((post) => post.featured === true && isPublished(post))
+      .sort((a, b) => {
+        const orderDifference =
+          normalizeOrder(a.featuredOrder) - normalizeOrder(b.featuredOrder);
 
-    return posts.length > 0 ? posts : fallbackPosts;
+        if (orderDifference !== 0) return orderDifference;
+
+        const aTime = a.createdAt?.seconds || 0;
+        const bTime = b.createdAt?.seconds || 0;
+        return bTime - aTime;
+      })
+      .slice(0, HOME_POST_LIMIT);
+
+    return pinnedPosts.length > 0 ? pinnedPosts : fallbackPosts;
   } catch (error) {
     console.warn(
-      "Không tải được bài viết từ Firestore. Đang dùng dữ liệu dự phòng.",
+      "Không tải được danh sách bài ghim từ Firestore.",
       error
     );
 
@@ -55,36 +76,36 @@ async function getPosts() {
   }
 }
 
-/**
- * Tạo đường dẫn mở bài viết.
- */
 function getPostUrl(post) {
-  if (post.link) {
-    return post.link;
-  }
-
-  if (post.id) {
-    return `post.html?id=${encodeURIComponent(post.id)}`;
-  }
-
+  if (post.link) return post.link;
+  if (post.id) return `post.html?id=${encodeURIComponent(post.id)}`;
   return "blog.html";
 }
 
-/**
- * Tạo HTML cho một card bài viết.
- */
+function escapeHTML(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function createPostCard(post) {
   const postUrl = getPostUrl(post);
+  const isExternal = Boolean(post.link);
 
-  const title = post.title || "Bài viết Mina Audition";
-  const category = post.category || "Bài viết";
-  const description = post.desc || "";
-  const image = post.image || "images/default-post.svg";
+  const title = escapeHTML(post.title || "Bài viết Mina Audition");
+  const category = escapeHTML(post.category || "Bài viết");
+  const description = escapeHTML(post.desc || "");
+  const image = escapeHTML(post.image || "images/default-post.svg");
+  const safeUrl = escapeHTML(postUrl);
 
   return `
     <article
       class="post-card mina-home-post-card"
-      data-post-url="${postUrl}"
+      data-post-url="${safeUrl}"
+      data-external="${isExternal ? "true" : "false"}"
       tabindex="0"
       role="link"
       aria-label="Mở bài viết: ${title}"
@@ -98,64 +119,57 @@ function createPostCard(post) {
 
       <div class="post-body">
         <span class="tag">${category}</span>
-
         <h3>${title}</h3>
-
         <p>${description}</p>
 
         <a
           class="btn ghost"
-          href="${postUrl}"
-          ${post.link ? 'target="_blank" rel="noopener noreferrer"' : ""}
+          href="${safeUrl}"
+          ${isExternal ? 'target="_blank" rel="noopener noreferrer"' : ""}
         >
-          ${post.link ? "Xem thêm" : "Đọc bài"}
+          ${isExternal ? "Xem thêm" : "Đọc bài"}
         </a>
       </div>
     </article>
   `;
 }
 
-/**
- * Gắn sự kiện để nhấp toàn bộ card.
- */
+function openCard(card) {
+  const postUrl = card.dataset.postUrl;
+  const isExternal = card.dataset.external === "true";
+
+  if (!postUrl) return;
+
+  if (isExternal) {
+    window.open(postUrl, "_blank", "noopener,noreferrer");
+  } else {
+    window.location.href = postUrl;
+  }
+}
+
 function bindPostCardEvents(container) {
-  const cards = container.querySelectorAll(".mina-home-post-card");
-
-  cards.forEach((card) => {
-    const postUrl = card.dataset.postUrl;
-
-    if (!postUrl) return;
-
+  container.querySelectorAll(".mina-home-post-card").forEach((card) => {
     card.addEventListener("click", (event) => {
-      const clickedLink = event.target.closest("a");
-
-      // Khi nhấn đúng nút link, để trình duyệt tự xử lý.
-      if (clickedLink) return;
-
-      window.location.href = postUrl;
+      if (event.target.closest("a")) return;
+      openCard(card);
     });
 
     card.addEventListener("keydown", (event) => {
       if (event.key !== "Enter" && event.key !== " ") return;
-
       event.preventDefault();
-      window.location.href = postUrl;
+      openCard(card);
     });
   });
 }
 
-/**
- * Hiển thị 8 bài mới nhất lên trang chủ.
- */
 async function initHome() {
   const postsContainer = document.getElementById("latestPosts");
 
   if (!postsContainer) return;
 
-  const posts = await getPosts();
+  const posts = await getPinnedPosts();
 
   postsContainer.innerHTML = posts
-    .slice(0, HOME_POST_LIMIT)
     .map(createPostCard)
     .join("");
 
