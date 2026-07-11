@@ -1,25 +1,12 @@
-/**
- * Mina CMS v2.1 - Vercel API: /api/categories
- * Đọc/ghi data/blog-categories.json trên GitHub.
- *
- * Environment Variables bắt buộc:
- * GITHUB_TOKEN
- * GITHUB_OWNER
- * GITHUB_REPO
- * GITHUB_BRANCH=main
- * MINA_CATEGORIES_PATH=data/blog-categories.json
- * MINA_ADMIN_API_KEY
- */
-
 const DEFAULT_PATH = "data/blog-categories.json";
 
-function send(res, status, payload) {
+function json(res, status, payload) {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("Cache-Control", "no-store");
   return res.status(status).json(payload);
 }
 
-function getEnv() {
+function env() {
   return {
     token: process.env.GITHUB_TOKEN,
     owner: process.env.GITHUB_OWNER,
@@ -30,7 +17,7 @@ function getEnv() {
   };
 }
 
-function githubHeaders(token) {
+function headers(token) {
   return {
     Authorization: `Bearer ${token}`,
     Accept: "application/vnd.github+json",
@@ -39,28 +26,24 @@ function githubHeaders(token) {
   };
 }
 
-function repoUrl(owner, repo, path) {
-  const cleanPath = String(path || DEFAULT_PATH)
+function repoUrl(config) {
+  const path = String(config.path)
     .split("/")
     .filter(Boolean)
     .map(encodeURIComponent)
     .join("/");
 
-  return `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${cleanPath}`;
+  return `https://api.github.com/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.repo)}/contents/${path}`;
 }
 
-function decodeBase64(content = "") {
-  return Buffer.from(String(content).replace(/\n/g, ""), "base64").toString("utf8");
-}
-
-function normalizeBody(body) {
-  if (!body) return null;
+function parseBody(body) {
+  if (!body) return {};
 
   if (typeof body === "string") {
     try {
       return JSON.parse(body);
     } catch {
-      return null;
+      return {};
     }
   }
 
@@ -73,56 +56,55 @@ module.exports = async function handler(req, res) {
     return res.status(204).end();
   }
 
-  const env = getEnv();
+  const config = env();
 
-  if (!env.token || !env.owner || !env.repo) {
-    return send(res, 503, {
-      error: "Thiếu biến môi trường GitHub.",
-      missing: [
-        !env.token && "GITHUB_TOKEN",
-        !env.owner && "GITHUB_OWNER",
-        !env.repo && "GITHUB_REPO"
-      ].filter(Boolean)
+  if (!config.token || !config.owner || !config.repo) {
+    return json(res, 503, {
+      error: "Thiếu biến môi trường GitHub."
     });
   }
 
-  const url = repoUrl(env.owner, env.repo, env.path);
-  const headers = githubHeaders(env.token);
+  const url = repoUrl(config);
+  const requestHeaders = headers(config.token);
 
   if (req.method === "GET") {
     try {
-      const response = await fetch(`${url}?ref=${encodeURIComponent(env.branch)}`, {
-        headers
-      });
+      const response = await fetch(
+        `${url}?ref=${encodeURIComponent(config.branch)}`,
+        { headers: requestHeaders }
+      );
 
       if (response.status === 404) {
-        return send(res, 200, {
-          version: 1,
-          categories: []
+        return json(res, 200, {
+          version: 3,
+          categories: [],
+          tags: []
         });
       }
 
-      const result = await response.json();
+      const file = await response.json();
 
       if (!response.ok) {
-        return send(res, response.status, {
+        return json(res, response.status, {
           error: "GitHub từ chối đọc danh mục.",
-          detail: result
+          detail: file
         });
       }
 
-      const parsed = JSON.parse(decodeBase64(result.content));
+      const text = Buffer
+        .from(String(file.content || "").replace(/\n/g, ""), "base64")
+        .toString("utf8");
 
-      if (!parsed || !Array.isArray(parsed.categories)) {
-        return send(res, 500, {
-          error: "File danh mục không đúng cấu trúc.",
-          expected: '{ "categories": [] }'
-        });
-      }
+      const data = JSON.parse(text);
 
-      return send(res, 200, parsed);
+      return json(res, 200, {
+        version: data.version || 3,
+        categories: Array.isArray(data.categories) ? data.categories : [],
+        tags: Array.isArray(data.tags) ? data.tags : [],
+        updatedAt: data.updatedAt || null
+      });
     } catch (error) {
-      return send(res, 500, {
+      return json(res, 500, {
         error: "Không đọc được danh mục.",
         detail: error.message
       });
@@ -130,30 +112,24 @@ module.exports = async function handler(req, res) {
   }
 
   if (req.method === "POST") {
-    const body = normalizeBody(req.body);
-    const suppliedKey = req.headers["x-admin-key"] || body?.adminKey;
+    const body = parseBody(req.body);
+    const suppliedKey = req.headers["x-admin-key"] || body.adminKey;
 
-    if (!env.adminKey) {
-      return send(res, 503, {
-        error: "Chưa cấu hình MINA_ADMIN_API_KEY trên Vercel."
+    if (!config.adminKey) {
+      return json(res, 503, {
+        error: "Chưa cấu hình MINA_ADMIN_API_KEY."
       });
     }
 
-    if (!suppliedKey || suppliedKey !== env.adminKey) {
-      return send(res, 401, {
-        error: "Không có quyền cập nhật danh mục."
+    if (!suppliedKey || suppliedKey !== config.adminKey) {
+      return json(res, 401, {
+        error: "MINA_ADMIN_API_KEY chưa đúng."
       });
     }
 
-    const data =
-      body?.categories && Array.isArray(body.categories)
-        ? body
-        : body?.data;
-
-    if (!data || !Array.isArray(data.categories)) {
-      return send(res, 400, {
-        error: "Dữ liệu danh mục không hợp lệ.",
-        expected: '{ "categories": [] }'
+    if (!Array.isArray(body.categories)) {
+      return json(res, 400, {
+        error: "Dữ liệu categories không hợp lệ."
       });
     }
 
@@ -161,59 +137,55 @@ module.exports = async function handler(req, res) {
       let sha;
 
       const current = await fetch(
-        `${url}?ref=${encodeURIComponent(env.branch)}`,
-        { headers }
+        `${url}?ref=${encodeURIComponent(config.branch)}`,
+        { headers: requestHeaders }
       );
 
       if (current.ok) {
         const currentFile = await current.json();
         sha = currentFile.sha;
       } else if (current.status !== 404) {
-        const currentError = await current.json().catch(() => ({}));
-        return send(res, current.status, {
-          error: "Không kiểm tra được file danh mục hiện tại.",
-          detail: currentError
+        return json(res, current.status, {
+          error: "Không kiểm tra được file danh mục hiện tại."
         });
       }
 
-      const cleanData = {
-        ...data,
-        categories: data.categories,
+      const data = {
+        version: Number(body.version || 3),
+        categories: body.categories,
+        tags: Array.isArray(body.tags) ? body.tags : [],
         updatedAt: new Date().toISOString()
       };
 
-      const payload = {
-        message: "Update Mina blog categories",
-        content: Buffer.from(
-          JSON.stringify(cleanData, null, 2),
-          "utf8"
-        ).toString("base64"),
-        branch: env.branch,
-        ...(sha ? { sha } : {})
-      };
-
-      const saved = await fetch(url, {
+      const response = await fetch(url, {
         method: "PUT",
-        headers,
-        body: JSON.stringify(payload)
+        headers: requestHeaders,
+        body: JSON.stringify({
+          message: "Update Mina CMS categories",
+          content: Buffer
+            .from(JSON.stringify(data, null, 2), "utf8")
+            .toString("base64"),
+          branch: config.branch,
+          ...(sha ? { sha } : {})
+        })
       });
 
-      const result = await saved.json().catch(() => ({}));
+      const result = await response.json().catch(() => ({}));
 
-      if (!saved.ok) {
-        return send(res, saved.status, {
+      if (!response.ok) {
+        return json(res, response.status, {
           error: "GitHub từ chối cập nhật.",
           detail: result
         });
       }
 
-      return send(res, 200, {
+      return json(res, 200, {
         ok: true,
-        path: env.path,
+        path: config.path,
         commit: result.commit?.sha || null
       });
     } catch (error) {
-      return send(res, 500, {
+      return json(res, 500, {
         error: "Không lưu được danh mục.",
         detail: error.message
       });
@@ -221,5 +193,5 @@ module.exports = async function handler(req, res) {
   }
 
   res.setHeader("Allow", "GET, POST, OPTIONS");
-  return send(res, 405, { error: "Method not allowed" });
+  return json(res, 405, { error: "Method not allowed" });
 };
