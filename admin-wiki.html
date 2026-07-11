@@ -1,206 +1,143 @@
-/* =========================================================
-   MINA ADMIN WIKI V7 - HOME PINNING
-   Giữ nguyên form, tab và API hiện tại
-========================================================= */
-(function (window, document) {
-  "use strict";
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mina CMS - Wiki Skill</title>
+  <link rel="stylesheet" href="css/admin-wiki.css?v=2.0.1" />
+  <style>
+    .mina-admin-topbar{width:calc(100% - 32px);max-width:1600px;margin:16px auto 0;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px;position:sticky;top:10px;z-index:999;border:1px solid rgba(238,73,220,.26);border-radius:18px;background:rgba(20,7,42,.9);box-shadow:0 12px 32px rgba(0,0,0,.24),0 0 22px rgba(174,73,255,.08);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+    .mina-admin-brand{display:flex;align-items:center;gap:11px;color:#fff;text-decoration:none;white-space:nowrap}.mina-admin-brand-icon{width:40px;height:40px;display:grid;place-items:center;border-radius:13px;font-size:20px;background:linear-gradient(135deg,#f146d7,#784bff);box-shadow:0 0 18px rgba(238,68,218,.36)}.mina-admin-brand strong,.mina-admin-brand small{display:block}.mina-admin-brand strong{font-size:17px;line-height:1.1}.mina-admin-brand small{margin-top:3px;color:rgba(255,255,255,.58);font-size:11px}
+    .mina-admin-topnav{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px}.mina-admin-topnav a,.mina-admin-topnav button{min-height:38px;padding:9px 14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid rgba(255,255,255,.1);border-radius:999px;color:#fff;background:rgba(255,255,255,.055);font:inherit;font-size:13px;font-weight:700;text-decoration:none;cursor:pointer;transition:.2s}.mina-admin-topnav a:hover,.mina-admin-topnav button:hover{transform:translateY(-2px);border-color:rgba(238,69,218,.48);background:linear-gradient(135deg,#e843d6,#7b4cff);box-shadow:0 8px 22px rgba(164,71,255,.24)}.mina-admin-topnav .logout-btn{border-color:rgba(255,101,145,.24)}
+    @media(max-width:900px){.mina-admin-topbar{align-items:flex-start;flex-direction:column}.mina-admin-topnav{width:100%;justify-content:flex-start}}@media(max-width:600px){.mina-admin-topbar{width:calc(100% - 20px);margin-top:10px;padding:11px;position:static}.mina-admin-topnav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.mina-admin-topnav a,.mina-admin-topnav button{width:100%;padding:10px 8px;border-radius:12px;font-size:12px}}
+  </style>
 
-  const CMS = () => window.MinaCMS;
-  const CONFIG = () => window.MinaCMSConfig;
-  const state = { skills: [], editingId: null, filter: "", imageBase64: "", imageName: "" };
+<style>
+.mina-home-pin-field,.mina-home-order-field{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.035)}
+.mina-home-pin-field input{width:20px;height:20px;accent-color:#df4bd4}.mina-home-pin-field span{display:flex;flex-direction:column;gap:3px}.mina-home-pin-field small{opacity:.65}
+.mina-home-order-field{justify-content:space-between}.mina-home-order-field select{min-width:190px;padding:10px 12px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:#171028;color:#fff}
+@media(max-width:620px){.mina-home-order-field{align-items:stretch;flex-direction:column}.mina-home-order-field select{width:100%;min-width:0}}
+</style>
+</head>
+<body>
+  <header class="mina-admin-topbar">
+    <a class="mina-admin-brand" href="/admin-wiki.html" aria-label="Mina CMS Wiki Skill">
+      <span class="mina-admin-brand-icon">✦</span>
+      <span><strong>Mina CMS</strong><small>Wiki Skill Manager</small></span>
+    </a>
+    <nav class="mina-admin-topnav" aria-label="Điều hướng Mina CMS">
+      <a href="/index.html">🏠 Trang chủ</a>
+      <a href="/wiki.html">📚 Wikipedia D8</a>
+      <a href="/blog.html">📰 Mina Blog</a>
+      <button type="button" class="logout-btn" id="minaAdminLogout">🚪 Đăng xuất</button>
+    </nav>
+  </header>
 
-  function unwrap(payload) {
-    if (Array.isArray(payload)) return payload;
-    for (const key of ["skills", "data", "items", "records"]) {
-      if (Array.isArray(payload?.[key])) return payload[key];
-    }
-    return [];
-  }
+  <div class="mina-cms">
+    <aside class="cms-sidebar">
+      <div class="cms-logo"><span class="cms-logo-icon">✦</span><div><h1>Mina CMS</h1><p>Wiki Skill Manager</p></div></div>
+      <nav class="cms-nav">
+        <button class="active" data-tab="dashboard">📊 Dashboard</button>
+        <button data-tab="add">➕ Thêm Skill</button>
+        <button data-tab="manage">📚 Quản lý Skill</button>
+        <button data-tab="import">📥 Import Excel</button>
+        <button data-tab="youtube">▶ YouTube Review</button>
+        <button data-tab="backup">💾 Backup</button>
+      </nav>
+      <div class="cms-links"><a href="/index.html">← Trang chủ</a><a href="/wiki.html">Xem Wikipedia D8</a></div>
+    </aside>
 
-  function text(value) { return CMS().text(value); }
-  function bool(value) { return value === true || value === "true" || value === "1" || value === "on"; }
-  function pinOrder(value) {
-    const number = Number(value);
-    return Number.isInteger(number) && number >= 1 && number <= 8 ? number : "";
-  }
+    <main class="cms-main">
+      <header class="cms-top">
+        <div><h2 id="cmsTitle">Dashboard Wiki Mina</h2><p>Quản lý dữ liệu skill không cần sửa code thủ công.</p></div>
+        <div class="cms-top-actions"><button id="loadJsonBtn" class="cms-btn">Tải JSON hiện tại</button><button id="exportJsonBtn" class="cms-btn primary">Xuất wiki-skills.json</button></div>
+      </header>
 
-  function normalize(raw = {}) {
-    return {
-      ...raw,
-      id: text(raw.id), name: text(raw.name), level: raw.level ?? "",
-      type: text(raw.type), style: text(raw.style),
-      bpm: Number(raw.bpm ?? raw.bpmBest) || "",
-      rarity: text(raw.rarity).toUpperCase(), rating: Number(raw.rating) || "",
-      image: text(raw.image ?? raw.imageUrl), youtube: text(raw.youtube ?? raw.youtubeUrl),
-      song: text(raw.song), camera: text(raw.camera ?? raw.cameraAngle),
-      description: text(raw.description ?? raw.notes), note: text(raw.note),
-      tags: Array.isArray(raw.tags) ? raw.tags : text(raw.tags).split(",").map(v => v.trim()).filter(Boolean),
-      reviewed: bool(raw.reviewed),
-      status: text(raw.status) || (bool(raw.reviewed) ? "verified" : "needs_review"),
-      hot: bool(raw.hot), homePinned: bool(raw.homePinned ?? raw.pinned),
-      homeOrder: pinOrder(raw.homeOrder ?? raw.pinOrder)
-    };
-  }
+      <section class="cms-tab active" id="tab-dashboard">
+        <div class="stat-grid">
+          <div class="stat-card"><span>Tổng Skill</span><strong id="totalSkill">0</strong></div>
+          <div class="stat-card"><span>Có YouTube</span><strong id="totalYoutube">0</strong></div>
+          <div class="stat-card"><span>Cần Review</span><strong id="totalNeedReview">0</strong></div>
+          <div class="stat-card"><span>Độ hiếm S</span><strong id="totalRareS">0</strong></div>
+        </div>
+        <div class="cms-panel"><h3>Quy trình cập nhật chuẩn</h3><div class="workflow"><span>Excel</span><b>→</b><span>Import</span><b>→</b><span>Kiểm tra</span><b>→</b><span>Xuất JSON</span><b>→</b><span>Upload GitHub</span></div></div>
+      </section>
 
-  function form() { return document.getElementById("skillForm"); }
-  function backup() { localStorage.setItem(CONFIG().storage.draftKey, JSON.stringify(state.skills)); }
-  function getSkills() { return JSON.parse(JSON.stringify(state.skills)); }
+      <section class="cms-tab" id="tab-add">
+        <div class="cms-panel"><h3>Thêm / sửa Skill</h3>
+          <form id="skillForm" class="skill-form">
+            <input name="id" placeholder="ID Skill, ví dụ: 47767" required />
+            <input name="name" placeholder="Tên skill" required />
+            <input name="style" placeholder="Style: Poppin, Sexy Girl, HipHop..." />
+            <input name="bpm" type="number" placeholder="BPM đẹp" />
+            <input name="rarity" placeholder="Độ hiếm: S, A, B, C" />
+            <input name="rating" type="number" step="0.1" placeholder="Điểm đẹp: 9.5" />
+            <input name="image" placeholder="/images/wiki/skills/47767.webp" />
+            <input name="youtube" placeholder="Link YouTube review skill" />
+            <input name="song" placeholder="Bài nhạc đề xuất" />
+            <input name="camera" placeholder="Góc quay đề xuất" />
+            <textarea name="description" placeholder="Mô tả skill"></textarea>
+            <textarea name="note" placeholder="Ghi chú sản xuất video / CapCut / ý tưởng review"></textarea>
+            <input name="tags" placeholder="Tags: D8, Audition, Poppin, Skill đẹp" />
+            <label class="mina-home-pin-field">
+              <input name="homePinned" type="checkbox" value="true" />
+              <span><b>Ghim lên trang chủ</b><small>Chỉ tối đa 8 Skill được ghim.</small></span>
+            </label>
+            <label class="mina-home-order-field">
+              <span>Vị trí ghim trang chủ</span>
+              <select name="homeOrder">
+                <option value="">Tự động / chưa chọn</option>
+                <option value="1">Vị trí 1</option><option value="2">Vị trí 2</option>
+                <option value="3">Vị trí 3</option><option value="4">Vị trí 4</option>
+                <option value="5">Vị trí 5</option><option value="6">Vị trí 6</option>
+                <option value="7">Vị trí 7</option><option value="8">Vị trí 8</option>
+              </select>
+            </label>
+            <button type="submit" class="cms-btn primary full">Lưu Skill</button>
+          </form>
+        </div>
+      </section>
 
-  async function load(force = false) {
-    CMS().setBusy(true, "Đang tải dữ liệu skill...");
-    try {
-      const payload = await CMS().request(`${CONFIG().api.skills}?v=${Date.now()}${force ? "&force=1" : ""}`);
-      state.skills = unwrap(payload).map(normalize);
-      backup(); renderAll();
-      CMS().toast(`Đã tải ${state.skills.length} skill.`, "success");
-    } catch (error) {
-      const local = localStorage.getItem(CONFIG().storage.draftKey);
-      state.skills = local ? JSON.parse(local).map(normalize) : [];
-      renderAll();
-      CMS().toast(error.message || "Không tải được dữ liệu, đang dùng bản nháp.", "warning");
-    } finally { CMS().setBusy(false); }
-  }
+      <section class="cms-tab" id="tab-manage">
+        <div class="cms-panel"><div class="panel-head"><h3>Danh sách Skill</h3><input id="searchInput" class="cms-search" placeholder="Tìm ID, tên skill, style..." /></div><div class="table-wrap"><table><thead><tr><th>ID</th><th>Tên Skill</th><th>Style</th><th>BPM</th><th>Hiếm</th><th>Điểm</th><th>YouTube</th><th>Trang chủ</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody id="skillTable"></tbody></table></div></div>
+      </section>
 
-  function readForm() {
-    const currentForm = form();
-    const values = Object.fromEntries(new FormData(currentForm).entries());
-    values.homePinned = currentForm.elements.homePinned?.checked === true;
-    values.homeOrder = values.homePinned ? pinOrder(values.homeOrder) : "";
-    return normalize(values);
-  }
+      <section class="cms-tab" id="tab-import">
+        <div class="cms-panel"><h3>Import Excel</h3><label class="upload-box"><input id="excelInput" type="file" accept=".xlsx,.xls,.csv" hidden /><span>📥 Chọn file Excel để import</span><small>Cột nên dùng: id, name, style, bpm, rarity, rating, image, youtube, description, tags</small></label><button id="downloadTemplateBtn" class="cms-btn">Tải file mẫu Excel</button></div>
+      </section>
 
-  function validatePin(skill) {
-    if (!skill.homePinned) return true;
-    const pinned = state.skills.filter(item => item.homePinned && item.id !== state.editingId);
-    if (pinned.length >= 8) {
-      CMS().toast("Trang chủ đã đủ 8 Skill được ghim. Hãy bỏ ghim một Skill trước.", "error");
-      return false;
-    }
-    if (skill.homeOrder !== "") {
-      const conflict = pinned.find(item => Number(item.homeOrder) === Number(skill.homeOrder));
-      if (conflict) {
-        CMS().toast(`Vị trí ${skill.homeOrder} đang được dùng bởi ${conflict.id}.`, "error");
-        return false;
-      }
-    }
-    return true;
-  }
+      <section class="cms-tab" id="tab-youtube">
+        <div class="cms-panel"><h3>YouTube Review Skill</h3><p class="muted">Skill nào chưa có link YouTube sẽ hiện trạng thái “Cần Review”. Nút tìm review sẽ mở YouTube theo ID + tên skill.</p><div id="youtubeList" class="youtube-list"></div></div>
+      </section>
 
-  function resetForm() {
-    form()?.reset(); state.editingId = null; state.imageBase64 = ""; state.imageName = "";
-    document.getElementById("skillImagePreview")?.replaceChildren();
-  }
+      <section class="cms-tab" id="tab-backup">
+        <div class="cms-panel"><h3>Backup dữ liệu</h3><div class="backup-actions"><button id="exportJsonBtn2" class="cms-btn primary">Xuất JSON</button><button id="clearBtn" class="cms-btn danger">Xoá dữ liệu tạm</button></div><p class="muted">Dữ liệu chính được đồng bộ tự động vào <b>database/master-skills.json</b>. File xuất chỉ dùng để backup.</p></div>
+      </section>
+    </main>
+  </div>
 
-  function fillForm(skill) {
-    const currentForm = form(); if (!currentForm) return;
-    Object.entries(skill).forEach(([key, value]) => {
-      const field = currentForm.elements.namedItem(key);
-      if (!field) return;
-      if (field.type === "checkbox") field.checked = Boolean(value);
-      else field.value = Array.isArray(value) ? value.join(", ") : (value ?? "");
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="/js/mina-cms-config.js?v=3.0.0"></script>
+  <script src="/js/admin-core.js?v=2.1.0"></script>
+  <script src="/js/admin-layout.js?v=2.1.0"></script>
+  <script src="/js/admin-auth.js?v=2.1.0"></script>
+  <script src="/js/admin-wiki.js?v=20260711-v9-modal-admin-fix"></script>
+  <script src="/js/mina-master-cms.js?v=20260711-v9-modal-admin-fix"></script>
+  <script src="/js/admin-image-upload.js?v=3.0.0"></script>
+  <script src="/js/admin-skill-fields.js?v=20260711-v9-modal-admin-fix"></script>
+  <script src="/js/admin-rarity-select.js?v=2.1.5"></script>
+  <script>
+  (function(){
+    const button=document.getElementById("minaAdminLogout");
+    if(!button)return;
+    button.addEventListener("click",async function(){
+      if(!window.confirm("Bạn có chắc muốn đăng xuất khỏi Mina CMS?"))return;
+      button.disabled=true; button.textContent="Đang đăng xuất...";
+      ["mina_admin_authenticated","mina_admin_session","mina_admin_token","mina_admin_api_key","mina_admin_key"].forEach(function(key){sessionStorage.removeItem(key);localStorage.removeItem(key);});
+      await fetch("/api/admin/logout",{method:"POST",credentials:"same-origin"}).catch(function(){});
+      window.location.replace("/admin-login.html");
     });
-    state.editingId = skill.id;
-    window.MinaAdminLayout?.activateTab("add");
-    currentForm.querySelector('[name="name"]')?.focus();
-  }
-
-  async function save(event) {
-    event.preventDefault();
-    const skill = readForm();
-    if (!skill.id || !skill.name) return CMS().toast("Cần nhập ID và tên skill.", "error");
-    const duplicate = state.skills.find(item => item.id.toLowerCase() === skill.id.toLowerCase() && item.id !== state.editingId);
-    if (duplicate) return CMS().toast("ID skill đã tồn tại.", "error");
-    if (!validatePin(skill)) return;
-
-    CMS().setBusy(true, "Đang lưu và đồng bộ skill...");
-    try {
-      const body = { skillData: skill };
-      if (state.imageBase64) {
-        body.imageBase64 = state.imageBase64;
-        body.imageName = state.imageName || `skill-${skill.id}`;
-      }
-      const result = await CMS().request(CONFIG().api.saveSkill, { method: "POST", body: JSON.stringify(body) });
-      const saved = normalize(result?.skill || result?.data || skill);
-      const index = state.skills.findIndex(item => item.id === state.editingId || item.id === saved.id);
-      if (index >= 0) state.skills[index] = saved; else state.skills.unshift(saved);
-      backup(); resetForm(); renderAll();
-      window.MinaWikiEngine?.clearCache?.();
-      window.dispatchEvent(new CustomEvent("mina:skills-changed", { detail: { skill: saved } }));
-      CMS().toast(`Đã ${index >= 0 ? "cập nhật" : "thêm"} skill và đồng bộ thành công.`, "success");
-      CMS().emit("skills:changed", { action: index >= 0 ? "update" : "create", skill: saved });
-    } catch (error) {
-      CMS().toast(error.message || "Không lưu được skill.", "error");
-    } finally { CMS().setBusy(false); }
-  }
-
-  async function remove(id) {
-    const skill = state.skills.find(item => item.id === id);
-    if (!skill || !confirm(`Xóa skill "${skill.name}" (${id})?`)) return;
-    CMS().setBusy(true, "Đang xóa skill...");
-    try {
-      await CMS().request(CONFIG().api.deleteSkill, { method: "POST", body: JSON.stringify({ id }) });
-      state.skills = state.skills.filter(item => item.id !== id);
-      backup(); renderAll();
-      CMS().toast("Đã xóa skill và đồng bộ dữ liệu.", "success");
-    } catch (error) { CMS().toast(error.message || "Không xóa được skill.", "error"); }
-    finally { CMS().setBusy(false); }
-  }
-
-  function filtered() {
-    const query = state.filter.toLowerCase();
-    return query ? state.skills.filter(item => [item.id, item.name, item.style, item.type, item.rarity].join(" ").toLowerCase().includes(query)) : state.skills;
-  }
-
-  function renderTable() {
-    const body = document.getElementById("skillTable"); if (!body) return;
-    const rows = filtered();
-    body.innerHTML = rows.length ? rows.map(skill => `
-      <tr>
-        <td>${CMS().escapeHTML(skill.id)}</td><td>${CMS().escapeHTML(skill.name)}</td>
-        <td>${CMS().escapeHTML(skill.style)}</td><td>${CMS().escapeHTML(skill.bpm)}</td>
-        <td><span class="rarity rarity-${CMS().escapeHTML(skill.rarity)}">${CMS().escapeHTML(skill.rarity || "-")}</span></td>
-        <td>${CMS().escapeHTML(skill.rating)}</td><td>${skill.youtube ? "✓" : "—"}</td>
-        <td>${skill.homePinned ? `📌 ${skill.homeOrder || "Tự động"}` : "—"}</td>
-        <td>${skill.status === "verified" ? "Đã xác minh" : "Cần review"}</td>
-        <td><button type="button" class="cms-btn" data-edit-id="${CMS().escapeHTML(skill.id)}">Sửa</button> <button type="button" class="cms-btn danger" data-delete-id="${CMS().escapeHTML(skill.id)}">Xóa</button></td>
-      </tr>`).join("") : `<tr><td colspan="10">Chưa có dữ liệu phù hợp.</td></tr>`;
-  }
-
-  function renderStats() {
-    const set = (id, value) => { const element = document.getElementById(id); if (element) element.textContent = value; };
-    set("totalSkill", state.skills.length); set("totalYoutube", state.skills.filter(x => x.youtube).length);
-    set("totalNeedReview", state.skills.filter(x => x.status !== "verified").length);
-    set("totalRareS", state.skills.filter(x => x.rarity === "S").length);
-  }
-
-  function renderYouTube() {
-    const body = document.getElementById("youtubeList"); if (!body) return;
-    body.innerHTML = state.skills.map(skill => `<article class="youtube-item"><div><b>${CMS().escapeHTML(skill.id)} — ${CMS().escapeHTML(skill.name)}</b><small>${skill.youtube ? "Đã có video" : "Chưa có video review"}</small></div><a class="cms-btn" target="_blank" rel="noopener" href="${skill.youtube || `https://www.youtube.com/results?search_query=${encodeURIComponent(`Audition ${skill.id} ${skill.name}`)}`}">${skill.youtube ? "Mở video" : "Tìm review"}</a></article>`).join("");
-  }
-
-  function renderAll() { renderStats(); renderTable(); renderYouTube(); }
-  function exportJSON() {
-    const blob = new Blob([JSON.stringify({ version: 1, updatedAt: new Date().toISOString(), skills: state.skills }, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob); const anchor = Object.assign(document.createElement("a"), { href: url, download: "master-skills-backup.json" });
-    anchor.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-  function setSkills(list) { state.skills = (list || []).map(normalize); backup(); renderAll(); CMS().emit("skills:changed", { action: "replace", skills: getSkills() }); }
-
-  function bind() {
-    form()?.addEventListener("submit", save);
-    document.getElementById("searchInput")?.addEventListener("input", CMS().debounce(event => { state.filter = event.target.value.trim(); renderTable(); }));
-    document.getElementById("skillTable")?.addEventListener("click", event => {
-      const editId = event.target.closest("[data-edit-id]")?.dataset.editId;
-      const deleteId = event.target.closest("[data-delete-id]")?.dataset.deleteId;
-      if (editId) fillForm(state.skills.find(item => item.id === editId));
-      if (deleteId) remove(deleteId);
-    });
-    ["exportJsonBtn", "exportJsonBtn2"].forEach(id => document.getElementById(id)?.addEventListener("click", exportJSON));
-    document.getElementById("loadJsonBtn")?.addEventListener("click", () => load(true));
-    window.addEventListener("mina:image-ready", event => { state.imageBase64 = event.detail?.base64 || ""; state.imageName = event.detail?.name || ""; });
-  }
-
-  async function init() { bind(); await load(); }
-  window.MinaAdminWiki = { init, load, getSkills, setSkills, renderAll };
-  document.addEventListener("DOMContentLoaded", init, { once: true });
-})(window, document);
+  })();
+  </script>
+</body>
+</html>
