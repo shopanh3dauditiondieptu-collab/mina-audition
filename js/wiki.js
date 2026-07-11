@@ -16,10 +16,10 @@
 (function MinaWikiPro(window, document) {
   "use strict";
 
-  const VERSION = "1.0.0";
-  const DATA_URL = "/database/wiki-skills.json";
-  const DEFAULT_IMAGE = "/images/wiki/skills/default.webp";
-  const CACHE_KEY = "mina_wiki_cache_v1";
+  const VERSION = "1.1.0-sync";
+  const DATA_URL = "database/wiki-skills.json";
+  const DEFAULT_IMAGE = "images/wiki/skills/default.webp";
+  const CACHE_KEY = "mina_wiki_cache_v2_sync";
   const CACHE_TTL = 5 * 60 * 1000;
   const PAGE_SIZE = 24;
   const SEARCH_DELAY = 220;
@@ -93,16 +93,53 @@
   function normalizeSkill(raw, index) {
     const skill = raw && typeof raw === "object" ? raw : {};
 
+    // QUAN TRỌNG: Trang chủ và Wikipedia đều đọc cùng một file
+    // /database/wiki-skills.json. Khối ánh xạ này hỗ trợ cả tên trường
+    // tiếng Việt của Admin CMS và tên trường tiếng Anh cũ.
     return {
       ...skill,
-      id: clean(skill.id || skill.skillId || `skill-${index + 1}`),
-      name: clean(skill.name || skill.title || "Skill chưa đặt tên"),
-      style: clean(skill.style || skill.category || "Chưa phân loại"),
-      rarity: clean(skill.rarity || skill.rank || ""),
-      bpm: clean(skill.bpm || skill.bestBpm || ""),
-      rating: numberValue(skill.rating ?? skill.beauty ?? skill.score),
-      description: clean(skill.description || skill.desc || ""),
-      image: clean(skill.image || skill.thumbnail || DEFAULT_IMAGE),
+      id: clean(
+        skill.idSkill || skill.id || skill.skillId || `skill-${index + 1}`
+      ),
+      name: clean(
+        skill.tenSkill || skill.name || skill.title || "Skill chưa đặt tên"
+      ),
+      style: clean(
+        skill.style || skill.category || skill.type || "Chưa phân loại"
+      ),
+      level: clean(
+        skill.level || skill.lv || skill.capDo || ""
+      ),
+      type: clean(
+        skill.type || skill.loai || skill.category || ""
+      ),
+      danceName: clean(
+        skill.tenBuocNhay || skill.danceName || skill.moveName || ""
+      ),
+      rarity: clean(
+        skill.doHiem || skill.rarity || skill.rank || ""
+      ),
+      bpm: clean(
+        skill.bpmDepNhat || skill.bpm || skill.bestBpm || ""
+      ),
+      rating: numberValue(
+        skill.diemDep ?? skill.rating ?? skill.beauty ?? skill.score
+      ),
+      description: clean(
+        skill.ghiChu || skill.description || skill.desc || ""
+      ),
+      image: clean(
+        skill.hinhAnh || skill.image || skill.thumbnail || DEFAULT_IMAGE
+      ),
+      videoUrl: clean(
+        skill.videoUrl || skill.video || skill.youtube || skill.youtubeUrl || ""
+      ),
+      quality: clean(
+        skill.quality || skill.doPhanGiai || ""
+      ),
+      tags: Array.isArray(skill.tags)
+        ? skill.tags.map(clean).filter(Boolean)
+        : [],
       createdAt: skill.createdAt || "",
       updatedAt: skill.updatedAt || ""
     };
@@ -121,9 +158,14 @@
         skill.id,
         skill.name,
         skill.style,
+        skill.level,
+        skill.type,
+        skill.danceName,
         skill.rarity,
         skill.bpm,
-        skill.description
+        skill.quality,
+        skill.description,
+        ...(skill.tags || [])
       ].join(" "));
 
       return (!query || searchable.includes(query))
@@ -226,7 +268,10 @@
 
     const meta = [
       skill.style ? `<span>💃 ${escapeHTML(skill.style)}</span>` : "",
-      skill.bpm ? `<span>🎵 BPM ${escapeHTML(skill.bpm)}</span>` : "",
+      skill.level ? `<span>🎚️ ${escapeHTML(skill.level)}</span>` : "",
+      skill.type ? `<span>🏷️ ${escapeHTML(skill.type)}</span>` : "",
+      skill.bpm ? `<span>🎵 ${escapeHTML(skill.bpm)}</span>` : "",
+      skill.quality ? `<span>🎬 ${escapeHTML(skill.quality)}</span>` : "",
       skill.rating ? `<span>⭐ ${escapeHTML(formatRating(skill.rating))}/10</span>` : ""
     ].filter(Boolean).join("");
 
