@@ -21,7 +21,9 @@
       ],
       "notes": "Dòng mẫu; có thể sửa hoặc xóa trong Admin.",
       "createdAt": "2026-07-10T00:00:00.000Z",
-      "updatedAt": "2026-07-10T00:00:00.000Z"
+      "updatedAt": "2026-07-10T00:00:00.000Z",
+      "homePinned": true,
+      "homeOrder": 1
     },
     {
       "id": "4K_6_0002",
@@ -50,7 +52,9 @@
       ],
       "notes": "D8 Skill Sexy Girl Lv6 \"264866\" 💙 | Audition VTC | 4K Dance Showcase | Mina",
       "createdAt": "2026-07-10T09:34:56.684Z",
-      "updatedAt": "2026-07-10T09:34:56.684Z"
+      "updatedAt": "2026-07-10T09:34:56.684Z",
+      "homePinned": true,
+      "homeOrder": 2
     },
     {
       "id": "4K_8_0044",
@@ -73,7 +77,9 @@
       "tags": [],
       "notes": "⭐ Best D8 Popping Cool LV8 \"642848\" | 4K Skill Showcase | Audition VTC | Mina",
       "createdAt": "2026-07-11T13:34:23.451Z",
-      "updatedAt": "2026-07-11T13:34:23.451Z"
+      "updatedAt": "2026-07-11T13:34:23.451Z",
+      "homePinned": true,
+      "homeOrder": 3
     }
   ]
 }
