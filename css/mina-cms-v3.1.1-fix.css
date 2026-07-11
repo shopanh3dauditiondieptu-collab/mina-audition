@@ -1,0 +1,24 @@
+/* Mina CMS v3.1.1 - sửa nút khôi phục bị trắng chữ */
+#minaRestoreBlogCategoriesV31 {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 220px;
+  padding: 11px 16px;
+  color: #11162d !important;
+  background: linear-gradient(90deg, #86ecff, #f056d8) !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  font-weight: 800 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  text-indent: 0 !important;
+}
+
+.mina-category-actions-v31 {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+}
