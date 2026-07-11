@@ -436,18 +436,35 @@ async function loadCategories() {
       throw new Error(data.error || `HTTP ${response.status}`);
     }
 
-    state.categories = Array.isArray(data.categories)
+    const apiCategories = Array.isArray(data.categories)
       ? data.categories.map(normalizeNode)
       : [];
 
-    state.tags = Array.isArray(data.tags) ? data.tags : [];
+    const apiTags = Array.isArray(data.tags) ? data.tags : [];
+
+    // Nếu API đang rỗng, tự động nạp bản danh mục Mina Blog dự phòng
+    // để dropdown Admin có thể sử dụng ngay, không cần bấm nút ẩn.
+    if (apiCategories.length === 0) {
+      state.categories = cloneMinaCategories(MINA_DEFAULT_CATEGORIES);
+      state.tags = apiTags.length ? apiTags : [...MINA_DEFAULT_TAGS];
+
+      renderAll();
+
+      if (message) {
+        message.textContent =
+          "Đã tự động nạp bản danh mục Mina Blog dự phòng. Bấm “Lưu danh mục” để đồng bộ lên GitHub.";
+      }
+
+      return;
+    }
+
+    state.categories = apiCategories;
+    state.tags = apiTags.length ? apiTags : [...MINA_DEFAULT_TAGS];
 
     renderAll();
 
     if (message) {
-      message.textContent = state.categories.length
-        ? "Đã tải danh mục từ GitHub."
-        : "API hoạt động nhưng chưa có danh mục. Bấm “Khôi phục danh mục Mina Blog” để nạp toàn bộ danh mục hiện tại.";
+      message.textContent = "Đã tải danh mục từ GitHub.";
     }
   } catch (error) {
     console.error("Mina categories load:", error);
