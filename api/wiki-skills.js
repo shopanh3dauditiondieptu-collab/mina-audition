@@ -169,6 +169,8 @@ function normalizeSkill(input = {}, previous = null) {
     hasYoutube: Boolean(youtubeUrl),
     hasWiki: input.hasWiki === undefined ? previous?.hasWiki !== false : input.hasWiki !== false,
     hot: Boolean(input.hot ?? previous?.hot ?? false),
+    homePinned: input.homePinned === undefined ? Boolean(previous?.homePinned) : (input.homePinned === true || input.homePinned === "true"),
+    homeOrder: (() => { const n = Number(input.homeOrder ?? previous?.homeOrder); return Number.isInteger(n) && n >= 1 && n <= 8 ? n : ""; })(),
     tags: normalizeTags(input.tags ?? previous?.tags ?? []),
     notes: String(input.notes ?? input.description ?? previous?.notes ?? "").trim(),
     createdAt: previous?.createdAt || input.createdAt || now,
