@@ -5,35 +5,41 @@
       "id": "trai-nghiem-game",
       "name": "TRẢI NGHIỆM GAME",
       "icon": "🎮",
+      "parentId": "",
       "children": [
         {
           "id": "share-file-skill-d8",
           "name": "Share File Skill D8",
           "icon": "📄",
+          "parentId": "",
           "children": []
         },
         {
           "id": "share-file-skill-d8team",
           "name": "Share File Skill D8Team",
           "icon": "📄",
+          "parentId": "",
           "children": []
         },
         {
           "id": "cach-quay-dung-video-anh",
           "name": "Cách Quay Dựng Video & Ảnh",
           "icon": "🎥",
+          "parentId": "",
           "children": []
         },
         {
           "id": "su-kien-ingame-audition",
           "name": "Sự Kiện Ingame Audition",
           "icon": "🎉",
+          "parentId": "",
           "children": []
         },
         {
           "id": "van-de-khac",
           "name": "Vấn Đề Khác",
           "icon": "📌",
+          "parentId": "",
           "children": []
         }
       ]
@@ -42,41 +48,48 @@
       "id": "lenh-ai-tao-anh-3d",
       "name": "LỆNH AI TẠO ẢNH 3D",
       "icon": "📁",
+      "parentId": "",
       "children": [
         {
           "id": "prompt-couple",
           "name": "Prompt Couple",
           "icon": "💞",
+          "parentId": "",
           "children": []
         },
         {
           "id": "prompt-anh-don-boy",
           "name": "Prompt Ảnh Đơn - Boy",
           "icon": "👦",
+          "parentId": "",
           "children": []
         },
         {
           "id": "prompt-anh-don-girl",
           "name": "Prompt Ảnh Đơn - Girl",
           "icon": "👧",
+          "parentId": "",
           "children": []
         },
         {
           "id": "prompt-wedding",
           "name": "Prompt Wedding",
           "icon": "💍",
+          "parentId": "",
           "children": []
         },
         {
           "id": "prompt-background",
           "name": "Prompt Background",
           "icon": "🌆",
+          "parentId": "",
           "children": []
         },
         {
           "id": "prompt-anh-nhom",
           "name": "Prompt Ảnh Nhóm",
           "icon": "👥",
+          "parentId": "",
           "children": []
         }
       ]
@@ -85,34 +98,40 @@
       "id": "mix-match-outfit-game",
       "name": "MIX & MATCH OUTFIT GAME",
       "icon": "👗",
+      "parentId": "",
       "children": [
         {
           "id": "style-girl",
           "name": "Style Girl",
           "icon": "👧",
+          "parentId": "",
           "children": [
             {
               "id": "cute-girl",
               "name": "Cute Girl",
               "icon": "🌸",
+              "parentId": "",
               "children": []
             },
             {
               "id": "sexy-girl",
               "name": "Sexy Girl",
               "icon": "🔥",
+              "parentId": "",
               "children": []
             },
             {
               "id": "cool-girl",
               "name": "Cool Girl",
               "icon": "💎",
+              "parentId": "",
               "children": []
             },
             {
               "id": "style-105-d8-girl",
               "name": "Style 105 D8",
               "icon": "✨",
+              "parentId": "",
               "children": []
             }
           ]
@@ -121,29 +140,34 @@
           "id": "style-boy",
           "name": "Style Boy",
           "icon": "👦",
+          "parentId": "",
           "children": [
             {
               "id": "cute-boy",
               "name": "Cute Boy",
               "icon": "🌸",
+              "parentId": "",
               "children": []
             },
             {
               "id": "sexy-boy",
               "name": "Sexy Boy",
               "icon": "🔥",
+              "parentId": "",
               "children": []
             },
             {
               "id": "cool-boy",
               "name": "Cool Boy",
               "icon": "💎",
+              "parentId": "",
               "children": []
             },
             {
               "id": "style-105-d8-boy",
               "name": "Style 105 D8",
               "icon": "✨",
+              "parentId": "",
               "children": []
             }
           ]
@@ -152,23 +176,27 @@
           "id": "couple-outfit",
           "name": "Couple Outfit",
           "icon": "❤️",
+          "parentId": "",
           "children": [
             {
               "id": "cute-style",
               "name": "Cute Style",
               "icon": "🌸",
+              "parentId": "",
               "children": []
             },
             {
               "id": "sexy-style",
               "name": "Sexy Style",
               "icon": "🔥",
+              "parentId": "",
               "children": []
             },
             {
               "id": "cool-style",
               "name": "Cool Style",
               "icon": "💎",
+              "parentId": "",
               "children": []
             }
           ]
@@ -179,58 +207,68 @@
       "id": "video-game-audition",
       "name": "VIDEO GAME AUDITION",
       "icon": "🎬",
+      "parentId": "",
       "children": [
         {
           "id": "mv-audition",
           "name": "MV Audition",
           "icon": "🎵",
+          "parentId": "",
           "children": []
         },
         {
           "id": "perfect-combo-audition",
           "name": "Perfect x Combo Audition",
           "icon": "🏆",
+          "parentId": "",
           "children": []
         },
         {
           "id": "d8-skill-dance-performance",
           "name": "D8 SKILL DANCE PERFORMANCE",
           "icon": "💃",
+          "parentId": "",
           "children": [
             {
               "id": "mua-quat",
               "name": "Múa Quạt",
               "icon": "🪭",
+              "parentId": "",
               "children": []
             },
             {
               "id": "poppin",
               "name": "Poppin",
               "icon": "🔥",
+              "parentId": "",
               "children": []
             },
             {
               "id": "d8-sexy-girl",
               "name": "D8 Sexy Girl",
               "icon": "💃",
+              "parentId": "",
               "children": []
             },
             {
               "id": "d8-cool-girl",
               "name": "D8 Cool Girl",
               "icon": "💎",
+              "parentId": "",
               "children": []
             },
             {
               "id": "d8-sexy-boy",
               "name": "D8 Sexy Boy",
               "icon": "🕺",
+              "parentId": "",
               "children": []
             },
             {
               "id": "d8-cool-boy",
               "name": "D8 Cool Boy",
               "icon": "🧢",
+              "parentId": "",
               "children": []
             }
           ]
@@ -239,23 +277,27 @@
           "id": "d8-team-dance-performance",
           "name": "D8 TEAM DANCE PERFORMANCE",
           "icon": "👯",
+          "parentId": "",
           "children": [
             {
               "id": "couple",
               "name": "COUPLE",
               "icon": "💞",
+              "parentId": "",
               "children": []
             },
             {
               "id": "girl-girl",
               "name": "Girl & Girl",
               "icon": "👭",
+              "parentId": "",
               "children": []
             },
             {
               "id": "boy-boy",
               "name": "Boy & Boy",
               "icon": "👬",
+              "parentId": "",
               "children": []
             }
           ]
@@ -264,17 +306,20 @@
           "id": "doi-8-4k-dance-performance",
           "name": "ĐÔI 8-4K DANCE PERFORMANCE",
           "icon": "💞",
+          "parentId": "",
           "children": [
             {
               "id": "doi-8k",
               "name": "Đôi 8K",
               "icon": "8️⃣",
+              "parentId": "",
               "children": []
             },
             {
               "id": "doi-4k",
               "name": "Đôi 4K",
               "icon": "4️⃣",
+              "parentId": "",
               "children": []
             }
           ]
@@ -283,12 +328,14 @@
           "id": "d8-skill-review",
           "name": "D8 SKILL REVIEW",
           "icon": "⭐",
+          "parentId": "",
           "children": []
         },
         {
           "id": "dc8-skill-review",
           "name": "DC8 SKILL REVIEW",
           "icon": "⭐",
+          "parentId": "",
           "children": []
         }
       ]
@@ -297,6 +344,7 @@
       "id": "tam-su-chia-se",
       "name": "TÂM SỰ - CHIA SẺ",
       "icon": "💌",
+      "parentId": "",
       "children": []
     }
   ],
@@ -310,5 +358,5 @@
     "Prompt",
     "D8Team"
   ],
-  "updatedAt": "2026-07-11T01:01:05.422Z"
+  "updatedAt": "2026-07-11T01:01:11.452Z"
 }
