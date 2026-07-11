@@ -297,6 +297,32 @@ export const MINA_DEFAULT_CATEGORIES = [
     "icon": "💌",
     "children": []
   }
+  ,
+{
+    "id": "shop-anh-2d-3d-au",
+    "name": "SHOP ẢNH 2D/3D AU",
+    "icon": "🛍️",
+    "children": [
+        {
+            "id": "shop-avatar-2d",
+            "name": "Avatar 2D",
+            "icon": "🖼️",
+            "children": []
+        },
+        {
+            "id": "shop-avatar-3d",
+            "name": "Avatar 3D",
+            "icon": "🎨",
+            "children": []
+        },
+        {
+            "id": "shop-thiet-ke-theo-yeu-cau",
+            "name": "Thiết Kế Theo Yêu Cầu",
+            "icon": "✨",
+            "children": []
+        }
+    ]
+}
 ];
 
 export const MINA_DEFAULT_TAGS = [
