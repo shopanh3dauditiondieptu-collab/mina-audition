@@ -1,5 +1,5 @@
 /* =========================================================
-   MINA ADMIN WIKI V7.1 - FIX DELETE 404 + DATA ALIASES
+   MINA ADMIN WIKI V7.2 - FIX DELETE 404 + DATA ALIASES
    - Giữ nguyên giao diện, form, tab và cấu trúc Mina CMS
    - Xóa ưu tiên API /api/wiki-delete-skill
    - Nếu API xóa trả 404: tự động đồng bộ toàn bộ danh sách còn lại
@@ -183,7 +183,17 @@
 
     CMS().setBusy(true, "Đang lưu và đồng bộ skill...");
     try {
-      const body = { skillData: skill };
+      /* Gửi schema chuẩn và các alias để tương thích API/JSON cũ. */
+      const body = {
+        skillData: {
+          ...skill,
+          bpmBest: skill.bpm,
+          imageUrl: skill.image,
+          youtubeUrl: skill.youtube,
+          cameraAngle: skill.camera,
+          notes: skill.description
+        }
+      };
       if (state.imageBase64) {
         body.imageBase64 = state.imageBase64;
         body.imageName = state.imageName || `skill-${skill.id}`;
@@ -205,9 +215,24 @@
       backup();
       resetForm();
       renderAll();
+
+      /* Xóa cache và tải lại dữ liệu thật từ server.
+         Việc này bảo đảm bảng Admin không giữ bản cũ trong bộ nhớ. */
       window.MinaWikiEngine?.clearCache?.();
-      window.dispatchEvent(new CustomEvent("mina:skills-changed", { detail: { skill: saved } }));
-      CMS().toast(`Đã ${index >= 0 ? "cập nhật" : "thêm"} skill và đồng bộ thành công.`, "success");
+      await load(true);
+
+      window.dispatchEvent(new CustomEvent("mina:skills-changed", {
+        detail: {
+          action: index >= 0 ? "update" : "create",
+          skill: saved
+        }
+      }));
+
+      CMS().toast(
+        `Đã ${index >= 0 ? "cập nhật" : "thêm"} skill và tải lại dữ liệu mới.`,
+        "success"
+      );
+
       CMS().emit("skills:changed", {
         action: index >= 0 ? "update" : "create",
         skill: saved
