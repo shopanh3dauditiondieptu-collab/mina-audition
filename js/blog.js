@@ -8,15 +8,14 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 import {
-  MINA_DEFAULT_CATEGORIES,
-  cloneMinaCategories
-} from "./mina-categories-data.js";
+  getCategories
+} from "./category-service.js";
 
 const box = document.getElementById("blogPosts");
 const sidebar = document.querySelector(".blog-category-box");
 
 let allPosts = [];
-let minaTree = cloneMinaCategories();
+let categoryTree = [];
 
 function normalize(text = "") {
   return String(text)
@@ -26,43 +25,51 @@ function normalize(text = "") {
     .trim();
 }
 
-function matchPost(post, keyword) {
-  const text = normalize(`
-    ${post.category || ""}
-    ${post.categoryName || ""}
-    ${post.categoryFullName || ""}
-    ${Array.isArray(post.categoryPath) ? post.categoryPath.join(" ") : ""}
-    ${post.group || ""}
-    ${post.playlist || ""}
-    ${post.title || ""}
-    ${post.desc || ""}
-  `);
+function postMatches(post, value) {
+  const haystack = normalize([
+    post.category,
+    post.categoryName,
+    post.categoryFullName,
+    Array.isArray(post.categoryPath)
+      ? post.categoryPath.join(" ")
+      : "",
+    post.title,
+    post.desc
+  ].join(" "));
 
-  return text.includes(normalize(keyword));
+  return haystack.includes(normalize(value));
 }
 
-function getAllNames(node) {
-  if (!node) return [];
-
-  let names = [
-    node.name,
+function nodeValues(node) {
+  let values = [
     node.id,
-    ...(Array.isArray(node.aliases) ? node.aliases : [])
+    node.name
   ].filter(Boolean);
 
   (node.children || []).forEach(child => {
-    names = names.concat(getAllNames(child));
+    values = values.concat(nodeValues(child));
   });
 
-  return names;
+  return values;
 }
 
 function countNode(node) {
-  const names = getAllNames(node);
+  const values = nodeValues(node);
 
   return allPosts.filter(item =>
-    names.some(name => matchPost(item.data, name))
+    values.some(value => postMatches(item.data, value))
   ).length;
+}
+
+function findNode(nodes, id) {
+  for (const node of nodes) {
+    if (node.id === id) return node;
+
+    const found = findNode(node.children || [], id);
+    if (found) return found;
+  }
+
+  return null;
 }
 
 function renderPosts(posts) {
@@ -79,48 +86,42 @@ function renderPosts(posts) {
   }
 
   box.innerHTML = posts.map(item => {
-    const p = item.data;
+    const post = item.data;
 
     return `
       <article class="post-card">
         <img
-          src="${p.image || "images/default-post.svg"}"
-          alt="${p.title || "Bài viết Mina"}"
+          src="${post.image || "images/default-post.svg"}"
+          alt="${post.title || "Bài viết Mina"}"
           loading="lazy"
         >
+
         <p class="post-category">
-          ${p.categoryName || p.category || p.playlist || "Mina Blog"}
+          ${post.categoryName || post.category || "Mina Blog"}
         </p>
-        <h3>${p.title || "Không có tiêu đề"}</h3>
-        <p>${p.desc || ""}</p>
-        <a href="post.html?id=${item.id}" class="read-more">Đọc bài</a>
+
+        <h3>${post.title || "Không có tiêu đề"}</h3>
+        <p>${post.desc || ""}</p>
+
+        <a href="post.html?id=${item.id}" class="read-more">
+          Đọc bài
+        </a>
       </article>
     `;
   }).join("");
 }
 
 function filterByNode(node) {
-  const names = getAllNames(node);
+  const values = nodeValues(node);
 
   renderPosts(
     allPosts.filter(item =>
-      names.some(name => matchPost(item.data, name))
+      values.some(value => postMatches(item.data, value))
     )
   );
 }
 
-function findNodeById(nodes, id) {
-  for (const node of nodes) {
-    if (node.id === id) return node;
-
-    const found = findNodeById(node.children || [], id);
-    if (found) return found;
-  }
-
-  return null;
-}
-
-function renderTreeNode(node, level = 1) {
+function renderNode(node, level = 1) {
   const hasChildren =
     Array.isArray(node.children) && node.children.length > 0;
 
@@ -131,8 +132,11 @@ function renderTreeNode(node, level = 1) {
         data-category-id="${node.id}"
       >
         <span class="${hasChildren ? "tree-toggle" : ""}">
-          ${hasChildren ? "+" : "•"} ${node.icon || "📁"} ${node.name}
+          ${hasChildren ? "+" : "•"}
+          ${node.icon || "📁"}
+          ${node.name}
         </span>
+
         <b>${countNode(node)}</b>
       </button>
 
@@ -141,7 +145,7 @@ function renderTreeNode(node, level = 1) {
           ? `
             <div class="mina-tree-children collapsed">
               ${node.children
-                .map(child => renderTreeNode(child, level + 1))
+                .map(child => renderNode(child, level + 1))
                 .join("")}
             </div>
           `
@@ -162,84 +166,82 @@ function buildSidebar() {
       <b>${allPosts.length}</b>
     </button>
 
-    ${minaTree.map(node => renderTreeNode(node)).join("")}
+    ${categoryTree.map(node => renderNode(node)).join("")}
   `;
 
-  sidebar.querySelector(".mina-tree-all")?.addEventListener("click", function () {
-    sidebar.querySelectorAll("button").forEach(button =>
-      button.classList.remove("active")
-    );
-
-    this.classList.add("active");
-    renderPosts(allPosts);
-  });
-
-  sidebar.querySelectorAll("[data-category-id]").forEach(button => {
-    button.addEventListener("click", function () {
-      const group = this.closest(".mina-tree-group");
-      const children = group?.querySelector(":scope > .mina-tree-children");
-      const toggle = this.querySelector(".tree-toggle");
-
-      if (children) {
-        children.classList.toggle("collapsed");
-
-        if (toggle) {
-          const node = findNodeById(minaTree, this.dataset.categoryId);
-          toggle.textContent = `${
-            children.classList.contains("collapsed") ? "+" : "−"
-          } ${node?.icon || "📁"} ${node?.name || ""}`;
-        }
-      }
-
-      sidebar.querySelectorAll("button").forEach(item =>
-        item.classList.remove("active")
+  sidebar.querySelector(".mina-tree-all")
+    ?.addEventListener("click", function () {
+      sidebar.querySelectorAll("button").forEach(button =>
+        button.classList.remove("active")
       );
 
       this.classList.add("active");
-
-      const node = findNodeById(minaTree, this.dataset.categoryId);
-      if (node) filterByNode(node);
-    });
-  });
-}
-
-async function loadCategories() {
-  try {
-    const response = await fetch("/api/categories", {
-      headers: { Accept: "application/json" },
-      cache: "no-store"
+      renderPosts(allPosts);
     });
 
-    const data = await response.json();
+  sidebar.querySelectorAll("[data-category-id]")
+    .forEach(button => {
+      button.addEventListener("click", function () {
+        const group = this.closest(".mina-tree-group");
+        const children =
+          group?.querySelector(":scope > .mina-tree-children");
+        const toggle = this.querySelector(".tree-toggle");
 
-    if (
-      response.ok &&
-      Array.isArray(data.categories) &&
-      data.categories.length
-    ) {
-      minaTree = data.categories;
-      return;
-    }
-  } catch (error) {
-    console.warn("Không tải được danh mục API, dùng bản mặc định:", error);
-  }
+        if (children) {
+          children.classList.toggle("collapsed");
 
-  minaTree = cloneMinaCategories(MINA_DEFAULT_CATEGORIES);
+          const node = findNode(
+            categoryTree,
+            this.dataset.categoryId
+          );
+
+          if (toggle && node) {
+            toggle.textContent = `${
+              children.classList.contains("collapsed")
+                ? "+"
+                : "−"
+            } ${node.icon || "📁"} ${node.name}`;
+          }
+        }
+
+        sidebar.querySelectorAll("button").forEach(item =>
+          item.classList.remove("active")
+        );
+
+        this.classList.add("active");
+
+        const node = findNode(
+          categoryTree,
+          this.dataset.categoryId
+        );
+
+        if (node) filterByNode(node);
+      });
+    });
 }
 
-async function loadPosts() {
+async function loadPage() {
   if (!box) return;
 
   box.innerHTML = `<p class="muted">Đang tải bài viết...</p>`;
 
   try {
-    await loadCategories();
+    const [categoryData, postSnapshot] = await Promise.all([
+      getCategories({
+        force: false,
+        allowFallback: true
+      }),
+      getDocs(
+        query(
+          collection(db, "posts"),
+          orderBy("createdAt", "desc")
+        )
+      )
+    ]);
 
-    const snapshot = await getDocs(
-      query(collection(db, "posts"), orderBy("createdAt", "desc"))
-    );
+    categoryTree = categoryData.categories;
 
-    allPosts = snapshot.docs.map(item => ({
+    allPosts = postSnapshot.docs.map(item => ({
       id: item.id,
       data: item.data()
     }));
@@ -247,15 +249,15 @@ async function loadPosts() {
     buildSidebar();
     renderPosts(allPosts);
   } catch (error) {
-    console.error("Mina Blog Error:", error);
+    console.error("Mina Blog:", error);
 
     box.innerHTML = `
       <article class="post-card">
         <h3>Không tải được bài viết</h3>
-        <p>Hãy kiểm tra Firebase Config hoặc Firestore Rules.</p>
+        <p>Hãy kiểm tra Firebase hoặc kết nối mạng.</p>
       </article>
     `;
   }
 }
 
-loadPosts();
+loadPage();
