@@ -10,6 +10,12 @@ import {
   parseTags
 } from "./utils.js";
 
+import {
+  MINA_DEFAULT_CATEGORIES,
+  MINA_DEFAULT_TAGS,
+  cloneMinaCategories
+} from "../mina-categories-data.js";
+
 let state = {
   categories: [],
   tags: [],
@@ -128,7 +134,12 @@ function createManagerCard() {
         <h3>📂 Quản lý danh mục CMS</h3>
         <p class="muted">Thêm danh mục chính, danh mục con và tag mà không sửa HTML.</p>
       </div>
-      <button type="button" id="minaSaveCategoriesV3">Lưu danh mục</button>
+      <div class="mina-category-actions-v31">
+        <button type="button" id="minaRestoreBlogCategoriesV31" class="secondary-btn">
+          Khôi phục danh mục Mina Blog
+        </button>
+        <button type="button" id="minaSaveCategoriesV3">Lưu danh mục</button>
+      </div>
     </div>
 
     <div class="mina-cms-manager-grid">
@@ -383,6 +394,33 @@ function addCategory() {
   renderAll();
 }
 
+
+function restoreBlogCategories() {
+  const hasCurrent = flatten(state.categories).length > 0;
+
+  if (hasCurrent) {
+    const ok = confirm(
+      "Danh mục hiện tại sẽ được thay bằng bộ danh mục đang dùng trên Mina Blog. Tiếp tục?"
+    );
+    if (!ok) return;
+  }
+
+  state.categories = cloneMinaCategories(MINA_DEFAULT_CATEGORIES);
+  state.tags = [...MINA_DEFAULT_TAGS];
+  state.selectedId = "";
+  categoryPath = [];
+
+  if (categoryInput) categoryInput.value = "";
+
+  renderAll();
+
+  const message = document.getElementById("minaCategoryMessageV3");
+  if (message) {
+    message.textContent =
+      "Đã khôi phục danh mục Mina Blog vào Admin. Bấm “Lưu danh mục” để đồng bộ lên GitHub.";
+  }
+}
+
 async function loadCategories() {
   const message = document.getElementById("minaCategoryMessageV3");
 
@@ -409,7 +447,7 @@ async function loadCategories() {
     if (message) {
       message.textContent = state.categories.length
         ? "Đã tải danh mục từ GitHub."
-        : "API hoạt động nhưng hiện chưa có danh mục.";
+        : "API hoạt động nhưng chưa có danh mục. Bấm “Khôi phục danh mục Mina Blog” để nạp toàn bộ danh mục hiện tại.";
     }
   } catch (error) {
     console.error("Mina categories load:", error);
@@ -471,6 +509,11 @@ export async function initCategories() {
 
   safeOn(document.getElementById("minaAddCategoryV3"), "click", addCategory);
   safeOn(document.getElementById("minaSaveCategoriesV3"), "click", saveCategories);
+  safeOn(
+    document.getElementById("minaRestoreBlogCategoriesV31"),
+    "click",
+    restoreBlogCategories
+  );
 
   await loadCategories();
   ready = true;
