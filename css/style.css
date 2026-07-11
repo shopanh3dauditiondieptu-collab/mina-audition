@@ -2329,11 +2329,12 @@ font-weight:900;
     transform: none;
   }
 }
-/* =====================================================
-   FIX FEATURED CONTENT CLICK AREA - MINA
-   Khóa vùng nhấp đúng cho các card Nội dung nổi bật
-===================================================== */
 
+
+/* =====================================================
+   MINA FEATURED CARDS - FINAL LINK FIX
+   Giữ toàn bộ card có thể nhấp và không bị lớp khác che.
+===================================================== */
 .featured-section {
   position: relative;
   isolation: isolate;
@@ -2341,21 +2342,24 @@ font-weight:900;
 
 .featured-section .feature-grid {
   position: relative;
-  z-index: 10;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 28px;
+  align-items: stretch;
 }
 
-.featured-section .feature-grid article {
+.featured-section .featured-card {
   position: relative;
-  z-index: 11;
+  z-index: 21;
   min-width: 0;
-  overflow: hidden;
-  border-radius: 14px;
 }
 
 .featured-section .feature-link {
   position: relative;
-  z-index: 12;
-  display: block;
+  z-index: 22;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100%;
   color: inherit;
@@ -2380,6 +2384,7 @@ font-weight:900;
 
 .featured-section .feature-link:hover {
   transform: translateY(-5px);
+  filter: brightness(1.05);
 }
 
 .featured-section::before,
@@ -2387,4 +2392,16 @@ font-weight:900;
 .featured-section .section-title::before,
 .featured-section .section-title::after {
   pointer-events: none;
+}
+
+@media (max-width: 1024px) {
+  .featured-section .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .featured-section .feature-grid {
+    grid-template-columns: 1fr;
+  }
 }
