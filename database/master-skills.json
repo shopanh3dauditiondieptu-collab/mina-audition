@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-07-10T09:34:56.922Z",
+  "updatedAt": "2026-07-11T13:34:24.100Z",
   "skills": [
     {
       "id": "SAMPLE-001",
@@ -51,6 +51,29 @@
       "notes": "D8 Skill Sexy Girl Lv6 \"264866\" 💙 | Audition VTC | 4K Dance Showcase | Mina",
       "createdAt": "2026-07-10T09:34:56.684Z",
       "updatedAt": "2026-07-10T09:34:56.684Z"
+    },
+    {
+      "id": "4K_8_0044",
+      "name": "642848",
+      "alias": "",
+      "type": "4K",
+      "style": "Poppin-H",
+      "level": 8,
+      "bpmBest": "",
+      "rarity": "",
+      "rating": "",
+      "status": "needs_review",
+      "imageUrl": "https://res.cloudinary.com/rpwcnrfg/image/upload/v1783776791/mina/wiki/skills/lv8_642848_4k.webp",
+      "youtubeUrl": "",
+      "cameraAngle": "",
+      "song": "",
+      "hasYoutube": false,
+      "hasWiki": true,
+      "hot": false,
+      "tags": [],
+      "notes": "⭐ Best D8 Popping Cool LV8 \"642848\" | 4K Skill Showcase | Audition VTC | Mina",
+      "createdAt": "2026-07-11T13:34:23.451Z",
+      "updatedAt": "2026-07-11T13:34:23.451Z"
     }
   ]
 }
