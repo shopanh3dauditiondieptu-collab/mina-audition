@@ -1,174 +1,215 @@
-/* =====================================================
-   MINA CLOUDINARY IMAGE UPLOAD API
-   File: api/upload-image.js
+/**
+ * MINA CMS - API UPLOAD ẢNH V1
+ * Vercel Serverless Function
+ *
+ * Environment Variables bắt buộc:
+ * - MINA_ADMIN_API_KEY
+ * - CLOUDINARY_CLOUD_NAME
+ * - CLOUDINARY_API_KEY
+ * - CLOUDINARY_API_SECRET
+ */
 
-   Environment Variables:
-   MINA_ADMIN_API_KEY
-   CLOUDINARY_CLOUD_NAME
-   CLOUDINARY_API_KEY
-   CLOUDINARY_API_SECRET
-===================================================== */
+import crypto from "node:crypto";
 
-const crypto = require("crypto");
-
-const MAX_BASE64_LENGTH = 12 * 1024 * 1024; // khoảng 8MB file ảnh sau khi mã hóa
-const ALLOWED_DATA_URL = /^data:image\/(png|jpe?g|webp|gif);base64,/i;
-
-function env(name) {
-  const value = process.env[name];
-  if (!value) throw new Error(`Thiếu biến môi trường ${name}`);
-  return value;
-}
-
-function sendJson(res, status, body) {
-  res.status(status);
-  res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.setHeader("Cache-Control", "no-store");
-  res.end(JSON.stringify(body));
-}
-
-function requireAdmin(req) {
-  const configured = env("MINA_ADMIN_API_KEY");
-  const received =
-    req.headers["x-mina-admin-key"] ||
-    req.body?.adminApiKey ||
-    "";
-
-  const a = Buffer.from(String(configured));
-  const b = Buffer.from(String(received));
-
-  const valid =
-    a.length === b.length &&
-    crypto.timingSafeEqual(a, b);
-
-  if (!valid) {
-    const error = new Error("Khóa quản trị không đúng hoặc đã hết phiên.");
-    error.statusCode = 401;
-    throw error;
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "4mb"
+    }
   }
+};
+
+function send(res, status, payload) {
+  res.status(status).json(payload);
 }
 
-function cleanPublicId(value) {
-  return String(value || `skill-${Date.now()}`)
-    .replace(/\.[^/.]+$/, "")
+function clean(value) {
+  return value === null || value === undefined ? "" : String(value).trim();
+}
+
+function timingSafeEqualText(a, b) {
+  const left = Buffer.from(clean(a));
+  const right = Buffer.from(clean(b));
+
+  if (!left.length || left.length !== right.length) return false;
+  return crypto.timingSafeEqual(left, right);
+}
+
+function getAdminKey(req) {
+  return clean(
+    req.headers["x-mina-admin-key"] ||
+    req.headers["x-admin-key"] ||
+    req.headers.authorization?.replace(/^Bearer\s+/i, "")
+  );
+}
+
+function sanitizeFolder(value) {
+  const folder = clean(value || "mina/wiki/skills")
+    .replace(/[^a-zA-Z0-9/_-]/g, "")
+    .replace(/\/+/g, "/")
+    .replace(/^\/|\/$/g, "");
+
+  return folder || "mina/wiki/skills";
+}
+
+function sanitizePublicId(value) {
+  return clean(value || `skill-${Date.now()}`)
+    .replace(/\.[^.]+$/, "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-zA-Z0-9_-]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
-    .slice(0, 120) || `skill-${Date.now()}`;
+    .toLowerCase()
+    .slice(0, 80) || `skill-${Date.now()}`;
 }
 
-function validateImageData(dataUrl) {
-  if (!dataUrl || typeof dataUrl !== "string") {
-    throw new Error("Chưa nhận được dữ liệu ảnh.");
-  }
-
-  if (!ALLOWED_DATA_URL.test(dataUrl)) {
-    throw new Error("Định dạng ảnh không hợp lệ. Chỉ hỗ trợ PNG, JPG, WebP hoặc GIF.");
-  }
-
-  if (dataUrl.length > MAX_BASE64_LENGTH) {
-    const error = new Error("Ảnh quá lớn. Hãy chọn ảnh nhỏ hơn hoặc giảm kích thước.");
-    error.statusCode = 413;
-    throw error;
-  }
+function isValidDataUrl(value) {
+  return /^data:image\/(webp|png|jpeg|jpg);base64,[a-zA-Z0-9+/=\s]+$/.test(clean(value));
 }
 
-async function uploadToCloudinary(dataUrl, publicId) {
-  const cloudName = env("CLOUDINARY_CLOUD_NAME");
-  const apiKey = env("CLOUDINARY_API_KEY");
-  const apiSecret = env("CLOUDINARY_API_SECRET");
+function createSignature(params, secret) {
+  const source = Object.keys(params)
+    .sort()
+    .map((key) => `${key}=${params[key]}`)
+    .join("&");
+
+  return crypto
+    .createHash("sha1")
+    .update(`${source}${secret}`)
+    .digest("hex");
+}
+
+export default async function handler(req, res) {
+  res.setHeader("Cache-Control", "no-store");
+
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return send(res, 405, {
+      success: false,
+      message: "API chỉ chấp nhận phương thức POST."
+    });
+  }
+
+  const expectedAdminKey = clean(process.env.MINA_ADMIN_API_KEY);
+  const suppliedAdminKey = getAdminKey(req);
+
+  if (!expectedAdminKey) {
+    return send(res, 500, {
+      success: false,
+      code: "ADMIN_KEY_NOT_CONFIGURED",
+      message: "Máy chủ chưa cấu hình MINA_ADMIN_API_KEY."
+    });
+  }
+
+  if (!timingSafeEqualText(suppliedAdminKey, expectedAdminKey)) {
+    return send(res, 401, {
+      success: false,
+      code: "INVALID_ADMIN_KEY",
+      message: "Khóa quản trị không đúng hoặc đã hết phiên."
+    });
+  }
+
+  const cloudName = clean(process.env.CLOUDINARY_CLOUD_NAME);
+  const apiKey = clean(process.env.CLOUDINARY_API_KEY);
+  const apiSecret = clean(process.env.CLOUDINARY_API_SECRET);
+
+  if (!cloudName || !apiKey || !apiSecret) {
+    return send(res, 500, {
+      success: false,
+      code: "CLOUDINARY_NOT_CONFIGURED",
+      message: "Máy chủ chưa cấu hình đầy đủ Cloudinary."
+    });
+  }
+
+  const body = req.body || {};
+  const dataUrl = clean(body.dataUrl);
+  const folder = sanitizeFolder(body.folder);
+  const publicId = sanitizePublicId(body.publicId || body.filename);
+
+  if (!isValidDataUrl(dataUrl)) {
+    return send(res, 400, {
+      success: false,
+      code: "INVALID_IMAGE",
+      message: "Dữ liệu ảnh không hợp lệ hoặc không được hỗ trợ."
+    });
+  }
+
+  if (Buffer.byteLength(dataUrl, "utf8") > 3.8 * 1024 * 1024) {
+    return send(res, 413, {
+      success: false,
+      code: "IMAGE_TOO_LARGE",
+      message: "Ảnh sau tối ưu vẫn quá lớn. Hãy chọn ảnh nhẹ hơn."
+    });
+  }
 
   const timestamp = Math.floor(Date.now() / 1000);
-  const folder = "mina/wiki-skills";
-  const safePublicId = cleanPublicId(publicId);
+  const signedParams = {
+    folder,
+    overwrite: "true",
+    public_id: publicId,
+    timestamp
+  };
 
-  const signatureSource =
-    `folder=${folder}&overwrite=true&public_id=${safePublicId}` +
-    `&timestamp=${timestamp}${apiSecret}`;
-
-  const signature = crypto
-    .createHash("sha1")
-    .update(signatureSource)
-    .digest("hex");
+  const signature = createSignature(signedParams, apiSecret);
 
   const form = new FormData();
   form.append("file", dataUrl);
   form.append("api_key", apiKey);
   form.append("timestamp", String(timestamp));
   form.append("folder", folder);
-  form.append("public_id", safePublicId);
+  form.append("public_id", publicId);
   form.append("overwrite", "true");
   form.append("signature", signature);
 
-  const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-    {
-      method: "POST",
-      body: form
-    }
-  );
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 25000);
 
-  const payload = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      payload?.error?.message ||
-      `Cloudinary trả về lỗi HTTP ${response.status}`
-    );
-  }
-
-  if (!payload.secure_url) {
-    throw new Error("Cloudinary không trả về URL ảnh.");
-  }
-
-  return {
-    url: payload.secure_url,
-    publicId: payload.public_id || "",
-    width: payload.width || 0,
-    height: payload.height || 0,
-    bytes: payload.bytes || 0,
-    format: payload.format || ""
-  };
-}
-
-module.exports = async function handler(req, res) {
   try {
-    if (req.method !== "POST") {
-      res.setHeader("Allow", "POST");
-      return sendJson(res, 405, {
-        ok: false,
-        error: "Chỉ hỗ trợ phương thức POST."
+    const cloudinaryResponse = await fetch(
+      `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/image/upload`,
+      {
+        method: "POST",
+        body: form,
+        signal: controller.signal
+      }
+    );
+
+    const result = await cloudinaryResponse.json().catch(() => ({}));
+
+    if (!cloudinaryResponse.ok) {
+      return send(res, cloudinaryResponse.status, {
+        success: false,
+        code: "CLOUDINARY_UPLOAD_FAILED",
+        message:
+          result?.error?.message ||
+          "Cloudinary từ chối upload ảnh.",
+        details: result
       });
     }
 
-    requireAdmin(req);
-
-    const body = req.body || {};
-    const imageBase64 = body.imageBase64 || body.image || "";
-    const imageName = body.imageName || body.publicId || "";
-
-    validateImageData(imageBase64);
-
-    const result = await uploadToCloudinary(imageBase64, imageName);
-
-    return sendJson(res, 200, {
-      ok: true,
-      imageUrl: result.url,
-      image: result.url,
-      publicId: result.publicId,
+    return send(res, 200, {
+      success: true,
+      url: result.secure_url,
+      secure_url: result.secure_url,
+      publicId: result.public_id,
       width: result.width,
       height: result.height,
       bytes: result.bytes,
       format: result.format
     });
   } catch (error) {
-    console.error("[upload-image]", error);
+    const isTimeout = error?.name === "AbortError";
 
-    return sendJson(res, error.statusCode || 500, {
-      ok: false,
-      error: error.message || "Không upload được ảnh."
+    return send(res, isTimeout ? 504 : 500, {
+      success: false,
+      code: isTimeout ? "UPLOAD_TIMEOUT" : "UPLOAD_ERROR",
+      message: isTimeout
+        ? "Upload quá thời gian chờ 25 giây."
+        : "Không thể kết nối tới dịch vụ lưu ảnh.",
+      details: clean(error?.message)
     });
+  } finally {
+    clearTimeout(timeout);
   }
-};
+}
