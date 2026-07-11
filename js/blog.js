@@ -8,8 +8,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 import {
-  getCategories,
-  subscribeCategories
+  getCategories
 } from "./category-service.js";
 
 const box = document.getElementById("blogPosts");
@@ -23,24 +22,12 @@ function normalize(text = "") {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
     .trim();
 }
 
 function postMatches(post, value) {
-  const wanted = normalize(value);
-
-  const exactFields = [
-    post.categoryId,
-    post.category,
-    post.categorySlug
-  ]
-    .filter(Boolean)
-    .map(normalize);
-
-  if (exactFields.includes(wanted)) return true;
-
   const haystack = normalize([
+    post.category,
     post.categoryName,
     post.categoryFullName,
     Array.isArray(post.categoryPath)
@@ -50,11 +37,14 @@ function postMatches(post, value) {
     post.desc
   ].join(" "));
 
-  return haystack.includes(wanted);
+  return haystack.includes(normalize(value));
 }
 
 function nodeValues(node) {
-  let values = [node.id, node.name].filter(Boolean);
+  let values = [
+    node.id,
+    node.name
+  ].filter(Boolean);
 
   (node.children || []).forEach(child => {
     values = values.concat(nodeValues(child));
@@ -82,13 +72,38 @@ function findNode(nodes, id) {
   return null;
 }
 
-function escapeHtml(value = "") {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+/* =====================================================
+   MINA BLOG - CLICK TOÀN BỘ THẺ BÀI VIẾT
+   - Click chuột vào bất kỳ vị trí nào trên card để mở bài.
+   - Hỗ trợ bàn phím Enter và Space.
+   - Không dùng onclick trực tiếp trong HTML.
+===================================================== */
+function activatePostCards() {
+  if (!box) return;
+
+  box.querySelectorAll(".post-card[data-post-url]").forEach(card => {
+    const openPost = () => {
+      const url = card.dataset.postUrl;
+      if (url) window.location.href = url;
+    };
+
+    card.addEventListener("click", event => {
+      // Không can thiệp nếu sau này card có nút/link riêng.
+      if (event.target.closest("a, button, input, select, textarea, label")) {
+        return;
+      }
+
+      openPost();
+    });
+
+    card.addEventListener("keydown", event => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+
+      // Ngăn Space cuộn trang.
+      event.preventDefault();
+      openPost();
+    });
+  });
 }
 
 function renderPosts(posts) {
@@ -106,32 +121,41 @@ function renderPosts(posts) {
 
   box.innerHTML = posts.map(item => {
     const post = item.data;
+    const postUrl = `post.html?id=${encodeURIComponent(item.id)}`;
 
     return `
-      <article class="post-card">
+      <article
+        class="post-card mina-clickable-card"
+        data-post-url="${postUrl}"
+        role="link"
+        tabindex="0"
+        aria-label="Mở bài viết: ${post.title || "Bài viết Mina"}"
+      >
         <img
-          src="${escapeHtml(post.image || "images/default-post.svg")}"
-          alt="${escapeHtml(post.title || "Bài viết Mina")}"
+          src="${post.image || "images/default-post.svg"}"
+          alt="${post.title || "Bài viết Mina"}"
           loading="lazy"
         >
 
         <p class="post-category">
-          ${escapeHtml(
-            post.categoryName ||
-            post.category ||
-            "Mina Blog"
-          )}
+          ${post.categoryName || post.category || "Mina Blog"}
         </p>
 
-        <h3>${escapeHtml(post.title || "Không có tiêu đề")}</h3>
-        <p>${escapeHtml(post.desc || "")}</p>
+        <h3>${post.title || "Không có tiêu đề"}</h3>
+        <p>${post.desc || ""}</p>
 
-        <a href="post.html?id=${encodeURIComponent(item.id)}" class="read-more">
+        <a
+          href="${postUrl}"
+          class="read-more"
+          aria-label="Đọc bài ${post.title || "Bài viết Mina"}"
+        >
           Đọc bài
         </a>
       </article>
     `;
   }).join("");
+
+  activatePostCards();
 }
 
 function filterByNode(node) {
@@ -151,14 +175,13 @@ function renderNode(node, level = 1) {
   return `
     <div class="mina-tree-group level-${level}">
       <button
-        type="button"
         class="${hasChildren ? "mina-tree-parent" : "mina-tree-item"} level-${level}"
-        data-category-id="${escapeHtml(node.id)}"
+        data-category-id="${node.id}"
       >
         <span class="${hasChildren ? "tree-toggle" : ""}">
           ${hasChildren ? "+" : "•"}
-          ${escapeHtml(node.icon || "📁")}
-          ${escapeHtml(node.name)}
+          ${node.icon || "📁"}
+          ${node.name}
         </span>
 
         <b>${countNode(node)}</b>
@@ -185,7 +208,7 @@ function buildSidebar() {
   sidebar.innerHTML = `
     <h3>📁 DANH MỤC MINA BLOG</h3>
 
-    <button type="button" class="mina-tree-all active">
+    <button class="mina-tree-all active">
       <span>🔥 Tất cả bài viết</span>
       <b>${allPosts.length}</b>
     </button>
@@ -244,44 +267,34 @@ function buildSidebar() {
     });
 }
 
-async function loadPosts() {
-  const postSnapshot = await getDocs(
-    query(
-      collection(db, "posts"),
-      orderBy("createdAt", "desc")
-    )
-  );
-
-  allPosts = postSnapshot.docs.map(item => ({
-    id: item.id,
-    data: item.data()
-  }));
-}
-
 async function loadPage() {
   if (!box) return;
 
   box.innerHTML = `<p class="muted">Đang tải bài viết...</p>`;
 
   try {
-    const [categoryData] = await Promise.all([
+    const [categoryData, postSnapshot] = await Promise.all([
       getCategories({
-        force: true,
+        force: false,
         allowFallback: true
       }),
-      loadPosts()
+      getDocs(
+        query(
+          collection(db, "posts"),
+          orderBy("createdAt", "desc")
+        )
+      )
     ]);
 
-    categoryTree = categoryData.categories || [];
+    categoryTree = categoryData.categories;
+
+    allPosts = postSnapshot.docs.map(item => ({
+      id: item.id,
+      data: item.data()
+    }));
 
     buildSidebar();
     renderPosts(allPosts);
-
-    // Khi Admin thay đổi danh mục, Blog tự cập nhật mà không cần sửa code.
-    subscribeCategories(data => {
-      categoryTree = data.categories || [];
-      buildSidebar();
-    });
   } catch (error) {
     console.error("Mina Blog:", error);
 
