@@ -1,11 +1,5 @@
 export const MINA_DEFAULT_CATEGORIES = [
   {
-    id: "shop-anh-2d-3d-au",
-    name: "SHOP ẢNH 2D/3D AU",
-    icon: "🛍️",
-    children: []
-}
-  {
     "id": "trai-nghiem-game",
     "name": "TRẢI NGHIỆM GAME",
     "icon": "🎮",
@@ -302,33 +296,32 @@ export const MINA_DEFAULT_CATEGORIES = [
     "name": "TÂM SỰ - CHIA SẺ",
     "icon": "💌",
     "children": []
-  }
-  ,
-{
+  },
+  {
     "id": "shop-anh-2d-3d-au",
     "name": "SHOP ẢNH 2D/3D AU",
     "icon": "🛍️",
     "children": [
-        {
-            "id": "shop-avatar-2d",
-            "name": "Avatar 2D",
-            "icon": "🖼️",
-            "children": []
-        },
-        {
-            "id": "shop-avatar-3d",
-            "name": "Avatar 3D",
-            "icon": "🎨",
-            "children": []
-        },
-        {
-            "id": "shop-thiet-ke-theo-yeu-cau",
-            "name": "Thiết Kế Theo Yêu Cầu",
-            "icon": "✨",
-            "children": []
-        }
+      {
+        "id": "shop-anh-2d",
+        "name": "Ảnh 2D Audition",
+        "icon": "🖼️",
+        "children": []
+      },
+      {
+        "id": "shop-anh-3d",
+        "name": "Ảnh 3D Audition",
+        "icon": "🎨",
+        "children": []
+      },
+      {
+        "id": "thiet-ke-theo-yeu-cau",
+        "name": "Thiết Kế Theo Yêu Cầu",
+        "icon": "✨",
+        "children": []
+      }
     ]
-}
+  }
 ];
 
 export const MINA_DEFAULT_TAGS = [
@@ -339,10 +332,10 @@ export const MINA_DEFAULT_TAGS = [
   "Review Skill",
   "Mix & Match",
   "Prompt",
-  "D8Team"
-  "SHOP ẢNH 2D/3D AU",
-  "Avatar 2D",
-  "Avatar 3D",
+  "D8Team",
+  "Shop Ảnh",
+  "Ảnh 2D",
+  "Ảnh 3D"
 ];
 
 export function cloneMinaCategories(value = MINA_DEFAULT_CATEGORIES) {
