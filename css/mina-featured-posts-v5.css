@@ -1,0 +1,131 @@
+/* =====================================================
+   MINA CMS V5 - FEATURED POSTS MANAGER
+===================================================== */
+
+.mina-featured-manager {
+  margin-bottom: 24px;
+}
+
+.mina-featured-counter {
+  min-width: 105px;
+  text-align: center;
+  padding: 12px 16px;
+  border: 1px solid rgba(125, 249, 255, .28);
+  border-radius: 16px;
+  background: rgba(125, 249, 255, .07);
+}
+
+.mina-featured-counter strong,
+.mina-featured-counter span {
+  display: block;
+}
+
+.mina-featured-counter strong {
+  color: #7df9ff;
+  font-size: 1.3rem;
+}
+
+.mina-featured-counter span {
+  margin-top: 3px;
+  font-size: .8rem;
+  opacity: .75;
+}
+
+.mina-featured-toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto auto;
+  gap: 12px;
+  align-items: center;
+  margin: 18px 0;
+}
+
+.mina-featured-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 16px;
+}
+
+.mina-featured-card {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .035);
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.mina-featured-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(125, 249, 255, .35);
+}
+
+.mina-featured-card.is-featured {
+  border-color: rgba(255, 79, 216, .6);
+  box-shadow: 0 0 22px rgba(255, 79, 216, .12);
+}
+
+.mina-featured-image-wrap {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: rgba(0, 0, 0, .25);
+}
+
+.mina-featured-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mina-pin-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(10, 10, 20, .88);
+  color: #ff78df;
+  font-size: .78rem;
+  font-weight: 800;
+}
+
+.mina-featured-content {
+  padding: 15px;
+}
+
+.mina-featured-content h3 {
+  margin: 0 0 8px;
+  line-height: 1.35;
+}
+
+.mina-featured-controls {
+  display: grid;
+  grid-template-columns: 1fr 125px;
+  gap: 12px;
+  align-items: end;
+  margin-top: 14px;
+}
+
+.mina-featured-controls select {
+  width: 100%;
+  margin-top: 5px;
+}
+
+.mina-draft-warning,
+.mina-error {
+  color: #ff8fa8 !important;
+}
+
+.mina-success {
+  color: #7df9ff !important;
+}
+
+#saveFeaturedPosts:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 760px) {
+  .mina-featured-toolbar,
+  .mina-featured-controls {
+    grid-template-columns: 1fr;
+  }
+}
