@@ -1,4 +1,2281 @@
 /* =====================================================
+   MINA CMS V6 - STYLE.CSS GỌN
+   Chỉ import các module CSS.
+   Không đổi HTML, không đổi class.
+===================================================== */
+
+@import url("./01-core.css");
+@import url("./02-admin-responsive-base.css");
+@import url("./03-video-showcase.css");
+@import url("./04-footer-contact.css");
+@import url("./05-post-detail.css");
+@import url("./06-cms-enhancement.css");
+@import url("./07-header-final.css");
+@import url("./08-hero-final.css");
+@import url("./09-layout-v6.css");
+@import url("./10-social-final.css");
+/*==============================
+  MINA CMS V6 SOCIAL SVG ICON
+==============================*/
+
+.social-logo{
+    width:72px;
+    height:72px;
+
+    display:block;
+    margin:0 auto 22px;
+
+    object-fit:contain;
+
+    transition:.35s ease;
+}
+
+.social-item:hover .social-logo{
+    transform:scale(1.08);
+}
+/* =====================================================
+   MINA HERO POLISH - Typography + Character Render
+   Dán cuối file style.css
+===================================================== */
+
+/* HERO TEXT */
+.hero-content{
+  position: relative;
+  z-index: 3;
+  max-width: 620px;
+  padding-left: clamp(20px, 3vw, 46px);
+}
+
+.hero-kicker,
+.hero-subtitle,
+.hero .feel-text{
+  font-family: 'Pacifico', 'Baloo 2', cursive;
+  font-size: clamp(34px, 4vw, 58px);
+  line-height: 1;
+  color: #8ffcff;
+  text-shadow:
+    0 0 10px rgba(120,255,255,.85),
+    0 0 28px rgba(90,180,255,.55);
+  margin-bottom: 18px;
+}
+
+.hero h1,
+.hero-title{
+  font-family: 'Montserrat', 'Arial Black', sans-serif;
+  font-size: clamp(52px, 6.2vw, 86px);
+  line-height: .9;
+  letter-spacing: -3px;
+  font-weight: 900;
+  color: #fff;
+  text-transform: uppercase;
+  text-shadow:
+    0 4px 0 rgba(120,70,255,.35),
+    0 0 24px rgba(160,80,255,.45),
+    0 0 42px rgba(80,220,255,.25);
+  margin: 0 0 18px;
+}
+
+.hero-meta,
+.hero-tags{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: .5px;
+  background: rgba(6, 10, 35, .48);
+  border: 1px solid rgba(126, 240, 255, .32);
+  box-shadow: 0 0 18px rgba(80, 220, 255, .18);
+  backdrop-filter: blur(8px);
+}
+
+.hero p{
+  max-width: 560px;
+  margin-top: 18px;
+  font-size: 16px;
+  line-height: 1.55;
+  font-weight: 600;
+  color: rgba(255,255,255,.92);
+  text-shadow: 0 2px 12px rgba(0,0,0,.65);
+}
+
+.hero a,
+.hero-cta,
+.hero-content .btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 18px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font-weight: 900;
+  letter-spacing: .3px;
+  color: #fff;
+  background: linear-gradient(135deg, #ff5fe7, #7b6dff 52%, #54f4ff);
+  box-shadow:
+    0 0 18px rgba(255,95,231,.4),
+    0 0 26px rgba(84,244,255,.25);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.hero a:hover,
+.hero-cta:hover,
+.hero-content .btn:hover{
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 24px rgba(255,95,231,.55),
+    0 0 36px rgba(84,244,255,.38);
+}
+
+/* CHARACTER RENDER */
+.hero-character,
+.hero-mascot,
+.hero-mina,
+.hero img.character,
+.hero img.hero-girl{
+  position: absolute;
+  z-index: 4;
+  right: clamp(42px, 8vw, 138px);
+  bottom: 18px;
+  width: clamp(250px, 24vw, 395px);
+  max-height: 92%;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 0 10px rgba(120,255,255,.6))
+    drop-shadow(0 0 28px rgba(170,80,255,.55))
+    drop-shadow(0 22px 30px rgba(0,0,0,.55));
+  transform-origin: bottom center;
+}
+
+/* LIGHT BEHIND CHARACTER */
+.hero::after{
+  content: "";
+  position: absolute;
+  z-index: 2;
+  right: 7%;
+  bottom: 0;
+  width: 440px;
+  height: 520px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 55% 45%,
+      rgba(125,255,255,.32),
+      rgba(154,82,255,.20) 34%,
+      transparent 70%);
+  filter: blur(14px);
+  opacity: .85;
+}
+
+/* SOFT CENTER LIGHT */
+.hero::before{
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 48% 45%,
+      rgba(100,70,255,.18),
+      transparent 38%),
+    linear-gradient(90deg,
+      rgba(0,0,0,.18),
+      transparent 35%,
+      rgba(0,0,0,.10));
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px){
+  .hero-content{
+    max-width: 100%;
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .hero h1,
+  .hero-title{
+    font-size: clamp(42px, 12vw, 64px);
+    letter-spacing: -2px;
+  }
+
+  .hero-kicker,
+  .hero-subtitle,
+  .hero .feel-text{
+    font-size: clamp(30px, 9vw, 44px);
+  }
+
+  .hero-character,
+  .hero-mascot,
+  .hero-mina,
+  .hero img.character,
+  .hero img.hero-girl{
+    right: 8px;
+    width: clamp(185px, 42vw, 260px);
+    opacity: .9;
+  }
+}
+/* =====================================================
+   HERO DEMO MATCH - Mina Audition
+   Làm hero gần giống bản demo hơn
+===================================================== */
+
+.hero{
+  min-height:560px;
+  padding:60px 70px 45px;
+  background-image:
+    radial-gradient(circle at 72% 42%, rgba(125,70,255,.34), transparent 34%),
+    radial-gradient(circle at 38% 45%, rgba(0,220,255,.16), transparent 28%),
+    linear-gradient(90deg, rgba(5,6,22,.88), rgba(5,6,22,.38)),
+    url("../images/background/hero-bg.webp");
+}
+
+.hero-content{
+  max-width:650px;
+  transform:translateY(14px);
+}
+
+.script-text{
+    font-family:"Pacifico", cursive;
+    font-size:clamp(26px,3vw,44px);
+    color:#ff4fc3;
+    text-shadow:
+        0 0 6px rgba(255,79,195,.95),
+        0 0 16px rgba(255,79,195,.85),
+        0 0 34px rgba(255,79,195,.65),
+        0 0 58px rgba(255,79,195,.45);
+}
+
+/* Chữ chính giống demo: trắng + viền glow xanh tím */
+.hero h1,
+.hero-title{
+  font-size:clamp(62px,6.3vw,98px);
+  line-height:.86;
+  letter-spacing:-3px;
+  font-weight:900;
+  color:#ffffff;
+  -webkit-text-stroke:1px rgba(120,245,255,.45);
+  text-shadow:
+    0 2px 0 #7a4cff,
+    0 0 8px rgba(255,255,255,.75),
+    0 0 18px rgba(90,220,255,.75),
+    0 0 36px rgba(184,72,255,.6),
+    0 0 58px rgba(80,140,255,.35);
+}
+
+/* Thanh Dance - Poppin giống demo hơn */
+.hero-meta,
+.hero-tags{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-top:8px;
+  padding:9px 18px;
+  border-radius:14px;
+  color:#fff;
+  font-size:14px;
+  font-weight:900;
+  letter-spacing:.4px;
+  background:linear-gradient(90deg, rgba(34,14,78,.88), rgba(17,55,120,.75));
+  border:1px solid rgba(109,238,255,.7);
+  box-shadow:
+    inset 0 0 18px rgba(255,255,255,.08),
+    0 0 16px rgba(74,218,255,.35),
+    0 0 25px rgba(177,71,255,.28);
+}
+
+.hero p{
+  max-width:560px;
+  margin-top:18px;
+  font-size:15.5px;
+  line-height:1.65;
+}
+
+/* Nút CTA nổi bật hơn */
+.hero .btn,
+.hero-button,
+.youtube-btn{
+  padding:14px 24px;
+  border-radius:10px;
+  font-size:15px;
+  font-weight:900;
+  background:linear-gradient(135deg,#ff5eea 0%,#8b5cff 48%,#28dfff 100%);
+  box-shadow:
+    0 0 16px rgba(255,86,232,.55),
+    0 0 26px rgba(40,223,255,.42);
+}
+
+/* Nhân vật Mina to hơn và giống vị trí demo */
+.hero-character{
+  right:95px;
+  bottom:0;
+  z-index:4;
+}
+
+.hero-character img,
+.hero-img{
+  max-height:560px;
+  filter:
+    drop-shadow(0 0 8px rgba(255,255,255,.7))
+    drop-shadow(0 0 24px rgba(117,238,255,.65))
+    drop-shadow(0 0 44px rgba(174,72,255,.65))
+    drop-shadow(0 24px 34px rgba(0,0,0,.62));
+}
+
+/* Làm logo Mina sau lưng chìm hơn để không tranh nhân vật */
+.hero::after{
+  opacity:.7;
+}
+
+/* Mobile */
+@media (max-width:768px){
+  .hero{
+    min-height:760px;
+    padding:44px 24px 34px;
+  }
+
+  .hero-content{
+    transform:none;
+  }
+
+  .hero h1,
+  .hero-title{
+    font-size:clamp(48px,13vw,68px);
+    letter-spacing:-2px;
+  }
+
+  .hero-character{
+    right:auto;
+    bottom:auto;
+    margin-top:24px;
+  }
+
+  .hero-character img,
+  .hero-img{
+    max-height:390px;
+  }
+}
+/* FIX HERO DESKTOP - Mina giống demo hơn */
+@media (min-width:769px){
+  .hero{
+    min-height:560px;
+  }
+
+  .hero-content{
+    transform:translateY(18px);
+  }
+
+  .hero h1,
+  .hero-title{
+    font-size:clamp(68px,6.8vw,105px);
+    line-height:.84;
+    letter-spacing:-4px;
+  }
+
+  .script-text{
+    font-size:clamp(26px,3vw,44px);
+    color:#ff4fc3;
+    text-shadow:
+        0 0 6px rgba(255,79,195,.95),
+        0 0 16px rgba(255,79,195,.85),
+        0 0 34px rgba(255,79,195,.65),
+        0 0 58px rgba(255,79,195,.45);
+}
+
+  .hero-character{
+    right:65px;
+    bottom:-8px;
+  }
+
+  .hero-character img,
+  .hero-img{
+    max-height:560px;
+  }
+}
+/* =====================================================
+   MINA CMS V7 - HERO GAME LANDING UPGRADE
+   Dán toàn bộ đoạn này vào CUỐI file style.css
+===================================================== */
+
+.hero{
+  position:relative;
+  min-height:520px;
+  padding:55px 90px 45px;
+  display:grid;
+  grid-template-columns:54% 46%;
+  align-items:center;
+  overflow:hidden;
+  isolation:isolate;
+  background:
+    radial-gradient(circle at 78% 35%, rgba(118,88,255,.38), transparent 32%),
+    radial-gradient(circle at 35% 28%, rgba(255,64,210,.22), transparent 28%),
+    linear-gradient(90deg, rgba(4,5,18,.94) 0%, rgba(8,8,32,.70) 45%, rgba(9,8,38,.40) 100%),
+    url("../images/background/hero-bg.webp") center/cover no-repeat;
+}
+
+/* lớp ánh sáng sân khấu */
+.hero::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:
+    linear-gradient(115deg, transparent 0 48%, rgba(99,221,255,.18) 49%, transparent 53%),
+    linear-gradient(65deg, transparent 0 58%, rgba(255,70,220,.16) 59%, transparent 63%),
+    radial-gradient(circle at 80% 10%, rgba(125,82,255,.55), transparent 22%),
+    radial-gradient(circle at 70% 88%, rgba(63,225,255,.20), transparent 28%);
+  mix-blend-mode:screen;
+  opacity:.85;
+}
+
+/* lớp khói + chiều sâu */
+.hero::after{
+  content:"";
+  position:absolute;
+  inset:auto -10% -25% -10%;
+  height:55%;
+  z-index:2;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(104,58,255,.38), transparent 58%),
+    radial-gradient(ellipse at 82% 70%, rgba(0,229,255,.20), transparent 45%);
+  filter:blur(18px);
+  opacity:.8;
+}
+
+/* Nội dung bên trái */
+.hero-content{
+  position:relative;
+  z-index:5;
+  max-width:640px;
+}
+
+/* Chữ neon phía trên */
+.script-text{
+  font-size:clamp(32px,3.4vw,48px);
+  line-height:1.15;
+  color:#ff5be8;
+  text-shadow:
+    0 0 8px rgba(255,91,232,.9),
+    0 0 22px rgba(255,91,232,.72),
+    0 0 42px rgba(255,91,232,.38);
+  letter-spacing:.5px;
+  margin-bottom:12px;
+}
+
+/* Tiêu đề chính - thu nhỏ nhẹ để thoáng hơn */
+.hero-title,
+.hero h1{
+  font-size:clamp(58px,5.8vw,86px);
+  line-height:.88;
+  letter-spacing:-2px;
+  margin:0 0 18px;
+  color:#fff;
+  text-shadow:
+    0 0 8px rgba(255,255,255,.95),
+    0 0 18px rgba(92,225,255,.85),
+    0 0 38px rgba(93,92,255,.65);
+}
+
+/* Dòng mô tả */
+.hero-content p{
+  color:#fff;
+  text-shadow:0 2px 10px rgba(0,0,0,.65);
+}
+
+/* Nút CTA sống động hơn */
+.hero .btn,
+.hero .hero-btn,
+.hero a[class*="btn"]{
+  position:relative;
+  overflow:hidden;
+  box-shadow:
+    0 0 18px rgba(255,82,220,.48),
+    0 0 30px rgba(75,221,255,.38);
+  transition:
+    transform .25s ease,
+    box-shadow .25s ease,
+    filter .25s ease;
+}
+
+.hero .btn:hover,
+.hero .hero-btn:hover,
+.hero a[class*="btn"]:hover{
+  transform:translateY(-3px) scale(1.035);
+  filter:brightness(1.12);
+  box-shadow:
+    0 0 24px rgba(255,82,220,.75),
+    0 0 46px rgba(75,221,255,.62);
+}
+
+/* vệt sáng chạy qua nút */
+.hero .btn::after,
+.hero .hero-btn::after,
+.hero a[class*="btn"]::after{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-80%;
+  width:45%;
+  height:100%;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+  transform:skewX(-22deg);
+  transition:left .55s ease;
+}
+
+.hero .btn:hover::after,
+.hero .hero-btn:hover::after,
+.hero a[class*="btn"]:hover::after{
+  left:130%;
+}
+
+/* Ảnh nhân vật Mina bên phải */
+.hero-character,
+.hero-img,
+.hero-image,
+.hero figure,
+.hero .mina-character{
+  position:relative;
+  z-index:6;
+}
+
+/* Nếu ảnh Mina là img */
+.hero-character img,
+.hero-img img,
+.hero-image img,
+.hero figure img,
+.hero .mina-character img{
+  transform:scale(1.07);
+  transform-origin:center bottom;
+  filter:
+    drop-shadow(0 0 14px rgba(255,255,255,.75))
+    drop-shadow(0 0 30px rgba(89,226,255,.72))
+    drop-shadow(0 0 46px rgba(163,89,255,.58));
+  transition:
+    transform .35s ease,
+    filter .35s ease;
+}
+
+.hero-character img:hover,
+.hero-img img:hover,
+.hero-image img:hover,
+.hero figure img:hover,
+.hero .mina-character img:hover{
+  transform:scale(1.11) translateY(-4px);
+  filter:
+    drop-shadow(0 0 18px rgba(255,255,255,.9))
+    drop-shadow(0 0 38px rgba(89,226,255,.9))
+    drop-shadow(0 0 58px rgba(255,89,229,.66));
+}
+
+/* Responsive */
+@media (max-width:900px){
+  .hero{
+    min-height:auto;
+    padding:42px 24px 38px;
+    grid-template-columns:1fr;
+    text-align:center;
+    background-position:center;
+  }
+
+  .hero-content{
+    margin:auto;
+  }
+
+  .hero-title,
+  .hero h1{
+    font-size:clamp(46px,12vw,68px);
+  }
+
+  .script-text{
+    font-size:clamp(28px,8vw,42px);
+  }
+
+  .hero-character img,
+  .hero-img img,
+  .hero-image img,
+  .hero figure img,
+  .hero .mina-character img{
+    transform:scale(1);
+    max-height:430px;
+  }
+}
+/* =====================================================
+   FIX HERO V7 - ĐẨY MINA SANG PHẢI, GIẢM TRỐNG BANNER
+===================================================== */
+
+.hero{
+  grid-template-columns:50% 50%;
+}
+
+.hero-character,
+.hero-img,
+.hero-image,
+.hero figure,
+.hero .mina-character{
+  justify-self:end;
+  margin-right:55px;
+}
+
+.hero-character img,
+.hero-img img,
+.hero-image img,
+.hero figure img,
+.hero .mina-character img{
+  transform:scale(1.15) translateX(55px);
+}
+
+.hero-character img:hover,
+.hero-img img:hover,
+.hero-image img:hover,
+.hero figure img:hover,
+.hero .mina-character img:hover{
+  transform:scale(1.18) translateX(55px) translateY(-4px);
+}
+
+/* làm chữ bên trái gọn lại để nhân vật có thêm không gian */
+.hero-content{
+  max-width:570px;
+}
+
+.hero-title,
+.hero h1{
+  font-size:clamp(54px,5.3vw,78px);
+}
+
+/* Mobile giữ nguyên, không đẩy lệch */
+@media (max-width:900px){
+  .hero{
+    grid-template-columns:1fr;
+  }
+
+  .hero-character,
+  .hero-img,
+  .hero-image,
+  .hero figure,
+  .hero .mina-character{
+    justify-self:center;
+    margin-right:0;
+  }
+
+  .hero-character img,
+  .hero-img img,
+  .hero-image img,
+  .hero figure img,
+  .hero .mina-character img{
+    transform:scale(1);
+  }
+}
+/* =====================================================
+   MINA CMS V7 - CONTENT + FEATURE UPGRADE
+   Không phá giao diện gốc
+===================================================== */
+
+.mina-reveal{
+  opacity:0;
+  transform:translateY(28px);
+  transition:opacity .7s ease, transform .7s ease;
+}
+
+.mina-reveal.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.mina-footer-v7{
+  margin-top:80px;
+  padding:55px 24px 35px;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255,83,220,.20), transparent 35%),
+    radial-gradient(circle at 80% 20%, rgba(72,221,255,.18), transparent 35%),
+    linear-gradient(180deg, #070719, #03030d);
+  border-top:1px solid rgba(120,230,255,.25);
+  color:#fff;
+  text-align:center;
+}
+
+.footer-inner{
+  max-width:1100px;
+  margin:auto;
+}
+
+.footer-brand strong{
+  font-size:28px;
+  color:#fff;
+  text-shadow:
+    0 0 12px rgba(255,255,255,.7),
+    0 0 25px rgba(91,225,255,.6);
+}
+
+.footer-brand p{
+  margin:10px 0 26px;
+  color:#d8d8ff;
+}
+
+.footer-links,
+.footer-social{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:12px;
+  margin:18px 0;
+}
+
+.footer-links a,
+.footer-social a{
+  padding:10px 18px;
+  border-radius:999px;
+  color:#fff;
+  text-decoration:none;
+  font-weight:800;
+  font-size:13px;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.14);
+  transition:.25s ease;
+}
+
+.footer-links a:hover,
+.footer-social a:hover{
+  transform:translateY(-3px);
+  background:linear-gradient(135deg, #ff5be8, #5ee7ff);
+  box-shadow:0 0 22px rgba(94,231,255,.45);
+}
+
+.footer-copy{
+  margin-top:28px;
+  color:#aaaac8;
+  font-size:14px;
+}
+
+.back-to-top{
+  position:fixed;
+  right:24px;
+  bottom:24px;
+  width:46px;
+  height:46px;
+  border:0;
+  border-radius:50%;
+  cursor:pointer;
+  opacity:0;
+  pointer-events:none;
+  color:#fff;
+  font-size:22px;
+  font-weight:900;
+  background:linear-gradient(135deg, #ff5be8, #5ee7ff);
+  box-shadow:0 0 24px rgba(94,231,255,.55);
+  transition:.25s ease;
+  z-index:999;
+}
+
+.back-to-top.show{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.back-to-top:hover{
+  transform:translateY(-4px) scale(1.06);
+}
+
+@media(max-width:768px){
+  .footer-links,
+  .footer-social{
+    gap:8px;
+  }
+
+  .footer-links a,
+  .footer-social a{
+    font-size:12px;
+    padding:9px 14px;
+  }
+}
+/* =====================================================
+   MINA CMS V7 - SAFE FEATURE STYLE
+===================================================== */
+
+.mina-reveal{
+  opacity:0;
+  transform:translateY(24px);
+  transition:opacity .7s ease, transform .7s ease;
+}
+
+.mina-reveal.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.mina-footer-v7{
+  margin-top:80px;
+  padding:50px 24px 35px;
+  text-align:center;
+  color:#fff;
+  background:
+    radial-gradient(circle at 25% 0%, rgba(255,83,220,.18), transparent 35%),
+    radial-gradient(circle at 75% 20%, rgba(88,226,255,.16), transparent 35%),
+    linear-gradient(180deg, #070719, #03030d);
+  border-top:1px solid rgba(120,230,255,.22);
+}
+
+.footer-inner{
+  max-width:1100px;
+  margin:auto;
+}
+
+.footer-inner strong{
+  font-size:28px;
+  text-shadow:0 0 18px rgba(91,225,255,.8);
+}
+
+.footer-inner p{
+  color:#dadaff;
+}
+
+.footer-menu{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:12px;
+  margin:22px 0;
+}
+
+.footer-menu a{
+  padding:10px 18px;
+  border-radius:999px;
+  color:#fff;
+  text-decoration:none;
+  font-weight:800;
+  font-size:13px;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.14);
+  transition:.25s ease;
+}
+
+.footer-menu a:hover{
+  transform:translateY(-3px);
+  background:linear-gradient(135deg, #ff5be8, #5ee7ff);
+  box-shadow:0 0 22px rgba(94,231,255,.45);
+}
+
+.footer-copy{
+  margin-top:24px;
+  color:#aaaac8;
+  font-size:14px;
+}
+
+.back-to-top{
+  position:fixed;
+  right:24px;
+  bottom:24px;
+  width:46px;
+  height:46px;
+  border:0;
+  border-radius:50%;
+  cursor:pointer;
+  opacity:0;
+  pointer-events:none;
+  color:#fff;
+  font-size:22px;
+  font-weight:900;
+  background:linear-gradient(135deg, #ff5be8, #5ee7ff);
+  box-shadow:0 0 24px rgba(94,231,255,.55);
+  transition:.25s ease;
+  z-index:999;
+}
+
+.back-to-top.show{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.back-to-top:hover{
+  transform:translateY(-4px) scale(1.06);
+}
+/* ================================
+   MINA BLOG INTERACTION CARD
+================================ */
+
+.mina-post-card{
+  max-width:1100px;
+  margin:40px auto;
+  padding:28px;
+  border-radius:26px;
+  background:linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 20px 60px rgba(0,0,0,.35);
+  backdrop-filter:blur(14px);
+}
+
+.mina-post-header h2{
+  margin:12px 0 10px;
+  font-size:clamp(26px,4vw,42px);
+  color:#fff;
+}
+
+.mina-post-header p{
+  color:rgba(255,255,255,.78);
+  line-height:1.7;
+  max-width:760px;
+}
+
+.post-badge{
+  display:inline-block;
+  padding:7px 16px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#ff4fd8,#7c5cff);
+  color:#fff;
+  font-weight:700;
+  font-size:14px;
+  box-shadow:0 0 20px rgba(255,79,216,.55);
+}
+
+.mina-post-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:14px;
+  margin-top:24px;
+}
+.action-btn{
+
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:12px 18px;
+
+    border-radius:12px;
+
+    background:#1b1b33;
+
+    color:#ffffff;
+
+    border:1px solid #ff4fc4;
+
+    text-decoration:none;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.25s ease;
+
+}
+
+.action-btn:hover{
+
+    background:#ff4fc4;
+
+    color:#fff;
+
+    transform:translateY(-2px);
+
+    box-shadow:0 0 18px rgba(255,79,196,.45);
+
+}
+.post-btn{
+  border:none;
+  outline:none;
+  cursor:pointer;
+  text-decoration:none;
+  padding:13px 20px;
+  border-radius:999px;
+  font-weight:700;
+  font-size:15px;
+  color:#fff;
+  transition:.25s ease;
+}
+
+.facebook-btn{
+  background:linear-gradient(135deg,#1877f2,#00a2ff);
+}
+
+.like-btn{
+  background:linear-gradient(135deg,#ff3b86,#ff7ac8);
+}
+
+.copy-btn{
+  background:linear-gradient(135deg,#7c5cff,#22d3ee);
+}
+
+.post-btn:hover{
+  transform:translateY(-3px);
+  box-shadow:0 12px 30px rgba(255,255,255,.18);
+}
+
+.post-note{
+  margin-top:22px;
+  padding:16px 18px;
+  border-radius:18px;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  line-height:1.6;
+  border-left:4px solid #ff4fd8;
+}
+
+@media(max-width:768px){
+  .mina-post-card{
+    margin:25px 14px;
+    padding:22px;
+  }
+
+  .mina-post-actions{
+    flex-direction:column;
+  }
+
+  .post-btn{
+    width:100%;
+    text-align:center;
+  }
+}
+.mina-facebook-action{
+  margin:28px 0;
+  text-align:center;
+}
+
+.facebook-post-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:13px 22px;
+  border-radius:999px;
+  background:linear-gradient(135deg,#1877f2,#00a2ff);
+  color:#fff !important;
+  font-weight:800;
+  text-decoration:none;
+  box-shadow:0 10px 28px rgba(24,119,242,.35);
+}
+
+.facebook-post-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 14px 36px rgba(24,119,242,.5);
+}
+.mina-facebook-action{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:12px;
+  margin:28px 0;
+}
+
+.facebook-post-btn,
+.comment-post-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:13px 22px;
+  border-radius:999px;
+  color:#fff !important;
+  font-weight:800;
+  text-decoration:none;
+  transition:.25s ease;
+}
+
+.facebook-post-btn{
+  background:linear-gradient(135deg,#1877f2,#00a2ff);
+  box-shadow:0 10px 28px rgba(24,119,242,.35);
+}
+
+.comment-post-btn{
+  background:linear-gradient(135deg,#ff4fd8,#7c5cff);
+  box-shadow:0 10px 28px rgba(255,79,216,.35);
+}
+
+.facebook-post-btn:hover,
+.comment-post-btn:hover{
+  transform:translateY(-2px);
+}
+
+@media(max-width:768px){
+  .mina-facebook-action{
+    flex-direction:column;
+  }
+
+  .facebook-post-btn,
+  .comment-post-btn{
+    width:100%;
+  }
+}
+/* ===========================
+   FACEBOOK EMBED
+===========================*/
+
+.mina-facebook-embed-box{
+    margin:35px auto;
+    max-width:600px;
+    display:flex;
+    justify-content:center;
+}
+
+.mina-facebook-action{
+    display:flex;
+    justify-content:center;
+    gap:18px;
+    margin-top:25px;
+    flex-wrap:wrap;
+}
+
+.facebook-post-btn,
+.comment-post-btn{
+    background:linear-gradient(135deg,#1877f2,#6d8cff);
+    color:#fff!important;
+    border-radius:999px;
+    padding:14px 28px;
+    font-weight:700;
+    text-decoration:none;
+    transition:.25s;
+}
+
+.comment-post-btn{
+    background:linear-gradient(135deg,#ff46c8,#9d5cff);
+}
+
+.facebook-post-btn:hover,
+.comment-post-btn:hover{
+    transform:translateY(-3px);
+    box-shadow:0 12px 30px rgba(0,0,0,.28);
+}
+/* =====================================================
+   POST DETAIL UX UPGRADE - Mina CMS
+===================================================== */
+
+.mina-post-actions{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:30px;
+  padding-top:22px;
+  border-top:1px solid rgba(255,79,196,.18);
+}
+
+.action-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:40px;
+  padding:10px 16px;
+  border-radius:12px;
+  background:#17172e;
+  color:#fff;
+  border:1px solid #ff4fc4;
+  text-decoration:none;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.25s ease;
+}
+
+.action-btn:hover{
+  background:#ff4fc4;
+  color:#fff;
+  transform:translateY(-2px);
+  box-shadow:0 0 16px rgba(255,79,196,.45);
+}
+
+/* PANEL CUỐI BÀI VIẾT - MINA STYLE */
+.post-extra-panel{
+  margin:28px auto 0;
+  padding:24px 26px;
+  border-radius:20px;
+  background:rgba(32,18,48,.92);
+  border-left:4px solid #ff4fc4;
+  box-shadow:0 0 26px rgba(255,79,196,.16);
+}
+
+.post-extra-panel h3{
+  margin:0 0 12px;
+  font-size:20px;
+  color:#fff;
+}
+
+.post-extra-panel p{
+  margin:0 0 18px;
+  color:#e6e7ff;
+  line-height:1.65;
+  font-size:15px;
+}
+
+.post-extra-links{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:18px;
+}
+
+.post-extra-links a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:40px;
+  padding:10px 16px;
+  border-radius:999px;
+  background:#17172e;
+  color:#fff;
+  border:1px solid rgba(255,79,196,.75);
+  text-decoration:none;
+  font-size:14px;
+  font-weight:700;
+  transition:.25s ease;
+}
+
+.post-extra-links a:hover{
+  background:#ff4fc4;
+  border-color:#ff4fc4;
+  transform:translateY(-2px);
+  box-shadow:0 0 16px rgba(255,79,196,.45);
+}
+
+.floating-top-btn{
+  position:fixed;
+  right:24px;
+  bottom:28px;
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.25);
+  background:linear-gradient(135deg,#ff4fc4,#6b7cff);
+  color:#fff;
+  font-size:24px;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 0 24px rgba(255,79,196,.45);
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(12px);
+  transition:.25s ease;
+  z-index:999;
+}
+
+.floating-top-btn.show{
+  opacity:1;
+  visibility:visible;
+  transform:translateY(0);
+}
+
+.floating-top-btn:hover{
+  transform:translateY(-3px) scale(1.05);
+}
+
+@media(max-width:600px){
+  .mina-post-actions,
+  .post-extra-links{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .action-btn,
+  .post-extra-links a{
+    width:100%;
+  }
+
+  .floating-top-btn{
+    right:16px;
+    bottom:18px;
+  }
+}
+/* ===============================
+   MINA BLOG - YOUTUBE PLAYLIST SIDEBAR
+================================ */
+
+.blog-layout{
+  display:grid !important;
+  grid-template-columns:280px minmax(0,1fr) !important;
+  gap:28px !important;
+  align-items:start !important;
+  margin-top:26px !important;
+}
+
+.blog-category-box{
+  position:sticky !important;
+  top:96px !important;
+  align-self:start !important;
+  padding:18px !important;
+  border-radius:20px !important;
+  background:rgba(18,18,34,.96) !important;
+  border:1px solid rgba(94,220,255,.35) !important;
+  box-shadow:0 0 24px rgba(111,91,255,.22) !important;
+}
+
+.blog-category-box h3{
+  margin:0 0 16px !important;
+  font-size:18px !important;
+  color:#fff !important;
+  text-shadow:0 0 12px rgba(109,239,255,.9) !important;
+}
+
+.blog-category-box .blog-cat{
+  width:100% !important;
+  display:flex !important;
+  justify-content:space-between !important;
+  align-items:center !important;
+  gap:10px !important;
+  margin:0 0 10px !important;
+  padding:12px 14px !important;
+  border-radius:14px !important;
+  border:1px solid rgba(255,255,255,.13) !important;
+  background:rgba(255,255,255,.06) !important;
+  color:#fff !important;
+  font-weight:800 !important;
+  text-align:left !important;
+  cursor:pointer !important;
+}
+
+.blog-category-box .blog-cat:hover,
+.blog-category-box .blog-cat.active{
+  background:linear-gradient(135deg,#ff65dc,#6ee7ff) !important;
+  box-shadow:0 0 18px rgba(110,231,255,.45) !important;
+  transform:translateX(4px) !important;
+}
+
+.blog-category-box .blog-cat span{
+  min-width:28px !important;
+  padding:3px 7px !important;
+  border-radius:999px !important;
+  background:rgba(125,243,255,.16) !important;
+  color:#7df3ff !important;
+  font-size:12px !important;
+  text-align:center !important;
+}
+
+.blog-layout .post-list{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:24px !important;
+}
+
+@media(max-width:1000px){
+  .blog-layout{
+    grid-template-columns:1fr !important;
+  }
+
+  .blog-category-box{
+    position:relative !important;
+    top:0 !important;
+  }
+
+  .blog-layout .post-list{
+    grid-template-columns:1fr !important;
+  }
+}
+/* =========================================
+   MINA BLOG - TREE PLAYLIST SYSTEM
+========================================= */
+
+.mina-blog-tabs{
+  display:none !important;
+}
+
+.blog-layout{
+  display:grid !important;
+  grid-template-columns:310px minmax(0,1fr) !important;
+  gap:24px !important;
+  align-items:start !important;
+}
+
+.blog-category-box{
+  position:sticky !important;
+  top:95px !important;
+  max-height:calc(100vh - 120px) !important;
+  overflow:auto !important;
+  padding:18px !important;
+  border-radius:20px !important;
+  background:rgba(18,18,34,.96) !important;
+  border:1px solid rgba(94,220,255,.35) !important;
+  box-shadow:0 0 24px rgba(111,91,255,.22) !important;
+}
+
+.blog-category-box h3{
+  margin:0 0 16px !important;
+  font-size:17px !important;
+  color:#fff !important;
+  text-shadow:0 0 12px rgba(109,239,255,.9) !important;
+}
+
+.blog-category-box button{
+  width:100% !important;
+  display:flex !important;
+  justify-content:space-between !important;
+  align-items:center !important;
+  gap:8px !important;
+  margin:0 0 8px !important;
+  padding:10px 12px !important;
+  border-radius:13px !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  background:rgba(255,255,255,.055) !important;
+  color:#fff !important;
+  font-family:inherit !important;
+  font-size:13px !important;
+  font-weight:800 !important;
+  text-align:left !important;
+  cursor:pointer !important;
+  transition:.25s ease !important;
+}
+
+.blog-category-box button:hover,
+.blog-category-box button.active{
+  background:linear-gradient(135deg,#ff65dc,#6ee7ff) !important;
+  box-shadow:0 0 16px rgba(110,231,255,.42) !important;
+  transform:translateX(4px) !important;
+}
+
+.blog-category-box button b{
+  min-width:26px !important;
+  padding:2px 7px !important;
+  border-radius:999px !important;
+  background:rgba(125,243,255,.18) !important;
+  color:#7df3ff !important;
+  font-size:11px !important;
+  text-align:center !important;
+}
+
+.blog-category-box button.active b,
+.blog-category-box button:hover b{
+  background:rgba(0,0,0,.22) !important;
+  color:#fff !important;
+}
+
+.mina-tree-group{
+  margin-bottom:8px !important;
+}
+
+.mina-tree-children{
+  padding-left:12px !important;
+  margin:4px 0 10px !important;
+  border-left:1px dashed rgba(125,243,255,.18) !important;
+}
+
+.mina-tree-item.level-2,
+.mina-tree-group.level-2 .mina-tree-parent{
+  font-size:12.5px !important;
+  opacity:.96 !important;
+}
+
+.mina-tree-item.level-3,
+.mina-tree-group.level-3 .mina-tree-parent{
+  font-size:12px !important;
+  opacity:.88 !important;
+}
+
+.mina-tree-item.level-4{
+  font-size:11.5px !important;
+  opacity:.82 !important;
+}
+
+.blog-layout .post-list{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:24px !important;
+}
+
+.blog-layout .post-card img{
+  height:170px !important;
+  object-fit:cover !important;
+  border-radius:14px !important;
+}
+
+@media(max-width:1000px){
+  .blog-layout{
+    grid-template-columns:1fr !important;
+  }
+
+  .blog-category-box{
+    position:relative !important;
+    top:0 !important;
+    max-height:none !important;
+  }
+
+  .blog-layout .post-list{
+    grid-template-columns:1fr !important;
+  }
+}
+/* =========================================
+   MINA BLOG TREE COLOR SYSTEM
+========================================= */
+
+/* Khung sidebar */
+.blog-category-box{
+  scrollbar-width:thin;
+  scrollbar-color:#7df3ff rgba(255,255,255,.08);
+}
+
+/* Tất cả bài viết */
+.mina-tree-all{
+  background:linear-gradient(135deg,#ff65dc,#6ee7ff) !important;
+  color:#fff !important;
+  box-shadow:0 0 18px rgba(110,231,255,.45) !important;
+}
+
+/* CẤP 1 - Danh mục lớn */
+.mina-tree-group.level-1 > .mina-tree-parent{
+  background:linear-gradient(135deg,#123a7a,#6a5cff) !important;
+  border:1px solid rgba(125,243,255,.38) !important;
+  color:#fff !important;
+  font-size:14px !important;
+  text-transform:uppercase !important;
+  box-shadow:0 0 12px rgba(80,160,255,.18) !important;
+}
+
+/* CẤP 2 - Nhóm nội dung */
+.mina-tree-group.level-2 > .mina-tree-parent{
+  background:linear-gradient(135deg,#4b267d,#9b5cff) !important;
+  border:1px solid rgba(205,160,255,.36) !important;
+  color:#fff !important;
+  font-size:13px !important;
+}
+
+/* CẤP 3 - Playlist con */
+.mina-tree-item.level-3,
+.mina-tree-group.level-3 > .mina-tree-parent{
+  background:rgba(26,38,58,.96) !important;
+  border-left:4px solid #5ee7ff !important;
+  color:#eafcff !important;
+}
+
+/* CẤP 4 - Chi tiết level/style */
+.mina-tree-item.level-4,
+.mina-tree-group.level-4 > .mina-tree-parent{
+  background:rgba(38,32,45,.96) !important;
+  border-left:4px solid #ffb84d !important;
+  color:#fff3dc !important;
+  font-size:11.5px !important;
+}
+
+/* Đường cây thư mục */
+.mina-tree-children{
+  margin-left:12px !important;
+  padding-left:14px !important;
+  border-left:2px dashed rgba(125,243,255,.28) !important;
+}
+
+/* Nút con */
+.mina-tree-item{
+  position:relative !important;
+}
+
+.mina-tree-item::before{
+  content:"";
+  position:absolute;
+  left:-15px;
+  top:50%;
+  width:12px;
+  border-top:1px dashed rgba(125,243,255,.32);
+}
+
+/* Badge đếm bài */
+.blog-category-box button b{
+  min-width:34px !important;
+  padding:3px 8px !important;
+  background:linear-gradient(135deg,#00e5ff,#7df3ff) !important;
+  color:#06121f !important;
+  font-weight:900 !important;
+  box-shadow:0 0 10px rgba(125,243,255,.35) !important;
+}
+
+/* Hover phát sáng */
+.blog-category-box button:hover,
+.blog-category-box button.active{
+  background:linear-gradient(135deg,#ff65dc,#6ee7ff) !important;
+  color:#fff !important;
+  box-shadow:0 0 18px rgba(110,231,255,.48) !important;
+  transform:translateX(7px) !important;
+}
+
+.blog-category-box button:hover b,
+.blog-category-box button.active b{
+  background:rgba(0,0,0,.25) !important;
+  color:#fff !important;
+}
+
+/* Dễ đọc hơn */
+.blog-category-box button span{
+  line-height:1.25 !important;
+}
+
+/* Thanh cuộn đẹp hơn */
+.blog-category-box::-webkit-scrollbar{
+  width:8px;
+}
+
+.blog-category-box::-webkit-scrollbar-track{
+  background:rgba(255,255,255,.06);
+  border-radius:999px;
+}
+
+.blog-category-box::-webkit-scrollbar-thumb{
+  background:linear-gradient(#6ee7ff,#ff65dc);
+  border-radius:999px;
+}
+/*==========================
+  MINA PLAYLIST V7
+===========================*/
+
+/* GAME */
+.mina-tree-group.level-1:nth-of-type(1)>.mina-tree-parent{
+
+background:linear-gradient(135deg,#00c853,#00e5ff)!important;
+
+color:#fff!important;
+
+font-size:15px;
+
+font-weight:800;
+
+}
+
+/* MIX MATCH */
+.mina-tree-group.level-1:nth-of-type(2)>.mina-tree-parent{
+
+background:linear-gradient(135deg,#ff4fa3,#9b5cff)!important;
+
+color:#fff!important;
+
+}
+
+/* VIDEO */
+.mina-tree-group.level-1:nth-of-type(3)>.mina-tree-parent{
+
+background:linear-gradient(135deg,#ff9800,#ff5252)!important;
+
+color:#fff!important;
+
+}
+
+/* STORY */
+.mina-tree-group.level-1:nth-of-type(4)>.mina-tree-parent{
+
+background:linear-gradient(135deg,#b56cff,#ff6ec7)!important;
+
+color:#fff!important;
+
+}
+
+/* LEVEL 2 */
+
+.mina-tree-group.level-2>.mina-tree-parent{
+
+background:#2d2f47!important;
+
+border-left:5px solid #ffd54f!important;
+
+font-weight:700;
+
+}
+
+/* LEVEL 3 */
+
+.mina-tree-item.level-3{
+
+background:#202335!important;
+
+border-left:5px solid #40e0ff!important;
+
+}
+
+/* LEVEL 4 */
+
+.mina-tree-item.level-4{
+
+background:#171a27!important;
+
+border-left:5px solid #ffb84d!important;
+
+}
+
+/* Hover */
+
+.blog-category-box button:hover{
+
+transform:translateX(8px);
+
+box-shadow:0 0 18px rgba(255,255,255,.25);
+
+}
+
+/* Badge */
+
+.blog-category-box b{
+
+background:#ffffff!important;
+
+color:#111!important;
+
+font-weight:900;
+
+}
+.mina-tree-children.collapsed{
+  display:none !important;
+}
+
+.tree-toggle{
+  display:inline-flex !important;
+  align-items:center !important;
+  gap:6px !important;
+}
+/* =========================================
+   MINA ADMIN CATEGORY SELECTOR
+========================================= */
+
+.mina-admin-category-panel{
+  margin-top:12px;
+  padding:16px;
+  border-radius:18px;
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(125,243,255,.28);
+  box-shadow:0 0 18px rgba(110,231,255,.14);
+}
+
+.mina-admin-category-title{
+  margin-bottom:14px;
+  color:#fff;
+  font-size:17px;
+  font-weight:900;
+  text-shadow:0 0 10px rgba(125,243,255,.75);
+}
+
+.mina-admin-category-field{
+  margin-bottom:12px;
+}
+
+.mina-admin-category-field label{
+  display:block;
+  margin-bottom:6px;
+  color:#fff;
+  font-weight:800;
+}
+
+.mina-admin-category-field select{
+  width:100%;
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid rgba(125,243,255,.45);
+  background:#080b18;
+  color:#fff;
+  font-weight:800;
+  outline:none;
+}
+
+.mina-admin-category-field select:focus{
+  border-color:#7df3ff;
+  box-shadow:0 0 14px rgba(125,243,255,.35);
+}
+
+.mina-admin-category-preview{
+  margin-top:10px;
+  padding:12px 14px;
+  border-radius:14px;
+  background:linear-gradient(135deg,#ff65dc,#6ee7ff);
+  color:#fff;
+  font-weight:900;
+}
+/* HOME LATEST POSTS BALANCE */
+
+#latestPosts{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:28px !important;
+  align-items:stretch !important;
+}
+
+#latestPosts .post-card{
+  height:100% !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+
+#latestPosts .post-card img{
+  width:100% !important;
+  height:170px !important;
+  object-fit:cover !important;
+  border-radius:14px !important;
+}
+
+#latestPosts .post-card h3{
+  min-height:90px !important;
+}
+
+#latestPosts .post-card p{
+  flex:1 !important;
+}
+/* ===============================
+   HOME LATEST POSTS - 8 CARDS GRID
+================================ */
+
+#latestPosts{
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:28px !important;
+  align-items:stretch !important;
+}
+
+#latestPosts .post-card{
+  height:450px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  cursor:pointer !important;
+  transition:.25s ease !important;
+}
+
+#latestPosts .post-card:hover{
+  transform:translateY(-6px) !important;
+  box-shadow:0 0 24px rgba(255,101,220,.28) !important;
+}
+
+#latestPosts .post-card img{
+  width:100% !important;
+  height:150px !important;
+  object-fit:cover !important;
+  border-radius:14px !important;
+  flex-shrink:0 !important;
+}
+
+#latestPosts .post-card .tag{
+  min-height:22px !important;
+  margin-top:8px !important;
+}
+
+#latestPosts .post-card h3{
+  min-height:92px !important;
+  max-height:92px !important;
+  overflow:hidden !important;
+  display:-webkit-box !important;
+  -webkit-line-clamp:3 !important;
+  -webkit-box-orient:vertical !important;
+}
+
+#latestPosts .post-card p{
+  min-height:70px !important;
+  max-height:70px !important;
+  overflow:hidden !important;
+  display:-webkit-box !important;
+  -webkit-line-clamp:3 !important;
+  -webkit-box-orient:vertical !important;
+  flex:1 !important;
+}
+
+#latestPosts .post-card a{
+  margin-top:auto !important;
+  position:relative !important;
+  z-index:2 !important;
+}
+
+@media(max-width:1100px){
+  #latestPosts{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  }
+}
+
+@media(max-width:700px){
+  #latestPosts{
+    grid-template-columns:1fr !important;
+  }
+
+  #latestPosts .post-card{
+    height:auto !important;
+  }
+}
+/* =====================================================
+   MINA CMS V8.1 - POST EXPERIENCE
+===================================================== */
+
+.mina-post-experience-v81{
+  margin-top:34px;
+  display:grid;
+  gap:24px;
+}
+
+.mina-post-stats-v81{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.mina-post-stats-v81 > div,
+.mina-post-stats-v81 button{
+  min-height:72px;
+  border-radius:18px;
+  border:1px solid rgba(80,220,255,.35);
+  background:rgba(255,255,255,.045);
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:5px;
+  font-weight:800;
+}
+
+.mina-post-stats-v81 button{
+  cursor:pointer;
+}
+
+.mina-post-stats-v81 button.liked{
+  background:linear-gradient(135deg,#ff4fd8,#6af6ff);
+  border-color:transparent;
+}
+
+.mina-post-nav-v81{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.mina-post-nav-v81 a{
+  padding:16px;
+  border-radius:18px;
+  border:1px solid rgba(80,220,255,.32);
+  background:rgba(255,255,255,.04);
+  color:#eaf7ff;
+  text-decoration:none;
+}
+
+.mina-post-nav-v81 a:hover{
+  border-color:#6af6ff;
+  box-shadow:0 0 18px rgba(106,246,255,.2);
+}
+
+.mina-related-posts-v81,
+.mina-comments-v81{
+  padding:22px;
+  border-radius:22px;
+  border:1px solid rgba(80,220,255,.32);
+  background:rgba(255,255,255,.035);
+}
+
+.mina-related-posts-v81 h3,
+.mina-comments-v81 h3{
+  margin-bottom:16px;
+}
+
+.mina-related-grid-v81{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:14px;
+}
+
+.mina-related-card-v81{
+  padding:12px;
+  border-radius:18px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.12);
+  color:#fff;
+  text-decoration:none;
+}
+
+.mina-related-card-v81 img{
+  width:100%;
+  aspect-ratio:16/10;
+  object-fit:cover;
+  border-radius:14px;
+  margin-bottom:10px;
+}
+
+.mina-related-card-v81 strong{
+  display:block;
+  font-size:15px;
+  line-height:1.3;
+}
+
+.mina-related-card-v81 span{
+  display:block;
+  margin-top:6px;
+  color:#7df9ff;
+  font-size:13px;
+}
+
+.mina-comment-form-v81{
+  display:grid;
+  gap:12px;
+  margin-bottom:18px;
+}
+
+.mina-comment-form-v81 input,
+.mina-comment-form-v81 textarea{
+  width:100%;
+  border-radius:14px;
+  border:1px solid rgba(80,220,255,.35);
+  background:rgba(5,8,25,.75);
+  color:#fff;
+  padding:13px 15px;
+  font-family:inherit;
+}
+
+.mina-comment-form-v81 button{
+  width:max-content;
+  padding:12px 20px;
+  border-radius:999px;
+  border:0;
+  background:linear-gradient(135deg,#18f0ff,#d95cff);
+  color:#fff;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.mina-comment-list-v81{
+  display:grid;
+  gap:12px;
+}
+
+.mina-comment-item-v81{
+  padding:14px 16px;
+  border-radius:16px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.1);
+}
+
+.mina-comment-item-v81 strong{
+  color:#7df9ff;
+}
+
+.mina-comment-item-v81 p{
+  margin:6px 0 0;
+}
+
+@media(max-width:700px){
+  .mina-post-stats-v81,
+  .mina-post-nav-v81{
+    grid-template-columns:1fr;
+  }
+}
+/* =====================================================
+   MINA CMS V8.1 - POST EXPERIENCE POLISH
+   Làm gọn Like / View / Related / Comment
+===================================================== */
+
+.mina-post-experience-v81{
+  margin-top:34px;
+  padding:24px;
+  border-radius:24px;
+  border:1px solid rgba(80,220,255,.32);
+  background:rgba(255,255,255,.035);
+  display:grid;
+  gap:24px;
+}
+
+.mina-post-stats-v81{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:14px;
+}
+
+.mina-post-stats-v81 > div,
+.mina-post-stats-v81 button{
+  min-height:78px;
+  border-radius:20px;
+  border:1px solid rgba(80,220,255,.35);
+  background:rgba(9,13,35,.78);
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:6px;
+  font-weight:900;
+  box-shadow:0 10px 28px rgba(0,0,0,.18);
+}
+
+.mina-post-stats-v81 strong{
+  font-size:24px;
+  color:#7df9ff;
+  line-height:1;
+}
+
+.mina-post-stats-v81 span{
+  font-size:14px;
+  color:#eaf7ff;
+}
+
+.mina-post-stats-v81 button{
+  cursor:pointer;
+  font-family:inherit;
+}
+
+.mina-post-stats-v81 button:hover{
+  border-color:#7df9ff;
+  box-shadow:0 0 18px rgba(125,249,255,.22);
+}
+
+.mina-post-stats-v81 button.liked{
+  background:linear-gradient(135deg,#ff4fd8,#6af6ff);
+  border-color:transparent;
+}
+
+.mina-post-stats-v81 button.liked strong,
+.mina-post-stats-v81 button.liked span{
+  color:#fff;
+}
+
+.mina-post-nav-v81{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+.mina-post-nav-v81 a,
+.mina-post-nav-v81 span{
+  min-height:72px;
+  padding:16px 18px;
+  border-radius:20px;
+  border:1px solid rgba(80,220,255,.28);
+  background:rgba(9,13,35,.68);
+  color:#eaf7ff;
+  text-decoration:none;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+.mina-post-nav-v81 a:last-child{
+  text-align:right;
+  align-items:flex-end;
+}
+
+.mina-post-nav-v81 strong{
+  margin-top:5px;
+  color:#fff;
+  line-height:1.35;
+}
+
+.mina-post-nav-v81 a:hover{
+  border-color:#7df9ff;
+  box-shadow:0 0 18px rgba(125,249,255,.18);
+}
+
+.mina-related-posts-v81,
+.mina-comments-v81{
+  padding:22px;
+  border-radius:22px;
+  border:1px solid rgba(80,220,255,.28);
+  background:rgba(9,13,35,.62);
+}
+
+.mina-related-posts-v81 h3,
+.mina-comments-v81 h3{
+  margin:0 0 16px;
+  color:#7df9ff;
+  font-size:20px;
+}
+
+.mina-related-grid-v81{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:14px;
+}
+
+.mina-related-card-v81{
+  padding:12px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.045);
+  color:#fff;
+  text-decoration:none;
+  display:block;
+}
+
+.mina-related-card-v81 img{
+  width:100%;
+  aspect-ratio:16/10;
+  object-fit:cover;
+  border-radius:14px;
+  margin-bottom:10px;
+}
+
+.mina-related-card-v81 strong{
+  display:block;
+  font-size:15px;
+  line-height:1.35;
+}
+
+.mina-related-card-v81 span{
+  display:block;
+  margin-top:6px;
+  color:#7df9ff;
+  font-size:13px;
+}
+
+.mina-comment-form-v81{
+  display:grid;
+  gap:12px;
+  margin-bottom:18px;
+}
+
+.mina-comment-form-v81 input,
+.mina-comment-form-v81 textarea{
+  width:100%;
+  border-radius:16px;
+  border:1px solid rgba(80,220,255,.35);
+  background:rgba(5,8,25,.82);
+  color:#fff;
+  padding:14px 16px;
+  font-family:inherit;
+  font-size:15px;
+  outline:none;
+}
+
+.mina-comment-form-v81 input:focus,
+.mina-comment-form-v81 textarea:focus{
+  border-color:#7df9ff;
+  box-shadow:0 0 16px rgba(125,249,255,.18);
+}
+
+.mina-comment-form-v81 textarea{
+  min-height:110px;
+  resize:vertical;
+}
+
+.mina-comment-form-v81 button{
+  width:max-content;
+  padding:12px 22px;
+  border-radius:999px;
+  border:0;
+  background:linear-gradient(135deg,#18f0ff,#d95cff);
+  color:#fff;
+  font-weight:900;
+  cursor:pointer;
+  font-family:inherit;
+}
+
+.mina-comment-list-v81{
+  display:grid;
+  gap:12px;
+}
+
+.mina-comment-item-v81{
+  padding:15px 16px;
+  border-radius:18px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.1);
+}
+
+.mina-comment-item-v81 strong{
+  color:#7df9ff;
+}
+
+.mina-comment-item-v81 p{
+  margin:6px 0 0;
+  line-height:1.6;
+}
+
+@media(max-width:700px){
+  .mina-post-experience-v81{
+    padding:18px;
+  }
+
+  .mina-post-stats-v81,
+  .mina-post-nav-v81{
+    grid-template-columns:1fr;
+  }
+
+  .mina-post-nav-v81 a:last-child{
+    text-align:left;
+    align-items:flex-start;
+  }
+}
+/* =====================================================
    MINA BLOG - CLICK TOÀN BỘ POST CARD
    Dán cuối file css/style.css
 ===================================================== */
