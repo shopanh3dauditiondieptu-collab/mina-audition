@@ -1,0 +1,44 @@
+/* Mina CMS V4 Category Service */
+.mina-category-actions-v4 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+#minaRestoreCategoriesV4,
+#minaReloadCategoriesV4,
+#minaSaveCategoriesV4 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 800;
+}
+
+#minaRestoreCategoriesV4,
+#minaReloadCategoriesV4 {
+  color: #11162d !important;
+  background: linear-gradient(90deg, #86ecff, #f056d8) !important;
+  border: 0 !important;
+}
+
+#minaSaveCategoriesV4 {
+  color: #11162d !important;
+  background: linear-gradient(90deg, #86ecff, #f056d8) !important;
+  border: 0 !important;
+}
+
+.mina-default-tags-v4 {
+  display: block;
+  margin-top: 14px;
+}
+
+.mina-default-tags-v4 span {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
