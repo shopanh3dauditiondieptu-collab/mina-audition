@@ -918,3 +918,43 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+
+/* =========================================================
+   MINA META BADGES V11 — 4K | Lv6 | LS-La | 100 BPM
+========================================================= */
+.wiki-meta {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 7px !important;
+  min-height: 30px !important;
+  overflow: visible !important;
+}
+
+.wiki-meta > span {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 26px !important;
+  padding: 5px 9px !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,.075) !important;
+  color: #fff !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+}
+
+.wiki-meta .mina-meta-quality { color: #8ff5ff !important; }
+.wiki-meta .mina-meta-level   { color: #f2f2ff !important; }
+.wiki-meta .mina-meta-dance   { color: #ffd2ea !important; }
+.wiki-meta .mina-meta-bpm     { color: #d8c8ff !important; }
+
+@media (max-width: 420px) {
+  .wiki-meta { gap: 5px !important; }
+  .wiki-meta > span { padding: 5px 7px !important; font-size: 10px !important; }
+}
