@@ -86,6 +86,12 @@ function renderList() {
         ${post.status === "draft" ? "📝 Bản nháp" : "🌐 Công khai"}
       </p>
 
+      ${post.link ? `
+        <p class="muted">
+          Facebook liên quan: ${escapeHTML(post.link)}
+        </p>
+      ` : ""}
+
       ${post.image ? `
         <img
           src="${optimizeCloudinary(post.image, 260)}"
@@ -209,6 +215,12 @@ async function submitPost(event) {
   const f = fields();
   const category = getCategoryPayload();
   const editor = getEditorPayload();
+  const facebookLink = f.link.value.trim();
+
+  if (facebookLink && !/^https?:\/\/(www\.)?(facebook\.com|fb\.watch)\//i.test(facebookLink)) {
+    alert("Ô Link chỉ dùng cho đường dẫn Facebook. Hãy nhập link Facebook hợp lệ hoặc để trống.");
+    return;
+  }
 
   const post = {
     title: f.title.value.trim(),
@@ -216,7 +228,8 @@ async function submitPost(event) {
     image: f.image.value.trim(),
     desc: f.desc.value.trim(),
     ...editor,
-    link: f.link.value.trim(),
+    // Chỉ lưu link Facebook liên quan; card vẫn luôn mở bài trên Mina.
+    link: facebookLink,
     featured: !!f.featured.checked,
     status: f.status.value || "published",
     cmsVersion: "mina-cms-professional-v3"
