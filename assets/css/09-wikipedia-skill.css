@@ -231,3 +231,95 @@
 .mina-wiki-detail-media img{width:100%;max-height:72vh;object-fit:contain;border-radius:18px;background:rgba(255,255,255,.035)}.mina-detail-badges{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}.mina-detail-badges span,.mina-detail-specs span{padding:7px 10px;border:1px solid rgba(255,255,255,.1);border-radius:999px;background:rgba(255,255,255,.055)}.mina-detail-specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:18px 0}.mina-detail-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.mina-detail-actions button,.mina-detail-actions a{padding:10px 14px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:linear-gradient(135deg,#d94bd8,#43d9ff);color:#fff;font:inherit;font-weight:800;text-decoration:none;cursor:pointer}.mina-detail-actions button:disabled{background:rgba(255,255,255,.08);opacity:.5}
 @keyframes minaCardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}@keyframes minaSkeleton{to{background-position:-220% 0}}
 @media(max-width:680px){.mina-detail-specs{grid-template-columns:1fr}.mina-wiki-detail-grid{grid-template-columns:1fr!important}}
+
+
+/* =========================================================
+   MINA HOME PINNED GRID V7 - CHỈ TÁC ĐỘNG SECTION TRANG CHỦ
+========================================================= */
+.wiki-section #skillGrid.skill-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 22px !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  margin-top: 28px !important;
+}
+.wiki-section #skillGrid .mina-home-skill-card {
+  min-width: 0 !important;
+  height: 100% !important;
+  border: 1px solid rgba(225, 83, 213, .28) !important;
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  background: linear-gradient(180deg, rgba(30,28,50,.98), rgba(12,12,27,.98)) !important;
+  box-shadow: 0 16px 38px rgba(0,0,0,.24) !important;
+  text-align: left !important;
+}
+.wiki-section #skillGrid .mina-home-skill-card .mina-wiki-image-wrap {
+  width: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+.wiki-section #skillGrid .mina-home-skill-card .mina-wiki-image-wrap img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+.wiki-section #skillGrid .mina-home-skill-card .wiki-card-body {
+  padding: 16px !important;
+  gap: 8px !important;
+}
+.wiki-section #skillGrid .mina-home-skill-card .wiki-id {
+  color: #ef7ae5 !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+.wiki-section #skillGrid .mina-home-skill-card h3 {
+  margin: 0 !important;
+  font-size: 19px !important;
+  line-height: 1.25 !important;
+  color: #fff !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.wiki-section #skillGrid .mina-home-skill-card .wiki-meta {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+}
+.wiki-section #skillGrid .mina-home-skill-card .wiki-meta span {
+  padding: 5px 8px !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,.07) !important;
+  font-size: 11px !important;
+}
+.wiki-section #skillGrid .mina-home-skill-card .wiki-desc {
+  min-height: 2.9em !important;
+  margin: 2px 0 0 !important;
+  -webkit-line-clamp: 2 !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  color: rgba(255,255,255,.72) !important;
+}
+.wiki-section #skillGrid .mina-home-skill-card .wiki-actions {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+  margin-top: auto !important;
+}
+.wiki-section #skillGrid .mina-home-skill-card .wiki-actions button {
+  min-width: 0 !important;
+  min-height: 38px !important;
+  padding: 8px 10px !important;
+  border-radius: 11px !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+}
+@media (max-width: 1024px) {
+  .wiki-section #skillGrid.skill-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+@media (max-width: 560px) {
+  .wiki-section #skillGrid.skill-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+}
