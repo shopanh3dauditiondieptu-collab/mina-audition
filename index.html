@@ -3,13 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>Mina Audition | Dance • Poppin • Audition VTC</title>
   <meta name="description" content="Mina Audition - Dance Performance, Review Skill, Wikipedia D8, Edit Video và 3D Audition." />
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=20260711-featured-v1" />
   <link rel="stylesheet" href="assets/css/09-wikipedia-skill.css">
 
   <!-- MINA CMS V6 LAYOUT SYSTEM - FIX CANH LỀ TOÀN TRANG -->
@@ -301,10 +304,9 @@
           <p>Cùng Mina khám phá những nội dung hấp dẫn nhất.</p>
         </div>
 
-        <div class="feature-grid">
+        <div class="feature-grid" id="minaFeaturedGrid">
 
-          <!-- DANCE PERFORMANCE -->
-          <article class="featured-card">
+          <article class="featured-card" data-feature-id="dance">
             <a
               href="https://www.youtube.com/playlist?list=PLaQchUKgIuMUYwQKEPraUWVkxT8793iVT"
               target="_blank"
@@ -318,8 +320,7 @@
             </a>
           </article>
 
-          <!-- MINA BLOG -->
-          <article class="featured-card">
+          <article class="featured-card" data-feature-id="mina-blog">
             <a
               href="https://www.facebook.com/profile.php?id=61590867037910"
               target="_blank"
@@ -333,8 +334,7 @@
             </a>
           </article>
 
-          <!-- D8 TEAM -->
-          <article class="featured-card" id="d8team">
+          <article class="featured-card" id="d8team" data-feature-id="d8-team">
             <a
               href="https://www.youtube.com/playlist?list=PLaQchUKgIuMX_Xtz5WcS_TWdq2hFb-jHr"
               target="_blank"
@@ -348,8 +348,7 @@
             </a>
           </article>
 
-          <!-- MIX & MATCH -->
-          <article class="featured-card">
+          <article class="featured-card" data-feature-id="mix-match">
             <a
               href="https://www.facebook.com/profile.php?id=61590642787182"
               target="_blank"
@@ -512,15 +511,6 @@
 <script src="js/core/animation.js"></script>
 <script src="js/mina-v7.js"></script>
 <script src="assets/js/wiki-skills.js"></script>
-
-  <script>
-    // MINA FEATURED LINKS - FINAL GUARD
-    document.querySelectorAll(".featured-section .feature-link").forEach(function (link) {
-      link.addEventListener("click", function (event) {
-        event.stopPropagation();
-      });
-    });
-  </script>
-
+  <script src="js/featured-cards.js?v=20260711-featured-v1"></script>
 </body>
 </html>
