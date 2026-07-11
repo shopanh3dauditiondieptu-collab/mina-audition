@@ -1,9 +1,157 @@
-/* MINA WIKI HOME V6 CLEAN */
-(function(window,document){"use strict";const e=window.MinaWikiEngine,g=document.getElementById("skillGrid"),s=document.getElementById("skillSearch");if(!e||!g)return;const MAX=8;let all=[],timer;
-function date(v){const n=Date.parse(v||"");return Number.isFinite(n)?n:0;}
-function skeleton(){g.innerHTML=Array.from({length:3},()=>`<article class="wiki-card mina-wiki-card-pro mina-wiki-skeleton"><div class="mina-skeleton-image"></div><div class="wiki-card-body"><div class="mina-skeleton-line short"></div><div class="mina-skeleton-line title"></div><div class="mina-skeleton-line"></div></div></article>`).join("");}
-function state(m){g.innerHTML=`<div class="mina-wiki-state"><h3>${e.escapeHTML(m)}</h3></div>`;}
-function searchable(x){return e.normalizeText([x.id,x.name,x.alias,x.style,x.type,x.level,x.bpm,x.rarity,x.description,...x.tags].join(" "));}
-function render(list){const visible=list.slice(0,MAX);if(!visible.length)return state("Không tìm thấy Skill phù hợp.");const f=document.createDocumentFragment();visible.forEach((x,i)=>{const a=document.createElement("article");a.className="wiki-card mina-wiki-card-pro";a.style.setProperty("--mina-card-delay",`${Math.min(i,8)*45}ms`);const meta=[x.style?`<span>💃 ${e.escapeHTML(x.style)}</span>`:"",x.level?`<span>🎚️ LV${e.escapeHTML(x.level)}</span>`:"",x.bpm!==""?`<span>🎵 ${e.escapeHTML(x.bpm)} BPM</span>`:""].filter(Boolean).join("");const flags=[x.hot?`<span class="mina-flag hot">HOT</span>`:"",x.isNew?`<span class="mina-flag new">NEW</span>`:"",x.verified?`<span class="mina-flag verified">✓</span>`:""].join("");a.innerHTML=`<div class="mina-wiki-image-wrap"><img src="${e.escapeHTML(x.image)}" alt="${e.escapeHTML(x.name)}" loading="lazy" decoding="async" onerror="this.src='${e.defaultImage}'"><div class="mina-card-flags">${flags}</div><span class="mina-rarity">${e.escapeHTML(x.rarity||(x.verified?"Đã xác minh":"Cần review"))}</span></div><div class="wiki-card-body"><div class="wiki-id">ID Skill: ${e.escapeHTML(x.id)}</div><h3>${e.escapeHTML(x.name)}</h3><div class="wiki-status">${x.verified?"Đã xác minh":"Cần review"}</div><div class="wiki-meta">${meta}</div><p class="wiki-desc">${e.escapeHTML(x.description)}</p><div class="wiki-actions"><button type="button" class="wiki-detail-btn">ⓘ Chi tiết skill</button><button type="button" class="wiki-video-btn" ${x.youtube?"":"disabled"}>▶ ${x.youtube?"Xem video skill":"Chưa có video"}</button></div></div>`;a.querySelector(".wiki-detail-btn").addEventListener("click",()=>e.openDetail(x));a.querySelector(".wiki-video-btn").addEventListener("click",()=>e.openVideo(x));f.appendChild(a);});g.replaceChildren(f);}
-async function init(){skeleton();try{all=await e.loadSkills();all.sort((a,b)=>date(b.updatedAt)-date(a.updatedAt));render(all);const param=new URLSearchParams(location.search).get("skill");if(param){const x=all.find(y=>y.id.toLowerCase()===param.toLowerCase());if(x)e.openDetail(x);}}catch(err){console.error("[Mina Wiki Home]",err);state(`Không tải được dữ liệu Skill: ${err.message}`);}}
-s?.addEventListener("input",()=>{clearTimeout(timer);timer=setTimeout(()=>{const q=e.normalizeText(s.value);render(q?all.filter(x=>searchable(x).includes(q)):all);},160);});window.addEventListener("focus",async()=>{e.clearCache();all=await e.loadSkills(true).catch(()=>all);render(all);});init();})(window,document);
+/* =========================================================
+   MINA WIKI HOME V7 PINNED GRID
+   Giữ nguyên #skillGrid và #skillSearch của index.html
+   - Chỉ hiển thị tối đa 8 skill được Admin ghim
+   - Sắp xếp theo homeOrder 1..8
+   - Card vuông, nội dung gọn và đồng đều
+========================================================= */
+(function (window, document) {
+  "use strict";
+
+  const engine = window.MinaWikiEngine;
+  const grid = document.getElementById("skillGrid");
+  const search = document.getElementById("skillSearch");
+  const MAX_HOME_SKILLS = 8;
+
+  if (!engine || !grid) return;
+
+  let allSkills = [];
+  let homeSkills = [];
+  let searchTimer = null;
+
+  function orderNumber(value) {
+    const number = Number(value);
+    return Number.isInteger(number) && number >= 1 && number <= 8 ? number : 999;
+  }
+
+  function searchable(skill) {
+    return engine.normalizeText([
+      skill.id, skill.name, skill.alias, skill.style, skill.type,
+      skill.level, skill.bpm, skill.rarity, skill.description,
+      ...(skill.tags || [])
+    ].join(" "));
+  }
+
+  function selectPinned(skills) {
+    return skills
+      .filter(skill => skill.homePinned === true)
+      .sort((a, b) => {
+        const byOrder = orderNumber(a.homeOrder) - orderNumber(b.homeOrder);
+        if (byOrder !== 0) return byOrder;
+        return Date.parse(b.updatedAt || b.createdAt || 0) - Date.parse(a.updatedAt || a.createdAt || 0);
+      })
+      .slice(0, MAX_HOME_SKILLS);
+  }
+
+  function renderSkeleton() {
+    grid.innerHTML = Array.from({ length: 8 }, () => `
+      <article class="wiki-card mina-wiki-card-pro mina-home-skill-card mina-wiki-skeleton">
+        <div class="mina-skeleton-image"></div>
+        <div class="wiki-card-body">
+          <div class="mina-skeleton-line short"></div>
+          <div class="mina-skeleton-line title"></div>
+          <div class="mina-skeleton-line"></div>
+        </div>
+      </article>
+    `).join("");
+  }
+
+  function renderState(message) {
+    grid.innerHTML = `<div class="mina-wiki-state"><h3>${engine.escapeHTML(message)}</h3></div>`;
+  }
+
+  function render(list) {
+    if (!list.length) {
+      renderState("Admin chưa ghim Skill nào lên trang chủ.");
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    list.slice(0, MAX_HOME_SKILLS).forEach((skill, index) => {
+      const card = document.createElement("article");
+      card.className = "wiki-card mina-wiki-card-pro mina-home-skill-card";
+      card.style.setProperty("--mina-card-delay", `${Math.min(index, 7) * 45}ms`);
+
+      const metadata = [
+        skill.style ? `<span>💃 ${engine.escapeHTML(skill.style)}</span>` : "",
+        skill.level ? `<span>🎚️ LV${engine.escapeHTML(skill.level)}</span>` : "",
+        skill.bpm !== "" ? `<span>🎵 ${engine.escapeHTML(skill.bpm)}</span>` : ""
+      ].filter(Boolean).join("");
+
+      const flags = [
+        skill.hot ? `<span class="mina-flag hot">HOT</span>` : "",
+        skill.isNew ? `<span class="mina-flag new">NEW</span>` : "",
+        skill.verified ? `<span class="mina-flag verified">✓</span>` : ""
+      ].join("");
+
+      card.innerHTML = `
+        <div class="mina-wiki-image-wrap">
+          <img
+            src="${engine.escapeHTML(skill.image)}"
+            alt="${engine.escapeHTML(skill.name)}"
+            loading="lazy"
+            decoding="async"
+            onerror="this.onerror=null;this.src='${engine.defaultImage}'"
+          >
+          <div class="mina-card-flags">${flags}</div>
+          <span class="mina-rarity">${engine.escapeHTML(skill.rarity || (skill.verified ? "Đã xác minh" : "Cần review"))}</span>
+        </div>
+
+        <div class="wiki-card-body">
+          <div class="wiki-id">ID: ${engine.escapeHTML(skill.id)}</div>
+          <h3>${engine.escapeHTML(skill.name)}</h3>
+          <div class="wiki-meta">${metadata}</div>
+          <p class="wiki-desc">${engine.escapeHTML(skill.description)}</p>
+          <div class="wiki-actions">
+            <button type="button" class="wiki-detail-btn">Chi tiết</button>
+            <button type="button" class="wiki-video-btn" ${skill.youtube ? "" : "disabled"}>▶ Video</button>
+          </div>
+        </div>
+      `;
+
+      card.querySelector(".wiki-detail-btn")?.addEventListener("click", () => engine.openDetail(skill));
+      card.querySelector(".wiki-video-btn")?.addEventListener("click", () => {
+        if (skill.youtube) engine.openVideo(skill);
+      });
+      fragment.appendChild(card);
+    });
+
+    grid.replaceChildren(fragment);
+  }
+
+  function applySearch() {
+    const query = engine.normalizeText(search?.value || "");
+    render(query ? homeSkills.filter(skill => searchable(skill).includes(query)) : homeSkills);
+  }
+
+  async function load(force = false) {
+    renderSkeleton();
+    try {
+      allSkills = await engine.loadSkills(force);
+      homeSkills = selectPinned(allSkills);
+      applySearch();
+    } catch (error) {
+      console.error("[Mina Wiki Home]", error);
+      renderState(`Không tải được dữ liệu Skill: ${error.message}`);
+    }
+  }
+
+  search?.addEventListener("input", () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(applySearch, 160);
+  });
+
+  window.addEventListener("focus", () => {
+    engine.clearCache();
+    load(true);
+  });
+
+  window.addEventListener("mina:skills-changed", () => {
+    engine.clearCache();
+    load(true);
+  });
+
+  window.MinaWikiHome = { reload: () => load(true) };
+  load();
+})(window, document);
