@@ -7,98 +7,16 @@ import {
   orderBy
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
+import {
+  MINA_DEFAULT_CATEGORIES,
+  cloneMinaCategories
+} from "./mina-categories-data.js";
+
 const box = document.getElementById("blogPosts");
 const sidebar = document.querySelector(".blog-category-box");
 
 let allPosts = [];
-
-const minaTree = [
-  { name: "TRẢI NGHIỆM GAME",
-   children: [
-       "Share File Skill D8",
-       "Share File Skill D8Team",
-       "Cách Quay Dựng Video & Ảnh",
-       "Sự Kiện Ingame Audition",
-        "Vấn Đề Khác",
-          ] },
-  {
-    name: "LỆNH AI TẠO ẢNH 3D",
-    children: [
-        "Prompt Couple",
-        "Prompt Ảnh Đơn - Boy",
-        "Prompt Ảnh Đơn - Girl",
-        "Prompt Wedding",
-        "Prompt Background",
-        "Prompt Ảnh Nhóm",
-      ]
-},
-
-  {
-    name: "MIX & MATCH OUTFIT GAME",
-    children: [
-      { name: "Style Girl", children: ["Cute Girl", "Sexy Girl", "Cool Girl", "Style 105 D8"] },
-      { name: "Style Boy", children: ["Cute Boy", "Sexy Boy", "Cool Boy", "Style 105 D8"] },
-      { name: "Couple Outfit", children: ["Cute Style", "Sexy Style", "Cool Style"] }
-    ]
-  },
-
-  {
-    name: "VIDEO GAME AUDITION",
-    children: [
-      "MV Audition",
-      "Perfect x Combo Audition",
-      {
-        name: "D8 SKILL DANCE PERFORMANCE",
-        children: ["Múa Quạt", "Poppin", "D8 Sexy Girl", "D8 Cool Girl", "D8 Sexy Boy", "D8 Cool Boy"]
-      },
-      {
-        name: "D8 TEAM DANCE PERFORMANCE",
-        children: ["COUPLE", "Girl & Girl", "Boy & Boy"]
-      },
-      {
-        name: "ĐÔI 8-4K DANCE PERFORMANCE",
-        children: ["Đôi 8K", "Đôi 4K"]
-      },
-      {
-        name: "D8 SKILL REVIEW",
-        children: [
-          { name: "Lv6", children: ["8K - Sexy Girl", "8K - Cool Boy", "4K - Sexy Girl", "4K - Cool Boy", "8K - Poppin", "4K - Poppin"] },
-          { name: "Lv7", children: ["8K - Sexy Girl", "8K - Cool Boy", "4K - Sexy Girl", "4K - Cool Boy", "8K - Poppin", "4K - Poppin"] },
-          { name: "Lv8", children: ["8K - Sexy Girl", "8K - Cool Boy", "4K - Sexy Girl", "4K - Cool Boy", "8K - Poppin", "4K - Poppin"] },
-          { name: "Lv9", children: ["8K - Sexy Girl", "8K - Cool Boy", "4K - Sexy Girl", "4K - Cool Boy", "8K - Poppin", "4K - Poppin"] }
-        ]
-      },
-      {
-        name: "DC8 SKILL REVIEW",
-        children: [
-          { name: "Lv8", children: ["8K - Sexy Girl", "8K - Cool Boy", "4K - Sexy Girl", "4K - Cool Boy", "8K - Poppin", "4K - Poppin"] },
-          { name: "Lv9", children: ["8K - Sexy Girl", "8K - Cool Boy", "4K - Sexy Girl", "4K - Cool Boy", "8K - Poppin", "4K - Poppin"] },
-          { name: "Lv10", children: ["8K - Sexy Girl", "8K - Cool Boy", "4K - Sexy Girl", "4K - Cool Boy", "8K - Poppin", "4K - Poppin"] },
-          { name: "Lv11", children: ["8K - Sexy Girl", "8K - Cool Boy", "4K - Sexy Girl", "4K - Cool Boy", "8K - Poppin", "4K - Poppin"] }
-        ]
-      }
-    ]
-  },
-
-  { name: "TÂM SỰ - CHIA SẺ", children: [] }
-];
-
-const icons = {
-  "KINH NGHIỆM GAME": "🎮",
-  "MIX & MATCH OUTFIT GAME": "👗",
-  "VIDEO GAME AUDITION": "🎬",
-  "TÂM SỰ - CHIA SẺ": "💌",
-  "Style Girl": "👧",
-  "Style Boy": "👦",
-  "Couple Outfit": "❤️",
-  "D8 SKILL REVIEW": "⭐",
-  "DC8 SKILL REVIEW": "⭐",
-  "D8 SKILL DANCE PERFORMANCE": "💃",
-  "D8 TEAM DANCE PERFORMANCE": "👯",
-  "MV Audition": "🎵",
-  "Perfect x Combo Audition": "🏆",
-  "ĐÔI 8-4K DANCE PERFORMANCE": "💞"
-};
+let minaTree = cloneMinaCategories();
 
 function normalize(text = "") {
   return String(text)
@@ -111,6 +29,9 @@ function normalize(text = "") {
 function matchPost(post, keyword) {
   const text = normalize(`
     ${post.category || ""}
+    ${post.categoryName || ""}
+    ${post.categoryFullName || ""}
+    ${Array.isArray(post.categoryPath) ? post.categoryPath.join(" ") : ""}
     ${post.group || ""}
     ${post.playlist || ""}
     ${post.title || ""}
@@ -122,15 +43,16 @@ function matchPost(post, keyword) {
 
 function getAllNames(node) {
   if (!node) return [];
-  if (typeof node === "string") return [node];
 
-  let names = [node.name];
+  let names = [
+    node.name,
+    node.id,
+    ...(Array.isArray(node.aliases) ? node.aliases : [])
+  ].filter(Boolean);
 
-  if (node.children && node.children.length) {
-    node.children.forEach(child => {
-      names = names.concat(getAllNames(child));
-    });
-  }
+  (node.children || []).forEach(child => {
+    names = names.concat(getAllNames(child));
+  });
 
   return names;
 }
@@ -138,9 +60,9 @@ function getAllNames(node) {
 function countNode(node) {
   const names = getAllNames(node);
 
-  return allPosts.filter(item => {
-    return names.some(name => matchPost(item.data, name));
-  }).length;
+  return allPosts.filter(item =>
+    names.some(name => matchPost(item.data, name))
+  ).length;
 }
 
 function renderPosts(posts) {
@@ -158,15 +80,20 @@ function renderPosts(posts) {
 
   box.innerHTML = posts.map(item => {
     const p = item.data;
-    const id = item.id;
 
     return `
       <article class="post-card">
-        <img src="${p.image || "images/default-post.svg"}" alt="${p.title || "Bài viết Mina"}">
-        <p class="post-category">${p.category || p.playlist || "Mina Blog"}</p>
+        <img
+          src="${p.image || "images/default-post.svg"}"
+          alt="${p.title || "Bài viết Mina"}"
+          loading="lazy"
+        >
+        <p class="post-category">
+          ${p.categoryName || p.category || p.playlist || "Mina Blog"}
+        </p>
         <h3>${p.title || "Không có tiêu đề"}</h3>
         <p>${p.desc || ""}</p>
-        <a href="post.html?id=${id}" class="read-more">Đọc bài</a>
+        <a href="post.html?id=${item.id}" class="read-more">Đọc bài</a>
       </article>
     `;
   }).join("");
@@ -175,53 +102,51 @@ function renderPosts(posts) {
 function filterByNode(node) {
   const names = getAllNames(node);
 
-  const filtered = allPosts.filter(item => {
-    return names.some(name => matchPost(item.data, name));
-  });
-
-  renderPosts(filtered);
+  renderPosts(
+    allPosts.filter(item =>
+      names.some(name => matchPost(item.data, name))
+    )
+  );
 }
 
-function findNodeByName(list, name) {
-  for (const item of list) {
-    if (typeof item === "string" && item === name) return item;
+function findNodeById(nodes, id) {
+  for (const node of nodes) {
+    if (node.id === id) return node;
 
-    if (typeof item === "object") {
-      if (item.name === name) return item;
-
-      const found = findNodeByName(item.children || [], name);
-      if (found) return found;
-    }
+    const found = findNodeById(node.children || [], id);
+    if (found) return found;
   }
 
   return null;
 }
 
 function renderTreeNode(node, level = 1) {
-  if (typeof node === "string") {
-    const count = countNode(node);
-
-    return `
-      <button class="mina-tree-item level-${level}" data-name="${node}">
-        <span>• ${node}</span>
-        <b>${count}</b>
-      </button>
-    `;
-  }
-
-  const count = countNode(node);
-  const icon = icons[node.name] || "📁";
+  const hasChildren =
+    Array.isArray(node.children) && node.children.length > 0;
 
   return `
     <div class="mina-tree-group level-${level}">
-      <button class="mina-tree-parent level-${level}" data-name="${node.name}">
-        <span class="tree-toggle">+ ${icon} ${node.name}</span>
-        <b>${count}</b>
+      <button
+        class="${hasChildren ? "mina-tree-parent" : "mina-tree-item"} level-${level}"
+        data-category-id="${node.id}"
+      >
+        <span class="${hasChildren ? "tree-toggle" : ""}">
+          ${hasChildren ? "+" : "•"} ${node.icon || "📁"} ${node.name}
+        </span>
+        <b>${countNode(node)}</b>
       </button>
 
-      <div class="mina-tree-children collapsed">
-        ${(node.children || []).map(child => renderTreeNode(child, level + 1)).join("")}
-      </div>
+      ${
+        hasChildren
+          ? `
+            <div class="mina-tree-children collapsed">
+              ${node.children
+                .map(child => renderTreeNode(child, level + 1))
+                .join("")}
+            </div>
+          `
+          : ""
+      }
     </div>
   `;
 }
@@ -240,36 +165,66 @@ function buildSidebar() {
     ${minaTree.map(node => renderTreeNode(node)).join("")}
   `;
 
-  sidebar.querySelector(".mina-tree-all").addEventListener("click", function () {
-    sidebar.querySelectorAll("button").forEach(btn => btn.classList.remove("active"));
+  sidebar.querySelector(".mina-tree-all")?.addEventListener("click", function () {
+    sidebar.querySelectorAll("button").forEach(button =>
+      button.classList.remove("active")
+    );
+
     this.classList.add("active");
     renderPosts(allPosts);
   });
 
-  sidebar.querySelectorAll("[data-name]").forEach(button => {
+  sidebar.querySelectorAll("[data-category-id]").forEach(button => {
     button.addEventListener("click", function () {
-      const children = this.parentElement.querySelector(":scope > .mina-tree-children");
+      const group = this.closest(".mina-tree-group");
+      const children = group?.querySelector(":scope > .mina-tree-children");
+      const toggle = this.querySelector(".tree-toggle");
 
       if (children) {
         children.classList.toggle("collapsed");
 
-        const label = this.querySelector(".tree-toggle");
-        if (label) {
-          const name = this.dataset.name;
-          const icon = icons[name] || "📁";
-          label.textContent = children.classList.contains("collapsed")
-            ? `+ ${icon} ${name}`
-            : `− ${icon} ${name}`;
+        if (toggle) {
+          const node = findNodeById(minaTree, this.dataset.categoryId);
+          toggle.textContent = `${
+            children.classList.contains("collapsed") ? "+" : "−"
+          } ${node?.icon || "📁"} ${node?.name || ""}`;
         }
       }
 
-      sidebar.querySelectorAll("button").forEach(btn => btn.classList.remove("active"));
+      sidebar.querySelectorAll("button").forEach(item =>
+        item.classList.remove("active")
+      );
+
       this.classList.add("active");
 
-      const node = findNodeByName(minaTree, this.dataset.name);
-      filterByNode(node);
+      const node = findNodeById(minaTree, this.dataset.categoryId);
+      if (node) filterByNode(node);
     });
   });
+}
+
+async function loadCategories() {
+  try {
+    const response = await fetch("/api/categories", {
+      headers: { Accept: "application/json" },
+      cache: "no-store"
+    });
+
+    const data = await response.json();
+
+    if (
+      response.ok &&
+      Array.isArray(data.categories) &&
+      data.categories.length
+    ) {
+      minaTree = data.categories;
+      return;
+    }
+  } catch (error) {
+    console.warn("Không tải được danh mục API, dùng bản mặc định:", error);
+  }
+
+  minaTree = cloneMinaCategories(MINA_DEFAULT_CATEGORIES);
 }
 
 async function loadPosts() {
@@ -278,17 +233,19 @@ async function loadPosts() {
   box.innerHTML = `<p class="muted">Đang tải bài viết...</p>`;
 
   try {
-    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-    const snapshot = await getDocs(q);
+    await loadCategories();
 
-    allPosts = snapshot.docs.map(docItem => ({
-      id: docItem.id,
-      data: docItem.data()
+    const snapshot = await getDocs(
+      query(collection(db, "posts"), orderBy("createdAt", "desc"))
+    );
+
+    allPosts = snapshot.docs.map(item => ({
+      id: item.id,
+      data: item.data()
     }));
 
     buildSidebar();
     renderPosts(allPosts);
-
   } catch (error) {
     console.error("Mina Blog Error:", error);
 
