@@ -1,77 +1,99 @@
-/* MINA WIKI HOME V4.1 FINAL SYNC */
-(function () {
+/* =========================================================
+   MINA WIKI HOME V5
+   File: js/wiki-home.js
+   DOM hiện tại: #skillGrid, #skillSearch
+========================================================= */
+(function (window, document) {
   "use strict";
 
-  const BUILD = "20260711-1815";
   const engine = window.MinaWikiEngine;
   const grid = document.getElementById("skillGrid");
   const search = document.getElementById("skillSearch");
+  if (!engine || !grid) return;
 
-  if (!grid) return;
-  if (!engine) {
-    grid.innerHTML = '<div class="mina-skill-empty"><strong>Lỗi tải Wiki Engine.</strong></div>';
-    console.error("[Mina Wiki Home] Không tìm thấy MinaWikiEngine");
-    return;
-  }
+  const MAX_ITEMS = 8;
+  let allSkills = [];
+  let timer = null;
 
-  let skills = [];
+  init();
 
-  console.log("[Mina Wiki Home] build", BUILD);
-
-  (async function init() {
-    grid.innerHTML = '<div class="mina-skill-empty"><strong>Đang tải dữ liệu skill...</strong></div>';
-
+  async function init() {
+    renderState("Đang tải dữ liệu Skill...");
     try {
-      skills = await engine.loadSkills({ force: true });
-      render(skills);
-      search?.addEventListener("input", filterSkills);
+      allSkills = await engine.loadSkills();
+      allSkills.sort((a, b) => dateNumber(b.updatedAt) - dateNumber(a.updatedAt));
+      bindEvents();
+      render(allSkills);
     } catch (error) {
       console.error("[Mina Wiki Home]", error);
-      grid.innerHTML = '<div class="mina-skill-empty"><strong>Không tải được database/wiki-skills.json</strong></div>';
+      renderState(`Không tải được dữ liệu Skill: ${error.message}`);
     }
-  })();
+  }
 
-  function filterSkills() {
-    const q = engine.normalizeText(search?.value || "");
-    const result = !q ? skills : skills.filter(skill =>
-      engine.normalizeText([
-        skill.id, skill.name, skill.style, skill.level, skill.type,
-        skill.danceName, skill.rarity, skill.bpm, skill.quality,
-        skill.description, ...(skill.tags || [])
-      ].join(" ")).includes(q)
-    );
+  function bindEvents() {
+    search?.addEventListener("input", () => {
+      clearTimeout(timer);
+      timer = setTimeout(filterAndRender, 180);
+    });
+  }
+
+  function filterAndRender() {
+    const query = engine.normalizeText(search?.value || "");
+    const result = !query ? allSkills : allSkills.filter(skill => {
+      const haystack = engine.normalizeText([
+        skill.id, skill.name, skill.alias, skill.style, skill.type,
+        skill.level, skill.bpm, skill.rarity, skill.description,
+        ...(skill.tags || [])
+      ].join(" "));
+      return haystack.includes(query);
+    });
     render(result);
   }
 
-  function render(list) {
-    if (!list.length) {
-      grid.innerHTML = '<div class="mina-skill-empty"><strong>Không tìm thấy skill phù hợp.</strong></div>';
-      return;
-    }
+  function render(skills) {
+    const visible = skills.slice(0, MAX_ITEMS);
+    if (!visible.length) return renderState("Không tìm thấy Skill phù hợp.");
 
-    grid.innerHTML = list.map((skill, i) => {
-      const chips = [skill.level, skill.quality, skill.rarity, skill.bpm, ...(skill.tags || [])]
-        .filter(Boolean)
-        .map(v => `<span>${engine.escapeHTML(v)}</span>`)
-        .join("");
+    const fragment = document.createDocumentFragment();
+    visible.forEach(skill => {
+      const card = document.createElement("article");
+      card.className = "wiki-card mina-wiki-card-pro";
+      const meta = [
+        skill.style ? `<span>💃 ${engine.escapeHTML(skill.style)}</span>` : "",
+        skill.level ? `<span>🎚️ LV${engine.escapeHTML(skill.level)}</span>` : "",
+        skill.bpm !== "" ? `<span>🎵 ${engine.escapeHTML(skill.bpm)} BPM</span>` : ""
+      ].filter(Boolean).join("");
 
-      return `
-        <article class="skill-card mina-skill-card" data-i="${i}">
-          <h3>${engine.escapeHTML(skill.id)} - ${engine.escapeHTML(skill.style)}</h3>
-          <h4>${engine.escapeHTML(skill.name)}</h4>
-          <p>${engine.escapeHTML(skill.description)}</p>
-          ${chips ? `<div class="skill-tags">${chips}</div>` : ""}
-          <div class="mina-skill-actions">
-            <button type="button" class="skill-detail-btn" data-detail>ⓘ Chi tiết skill</button>
-            <button type="button" class="skill-video-btn" data-video>▶ Xem video skill</button>
+      card.innerHTML = `
+        <div class="mina-wiki-image-wrap">
+          <img src="${engine.escapeHTML(skill.image)}" alt="${engine.escapeHTML(skill.name)}" loading="lazy" decoding="async" onerror="this.src='${engine.defaultImage}'">
+          <span class="mina-rarity">${engine.escapeHTML(skill.rarity || (skill.verified ? "Đã xác minh" : "Cần review"))}</span>
+        </div>
+        <div class="wiki-card-body">
+          <div class="wiki-id">ID Skill: ${engine.escapeHTML(skill.id)}</div>
+          <h3>${engine.escapeHTML(skill.name)}</h3>
+          <div class="wiki-status">${skill.verified ? "Đã xác minh" : "Cần review"}</div>
+          <div class="wiki-meta">${meta}</div>
+          <p class="wiki-desc">${engine.escapeHTML(skill.description)}</p>
+          <div class="wiki-actions">
+            <button type="button" class="wiki-detail-btn">ⓘ Chi tiết skill</button>
+            <button type="button" class="wiki-video-btn" ${skill.youtube ? "" : "disabled"}>▶ ${skill.youtube ? "Xem video skill" : "Chưa có video"}</button>
           </div>
-        </article>`;
-    }).join("");
+        </div>`;
 
-    grid.querySelectorAll(".mina-skill-card").forEach((card, i) => {
-      const skill = list[i];
-      card.querySelector("[data-detail]")?.addEventListener("click", () => engine.openDetail(skill));
-      card.querySelector("[data-video]")?.addEventListener("click", () => engine.openVideo(skill));
+      card.querySelector(".wiki-detail-btn")?.addEventListener("click", () => engine.openDetail(skill));
+      card.querySelector(".wiki-video-btn")?.addEventListener("click", () => engine.openVideo(skill));
+      fragment.appendChild(card);
     });
+    grid.replaceChildren(fragment);
   }
-})();
+
+  function renderState(message) {
+    grid.innerHTML = `<div class="mina-wiki-state"><h3>${engine.escapeHTML(message)}</h3></div>`;
+  }
+
+  function dateNumber(value) {
+    const time = Date.parse(value || "");
+    return Number.isFinite(time) ? time : 0;
+  }
+})(window, document);
