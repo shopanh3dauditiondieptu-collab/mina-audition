@@ -2329,3 +2329,62 @@ font-weight:900;
     transform: none;
   }
 }
+/* =====================================================
+   FIX FEATURED CONTENT CLICK AREA - MINA
+   Khóa vùng nhấp đúng cho các card Nội dung nổi bật
+===================================================== */
+
+.featured-section {
+  position: relative;
+  isolation: isolate;
+}
+
+.featured-section .feature-grid {
+  position: relative;
+  z-index: 10;
+}
+
+.featured-section .feature-grid article {
+  position: relative;
+  z-index: 11;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.featured-section .feature-link {
+  position: relative;
+  z-index: 12;
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.featured-section .feature-link img,
+.featured-section .feature-link h3,
+.featured-section .feature-link p {
+  pointer-events: none;
+}
+
+.featured-section .feature-link:link,
+.featured-section .feature-link:visited,
+.featured-section .feature-link:hover,
+.featured-section .feature-link:active {
+  color: inherit;
+  text-decoration: none;
+}
+
+.featured-section .feature-link:hover {
+  transform: translateY(-5px);
+}
+
+.featured-section::before,
+.featured-section::after,
+.featured-section .section-title::before,
+.featured-section .section-title::after {
+  pointer-events: none;
+}
