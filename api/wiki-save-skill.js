@@ -155,6 +155,8 @@ function normalizeSkill(input = {}, imageUrl = "") {
     hasYoutube: Boolean(input.hasYoutube || input.youtubeUrl),
     hasWiki: input.hasWiki !== false,
     hot: Boolean(input.hot),
+    homePinned: input.homePinned === true || input.homePinned === "true",
+    homeOrder: (() => { const n = Number(input.homeOrder); return Number.isInteger(n) && n >= 1 && n <= 8 ? n : ""; })(),
     tags: Array.isArray(input.tags)
       ? input.tags.map(String).map(v => v.trim()).filter(Boolean)
       : String(input.tags || "")
