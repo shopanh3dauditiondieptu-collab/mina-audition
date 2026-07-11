@@ -25,6 +25,22 @@ function normalize(text = "") {
     .trim();
 }
 
+function getFacebookUrl(post) {
+  const value = String(post.link || "").trim();
+  return /^https?:\/\/(www\.)?(facebook\.com|fb\.watch)\//i.test(value)
+    ? value
+    : "";
+}
+
+function escapeHTML(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function postMatches(post, value) {
   const haystack = normalize([
     post.category,
@@ -122,6 +138,13 @@ function renderPosts(posts) {
   box.innerHTML = posts.map(item => {
     const post = item.data;
     const postUrl = `post.html?id=${encodeURIComponent(item.id)}`;
+    const facebookUrl = getFacebookUrl(post);
+
+    const title = escapeHTML(post.title || "Bài viết Mina");
+    const category = escapeHTML(post.categoryName || post.category || "Mina Blog");
+    const description = escapeHTML(post.desc || "");
+    const image = escapeHTML(post.image || "images/default-post.svg");
+    const safeFacebookUrl = escapeHTML(facebookUrl);
 
     return `
       <article
@@ -129,28 +152,42 @@ function renderPosts(posts) {
         data-post-url="${postUrl}"
         role="link"
         tabindex="0"
-        aria-label="Mở bài viết: ${post.title || "Bài viết Mina"}"
+        aria-label="Mở bài viết: ${title}"
       >
         <img
-          src="${post.image || "images/default-post.svg"}"
-          alt="${post.title || "Bài viết Mina"}"
+          src="${image}"
+          alt="${title}"
           loading="lazy"
         >
 
         <p class="post-category">
-          ${post.categoryName || post.category || "Mina Blog"}
+          ${category}
         </p>
 
-        <h3>${post.title || "Không có tiêu đề"}</h3>
-        <p>${post.desc || ""}</p>
+        <h3>${title}</h3>
+        <p>${description}</p>
 
-        <a
-          href="${postUrl}"
-          class="read-more"
-          aria-label="Đọc bài ${post.title || "Bài viết Mina"}"
-        >
-          Đọc bài
-        </a>
+        <div class="mina-post-actions">
+          <a
+            href="${postUrl}"
+            class="read-more"
+            aria-label="Đọc bài ${title}"
+          >
+            Đọc bài
+          </a>
+
+          ${facebookUrl ? `
+            <a
+              href="${safeFacebookUrl}"
+              class="read-more mina-facebook-link"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Mở bài đăng Facebook liên quan"
+            >
+              Facebook
+            </a>
+          ` : ""}
+        </div>
       </article>
     `;
   }).join("");
