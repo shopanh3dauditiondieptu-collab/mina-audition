@@ -921,40 +921,90 @@
 
 
 /* =========================================================
-   MINA META BADGES V11 — 4K | Lv6 | LS-La | 100 BPM
+   MINA FIX META SKILL - LUÔN HIỂN THỊ 1 HÀNG
+   Thứ tự: 🎬 4K | 🛡 Lv6 | 🔥 LS-La | 🎵 100 BPM
 ========================================================= */
-.wiki-meta {
+
+.wiki-card .wiki-meta,
+.mina-wiki-card-pro .wiki-meta,
+.mina-home-skill-card .wiki-meta,
+.wiki-section #skillGrid .wiki-meta,
+#wikiGrid .wiki-meta {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 27px !important;
   display: flex !important;
+  flex-flow: row nowrap !important;
   align-items: center !important;
-  flex-wrap: wrap !important;
-  gap: 7px !important;
-  min-height: 30px !important;
+  justify-content: flex-start !important;
+  gap: 3px !important;
+  margin: 2px 0 !important;
   overflow: visible !important;
+  white-space: nowrap !important;
 }
 
-.wiki-meta > span {
+.wiki-card .wiki-meta .mina-meta-item,
+.mina-wiki-card-pro .wiki-meta .mina-meta-item,
+.mina-home-skill-card .wiki-meta .mina-meta-item,
+.wiki-section #skillGrid .wiki-meta .mina-meta-item,
+#wikiGrid .wiki-meta .mina-meta-item {
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  flex: 0 1 auto !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  min-height: 26px !important;
-  padding: 5px 9px !important;
-  border: 1px solid rgba(255,255,255,.08) !important;
+  gap: 2px !important;
+  margin: 0 !important;
+  padding: 4px 6px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
   border-radius: 999px !important;
-  background: rgba(255,255,255,.075) !important;
+  background: rgba(255,255,255,.07) !important;
   color: #fff !important;
-  font-size: 11px !important;
-  font-weight: 850 !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
   line-height: 1 !important;
+  letter-spacing: -0.15px !important;
   white-space: nowrap !important;
-  box-sizing: border-box !important;
+  overflow: hidden !important;
+  text-overflow: clip !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04) !important;
 }
 
-.wiki-meta .mina-meta-quality { color: #8ff5ff !important; }
-.wiki-meta .mina-meta-level   { color: #f2f2ff !important; }
-.wiki-meta .mina-meta-dance   { color: #ffd2ea !important; }
-.wiki-meta .mina-meta-bpm     { color: #d8c8ff !important; }
+/* Badge BPM dài hơn nên cho phép chiếm thêm một chút */
+.wiki-meta .mina-meta-bpm {
+  flex-shrink: 1 !important;
+}
 
+/* Card hẹp: thu nhỏ nhẹ nhưng vẫn giữ đủ 4 badge trên một hàng */
+@media (max-width: 1100px) {
+  .wiki-card .wiki-meta .mina-meta-item,
+  .mina-wiki-card-pro .wiki-meta .mina-meta-item,
+  .mina-home-skill-card .wiki-meta .mina-meta-item,
+  .wiki-section #skillGrid .wiki-meta .mina-meta-item,
+  #wikiGrid .wiki-meta .mina-meta-item {
+    padding: 4px 5px !important;
+    font-size: 9.5px !important;
+    letter-spacing: -0.25px !important;
+  }
+}
+
+/* Điện thoại rất nhỏ: vẫn không xuống dòng */
 @media (max-width: 420px) {
-  .wiki-meta { gap: 5px !important; }
-  .wiki-meta > span { padding: 5px 7px !important; font-size: 10px !important; }
+  .wiki-card .wiki-meta,
+  .mina-wiki-card-pro .wiki-meta,
+  .mina-home-skill-card .wiki-meta,
+  .wiki-section #skillGrid .wiki-meta,
+  #wikiGrid .wiki-meta {
+    gap: 2px !important;
+  }
+
+  .wiki-card .wiki-meta .mina-meta-item,
+  .mina-wiki-card-pro .wiki-meta .mina-meta-item,
+  .mina-home-skill-card .wiki-meta .mina-meta-item,
+  .wiki-section #skillGrid .wiki-meta .mina-meta-item,
+  #wikiGrid .wiki-meta .mina-meta-item {
+    padding: 4px 4px !important;
+    font-size: 9px !important;
+  }
 }
