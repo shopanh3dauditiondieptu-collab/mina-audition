@@ -1,0 +1,76 @@
+/* MINA WIKI PROFESSIONAL POLISH V1
+   Chỉ tinh chỉnh hiển thị, không đổi cấu trúc HTML */
+.wiki-grid{
+  gap:24px;
+  align-items:stretch;
+}
+
+.wiki-card{
+  display:flex;
+  flex-direction:column;
+  min-height:100%;
+  overflow:hidden;
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.1);
+  background:
+    linear-gradient(180deg,rgba(31,28,54,.96),rgba(10,11,24,.98));
+  box-shadow:0 16px 38px rgba(0,0,0,.28);
+}
+
+.wiki-card-body{
+  display:flex;
+  flex-direction:column;
+  flex:1;
+  padding:17px;
+}
+
+.wiki-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:12px 0;
+}
+
+.wiki-meta span,
+.skill-tags span{
+  display:inline-flex;
+  align-items:center;
+  min-height:30px;
+  padding:6px 11px;
+  border-radius:999px;
+  border:1px solid rgba(83,216,255,.26);
+  color:#dff9ff;
+  background:rgba(83,216,255,.09);
+  font-size:12px;
+  font-weight:850;
+  line-height:1;
+}
+
+.wiki-desc{
+  line-height:1.6;
+}
+
+.wiki-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:auto;
+  padding-top:16px;
+}
+
+.wiki-actions button{
+  min-height:40px;
+  padding:0 15px;
+  border-radius:999px;
+  font-weight:900;
+}
+
+@media(max-width:640px){
+  .wiki-actions{
+    flex-direction:column;
+  }
+
+  .wiki-actions button{
+    width:100%;
+  }
+}
