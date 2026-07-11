@@ -9,10 +9,10 @@
 (function (window, document) {
   "use strict";
 
-  const VERSION = "4.0.0";
+  const VERSION = "4.1.0-final-sync";
   const DATA_URL = "/database/wiki-skills.json";
   const DEFAULT_IMAGE = "/images/wiki/skills/default.webp";
-  const CACHE_KEY = "mina_wiki_engine_v4";
+  const CACHE_KEY = "mina_wiki_engine_v41_final";
   const CACHE_TTL = 2 * 60 * 1000;
 
   let memorySkills = null;
