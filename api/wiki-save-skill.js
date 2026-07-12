@@ -1,25 +1,19 @@
 /* =====================================================
-   MINA WIKI SAVE SKILL API - V8 SAFE UPDATE
-   File: api/wiki-save-skill.js
-
-   Yêu cầu Environment Variables:
-   GITHUB_TOKEN
-   GITHUB_OWNER
-   GITHUB_REPO
-   GITHUB_BRANCH=main
-   MINA_DB_PATH=database/master-skills.json
-   MINA_ADMIN_API_KEY
-
-   Cloudinary (chỉ cần khi upload ảnh từ máy):
-   CLOUDINARY_CLOUD_NAME
-   CLOUDINARY_API_KEY
-   CLOUDINARY_API_SECRET
+   MINA WIKI SAVE SKILL API - V10 SAFE UPGRADE
+   Hỗ trợ:
+   - upsert
+   - status
+   - trash
+   - restore
+   - delete_permanent
+   - history
+   - tương thích dữ liệu V8/V9
 ===================================================== */
-
 const crypto = require("crypto");
 
 const GH_API = "https://api.github.com";
 const DB_PATH = process.env.MINA_DB_PATH || "database/master-skills.json";
+const VALID_STATUS = new Set(["verified", "needs_review", "draft", "hidden"]);
 
 function env(name) {
   const value = process.env[name];
@@ -40,7 +34,6 @@ function requireAdmin(req) {
     req.headers["x-mina-admin-key"] ||
     (req.body && (req.body.adminApiKey || req.body.adminPassword)) ||
     "";
-
   if (String(received) !== String(configured)) {
     const err = new Error("Sai khóa quản trị");
     err.statusCode = 401;
@@ -70,6 +63,17 @@ function contentUrl() {
   return `${GH_API}/repos/${owner}/${repo}/contents/${DB_PATH}`;
 }
 
+function normalizeDatabase(data) {
+  return {
+    ...(data || {}),
+    version: 10,
+    updatedAt: data?.updatedAt || null,
+    skills: Array.isArray(data?.skills) ? data.skills : [],
+    trash: Array.isArray(data?.trash) ? data.trash : [],
+    history: Array.isArray(data?.history) ? data.history : []
+  };
+}
+
 async function readDatabase() {
   const { branch } = repoInfo();
   const response = await fetch(`${contentUrl()}?ref=${encodeURIComponent(branch)}`, {
@@ -77,9 +81,8 @@ async function readDatabase() {
   });
 
   if (response.status === 404) {
-    return { sha: null, data: { version: 1, updatedAt: null, skills: [] } };
+    return { sha: null, data: normalizeDatabase({}) };
   }
-
   if (!response.ok) {
     throw new Error(`GitHub GET lỗi ${response.status}: ${await response.text()}`);
   }
@@ -90,12 +93,7 @@ async function readDatabase() {
     "base64"
   ).toString("utf8");
 
-  const data = JSON.parse(decoded);
-  if (!data || !Array.isArray(data.skills)) {
-    throw new Error("master-skills.json phải có cấu trúc { skills: [] }");
-  }
-
-  return { sha: payload.sha, data };
+  return { sha: payload.sha, data: normalizeDatabase(JSON.parse(decoded)) };
 }
 
 async function writeDatabase(data, sha, message) {
@@ -105,7 +103,6 @@ async function writeDatabase(data, sha, message) {
     branch,
     content: Buffer.from(JSON.stringify(data, null, 2), "utf8").toString("base64")
   };
-
   if (sha) body.sha = sha;
 
   const response = await fetch(contentUrl(), {
@@ -113,11 +110,9 @@ async function writeDatabase(data, sha, message) {
     headers: ghHeaders(),
     body: JSON.stringify(body)
   });
-
   if (!response.ok) {
     throw new Error(`GitHub PUT lỗi ${response.status}: ${await response.text()}`);
   }
-
   return response.json();
 }
 
@@ -137,15 +132,14 @@ function firstText(...values) {
   return "";
 }
 
-function bool(value) {
-  return value === true || value === "true" || value === "1" || value === "on";
-}
-
-function normalizeStatus(input = {}) {
-  const allowed = new Set(["verified", "needs_review", "draft", "hidden"]);
-  const requested = firstText(input.status, input.verifiedStatus, input.trangThai);
-  if (allowed.has(requested)) return requested;
-  return bool(input.reviewed ?? input.daXacMinh) ? "verified" : "needs_review";
+function statusOf(input) {
+  const value = String(
+    input.status ||
+    input.verifiedStatus ||
+    input.trangThai ||
+    (input.reviewed || input.daXacMinh ? "verified" : "needs_review")
+  ).trim();
+  return VALID_STATUS.has(value) ? value : "needs_review";
 }
 
 function normalizeSkill(input = {}, imageUrl = "") {
@@ -153,8 +147,8 @@ function normalizeSkill(input = {}, imageUrl = "") {
   const id = firstText(input.id, input.skillId, input.idSkill);
   const name = firstText(input.name, input.skillName, input.tenSkill);
 
-  if (!id) throw new Error("Thiếu ID skill");
-  if (!name) throw new Error("Thiếu tên skill");
+  if (!id) throw new Error("Thiếu ID Skill");
+  if (!name) throw new Error("Thiếu tên Skill");
 
   return {
     id,
@@ -163,77 +157,47 @@ function normalizeSkill(input = {}, imageUrl = "") {
     type: String(input.type || "").trim(),
     style: String(input.style || "").trim(),
     level: numberOrBlank(input.level ?? input.capDo),
-    bpmBest: numberOrBlank(
-      input.bpmBest ??
-      input.bpm ??
-      input.bpmDepNhat
-    ),
-    rarity: String(input.rarity || "").trim(),
-    rating: numberOrBlank(
-      input.rating ??
-      input.diem ??
-      input.diemDep
-    ),
-    status: normalizeStatus(input),
-    imageUrl: firstText(
-      imageUrl,
-      input.imageUrl,
-      input.image,
-      input.thumbnail,
-      input.hinhAnh
-    ),
-    youtubeUrl: firstText(
-      input.youtubeUrl,
-      input.youtube,
-      input.video,
-      input.videoUrl
-    ),
-    cameraAngle: firstText(
-      input.cameraAngle,
-      input.camera,
-      input.gocMay
-    ),
-    song: firstText(
-      input.song,
-      input.recommendedSong,
-      input.music,
-      input.baiHat
-    ),
-    hasYoutube: Boolean(
-      input.hasYoutube ||
-      input.youtubeUrl ||
-      input.youtube ||
-      input.video ||
-      input.videoUrl
-    ),
+    bpmBest: numberOrBlank(input.bpmBest ?? input.bpm ?? input.bpmDepNhat),
+    rarity: String(input.rarity || "").trim().toUpperCase(),
+    rating: numberOrBlank(input.rating ?? input.diem ?? input.diemDep),
+    status: statusOf(input),
+    imageUrl: firstText(imageUrl, input.imageUrl, input.image, input.thumbnail, input.hinhAnh),
+    youtubeUrl: firstText(input.youtubeUrl, input.youtube, input.video, input.videoUrl),
+    cameraAngle: firstText(input.cameraAngle, input.camera, input.gocMay),
+    song: firstText(input.song, input.recommendedSong, input.music, input.baiHat),
+    hasYoutube: Boolean(input.youtubeUrl || input.youtube || input.video || input.videoUrl),
     hasWiki: input.hasWiki !== false,
     hot: Boolean(input.hot),
     homePinned: input.homePinned === true || input.homePinned === "true",
-    homeOrder: (() => { const n = Number(input.homeOrder); return Number.isInteger(n) && n >= 1 && n <= 8 ? n : ""; })(),
+    homeOrder: (() => {
+      const n = Number(input.homeOrder);
+      return Number.isInteger(n) && n >= 1 && n <= 8 ? n : "";
+    })(),
     tags: Array.isArray(input.tags)
       ? input.tags.map(String).map(v => v.trim()).filter(Boolean)
-      : String(input.tags || "")
-          .split(",")
-          .map(v => v.trim())
-          .filter(Boolean),
-    notes: firstText(
-      input.notes,
-      input.description,
-      input.desc,
-      input.ghiChu
-    ),
+      : String(input.tags || "").split(",").map(v => v.trim()).filter(Boolean),
+    notes: firstText(input.notes, input.description, input.desc, input.ghiChu),
     createdAt: input.createdAt || now,
     updatedAt: now
   };
 }
 
+function historyItem(action, skill, detail = "") {
+  return {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    at: new Date().toISOString(),
+    action,
+    skillId: skill?.id || "",
+    skillName: skill?.name || "",
+    detail
+  };
+}
+
 async function uploadCloudinary(dataUrl, publicId) {
   if (!dataUrl) return "";
-
   const cloudName = env("CLOUDINARY_CLOUD_NAME");
   const apiKey = env("CLOUDINARY_API_KEY");
   const apiSecret = env("CLOUDINARY_API_SECRET");
-
   const timestamp = Math.floor(Date.now() / 1000);
   const folder = "mina/wiki-skills";
   const cleanPublicId = String(publicId || `skill-${Date.now()}`)
@@ -243,10 +207,7 @@ async function uploadCloudinary(dataUrl, publicId) {
     `folder=${folder}&overwrite=true&public_id=${cleanPublicId}` +
     `&timestamp=${timestamp}${apiSecret}`;
 
-  const signature = crypto
-    .createHash("sha1")
-    .update(signatureBase)
-    .digest("hex");
+  const signature = crypto.createHash("sha1").update(signatureBase).digest("hex");
 
   const form = new FormData();
   form.append("file", dataUrl);
@@ -263,12 +224,7 @@ async function uploadCloudinary(dataUrl, publicId) {
   );
 
   const payload = await response.json();
-  if (!response.ok) {
-    throw new Error(
-      payload?.error?.message || `Cloudinary lỗi ${response.status}`
-    );
-  }
-
+  if (!response.ok) throw new Error(payload?.error?.message || `Cloudinary lỗi ${response.status}`);
   return payload.secure_url || "";
 }
 
@@ -281,50 +237,114 @@ module.exports = async function handler(req, res) {
     requireAdmin(req);
 
     const body = req.body || {};
-    const rawSkill = body.skillData || body.skill || {};
-    const imageUrl = body.imageBase64
-      ? await uploadCloudinary(body.imageBase64, body.imageName || `skill-${rawSkill.id}`)
-      : "";
-
-    const skill = normalizeSkill(rawSkill, imageUrl);
+    const action = String(body.action || "upsert").trim();
     const { sha, data } = await readDatabase();
     const skills = [...data.skills];
+    const trash = [...data.trash];
+    const history = [...data.history];
 
-    const index = skills.findIndex(
-      item => String(item.id).toLowerCase() === skill.id.toLowerCase()
-    );
+    let responseSkill = null;
+    let commitMessage = "Update Mina CMS database";
 
-    if (index >= 0) {
-      skill.createdAt = skills[index].createdAt || skill.createdAt;
-      skills[index] = { ...skills[index], ...skill };
+    if (action === "upsert") {
+      const rawSkill = body.skillData || body.skill || {};
+      const imageUrl = body.imageBase64
+        ? await uploadCloudinary(body.imageBase64, body.imageName || `skill-${rawSkill.id}`)
+        : "";
+
+      const skill = normalizeSkill(rawSkill, imageUrl);
+      const index = skills.findIndex(
+        item => String(item.id).toLowerCase() === skill.id.toLowerCase()
+      );
+
+      if (index >= 0) {
+        const previous = skills[index];
+        skill.createdAt = previous.createdAt || skill.createdAt;
+        skills[index] = { ...previous, ...skill };
+        history.unshift(historyItem(
+          "Cập nhật Skill",
+          skill,
+          previous.status !== skill.status
+            ? `${previous.status || "needs_review"} → ${skill.status}`
+            : ""
+        ));
+        commitMessage = `Update skill ${skill.id} - ${skill.name}`;
+      } else {
+        skills.push(skill);
+        history.unshift(historyItem("Thêm Skill", skill));
+        commitMessage = `Add skill ${skill.id} - ${skill.name}`;
+      }
+      responseSkill = skill;
+    } else if (action === "status") {
+      const id = firstText(body.id, body.idSkill);
+      const status = String(body.status || "").trim();
+      if (!id) throw new Error("Thiếu ID Skill");
+      if (!VALID_STATUS.has(status)) throw new Error("Trạng thái không hợp lệ");
+
+      const index = skills.findIndex(item => String(item.id).toLowerCase() === id.toLowerCase());
+      if (index < 0) throw new Error("Không tìm thấy Skill");
+
+      const previous = skills[index].status || "needs_review";
+      skills[index] = { ...skills[index], status, updatedAt: new Date().toISOString() };
+      responseSkill = skills[index];
+      history.unshift(historyItem("Đổi trạng thái", responseSkill, `${previous} → ${status}`));
+      commitMessage = `Change status ${id} to ${status}`;
+    } else if (action === "trash") {
+      const id = firstText(body.id, body.idSkill);
+      const index = skills.findIndex(item => String(item.id).toLowerCase() === id.toLowerCase());
+      if (index < 0) throw new Error("Không tìm thấy Skill");
+
+      const [skill] = skills.splice(index, 1);
+      const trashed = { ...skill, deletedAt: new Date().toISOString() };
+      trash.unshift(trashed);
+      responseSkill = trashed;
+      history.unshift(historyItem("Đưa vào Thùng rác", trashed));
+      commitMessage = `Move skill ${id} to trash`;
+    } else if (action === "restore") {
+      const id = firstText(body.id, body.idSkill);
+      const index = trash.findIndex(item => String(item.id).toLowerCase() === id.toLowerCase());
+      if (index < 0) throw new Error("Không tìm thấy Skill trong Thùng rác");
+
+      const [skill] = trash.splice(index, 1);
+      const restored = { ...skill, deletedAt: "", updatedAt: new Date().toISOString() };
+      delete restored.deletedAt;
+      skills.push(restored);
+      responseSkill = restored;
+      history.unshift(historyItem("Khôi phục Skill", restored));
+      commitMessage = `Restore skill ${id}`;
+    } else if (action === "delete_permanent") {
+      const id = firstText(body.id, body.idSkill);
+      const index = trash.findIndex(item => String(item.id).toLowerCase() === id.toLowerCase());
+      if (index < 0) throw new Error("Không tìm thấy Skill trong Thùng rác");
+
+      const [skill] = trash.splice(index, 1);
+      responseSkill = skill;
+      history.unshift(historyItem("Xóa vĩnh viễn", skill));
+      commitMessage = `Delete skill ${id} permanently`;
     } else {
-      skills.push(skill);
+      throw new Error(`Action không hợp lệ: ${action}`);
     }
 
     const next = {
       ...data,
-      version: data.version || 1,
+      version: 10,
       updatedAt: new Date().toISOString(),
-      skills
+      skills,
+      trash,
+      history: history.slice(0, 500)
     };
 
-    await writeDatabase(
-      next,
-      sha,
-      index >= 0
-        ? `Update skill ${skill.id} - ${skill.name}`
-        : `Add skill ${skill.id} - ${skill.name}`
-    );
+    await writeDatabase(next, sha, commitMessage);
 
-    return json(res, index >= 0 ? 200 : 201, {
+    return json(res, 200, {
       ok: true,
-      mode: index >= 0 ? "updated" : "created",
-      skill,
-      image: skill.imageUrl,
-      total: skills.length
+      action,
+      skill: responseSkill,
+      total: skills.length,
+      trashTotal: trash.length
     });
   } catch (error) {
-    console.error("[wiki-save-skill]", error);
+    console.error("[wiki-save-skill-v10]", error);
     return json(res, error.statusCode || 500, {
       ok: false,
       error: error.message || "Lỗi máy chủ"
