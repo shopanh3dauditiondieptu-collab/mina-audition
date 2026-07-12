@@ -100,7 +100,7 @@
   }
 
   window.MinaCMS = {
-    version: "2.1.0",
+    version: "8.0.0",
     on, emit, request, toast, setBusy, debounce, text, escapeHTML
   };
 })(window, document);
