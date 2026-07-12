@@ -1,9 +1,9 @@
-/* Mina CMS V2.3 - Cấu hình trung tâm */
+/* Mina CMS V2.5 - Cấu hình trung tâm */
 (function (window) {
   "use strict";
 
   window.MinaCMSConfig = Object.freeze({
-    version: "2.3.0-delete-fallback",
+    version: "2.5.0-professional-sync",
 
     routes: {
       home: "/index.html",
@@ -36,7 +36,7 @@
     },
 
     database: {
-      publicPath: "/database/wiki-skills.json",
+      publicPath: "/database/master-skills.json",
       maxHistory: 10
     }
   });
