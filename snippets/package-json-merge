@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "seo:install": "node scripts/install-mina-seo.mjs",
+    "seo:check": "node --check api/seo-sitemap.js && node --check api/seo-feed.js && node --check api/seo-health.js"
+  }
+}
