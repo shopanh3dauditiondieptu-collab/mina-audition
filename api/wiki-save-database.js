@@ -1,14 +1,13 @@
 "use strict";
 
 /* =========================================================
-   MINA WIKI SAVE DATABASE API V1
-   File: api/wiki-save-database.js
-
-   Mục đích:
-   - Giữ nguyên endpoint đã cấu hình: /api/wiki-save-database
-   - Nhận toàn bộ skills[] từ Admin
-   - Chuẩn hóa rồi ghi vào database/master-skills.json trên GitHub
-   - Giữ lại trash, history và metadata khác đang có
+   MINA WIKI SAVE DATABASE API V1.1 PROFESSIONAL
+   Drop-in API: /api/wiki-save-database
+   - Ghi toàn bộ skills vào database/master-skills.json
+   - Giữ trash/history
+   - Chuẩn hóa dữ liệu
+   - Chống trùng ID
+   - Retry khi GitHub 409
 ========================================================= */
 
 const GH_API = "https://api.github.com";
@@ -19,10 +18,7 @@ function sendJson(res, status, body) {
   if (typeof res.status === "function") res.status(status);
   else res.statusCode = status;
 
-  res.setHeader(
-    "Content-Type",
-    "application/json; charset=utf-8"
-  );
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader(
     "Cache-Control",
     "no-store, no-cache, must-revalidate, proxy-revalidate"
@@ -55,10 +51,8 @@ function repoConfig() {
 }
 
 function githubHeaders() {
-  const { token } = repoConfig();
-
   return {
-    Authorization: `Bearer ${token}`,
+    Authorization: `Bearer ${repoConfig().token}`,
     Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
     "Content-Type": "application/json",
@@ -95,27 +89,11 @@ function requireAdmin(req) {
 
 function emptyDatabase() {
   return {
-    version: 1,
+    version: 10,
     updatedAt: null,
     skills: [],
     trash: [],
     history: []
-  };
-}
-
-function parseDatabase(raw) {
-  const data =
-    raw && typeof raw === "object"
-      ? raw
-      : emptyDatabase();
-
-  return {
-    ...data,
-    version: Number(data.version) || 1,
-    updatedAt: data.updatedAt || null,
-    skills: Array.isArray(data.skills) ? data.skills : [],
-    trash: Array.isArray(data.trash) ? data.trash : [],
-    history: Array.isArray(data.history) ? data.history : []
   };
 }
 
@@ -132,10 +110,7 @@ async function readDatabase() {
   );
 
   if (response.status === 404) {
-    return {
-      sha: null,
-      data: emptyDatabase()
-    };
+    return { sha: null, data: emptyDatabase() };
   }
 
   if (!response.ok) {
@@ -147,10 +122,17 @@ async function readDatabase() {
   const payload = await response.json();
   const encoded = String(payload.content || "").replace(/\n/g, "");
   const decoded = Buffer.from(encoded, "base64").toString("utf8");
+  const parsed = JSON.parse(decoded);
 
   return {
     sha: payload.sha || null,
-    data: parseDatabase(JSON.parse(decoded))
+    data: {
+      ...emptyDatabase(),
+      ...parsed,
+      skills: Array.isArray(parsed.skills) ? parsed.skills : [],
+      trash: Array.isArray(parsed.trash) ? parsed.trash : [],
+      history: Array.isArray(parsed.history) ? parsed.history : []
+    }
   };
 }
 
@@ -190,55 +172,36 @@ function text(value) {
 }
 
 function numberOrBlank(value) {
-  if (value === "" || value === null || value === undefined) {
-    return "";
-  }
-
+  if (value === "" || value === null || value === undefined) return "";
   const number = Number(String(value).replace(",", "."));
   return Number.isFinite(number) ? number : "";
 }
 
-function normalizeTags(value) {
-  const list = Array.isArray(value)
-    ? value
-    : text(value).split(/[,;|]/);
-
-  return [
-    ...new Set(
-      list
-        .map(item => text(item))
-        .filter(Boolean)
-    )
-  ];
-}
-
-function booleanValue(value, fallback = false) {
-  if (value === "" || value === null || value === undefined) {
-    return fallback;
-  }
-
+function bool(value, fallback = false) {
+  if (value === "" || value === null || value === undefined) return fallback;
   if (typeof value === "boolean") return value;
-
   return ["1", "true", "yes", "y", "có", "co", "x", "✓"]
     .includes(text(value).toLowerCase());
 }
 
-function normalizeStatus(value) {
+function tags(value) {
+  const source = Array.isArray(value) ? value : text(value).split(/[,;|]/);
+  return [...new Set(source.map(item => text(item)).filter(Boolean))];
+}
+
+function status(value) {
   const raw = text(value).toLowerCase();
 
   const map = {
     "verified": "verified",
     "đã xác minh": "verified",
     "da xac minh": "verified",
-
     "needs_review": "needs_review",
     "cần review": "needs_review",
     "can review": "needs_review",
-
     "draft": "draft",
     "bản nháp": "draft",
     "ban nhap": "draft",
-
     "hidden": "hidden",
     "ẩn": "hidden",
     "an": "hidden"
@@ -249,26 +212,11 @@ function normalizeStatus(value) {
 
 function normalizeSkill(input = {}, previous = null, index = 0) {
   const now = new Date().toISOString();
+  const id = text(input.id || input.skillId || previous?.id);
+  const name = text(input.name || input.skillName || previous?.name);
 
-  const id = text(
-    input.id ||
-    input.skillId ||
-    previous?.id
-  );
-
-  const name = text(
-    input.name ||
-    input.skillName ||
-    previous?.name
-  );
-
-  if (!id) {
-    throw new Error(`Dòng ${index + 1}: thiếu ID skill`);
-  }
-
-  if (!name) {
-    throw new Error(`Dòng ${index + 1}: thiếu tên skill`);
-  }
+  if (!id) throw new Error(`Dòng ${index + 1}: thiếu ID skill`);
+  if (!name) throw new Error(`Dòng ${index + 1}: thiếu tên skill`);
 
   const imageUrl = text(
     input.imageUrl ??
@@ -286,7 +234,7 @@ function normalizeSkill(input = {}, previous = null, index = 0) {
     ""
   );
 
-  const homeOrderNumber = Number(
+  const order = Number(
     input.homeOrder ??
     input.pinOrder ??
     previous?.homeOrder
@@ -294,10 +242,8 @@ function normalizeSkill(input = {}, previous = null, index = 0) {
 
   return {
     ...(previous || {}),
-
     id,
     name,
-
     alias: text(input.alias ?? previous?.alias ?? ""),
     type: text(input.type ?? previous?.type ?? ""),
     style: text(
@@ -306,87 +252,59 @@ function normalizeSkill(input = {}, previous = null, index = 0) {
       previous?.style ??
       ""
     ),
-
-    level: numberOrBlank(
-      input.level ??
-      previous?.level ??
-      ""
-    ),
-
+    level: numberOrBlank(input.level ?? previous?.level ?? ""),
     bpmBest: numberOrBlank(
       input.bpmBest ??
       input.bpm ??
       previous?.bpmBest ??
       ""
     ),
-
     rarity: text(
       input.rarity ??
       input.rank ??
       previous?.rarity ??
       ""
     ).toUpperCase(),
-
     rating: numberOrBlank(
       input.rating ??
       previous?.rating ??
       ""
     ),
-
-    status: normalizeStatus(
+    status: status(
       input.status ??
       input.verifiedStatus ??
       previous?.status ??
       "needs_review"
     ),
-
     imageUrl,
     youtubeUrl,
-
     cameraAngle: text(
       input.cameraAngle ??
       input.camera ??
       previous?.cameraAngle ??
       ""
     ),
-
     song: text(
       input.song ??
       input.recommendedSong ??
       previous?.song ??
       ""
     ),
-
     hasYoutube: Boolean(youtubeUrl),
-
     hasWiki:
       input.hasWiki === undefined
         ? previous?.hasWiki !== false
         : input.hasWiki !== false,
-
-    hot: booleanValue(
-      input.hot,
-      Boolean(previous?.hot)
-    ),
-
-    homePinned: booleanValue(
+    hot: bool(input.hot, Boolean(previous?.hot)),
+    homePinned: bool(
       input.homePinned ?? input.pinned,
       Boolean(previous?.homePinned)
     ),
-
     homeOrder:
-      Number.isInteger(homeOrderNumber) &&
-      homeOrderNumber >= 1 &&
-      homeOrderNumber <= 8
-        ? homeOrderNumber
+      Number.isInteger(order) && order >= 1 && order <= 8
+        ? order
         : "",
-
-    tags: normalizeTags(
-      input.tags ??
-      previous?.tags ??
-      []
-    ),
-
+    tags: tags(input.tags ?? previous?.tags ?? []),
     notes: text(
       input.notes ??
       input.description ??
@@ -394,17 +312,15 @@ function normalizeSkill(input = {}, previous = null, index = 0) {
       previous?.notes ??
       ""
     ),
-
     createdAt:
       previous?.createdAt ||
       input.createdAt ||
       now,
-
     updatedAt: now
   };
 }
 
-function deduplicateSkills(skills, previousSkills) {
+function normalizeAll(skills, previousSkills) {
   const previousMap = new Map(
     previousSkills.map(skill => [
       text(skill.id).toLowerCase(),
@@ -413,36 +329,23 @@ function deduplicateSkills(skills, previousSkills) {
   );
 
   const output = [];
-  const seen = new Set();
+  const positions = new Map();
 
   skills.forEach((input, index) => {
     const rawId = text(input?.id || input?.skillId).toLowerCase();
+    const previous = previousMap.get(rawId) || null;
+    const normalized = normalizeSkill(input, previous, index);
+    const key = normalized.id.toLowerCase();
 
-    if (!rawId) {
-      normalizeSkill(input, null, index);
-      return;
-    }
-
-    const normalized = normalizeSkill(
-      input,
-      previousMap.get(rawId) || null,
-      index
-    );
-
-    const idKey = normalized.id.toLowerCase();
-
-    if (seen.has(idKey)) {
-      const existingIndex = output.findIndex(
-        item => item.id.toLowerCase() === idKey
-      );
-
-      output[existingIndex] = normalizeSkill(
+    if (positions.has(key)) {
+      const position = positions.get(key);
+      output[position] = normalizeSkill(
         normalized,
-        output[existingIndex],
+        output[position],
         index
       );
     } else {
-      seen.add(idKey);
+      positions.set(key, output.length);
       output.push(normalized);
     }
   });
@@ -455,46 +358,36 @@ async function saveWithRetry(skills, attempts = 3) {
 
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     const { sha, data } = await readDatabase();
+    const normalizedSkills = normalizeAll(skills, data.skills);
 
-    const normalizedSkills = deduplicateSkills(
-      skills,
-      data.skills
-    );
-
-    const historyItem = {
-      label: `Đồng bộ toàn bộ ${normalizedSkills.length} skill`,
-      createdAt: new Date().toISOString(),
-      totalBefore: data.skills.length,
-      totalAfter: normalizedSkills.length
-    };
-
-    const nextData = {
+    const next = {
       ...data,
       version: Math.max(Number(data.version) || 1, 10),
       updatedAt: new Date().toISOString(),
       skills: normalizedSkills,
       trash: Array.isArray(data.trash) ? data.trash : [],
       history: [
-        historyItem,
+        {
+          label: `Đồng bộ toàn bộ ${normalizedSkills.length} skill`,
+          createdAt: new Date().toISOString(),
+          totalBefore: data.skills.length,
+          totalAfter: normalizedSkills.length
+        },
         ...(Array.isArray(data.history) ? data.history : [])
       ].slice(0, 50)
     };
 
     try {
       await writeDatabase(
-        nextData,
+        next,
         sha,
         `Sync ${normalizedSkills.length} Mina wiki skills`
       );
-
-      return nextData;
+      return next;
     } catch (error) {
       lastError = error;
 
-      if (
-        error.githubStatus !== 409 ||
-        attempt === attempts
-      ) {
+      if (error.githubStatus !== 409 || attempt === attempts) {
         throw error;
       }
     }
@@ -539,15 +432,9 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     console.error("[api/wiki-save-database]", error);
 
-    return sendJson(
-      res,
-      error.statusCode || 500,
-      {
-        ok: false,
-        error:
-          error.message ||
-          "Không thể đồng bộ database."
-      }
-    );
+    return sendJson(res, error.statusCode || 500, {
+      ok: false,
+      error: error.message || "Không thể đồng bộ database."
+    });
   }
 };
