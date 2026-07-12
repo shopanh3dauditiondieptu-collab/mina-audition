@@ -921,90 +921,113 @@
 
 
 /* =========================================================
-   MINA FIX META SKILL - LUÔN HIỂN THỊ 1 HÀNG
-   Thứ tự: 🎬 4K | 🛡 Lv6 | 🔥 LS-La | 🎵 100 BPM
+   MINA WIKI META V8.1 - GIỮ 4 THÔNG SỐ TRÊN CÙNG 1 HÀNG
+   Áp dụng cho cả trang chủ và trang Wikipedia.
+   🎬 4K | 🛡 Lv8 | 🔥 Poppin-H | 🎵 120 BPM
 ========================================================= */
 
-.wiki-card .wiki-meta,
-.mina-wiki-card-pro .wiki-meta,
-.mina-home-skill-card .wiki-meta,
-.wiki-section #skillGrid .wiki-meta,
-#wikiGrid .wiki-meta {
+/* Thu hồi một ít khoảng trống ngang trong thân card trang chủ */
+.wiki-section #skillGrid .mina-home-skill-card .wiki-card-body {
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+}
+
+/* Khóa vùng meta thành đúng một hàng */
+.wiki-section #skillGrid .mina-home-skill-card .wiki-meta,
+#wikiGrid .mina-wiki-card-pro .wiki-meta,
+#wikiGrid .wiki-card .wiki-meta,
+.skill-grid .wiki-card .wiki-meta {
   width: 100% !important;
+  max-width: 100% !important;
   min-width: 0 !important;
-  min-height: 27px !important;
-  display: flex !important;
-  flex-flow: row nowrap !important;
+  min-height: 25px !important;
+  display: grid !important;
+  grid-template-columns:
+    max-content
+    max-content
+    minmax(0, 1fr)
+    max-content !important;
   align-items: center !important;
-  justify-content: flex-start !important;
-  gap: 3px !important;
-  margin: 2px 0 !important;
+  justify-content: stretch !important;
+  column-gap: 2px !important;
+  row-gap: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
   overflow: visible !important;
   white-space: nowrap !important;
 }
 
-.wiki-card .wiki-meta .mina-meta-item,
-.mina-wiki-card-pro .wiki-meta .mina-meta-item,
-.mina-home-skill-card .wiki-meta .mina-meta-item,
-.wiki-section #skillGrid .wiki-meta .mina-meta-item,
-#wikiGrid .wiki-meta .mina-meta-item {
+/* Kiểu badge nhỏ gọn, không cho xuống dòng */
+.wiki-section #skillGrid .mina-home-skill-card .wiki-meta span,
+#wikiGrid .mina-wiki-card-pro .wiki-meta span,
+#wikiGrid .wiki-card .wiki-meta span,
+.skill-grid .wiki-card .wiki-meta span {
   box-sizing: border-box !important;
+  width: auto !important;
   min-width: 0 !important;
-  flex: 0 1 auto !important;
+  max-width: 100% !important;
+  height: 24px !important;
+  margin: 0 !important;
+  padding: 0 5px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 2px !important;
-  margin: 0 !important;
-  padding: 4px 6px !important;
-  border: 1px solid rgba(255,255,255,.10) !important;
+  gap: 1px !important;
+  border: 1px solid rgba(255,255,255,.08) !important;
   border-radius: 999px !important;
   background: rgba(255,255,255,.07) !important;
   color: #fff !important;
-  font-size: 10px !important;
+  font-size: 9.2px !important;
   font-weight: 800 !important;
   line-height: 1 !important;
-  letter-spacing: -0.15px !important;
+  letter-spacing: -0.25px !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: clip !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.04) !important;
 }
 
-/* Badge BPM dài hơn nên cho phép chiếm thêm một chút */
-.wiki-meta .mina-meta-bpm {
-  flex-shrink: 1 !important;
+/* Badge thứ ba được phép co lại trước, nhưng vẫn ưu tiên hiển thị đầy đủ */
+.wiki-section #skillGrid .mina-home-skill-card .wiki-meta span:nth-child(3),
+#wikiGrid .mina-wiki-card-pro .wiki-meta span:nth-child(3),
+#wikiGrid .wiki-card .wiki-meta span:nth-child(3),
+.skill-grid .wiki-card .wiki-meta span:nth-child(3) {
+  justify-self: stretch !important;
 }
 
-/* Card hẹp: thu nhỏ nhẹ nhưng vẫn giữ đủ 4 badge trên một hàng */
+/* Card cực hẹp: giảm thêm rất nhẹ để vẫn đủ 4 badge */
 @media (max-width: 1100px) {
-  .wiki-card .wiki-meta .mina-meta-item,
-  .mina-wiki-card-pro .wiki-meta .mina-meta-item,
-  .mina-home-skill-card .wiki-meta .mina-meta-item,
-  .wiki-section #skillGrid .wiki-meta .mina-meta-item,
-  #wikiGrid .wiki-meta .mina-meta-item {
-    padding: 4px 5px !important;
-    font-size: 9.5px !important;
-    letter-spacing: -0.25px !important;
+  .wiki-section #skillGrid .mina-home-skill-card .wiki-meta span,
+  #wikiGrid .mina-wiki-card-pro .wiki-meta span,
+  #wikiGrid .wiki-card .wiki-meta span,
+  .skill-grid .wiki-card .wiki-meta span {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+    font-size: 8.8px !important;
+    letter-spacing: -0.35px !important;
   }
 }
 
-/* Điện thoại rất nhỏ: vẫn không xuống dòng */
+/* Điện thoại nhỏ vẫn giữ một hàng */
 @media (max-width: 420px) {
-  .wiki-card .wiki-meta,
-  .mina-wiki-card-pro .wiki-meta,
-  .mina-home-skill-card .wiki-meta,
-  .wiki-section #skillGrid .wiki-meta,
-  #wikiGrid .wiki-meta {
-    gap: 2px !important;
+  .wiki-section #skillGrid .mina-home-skill-card .wiki-card-body {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
   }
 
-  .wiki-card .wiki-meta .mina-meta-item,
-  .mina-wiki-card-pro .wiki-meta .mina-meta-item,
-  .mina-home-skill-card .wiki-meta .mina-meta-item,
-  .wiki-section #skillGrid .wiki-meta .mina-meta-item,
-  #wikiGrid .wiki-meta .mina-meta-item {
-    padding: 4px 4px !important;
-    font-size: 9px !important;
+  .wiki-section #skillGrid .mina-home-skill-card .wiki-meta,
+  #wikiGrid .mina-wiki-card-pro .wiki-meta,
+  #wikiGrid .wiki-card .wiki-meta,
+  .skill-grid .wiki-card .wiki-meta {
+    column-gap: 1px !important;
+  }
+
+  .wiki-section #skillGrid .mina-home-skill-card .wiki-meta span,
+  #wikiGrid .mina-wiki-card-pro .wiki-meta span,
+  #wikiGrid .wiki-card .wiki-meta span,
+  .skill-grid .wiki-card .wiki-meta span {
+    height: 23px !important;
+    padding-left: 3px !important;
+    padding-right: 3px !important;
+    font-size: 8.3px !important;
   }
 }
