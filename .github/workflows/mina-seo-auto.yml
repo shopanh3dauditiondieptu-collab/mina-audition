@@ -1,28 +1,31 @@
-name: Mina SEO Auto Update
+name: Mina SEO Pro
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "17 */3 * * *"
   push:
-    branches: ["main"]
+    branches:
+      - main
     paths:
       - "scripts/mina-seo-build.mjs"
-      - ".github/workflows/mina-seo-auto.yml"
-  schedule:
-    - cron: "17 * * * *"
+      - ".github/workflows/mina-seo-pro.yml"
+      - "js/mina-seo-pro.js"
 
 permissions:
   contents: write
 
 concurrency:
-  group: mina-seo-auto
+  group: mina-seo-pro
   cancel-in-progress: true
 
 jobs:
-  build-seo-files:
+  update-seo:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
-      - name: Lấy mã nguồn
+      - name: Lấy mã nguồn Mina
         uses: actions/checkout@v4
 
       - name: Cài Node.js
@@ -30,18 +33,46 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Sinh sitemap, RSS và robots
+      - name: Tạo sitemap, RSS và robots
         run: node scripts/mina-seo-build.mjs
 
-      - name: Lưu thay đổi vào GitHub
+      - name: Kiểm tra XML cơ bản
         run: |
-          if git diff --quiet -- sitemap.xml rss.xml feed.json robots.txt; then
-            echo "Không có thay đổi."
+          test -s sitemap.xml
+          test -s sitemap-static.xml
+          test -s sitemap-posts.xml
+          test -s sitemap-images.xml
+          test -s sitemap-videos.xml
+          test -s rss.xml
+          test -s robots.txt
+
+      - name: Commit khi có thay đổi
+        run: |
+          if git diff --quiet -- \
+            sitemap.xml \
+            sitemap-static.xml \
+            sitemap-posts.xml \
+            sitemap-images.xml \
+            sitemap-videos.xml \
+            rss.xml \
+            feed.json \
+            robots.txt; then
+            echo "Không có thay đổi SEO."
             exit 0
           fi
 
           git config user.name "Mina SEO Bot"
           git config user.email "actions@github.com"
-          git add sitemap.xml rss.xml feed.json robots.txt
-          git commit -m "SEO: tự động cập nhật sitemap và RSS"
+
+          git add \
+            sitemap.xml \
+            sitemap-static.xml \
+            sitemap-posts.xml \
+            sitemap-images.xml \
+            sitemap-videos.xml \
+            rss.xml \
+            feed.json \
+            robots.txt
+
+          git commit -m "SEO: tự động đồng bộ sitemap và RSS"
           git push
