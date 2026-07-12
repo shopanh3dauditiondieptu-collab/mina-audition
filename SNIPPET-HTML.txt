@@ -1,0 +1,11 @@
+DÁN TRƯỚC </body> TRONG CÁC TRANG CÔNG KHAI:
+- index.html
+- blog.html
+- wiki.html
+- post.html
+
+<script src="/js/mina-seo-pro.js?v=1.0.0"></script>
+
+LƯU Ý:
+- Không cần chèn vào admin.html hoặc admin-wiki.html.
+- Đoạn mã không tạo giao diện mới và không thay đổi CSS.
