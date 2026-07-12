@@ -137,6 +137,17 @@ function firstText(...values) {
   return "";
 }
 
+function bool(value) {
+  return value === true || value === "true" || value === "1" || value === "on";
+}
+
+function normalizeStatus(input = {}) {
+  const allowed = new Set(["verified", "needs_review", "draft", "hidden"]);
+  const requested = firstText(input.status, input.verifiedStatus, input.trangThai);
+  if (allowed.has(requested)) return requested;
+  return bool(input.reviewed ?? input.daXacMinh) ? "verified" : "needs_review";
+}
+
 function normalizeSkill(input = {}, imageUrl = "") {
   const now = new Date().toISOString();
   const id = firstText(input.id, input.skillId, input.idSkill);
@@ -163,11 +174,7 @@ function normalizeSkill(input = {}, imageUrl = "") {
       input.diem ??
       input.diemDep
     ),
-    status: String(
-      input.status ||
-      input.verifiedStatus ||
-      (input.reviewed ? "verified" : "needs_review")
-    ).trim(),
+    status: normalizeStatus(input),
     imageUrl: firstText(
       imageUrl,
       input.imageUrl,
