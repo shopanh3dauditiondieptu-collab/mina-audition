@@ -78,8 +78,73 @@
     };
   }
 
+  function statusLabel(status) {
+    const labels = {
+      verified: "Đã xác minh",
+      needs_review: "Cần review",
+      draft: "Bản nháp",
+      hidden: "Ẩn"
+    };
+    return labels[status] || labels.needs_review;
+  }
+
+  function statusClass(status) {
+    return ["verified", "needs_review", "draft", "hidden"].includes(status)
+      ? status
+      : "needs_review";
+  }
+
   function form() {
     return document.getElementById("skillForm");
+  }
+
+  /* Tự động thêm trường Trạng thái vào form hiện tại.
+     Không yêu cầu sửa HTML và không thay đổi cấu trúc CMS cũ. */
+  function ensureStatusField() {
+    const currentForm = form();
+    if (!currentForm || currentForm.elements.namedItem("status")) return;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "form-group mina-status-field";
+    wrapper.innerHTML = `
+      <label for="skillStatus">Trạng thái</label>
+      <select id="skillStatus" name="status">
+        <option value="needs_review">Cần review</option>
+        <option value="verified">Đã xác minh</option>
+        <option value="draft">Bản nháp</option>
+        <option value="hidden">Ẩn</option>
+      </select>
+      <small class="mina-field-help">Trạng thái được lưu trực tiếp vào cơ sở dữ liệu skill.</small>
+    `;
+
+    const submitButton = currentForm.querySelector('[type="submit"]');
+    const submitContainer = submitButton?.closest(".form-actions, .actions, .button-group") || submitButton;
+    if (submitContainer?.parentNode) {
+      submitContainer.parentNode.insertBefore(wrapper, submitContainer);
+    } else {
+      currentForm.appendChild(wrapper);
+    }
+  }
+
+  function injectStatusStyles() {
+    if (document.getElementById("mina-status-upgrade-style")) return;
+    const style = document.createElement("style");
+    style.id = "mina-status-upgrade-style";
+    style.textContent = `
+      .mina-status-field select { width: 100%; }
+      .mina-field-help { display:block; margin-top:6px; opacity:.72; }
+      .mina-status-badge {
+        display:inline-flex; align-items:center; gap:6px; padding:5px 10px;
+        border-radius:999px; font-size:12px; font-weight:700; white-space:nowrap;
+        border:1px solid rgba(255,255,255,.16);
+      }
+      .mina-status-badge::before { content:""; width:7px; height:7px; border-radius:50%; background:currentColor; }
+      .mina-status-verified { color:#6ff7b0; background:rgba(41,184,112,.12); }
+      .mina-status-needs_review { color:#ffd36f; background:rgba(255,185,45,.12); }
+      .mina-status-draft { color:#7fc8ff; background:rgba(54,153,255,.12); }
+      .mina-status-hidden { color:#ff8ca1; background:rgba(255,75,110,.12); }
+    `;
+    document.head.appendChild(style);
   }
 
   function backup() {
@@ -135,6 +200,7 @@
       tags: field("tags")?.value ?? "",
       level: field("level")?.value ?? "",
       type: field("type")?.value ?? "",
+      status: field("status")?.value ?? "needs_review",
       homePinned: field("homePinned")?.checked === true,
       homeOrder: field("homePinned")?.checked === true
         ? pinOrder(field("homeOrder")?.value)
@@ -165,6 +231,8 @@
 
   function resetForm() {
     form()?.reset();
+    const statusField = form()?.elements?.namedItem("status");
+    if (statusField) statusField.value = "needs_review";
     state.editingId = null;
     state.imageBase64 = "";
     state.imageName = "";
@@ -206,6 +274,7 @@
     setValue("tags", normalized.tags);
     setValue("level", normalized.level);
     setValue("type", normalized.type);
+    setValue("status", normalized.status);
     setValue("homePinned", normalized.homePinned);
     setValue("homeOrder", normalized.homeOrder);
 
@@ -366,7 +435,7 @@
     const query = state.filter.toLowerCase();
     return query
       ? state.skills.filter(item =>
-          [item.id, item.name, item.style, item.type, item.rarity]
+          [item.id, item.name, item.style, item.type, item.rarity, item.status, statusLabel(item.status)]
             .join(" ")
             .toLowerCase()
             .includes(query)
@@ -390,7 +459,7 @@
           <td>${CMS().escapeHTML(skill.rating)}</td>
           <td>${skill.youtube ? "✓" : "—"}</td>
           <td>${skill.homePinned ? `📌 ${skill.homeOrder || "Tự động"}` : "—"}</td>
-          <td>${skill.status === "verified" ? "Đã xác minh" : "Cần review"}</td>
+          <td><span class="mina-status-badge mina-status-${statusClass(skill.status)}">${CMS().escapeHTML(statusLabel(skill.status))}</span></td>
           <td>
             <button type="button" class="cms-btn" data-edit-id="${CMS().escapeHTML(skill.id)}">Sửa</button>
             <button type="button" class="cms-btn danger" data-delete-id="${CMS().escapeHTML(skill.id)}">Xóa</button>
@@ -489,6 +558,8 @@
   }
 
   async function init() {
+    injectStatusStyles();
+    ensureStatusField();
     bind();
     await load();
   }
