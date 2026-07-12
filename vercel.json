@@ -4,6 +4,10 @@
     {
       "source": "/wiki",
       "destination": "/wiki.html"
+    },
+    {
+      "source": "/blog",
+      "destination": "/blog.html"
     }
   ],
   "headers": [
@@ -22,6 +26,15 @@
         {
           "key": "Cache-Control",
           "value": "no-store, max-age=0"
+        }
+      ]
+    },
+    {
+      "source": "/(sitemap.*\\.xml|rss\\.xml|feed\\.json|robots\\.txt)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, s-maxage=3600"
         }
       ]
     }
