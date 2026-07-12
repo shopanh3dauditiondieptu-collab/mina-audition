@@ -92,3 +92,14 @@ safeOn(logoutBtn, "click", async () => {
   await signOut(auth);
   showLogin("Bạn đã đăng xuất.");
 });
+
+
+// Đồng bộ lại bộ đếm và danh sách sau khi add-on Excel đăng xong.
+window.addEventListener("mina:posts-imported", async event => {
+  try {
+    await loadPosts();
+    console.info(`[Mina Admin] Đã tải lại danh sách sau khi nhập ${event.detail?.count || 0} bài.`);
+  } catch (error) {
+    console.error("[Mina Admin] Không tải lại được danh sách bài viết:", error);
+  }
+});
