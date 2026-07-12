@@ -1,5 +1,5 @@
 /* =====================================================
-   MINA WIKI SAVE SKILL API - V4 UPDATE FIX
+   MINA WIKI SAVE SKILL API - V8 SAFE UPDATE
    File: api/wiki-save-skill.js
 
    Yêu cầu Environment Variables:
@@ -157,7 +157,7 @@ function normalizeSkill(input = {}, imageUrl = "") {
       input.bpm ??
       input.bpmDepNhat
     ),
-    rarity: firstText(input.rarity, input.doHiem).toUpperCase(),
+    rarity: String(input.rarity || "").trim(),
     rating: numberOrBlank(
       input.rating ??
       input.diem ??
