@@ -1,17 +1,25 @@
+/**
+ * MINA SEO BUILD v2.0
+ * Sinh sitemap.xml, sitemap-posts.xml, sitemap-images.xml,
+ * sitemap-videos.xml, rss.xml, feed.json và robots.txt.
+ *
+ * Không ghi dữ liệu vào Firestore.
+ */
 import fs from "node:fs/promises";
 
-const SITE_URL = "https://www.minaaudition.vn";
-const PROJECT_ID = "minaaudition-13650";
-const POSTS_COLLECTION = "posts";
+const CONFIG = Object.freeze({
+  siteUrl: "https://www.minaaudition.vn",
+  projectId: "minaaudition-13650",
+  collection: "posts",
+  pageSize: 300,
+  staticPages: [
+    { path: "/", changefreq: "daily", priority: "1.0" },
+    { path: "/blog.html", changefreq: "daily", priority: "0.9" },
+    { path: "/wiki.html", changefreq: "weekly", priority: "0.9" }
+  ]
+});
 
-const STATIC_PAGES = [
-  { path: "/", priority: "1.0", changefreq: "daily" },
-  { path: "/index.html", priority: "1.0", changefreq: "daily" },
-  { path: "/blog.html", priority: "0.9", changefreq: "daily" },
-  { path: "/wiki.html", priority: "0.9", changefreq: "weekly" }
-];
-
-function escapeXml(value = "") {
+function xml(value = "") {
   return String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -27,12 +35,15 @@ function fieldValue(field = {}) {
   if ("doubleValue" in field) return Number(field.doubleValue);
   if ("timestampValue" in field) return field.timestampValue;
   if ("nullValue" in field) return null;
+
   if ("arrayValue" in field) {
     return (field.arrayValue.values || []).map(fieldValue);
   }
+
   if ("mapValue" in field) {
     return decodeFields(field.mapValue.fields || {});
   }
+
   return undefined;
 }
 
@@ -42,129 +53,267 @@ function decodeFields(fields = {}) {
   );
 }
 
-function toDate(value) {
-  if (!value) return new Date();
+function parseDate(value, fallback = new Date()) {
+  if (!value) return fallback;
+
   if (typeof value === "string") {
-    const d = new Date(value);
-    return Number.isNaN(d.getTime()) ? new Date() : d;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? fallback : date;
   }
-  if (typeof value === "object" && value.seconds) {
-    return new Date(Number(value.seconds) * 1000);
+
+  if (typeof value === "object" && typeof value.seconds === "number") {
+    return new Date(value.seconds * 1000);
   }
-  return new Date();
+
+  return fallback;
 }
 
-function postIsPublished(post) {
+function isPublished(post) {
   return post.status !== "draft" && post.status !== "private";
 }
 
-async function fetchAllPosts() {
-  let pageToken = "";
+function postUrl(post) {
+  return `${CONFIG.siteUrl}/post.html?id=${encodeURIComponent(post.id)}`;
+}
+
+function postImage(post) {
+  return (
+    post.seoImage ||
+    post.image ||
+    post.thumbnail ||
+    post.coverImage ||
+    ""
+  );
+}
+
+function postVideo(post) {
+  return (
+    post.video ||
+    post.videoUrl ||
+    post.youtube ||
+    post.youtubeUrl ||
+    ""
+  );
+}
+
+function youtubeId(value = "") {
+  const text = String(value).trim();
+  const patterns = [
+    /youtu\.be\/([^?&#/]+)/i,
+    /youtube\.com\/watch\?[^#]*v=([^&#]+)/i,
+    /youtube\.com\/embed\/([^?&#/]+)/i,
+    /youtube\.com\/shorts\/([^?&#/]+)/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match?.[1]) return match[1];
+  }
+
+  return "";
+}
+
+async function fetchPosts() {
   const posts = [];
+  let pageToken = "";
 
   do {
-    const url = new URL(
-      `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${POSTS_COLLECTION}`
+    const endpoint = new URL(
+      `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/${CONFIG.collection}`
     );
-    url.searchParams.set("pageSize", "300");
-    url.searchParams.set("orderBy", "createdAt desc");
-    if (pageToken) url.searchParams.set("pageToken", pageToken);
 
-    const response = await fetch(url, {
-      headers: { "Accept": "application/json" }
+    endpoint.searchParams.set("pageSize", String(CONFIG.pageSize));
+    if (pageToken) endpoint.searchParams.set("pageToken", pageToken);
+
+    const response = await fetch(endpoint, {
+      headers: { Accept: "application/json" }
     });
 
     if (!response.ok) {
       const detail = await response.text();
+
       throw new Error(
-        `Không đọc được Firestore (${response.status}). ` +
-        `Hãy bảo đảm collection posts cho phép đọc công khai. ${detail}`
+        [
+          `Firestore REST trả về lỗi ${response.status}.`,
+          "Website vẫn an toàn vì workflow chỉ đọc dữ liệu.",
+          "Hãy kiểm tra Firestore Rules cho phép đọc bài công khai.",
+          detail
+        ].join("\n")
       );
     }
 
     const data = await response.json();
 
-    for (const doc of data.documents || []) {
-      const id = doc.name.split("/").pop();
+    for (const item of data.documents || []) {
+      const id = item.name.split("/").pop();
+
       posts.push({
         id,
-        ...decodeFields(doc.fields || {}),
-        firestoreCreateTime: doc.createTime,
-        firestoreUpdateTime: doc.updateTime
+        ...decodeFields(item.fields || {}),
+        _createTime: item.createTime,
+        _updateTime: item.updateTime
       });
     }
 
     pageToken = data.nextPageToken || "";
   } while (pageToken);
 
-  return posts.filter(postIsPublished);
+  return posts.filter(isPublished);
 }
 
-function buildSitemap(posts) {
-  const today = new Date().toISOString();
-
-  const staticUrls = STATIC_PAGES.map(page => `
-  <url>
-    <loc>${escapeXml(SITE_URL + page.path)}</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
-  </url>`).join("");
-
-  const postUrls = posts.map(post => {
-    const updated = toDate(
-      post.updatedAt || post.createdAt ||
-      post.firestoreUpdateTime || post.firestoreCreateTime
+function buildPostSitemap(posts) {
+  const urls = posts.map(post => {
+    const lastmod = parseDate(
+      post.updatedAt || post.modifiedAt || post.createdAt || post._updateTime
     ).toISOString();
 
-    const url = `${SITE_URL}/post.html?id=${encodeURIComponent(post.id)}`;
-
-    return `
-  <url>
-    <loc>${escapeXml(url)}</loc>
-    <lastmod>${updated}</lastmod>
+    return `  <url>
+    <loc>${xml(postUrl(post))}</loc>
+    <lastmod>${lastmod}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    ${post.image ? `<image:image><image:loc>${escapeXml(post.image)}</image:loc><image:title>${escapeXml(post.title || "Mina Audition")}</image:title></image:image>` : ""}
   </url>`;
-  }).join("");
+  }).join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls}
+</urlset>
+`;
+}
+
+function buildImageSitemap(posts) {
+  const urls = posts
+    .filter(post => postImage(post))
+    .map(post => `  <url>
+    <loc>${xml(postUrl(post))}</loc>
+    <image:image>
+      <image:loc>${xml(postImage(post))}</image:loc>
+      <image:title>${xml(post.title || "Mina Audition")}</image:title>
+    </image:image>
+  </url>`)
+    .join("\n");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset
   xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-${staticUrls}
-${postUrls}
+${urls}
+</urlset>
+`;
+}
+
+function buildVideoSitemap(posts) {
+  const urls = posts
+    .map(post => ({ post, id: youtubeId(postVideo(post)) }))
+    .filter(item => item.id)
+    .map(({ post, id }) => {
+      const published = parseDate(
+        post.publishedAt || post.createdAt || post._createTime
+      ).toISOString();
+
+      const description =
+        post.seoDescription ||
+        post.desc ||
+        post.description ||
+        "Video Skill Audition từ Mina Audition.";
+
+      return `  <url>
+    <loc>${xml(postUrl(post))}</loc>
+    <video:video>
+      <video:thumbnail_loc>${xml(`https://i.ytimg.com/vi/${id}/hqdefault.jpg`)}</video:thumbnail_loc>
+      <video:title>${xml(post.title || "Video Mina Audition")}</video:title>
+      <video:description>${xml(description)}</video:description>
+      <video:player_loc>${xml(`https://www.youtube.com/embed/${id}`)}</video:player_loc>
+      <video:publication_date>${published}</video:publication_date>
+    </video:video>
+  </url>`;
+    })
+    .join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+${urls}
+</urlset>
+`;
+}
+
+function buildSitemapIndex() {
+  const today = new Date().toISOString();
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>${CONFIG.siteUrl}/sitemap-static.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>${CONFIG.siteUrl}/sitemap-posts.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>${CONFIG.siteUrl}/sitemap-images.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>${CONFIG.siteUrl}/sitemap-videos.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+</sitemapindex>
+`;
+}
+
+function buildStaticSitemap() {
+  const today = new Date().toISOString();
+
+  const urls = CONFIG.staticPages.map(page => `  <url>
+    <loc>${CONFIG.siteUrl}${page.path}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
+  </url>`).join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls}
 </urlset>
 `;
 }
 
 function buildRss(posts) {
-  const items = posts.slice(0, 100).map(post => {
-    const url = `${SITE_URL}/post.html?id=${encodeURIComponent(post.id)}`;
-    const pubDate = toDate(post.createdAt || post.firestoreCreateTime).toUTCString();
-    const description = post.desc || post.description || "";
+  const sorted = [...posts].sort((a, b) => {
+    const aDate = parseDate(a.createdAt || a._createTime).getTime();
+    const bDate = parseDate(b.createdAt || b._createTime).getTime();
+    return bDate - aDate;
+  });
 
-    return `
-    <item>
-      <title>${escapeXml(post.title || "Bài viết Mina Audition")}</title>
-      <link>${escapeXml(url)}</link>
-      <guid isPermaLink="true">${escapeXml(url)}</guid>
-      <pubDate>${escapeXml(pubDate)}</pubDate>
-      <description>${escapeXml(description)}</description>
-      ${post.image ? `<enclosure url="${escapeXml(post.image)}" type="image/jpeg" />` : ""}
+  const items = sorted.slice(0, 100).map(post => {
+    const url = postUrl(post);
+    const date = parseDate(post.createdAt || post._createTime).toUTCString();
+    const description =
+      post.seoDescription || post.desc || post.description || "";
+
+    return `    <item>
+      <title>${xml(post.title || "Bài viết Mina Audition")}</title>
+      <link>${xml(url)}</link>
+      <guid isPermaLink="true">${xml(url)}</guid>
+      <pubDate>${xml(date)}</pubDate>
+      <description>${xml(description)}</description>
     </item>`;
-  }).join("");
+  }).join("\n");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0"
+  xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Mina Audition</title>
-    <link>${SITE_URL}/</link>
-    <description>Dance, Poppin, Review Skill và nội dung Audition VTC.</description>
+    <link>${CONFIG.siteUrl}/</link>
+    <description>Dance, Poppin, Review Skill và Wikipedia D8 Audition.</description>
     <language>vi-VN</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-    <atom:link xmlns:atom="http://www.w3.org/2005/Atom" href="${SITE_URL}/rss.xml" rel="self" type="application/rss+xml"/>
+    <atom:link href="${CONFIG.siteUrl}/rss.xml" rel="self" type="application/rss+xml"/>
 ${items}
   </channel>
 </rss>
@@ -175,24 +324,22 @@ function buildJsonFeed(posts) {
   return JSON.stringify({
     version: "https://jsonfeed.org/version/1.1",
     title: "Mina Audition",
-    home_page_url: `${SITE_URL}/`,
-    feed_url: `${SITE_URL}/feed.json`,
+    home_page_url: `${CONFIG.siteUrl}/`,
+    feed_url: `${CONFIG.siteUrl}/feed.json`,
     language: "vi-VN",
-    items: posts.slice(0, 100).map(post => {
-      const url = `${SITE_URL}/post.html?id=${encodeURIComponent(post.id)}`;
-      return {
-        id: url,
-        url,
-        title: post.title || "Bài viết Mina Audition",
-        summary: post.desc || post.description || "",
-        image: post.image || undefined,
-        date_published: toDate(post.createdAt || post.firestoreCreateTime).toISOString(),
-        date_modified: toDate(
-          post.updatedAt || post.createdAt ||
-          post.firestoreUpdateTime || post.firestoreCreateTime
-        ).toISOString()
-      };
-    })
+    items: posts.slice(0, 100).map(post => ({
+      id: postUrl(post),
+      url: postUrl(post),
+      title: post.title || "Bài viết Mina Audition",
+      summary: post.seoDescription || post.desc || post.description || "",
+      image: postImage(post) || undefined,
+      date_published: parseDate(
+        post.publishedAt || post.createdAt || post._createTime
+      ).toISOString(),
+      date_modified: parseDate(
+        post.updatedAt || post.modifiedAt || post._updateTime
+      ).toISOString()
+    }))
   }, null, 2) + "\n";
 }
 
@@ -202,28 +349,39 @@ Allow: /
 
 Disallow: /admin.html
 Disallow: /admin-wiki.html
-Disallow: /post-preview.html
 
-Sitemap: ${SITE_URL}/sitemap.xml
+Sitemap: ${CONFIG.siteUrl}/sitemap.xml
 `;
 }
 
+async function write(name, value) {
+  await fs.writeFile(name, value, "utf8");
+  console.log(`✓ ${name}`);
+}
+
 async function main() {
-  console.log("Đang đọc bài viết Mina từ Firestore...");
-  const posts = await fetchAllPosts();
-  console.log(`Đã tìm thấy ${posts.length} bài công khai.`);
+  console.log("Mina SEO Build v2.0");
+  console.log("Đang đọc collection posts...");
+
+  const posts = await fetchPosts();
+  console.log(`Tìm thấy ${posts.length} bài công khai.`);
 
   await Promise.all([
-    fs.writeFile("sitemap.xml", buildSitemap(posts), "utf8"),
-    fs.writeFile("rss.xml", buildRss(posts), "utf8"),
-    fs.writeFile("feed.json", buildJsonFeed(posts), "utf8"),
-    fs.writeFile("robots.txt", buildRobots(), "utf8")
+    write("sitemap.xml", buildSitemapIndex()),
+    write("sitemap-static.xml", buildStaticSitemap()),
+    write("sitemap-posts.xml", buildPostSitemap(posts)),
+    write("sitemap-images.xml", buildImageSitemap(posts)),
+    write("sitemap-videos.xml", buildVideoSitemap(posts)),
+    write("rss.xml", buildRss(posts)),
+    write("feed.json", buildJsonFeed(posts)),
+    write("robots.txt", buildRobots())
   ]);
 
-  console.log("Đã cập nhật sitemap.xml, rss.xml, feed.json và robots.txt.");
+  console.log("Hoàn tất Mina SEO Build.");
 }
 
 main().catch(error => {
+  console.error("\nMINA SEO BUILD THẤT BẠI");
   console.error(error);
   process.exit(1);
 });
