@@ -3,6 +3,5 @@ Allow: /
 
 Disallow: /admin.html
 Disallow: /admin-wiki.html
-Disallow: /post-preview.html
 
 Sitemap: https://www.minaaudition.vn/sitemap.xml
