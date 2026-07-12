@@ -1,29 +1,47 @@
 "use strict";
 
 /* =========================================================
-   MINA WIKI SAVE DATABASE API
+   MINA WIKI SAVE DATABASE API V1
    File: api/wiki-save-database.js
-   Dùng với POST /api/wiki-save-database
+
+   Mục đích:
+   - Giữ nguyên endpoint đã cấu hình: /api/wiki-save-database
+   - Nhận toàn bộ skills[] từ Admin
+   - Chuẩn hóa rồi ghi vào database/master-skills.json trên GitHub
+   - Giữ lại trash, history và metadata khác đang có
 ========================================================= */
 
 const GH_API = "https://api.github.com";
-const DB_PATH = process.env.MINA_DB_PATH || "database/master-skills.json";
+const DB_PATH =
+  process.env.MINA_DB_PATH || "database/master-skills.json";
 
 function sendJson(res, status, body) {
   if (typeof res.status === "function") res.status(status);
   else res.statusCode = status;
-  res.setHeader("Content-Type", "application/json; charset=utf-8");
-  res.setHeader("Cache-Control", "no-store");
+
+  res.setHeader(
+    "Content-Type",
+    "application/json; charset=utf-8"
+  );
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate"
+  );
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+
   return res.end(JSON.stringify(body));
 }
 
 function requiredEnv(name) {
   const value = process.env[name];
+
   if (!value) {
     const error = new Error(`Thiếu biến môi trường ${name}`);
     error.statusCode = 500;
     throw error;
   }
+
   return value;
 }
 
@@ -37,26 +55,34 @@ function repoConfig() {
 }
 
 function githubHeaders() {
+  const { token } = repoConfig();
+
   return {
-    Authorization: `Bearer ${repoConfig().token}`,
+    Authorization: `Bearer ${token}`,
     Accept: "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
     "Content-Type": "application/json",
-    "User-Agent": "Mina-Audition-Wiki"
+    "User-Agent": "Mina-Audition-CMS"
   };
 }
 
 function contentUrl() {
   const { owner, repo } = repoConfig();
-  return `${GH_API}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${DB_PATH}`;
+
+  return (
+    `${GH_API}/repos/${encodeURIComponent(owner)}/` +
+    `${encodeURIComponent(repo)}/contents/${DB_PATH}`
+  );
 }
 
 function requireAdmin(req) {
   const configured = requiredEnv("MINA_ADMIN_API_KEY");
+
   const received = String(
     req.headers["x-mina-admin-key"] ||
     req.body?.adminApiKey ||
     req.body?.adminPassword ||
+    req.query?.adminApiKey ||
     ""
   );
 
@@ -67,90 +93,35 @@ function requireAdmin(req) {
   }
 }
 
-function numberOrBlank(value) {
-  if (value === "" || value === null || value === undefined) return "";
-  const match = String(value).match(/-?\d+(?:\.\d+)?/);
-  return match ? Number(match[0]) : "";
-}
-
-function normalizeTags(value) {
-  const list = Array.isArray(value) ? value : String(value || "").split(",");
-  return [...new Set(
-    list.map(item => String(item).trim()).filter(Boolean)
-  )];
-}
-
-function normalizeSkill(input = {}) {
-  const now = new Date().toISOString();
-  const id = String(input.id || input.idSkill || input.skillId || "").trim();
-  const name = String(input.name || input.tenSkill || input.skillName || "").trim();
-
-  if (!id) throw new Error("Có skill thiếu ID");
-  if (!name) throw new Error(`Skill ${id} thiếu tên`);
-
-  const youtubeUrl = String(
-    input.youtubeUrl ?? input.youtube ?? input.videoUrl ?? ""
-  ).trim();
-
-  const imageUrl = String(
-    input.imageUrl ?? input.image ?? input.hinhAnh ?? ""
-  ).trim();
-
-  const status = String(
-    input.status ??
-    input.trangThai ??
-    (input.reviewed ? "verified" : "needs_review")
-  ).trim();
-
+function emptyDatabase() {
   return {
-    id,
-    name,
-    alias: String(input.alias || "").trim(),
-    type: String(input.type ?? input.loai ?? "").trim(),
-    style: String(input.style ?? input.theLoai ?? "").trim(),
-    level: numberOrBlank(input.level ?? input.capDo ?? ""),
-    bpmBest: numberOrBlank(
-      input.bpmBest ?? input.bpm ?? input.bpmDepNhat ?? ""
-    ),
-    rarity: String(input.rarity ?? input.doHiem ?? "").trim(),
-    rating: numberOrBlank(
-      input.rating ?? input.diem ?? input.diemDep ?? ""
-    ),
-    status: status || "needs_review",
-    imageUrl,
-    youtubeUrl,
-    cameraAngle: String(
-      input.cameraAngle ?? input.camera ?? input.gocMay ?? ""
-    ).trim(),
-    song: String(input.song ?? input.baiHat ?? "").trim(),
-    hasYoutube: Boolean(youtubeUrl),
-    hasWiki: input.hasWiki !== false,
-    hot: Boolean(input.hot ?? input.noiBat ?? false),
-    homePinned:
-      input.homePinned === true ||
-      input.homePinned === "true" ||
-      input.pinned === true ||
-      input.ghimTrangChu === true,
-    homeOrder: (() => {
-      const n = Number(
-        input.homeOrder ?? input.pinOrder ?? input.thuTuTrangChu
-      );
-      return Number.isInteger(n) && n >= 1 && n <= 8 ? n : "";
-    })(),
-    tags: normalizeTags(input.tags),
-    notes: String(
-      input.notes ??
-      input.description ??
-      input.ghiChu ??
-      ""
-    ).trim(),
-    createdAt: input.createdAt || now,
-    updatedAt: now
+    version: 1,
+    updatedAt: null,
+    skills: [],
+    trash: [],
+    history: []
   };
 }
 
-async function readSha() {
+function parseDatabase(raw) {
+  const data =
+    raw && typeof raw === "object"
+      ? raw
+      : emptyDatabase();
+
+  return {
+    ...data,
+    version: Number(data.version) || 1,
+    updatedAt: data.updatedAt || null,
+    skills: Array.isArray(data.skills) ? data.skills : [],
+    trash: Array.isArray(data.trash) ? data.trash : [],
+    history: Array.isArray(data.history) ? data.history : []
+  };
+}
+
+async function readDatabase() {
   const { branch } = repoConfig();
+
   const response = await fetch(
     `${contentUrl()}?ref=${encodeURIComponent(branch)}&t=${Date.now()}`,
     {
@@ -160,17 +131,32 @@ async function readSha() {
     }
   );
 
-  if (response.status === 404) return null;
+  if (response.status === 404) {
+    return {
+      sha: null,
+      data: emptyDatabase()
+    };
+  }
+
   if (!response.ok) {
-    throw new Error(`GitHub GET lỗi ${response.status}: ${await response.text()}`);
+    throw new Error(
+      `GitHub GET lỗi ${response.status}: ${await response.text()}`
+    );
   }
 
   const payload = await response.json();
-  return payload.sha || null;
+  const encoded = String(payload.content || "").replace(/\n/g, "");
+  const decoded = Buffer.from(encoded, "base64").toString("utf8");
+
+  return {
+    sha: payload.sha || null,
+    data: parseDatabase(JSON.parse(decoded))
+  };
 }
 
 async function writeDatabase(data, sha, message) {
   const { branch } = repoConfig();
+
   const body = {
     message,
     branch,
@@ -199,17 +185,318 @@ async function writeDatabase(data, sha, message) {
   return response.json();
 }
 
-async function saveWithRetry(data, message, attempts = 3) {
+function text(value) {
+  return String(value ?? "").trim();
+}
+
+function numberOrBlank(value) {
+  if (value === "" || value === null || value === undefined) {
+    return "";
+  }
+
+  const number = Number(String(value).replace(",", "."));
+  return Number.isFinite(number) ? number : "";
+}
+
+function normalizeTags(value) {
+  const list = Array.isArray(value)
+    ? value
+    : text(value).split(/[,;|]/);
+
+  return [
+    ...new Set(
+      list
+        .map(item => text(item))
+        .filter(Boolean)
+    )
+  ];
+}
+
+function booleanValue(value, fallback = false) {
+  if (value === "" || value === null || value === undefined) {
+    return fallback;
+  }
+
+  if (typeof value === "boolean") return value;
+
+  return ["1", "true", "yes", "y", "có", "co", "x", "✓"]
+    .includes(text(value).toLowerCase());
+}
+
+function normalizeStatus(value) {
+  const raw = text(value).toLowerCase();
+
+  const map = {
+    "verified": "verified",
+    "đã xác minh": "verified",
+    "da xac minh": "verified",
+
+    "needs_review": "needs_review",
+    "cần review": "needs_review",
+    "can review": "needs_review",
+
+    "draft": "draft",
+    "bản nháp": "draft",
+    "ban nhap": "draft",
+
+    "hidden": "hidden",
+    "ẩn": "hidden",
+    "an": "hidden"
+  };
+
+  return map[raw] || raw || "needs_review";
+}
+
+function normalizeSkill(input = {}, previous = null, index = 0) {
+  const now = new Date().toISOString();
+
+  const id = text(
+    input.id ||
+    input.skillId ||
+    previous?.id
+  );
+
+  const name = text(
+    input.name ||
+    input.skillName ||
+    previous?.name
+  );
+
+  if (!id) {
+    throw new Error(`Dòng ${index + 1}: thiếu ID skill`);
+  }
+
+  if (!name) {
+    throw new Error(`Dòng ${index + 1}: thiếu tên skill`);
+  }
+
+  const imageUrl = text(
+    input.imageUrl ??
+    input.image ??
+    input.thumbnail ??
+    previous?.imageUrl ??
+    ""
+  );
+
+  const youtubeUrl = text(
+    input.youtubeUrl ??
+    input.youtube ??
+    input.video ??
+    previous?.youtubeUrl ??
+    ""
+  );
+
+  const homeOrderNumber = Number(
+    input.homeOrder ??
+    input.pinOrder ??
+    previous?.homeOrder
+  );
+
+  return {
+    ...(previous || {}),
+
+    id,
+    name,
+
+    alias: text(input.alias ?? previous?.alias ?? ""),
+    type: text(input.type ?? previous?.type ?? ""),
+    style: text(
+      input.style ??
+      input.category ??
+      previous?.style ??
+      ""
+    ),
+
+    level: numberOrBlank(
+      input.level ??
+      previous?.level ??
+      ""
+    ),
+
+    bpmBest: numberOrBlank(
+      input.bpmBest ??
+      input.bpm ??
+      previous?.bpmBest ??
+      ""
+    ),
+
+    rarity: text(
+      input.rarity ??
+      input.rank ??
+      previous?.rarity ??
+      ""
+    ).toUpperCase(),
+
+    rating: numberOrBlank(
+      input.rating ??
+      previous?.rating ??
+      ""
+    ),
+
+    status: normalizeStatus(
+      input.status ??
+      input.verifiedStatus ??
+      previous?.status ??
+      "needs_review"
+    ),
+
+    imageUrl,
+    youtubeUrl,
+
+    cameraAngle: text(
+      input.cameraAngle ??
+      input.camera ??
+      previous?.cameraAngle ??
+      ""
+    ),
+
+    song: text(
+      input.song ??
+      input.recommendedSong ??
+      previous?.song ??
+      ""
+    ),
+
+    hasYoutube: Boolean(youtubeUrl),
+
+    hasWiki:
+      input.hasWiki === undefined
+        ? previous?.hasWiki !== false
+        : input.hasWiki !== false,
+
+    hot: booleanValue(
+      input.hot,
+      Boolean(previous?.hot)
+    ),
+
+    homePinned: booleanValue(
+      input.homePinned ?? input.pinned,
+      Boolean(previous?.homePinned)
+    ),
+
+    homeOrder:
+      Number.isInteger(homeOrderNumber) &&
+      homeOrderNumber >= 1 &&
+      homeOrderNumber <= 8
+        ? homeOrderNumber
+        : "",
+
+    tags: normalizeTags(
+      input.tags ??
+      previous?.tags ??
+      []
+    ),
+
+    notes: text(
+      input.notes ??
+      input.description ??
+      input.desc ??
+      previous?.notes ??
+      ""
+    ),
+
+    createdAt:
+      previous?.createdAt ||
+      input.createdAt ||
+      now,
+
+    updatedAt: now
+  };
+}
+
+function deduplicateSkills(skills, previousSkills) {
+  const previousMap = new Map(
+    previousSkills.map(skill => [
+      text(skill.id).toLowerCase(),
+      skill
+    ])
+  );
+
+  const output = [];
+  const seen = new Set();
+
+  skills.forEach((input, index) => {
+    const rawId = text(input?.id || input?.skillId).toLowerCase();
+
+    if (!rawId) {
+      normalizeSkill(input, null, index);
+      return;
+    }
+
+    const normalized = normalizeSkill(
+      input,
+      previousMap.get(rawId) || null,
+      index
+    );
+
+    const idKey = normalized.id.toLowerCase();
+
+    if (seen.has(idKey)) {
+      const existingIndex = output.findIndex(
+        item => item.id.toLowerCase() === idKey
+      );
+
+      output[existingIndex] = normalizeSkill(
+        normalized,
+        output[existingIndex],
+        index
+      );
+    } else {
+      seen.add(idKey);
+      output.push(normalized);
+    }
+  });
+
+  return output;
+}
+
+async function saveWithRetry(skills, attempts = 3) {
   let lastError;
 
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
-    const sha = await readSha();
+    const { sha, data } = await readDatabase();
+
+    const normalizedSkills = deduplicateSkills(
+      skills,
+      data.skills
+    );
+
+    const historyItem = {
+      label: `Đồng bộ toàn bộ ${normalizedSkills.length} skill`,
+      createdAt: new Date().toISOString(),
+      totalBefore: data.skills.length,
+      totalAfter: normalizedSkills.length
+    };
+
+    const nextData = {
+      ...data,
+      version: Math.max(Number(data.version) || 1, 10),
+      updatedAt: new Date().toISOString(),
+      skills: normalizedSkills,
+      trash: Array.isArray(data.trash) ? data.trash : [],
+      history: [
+        historyItem,
+        ...(Array.isArray(data.history) ? data.history : [])
+      ].slice(0, 50)
+    };
+
     try {
-      await writeDatabase(data, sha, message);
-      return;
+      await writeDatabase(
+        nextData,
+        sha,
+        `Sync ${normalizedSkills.length} Mina wiki skills`
+      );
+
+      return nextData;
     } catch (error) {
       lastError = error;
-      if (error.githubStatus !== 409 || attempt === attempts) throw error;
+
+      if (
+        error.githubStatus !== 409 ||
+        attempt === attempts
+      ) {
+        throw error;
+      }
     }
   }
 
@@ -227,59 +514,40 @@ module.exports = async function handler(req, res) {
 
     requireAdmin(req);
 
-    const incoming = Array.isArray(req.body)
-      ? req.body
-      : (
-          req.body?.skills ||
-          req.body?.data ||
-          req.body?.items ||
-          []
-        );
+    const skills = Array.isArray(req.body?.skills)
+      ? req.body.skills
+      : Array.isArray(req.body?.data?.skills)
+        ? req.body.data.skills
+        : [];
 
-    if (!Array.isArray(incoming)) {
+    if (!skills.length) {
       return sendJson(res, 400, {
         ok: false,
-        error: "Dữ liệu skills phải là một mảng"
+        error: "Không nhận được danh sách skills."
       });
     }
 
-    const skills = incoming.map(normalizeSkill);
-    const ids = new Set();
-
-    for (const skill of skills) {
-      const key = skill.id.toLowerCase();
-      if (ids.has(key)) {
-        return sendJson(res, 400, {
-          ok: false,
-          error: `Trùng ID skill: ${skill.id}`
-        });
-      }
-      ids.add(key);
-    }
-
-    const next = {
-      version: 1,
-      updatedAt: new Date().toISOString(),
-      skills
-    };
-
-    const action = String(req.body?.action || "save-database").trim();
-    await saveWithRetry(
-      next,
-      `Mina CMS ${action}: save ${skills.length} skills`
-    );
+    const data = await saveWithRetry(skills);
 
     return sendJson(res, 200, {
       ok: true,
-      message: `Đã đồng bộ ${skills.length} skill`,
-      total: skills.length,
-      updatedAt: next.updatedAt
+      message: `Đã đồng bộ ${data.skills.length} skill lên GitHub.`,
+      total: data.skills.length,
+      version: data.version,
+      updatedAt: data.updatedAt
     });
   } catch (error) {
     console.error("[api/wiki-save-database]", error);
-    return sendJson(res, error.statusCode || 500, {
-      ok: false,
-      error: error.message || "Lỗi máy chủ"
-    });
+
+    return sendJson(
+      res,
+      error.statusCode || 500,
+      {
+        ok: false,
+        error:
+          error.message ||
+          "Không thể đồng bộ database."
+      }
+    );
   }
 };
