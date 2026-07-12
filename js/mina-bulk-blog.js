@@ -1,9 +1,9 @@
 /**
- * MINA CMS BULK BLOG + MEDIA MANAGER v1.0.0
+ * MINA CMS BULK BLOG + MEDIA MANAGER v1.0.2
  * Add-on độc lập: không thay đổi postForm, admin.js hoặc cấu trúc dữ liệu bài viết hiện tại.
  *
  * Cài đặt:
- * <script type="module" src="/js/mina-bulk-blog.js?v=1.0.0"></script>
+ * <script type="module" src="/js/mina-bulk-blog.js?v=1.0.2"></script>
  */
 import { auth, db } from "./firebase-config.js";
 import { ADMIN_EMAIL } from "./admin/config.js";
@@ -16,8 +16,10 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
+console.info("[Mina Bulk Blog] Module v1.0.2 đã tải thành công.");
+
 const CONFIG = Object.freeze({
-  version: "1.0.1",
+  version: "1.0.2",
   cloudinaryCloudName: "rpwcnrfg",
   cloudinaryUploadPreset: "mina-upload",
   cloudinaryFolder: "mina-blog",
@@ -393,11 +395,27 @@ function createUI() {
     </div>
     <div class="mina-bulk-card" style="margin-top:15px"><h3>Xem trước</h3><small id="minaBulkPreviewNote" class="muted"></small><div class="mina-table-wrap"><table class="mina-table"><thead><tr><th>Dòng</th><th>Tiêu đề</th><th>Danh mục</th><th>Ảnh</th><th>Ghép ảnh</th><th>Trạng thái</th><th>Nổi bật</th></tr></thead><tbody id="minaBulkPreviewBody"><tr><td colspan="7" class="mina-empty">Chưa có dữ liệu.</td></tr></tbody></table></div></div>
     <div class="mina-bulk-toast" id="minaBulkToast" hidden></div>`;
-  const app = el("adminApp") || document.querySelector("main.admin") || document.body;
-  const layout = app.querySelector(".admin-layout");
-  if (layout) app.insertBefore(root, layout);
-  else app.appendChild(root);
+  const app =
+    document.getElementById("adminApp") ||
+    document.querySelector("main") ||
+    document.body;
+
+  const postForm =
+    document.getElementById("postForm") ||
+    document.querySelector("form");
+
+  const adminLayout = app.querySelector(".admin-layout");
+
+  if (postForm && postForm.parentElement) {
+    postForm.parentElement.insertBefore(root, postForm);
+  } else if (adminLayout) {
+    app.insertBefore(root, adminLayout);
+  } else {
+    app.prepend(root);
+  }
+
   bind();
+  console.info("[Mina Bulk Blog] Giao diện Excel đã được gắn vào trang.");
 }
 function bind() {
   el("minaBulkExcel").addEventListener("change", async e => {
@@ -488,9 +506,29 @@ function bind() {
   });
 }
 function boot() {
-  onAuthStateChanged(auth, user => {
-    if (!user) return;
-    createUI();
-  });
+  const start = () => {
+    try {
+      createUI();
+
+      onAuthStateChanged(auth, user => {
+        console.info(
+          "[Mina Bulk Blog] Firebase user:",
+          user?.email || "chưa đăng nhập Firebase"
+        );
+      });
+    } catch (error) {
+      console.error(
+        "[Mina Bulk Blog] Không thể tạo giao diện:",
+        error
+      );
+    }
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start, { once: true });
+  } else {
+    start();
+  }
 }
+
 boot();
