@@ -1,0 +1,47 @@
+name: Mina SEO Auto Update
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "scripts/mina-seo-build.mjs"
+      - ".github/workflows/mina-seo-auto.yml"
+  schedule:
+    - cron: "17 * * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mina-seo-auto
+  cancel-in-progress: true
+
+jobs:
+  build-seo-files:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Cài Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Sinh sitemap, RSS và robots
+        run: node scripts/mina-seo-build.mjs
+
+      - name: Lưu thay đổi vào GitHub
+        run: |
+          if git diff --quiet -- sitemap.xml rss.xml feed.json robots.txt; then
+            echo "Không có thay đổi."
+            exit 0
+          fi
+
+          git config user.name "Mina SEO Bot"
+          git config user.email "actions@github.com"
+          git add sitemap.xml rss.xml feed.json robots.txt
+          git commit -m "SEO: tự động cập nhật sitemap và RSS"
+          git push
