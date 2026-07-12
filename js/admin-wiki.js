@@ -1,5 +1,5 @@
 /* =========================================================
-   MINA ADMIN WIKI V7.2 - FIX DELETE 404 + DATA ALIASES
+   MINA ADMIN WIKI V8.0 SAFE FIX - FIX DELETE 404 + DATA ALIASES
    - Giữ nguyên giao diện, form, tab và cấu trúc Mina CMS
    - Xóa ưu tiên API /api/wiki-delete-skill
    - Nếu API xóa trả 404: tự động đồng bộ toàn bộ danh sách còn lại
@@ -117,9 +117,30 @@
 
   function readForm() {
     const currentForm = form();
-    const values = Object.fromEntries(new FormData(currentForm).entries());
-    values.homePinned = currentForm.elements.homePinned?.checked === true;
-    values.homeOrder = values.homePinned ? pinOrder(values.homeOrder) : "";
+    const field = name => currentForm?.elements?.namedItem(name);
+
+    const values = {
+      id: field("id")?.value ?? "",
+      name: field("name")?.value ?? "",
+      style: field("style")?.value ?? "",
+      bpm: field("bpm")?.value ?? "",
+      rarity: field("rarity")?.value ?? "",
+      rating: field("rating")?.value ?? "",
+      image: field("image")?.value ?? "",
+      youtube: field("youtube")?.value ?? "",
+      song: field("song")?.value ?? "",
+      camera: field("camera")?.value ?? "",
+      description: field("description")?.value ?? "",
+      note: field("note")?.value ?? "",
+      tags: field("tags")?.value ?? "",
+      level: field("level")?.value ?? "",
+      type: field("type")?.value ?? "",
+      homePinned: field("homePinned")?.checked === true,
+      homeOrder: field("homePinned")?.checked === true
+        ? pinOrder(field("homeOrder")?.value)
+        : ""
+    };
+
     return normalize(values);
   }
 
@@ -155,16 +176,46 @@
     const currentForm = form();
     if (!currentForm) return;
 
-    Object.entries(skill).forEach(([key, value]) => {
-      const field = currentForm.elements.namedItem(key);
+    const setValue = (name, value) => {
+      const field = currentForm.elements.namedItem(name);
       if (!field) return;
-      if (field.type === "checkbox") field.checked = Boolean(value);
-      else field.value = Array.isArray(value) ? value.join(", ") : (value ?? "");
-    });
+      if (field.type === "checkbox") {
+        field.checked = Boolean(value);
+      } else {
+        field.value = Array.isArray(value)
+          ? value.join(", ")
+          : (value ?? "");
+        field.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    };
 
-    state.editingId = skill.id;
+    const normalized = normalize(skill);
+
+    setValue("id", normalized.id);
+    setValue("name", normalized.name);
+    setValue("style", normalized.style);
+    setValue("bpm", normalized.bpm);
+    setValue("rarity", normalized.rarity);
+    setValue("rating", normalized.rating);
+    setValue("image", normalized.image);
+    setValue("youtube", normalized.youtube);
+    setValue("song", normalized.song);
+    setValue("camera", normalized.camera);
+    setValue("description", normalized.description);
+    setValue("note", normalized.note);
+    setValue("tags", normalized.tags);
+    setValue("level", normalized.level);
+    setValue("type", normalized.type);
+    setValue("homePinned", normalized.homePinned);
+    setValue("homeOrder", normalized.homeOrder);
+
+    state.editingId = normalized.id;
+    state.imageBase64 = "";
+    state.imageName = "";
+
     window.MinaAdminLayout?.activateTab("add");
     currentForm.querySelector('[name="name"]')?.focus();
+    CMS().toast(`Đang sửa Skill ${normalized.id}.`, "info");
   }
 
   async function save(event) {
@@ -183,7 +234,6 @@
 
     CMS().setBusy(true, "Đang lưu và đồng bộ skill...");
     try {
-      /* Gửi schema chuẩn và các alias để tương thích API/JSON cũ. */
       const body = {
         skillData: {
           ...skill,
@@ -205,37 +255,36 @@
       });
 
       const saved = normalize(result?.skill || result?.data || skill);
-      const index = state.skills.findIndex(item =>
-        item.id === state.editingId || item.id === saved.id
-      );
+      const wasEditing = Boolean(state.editingId);
+      const previousEditingId = state.editingId;
 
-      if (index >= 0) state.skills[index] = saved;
-      else state.skills.unshift(saved);
-
-      backup();
       resetForm();
-      renderAll();
-
-      /* Xóa cache và tải lại dữ liệu thật từ server.
-         Việc này bảo đảm bảng Admin không giữ bản cũ trong bộ nhớ. */
       window.MinaWikiEngine?.clearCache?.();
+
+      /* Tải lại dữ liệu thật từ API/GitHub sau khi server đã lưu.
+         Không sử dụng dữ liệu tạm trong bộ nhớ để tránh hiện lại bản cũ. */
       await load(true);
+
+      const confirmed = state.skills.find(item =>
+        item.id.toLowerCase() === saved.id.toLowerCase()
+      );
 
       window.dispatchEvent(new CustomEvent("mina:skills-changed", {
         detail: {
-          action: index >= 0 ? "update" : "create",
-          skill: saved
+          action: wasEditing ? "update" : "create",
+          skill: confirmed || saved,
+          previousEditingId
         }
       }));
 
       CMS().toast(
-        `Đã ${index >= 0 ? "cập nhật" : "thêm"} skill và tải lại dữ liệu mới.`,
+        `Đã ${wasEditing ? "cập nhật" : "thêm"} Skill ${saved.id} thành công.`,
         "success"
       );
 
       CMS().emit("skills:changed", {
-        action: index >= 0 ? "update" : "create",
-        skill: saved
+        action: wasEditing ? "update" : "create",
+        skill: confirmed || saved
       });
     } catch (error) {
       CMS().toast(error.message || "Không lưu được skill.", "error");
