@@ -5,7 +5,8 @@
  * Cài đặt:
  * <script type="module" src="/js/mina-bulk-blog.js?v=1.0.0"></script>
  */
-import { auth, db } from "../firebase-config.js";
+import { auth, db } from "./firebase-config.js";
+import { ADMIN_EMAIL } from "./admin/config.js";
 import {
   collection,
   addDoc,
@@ -16,7 +17,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 const CONFIG = Object.freeze({
-  version: "1.0.0",
+  version: "1.0.1",
   cloudinaryCloudName: "rpwcnrfg",
   cloudinaryUploadPreset: "mina-upload",
   cloudinaryFolder: "mina-blog",
@@ -421,11 +422,34 @@ function bind() {
     state.errors = validateRows(state.rows);
     updateStats(); renderPreview(); renderErrors();
   });
-  el("minaBulkTemplate").addEventListener("click", () => {
-    const a = document.createElement("a");
-    a.href = "/mina-blog-import-template.xlsx";
-    a.download = "mina-blog-import-template.xlsx";
-    a.click();
+  el("minaBulkTemplate").addEventListener("click", async () => {
+    try {
+      const XLSX = await ensureXLSX();
+      const sample = [{
+        Title: "Review Skill Audition mẫu",
+        Category: "Review Skill",
+        Description: "Mô tả ngắn cho bài viết",
+        Content: "Nội dung đầy đủ của bài viết",
+        ImageURL: "https://example.com/anh-bai-viet.jpg",
+        ImageFile: "",
+        Status: "draft",
+        Featured: "false",
+        Tags: "Audition, Mina, Review Skill",
+        Slug: "review-skill-audition-mau"
+      }];
+      const ws = XLSX.utils.json_to_sheet(sample);
+      ws["!cols"] = [
+        { wch: 34 }, { wch: 20 }, { wch: 38 }, { wch: 58 },
+        { wch: 48 }, { wch: 24 }, { wch: 12 }, { wch: 12 },
+        { wch: 32 }, { wch: 34 }
+      ];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Mina Blog Import");
+      XLSX.writeFile(wb, "mina-blog-import-template.xlsx");
+      toast("Đã tạo file Excel mẫu.", "success");
+    } catch (error) {
+      toast(error.message || "Không tạo được file Excel mẫu.", "error");
+    }
   });
   el("minaBulkExportUrls").addEventListener("click", downloadURLsExcel);
   el("minaBulkUpload").addEventListener("click", async () => {
@@ -441,6 +465,9 @@ function bind() {
   });
   el("minaBulkPublish").addEventListener("click", async () => {
     if (!auth.currentUser) return toast("Bạn chưa đăng nhập Admin Firebase.", "error");
+    if (String(auth.currentUser.email || "").toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+      return toast("Tài khoản hiện tại không có quyền đăng bài hàng loạt.", "error");
+    }
     if (!state.rows.length) return toast("Bạn chưa chọn Excel.", "error");
     setBusy(true, "Đang chuẩn bị đăng bài...");
     try {
