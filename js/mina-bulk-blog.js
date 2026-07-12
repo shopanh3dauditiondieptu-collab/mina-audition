@@ -1,5 +1,5 @@
 /**
- * MINA CMS BULK BLOG + MEDIA MANAGER v1.0.2
+ * MINA CMS BULK BLOG + MEDIA MANAGER v3.1.0
  * Add-on độc lập: không thay đổi postForm, admin.js hoặc cấu trúc dữ liệu bài viết hiện tại.
  *
  * Cài đặt:
@@ -16,17 +16,17 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
-console.info("[Mina Bulk Blog] Module v1.0.2 đã tải thành công.");
+console.info("[Mina Bulk Blog] Module v3.1.0 đã tải thành công.");
 
 const CONFIG = Object.freeze({
-  version: "1.0.2",
+  version: "3.1.0",
   cloudinaryCloudName: "rpwcnrfg",
   cloudinaryUploadPreset: "mina-upload",
   cloudinaryFolder: "mina-blog",
   maxImageMB: 12,
   uploadConcurrency: 3,
   publishConcurrency: 3,
-  maxRows: 3000
+  maxRows: 100
 });
 
 const state = {
@@ -137,7 +137,7 @@ function normalizeRow(row, index) {
     featured: boolValue(pick(row, "featured")),
     status: statusValue(pick(row, "status")),
     tags,
-    slug: text(pick(row, "slug")),
+    slug: text(pick(row, "slug")) || key(pick(row, "title")),
     cmsVersion: "mina-cms-bulk-blog-v1"
   };
 }
@@ -298,6 +298,7 @@ async function uploadNeededImages() {
   });
 }
 async function publishPosts() {
+  const currentBatchId = `excel_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const validRows = state.rows.filter(row => row.title && row.category && row.content && row.image);
   const progress = el("minaBulkProgress");
   let done = 0;
@@ -314,7 +315,9 @@ async function publishPosts() {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         importedAt: serverTimestamp(),
-        importSource: "excel"
+        importSource: "excel",
+        importBatchId: currentBatchId,
+        importRow: row._row
       });
       done++;
     } catch (error) {
