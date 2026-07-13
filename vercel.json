@@ -7,10 +7,6 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/api/wiki-skills",
-      "destination": "/database/master-skills.json"
-    },
-    {
       "source": "/wiki",
       "destination": "/wiki.html"
     },
@@ -64,6 +60,5 @@
         }
       ]
     }
-  ],
-  "functions": {}
+  ]
 }
