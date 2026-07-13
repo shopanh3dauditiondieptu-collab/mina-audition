@@ -1,12 +1,14 @@
 {
   "name": "mina-audition",
-  "version": "10.0.0",
+  "version": "10.1.0",
   "private": true,
   "engines": {
     "node": "20.x"
   },
   "scripts": {
     "generate:seo": "node scripts/generate-sitemap.mjs",
-    "build": "node scripts/build-site.mjs"
+    "build": "node scripts/build-site.mjs",
+    "validate": "node scripts/validate-build.mjs",
+    "test": "npm run build && npm run validate"
   }
 }
