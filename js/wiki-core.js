@@ -237,55 +237,59 @@
     }
   }
 
+  function extractSkills(payload) {
+    if (Array.isArray(payload)) return payload;
+    if (payload && Array.isArray(payload.skills)) return payload.skills;
+    return [];
+  }
+
+  async function requestJson(url) {
+    const response = await fetchWithTimeout(`${url}${url.includes("?") ? "&" : "?"}v=${Date.now()}`, {
+      cache: "no-store",
+      headers: { Accept: "application/json" }
+    });
+
+    let payload;
+    try {
+      payload = await response.json();
+    } catch {
+      throw new Error(`Dữ liệu không hợp lệ từ ${url} (HTTP ${response.status})`);
+    }
+
+    if (!response.ok || payload?.ok === false) {
+      throw new Error(payload?.error || payload?.message || `HTTP ${response.status} tại ${url}`);
+    }
+
+    return extractSkills(payload);
+  }
+
   async function requestSkills() {
-    let lastError;
+    const sources = [
+      API_URL,
+      "/database/master-skills.json",
+      "/database/wiki-skills.json",
+      "/data/skills.json"
+    ];
 
-    for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
-      try {
-        const response = await fetchWithTimeout(
-          `${API_URL}?v=${Date.now()}`,
-          {
-            cache: "no-store",
-            headers: {
-              Accept: "application/json"
-            }
-          }
-        );
+    const errors = [];
 
-        let payload;
-
+    for (const source of sources) {
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt += 1) {
         try {
-          payload = await response.json();
-        } catch {
-          throw new Error(
-            `API trả về dữ liệu không hợp lệ (HTTP ${response.status})`
-          );
-        }
-
-        if (!response.ok || payload.ok === false) {
-          throw new Error(
-            payload.error ||
-            payload.message ||
-            `Không tải được Skill (HTTP ${response.status})`
-          );
-        }
-
-        return Array.isArray(payload)
-          ? payload
-          : Array.isArray(payload.skills)
-            ? payload.skills
-            : [];
-      } catch (error) {
-        lastError = error;
-
-        if (attempt < MAX_RETRIES) {
-          await delay(350 * (attempt + 1));
-          continue;
+          const skills = await requestJson(source);
+          if (skills.length > 0 || source === API_URL) return skills;
+          throw new Error(`Nguồn ${source} không có dữ liệu Skill`);
+        } catch (error) {
+          errors.push(`${source}: ${error.message}`);
+          if (attempt < MAX_RETRIES) {
+            await delay(350 * (attempt + 1));
+            continue;
+          }
         }
       }
     }
 
-    throw lastError || new Error("Không tải được dữ liệu Skill.");
+    throw new Error(`Không tải được dữ liệu Skill. ${errors.join(" | ")}`);
   }
 
   async function loadSkills(force = false) {
