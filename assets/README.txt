@@ -1,1 +1,0 @@
-Đặt logo, icon, ảnh đại diện của Mina tại đây nếu muốn thay sau.
