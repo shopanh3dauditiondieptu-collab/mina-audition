@@ -2,6 +2,9 @@ User-agent: *
 Allow: /
 
 Disallow: /admin.html
+Disallow: /admin-login.html
 Disallow: /admin-wiki.html
+Disallow: /api/
+Disallow: /database/
 
-Sitemap: https://www.minaaudition.vn/sitemap.xml
+Sitemap: https://minaaudition.vn/sitemap.xml
