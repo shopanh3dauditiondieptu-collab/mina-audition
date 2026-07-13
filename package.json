@@ -1,14 +1,7 @@
 {
-  "name": "mina-audition",
-  "version": "11.0.0",
+  "name": "mina-clean-rebuild",
+  "version": "1.0.0",
   "private": true,
-  "engines": {
-    "node": "20.x"
-  },
-  "scripts": {
-    "generate:seo": "node scripts/generate-sitemap.mjs",
-    "build": "node scripts/build-site.mjs",
-    "validate": "node scripts/validate-build.mjs",
-    "test": "npm run build && npm run validate"
-  }
+  "engines": {"node": "20.x"},
+  "scripts": {"build": "node scripts/build.mjs"}
 }
