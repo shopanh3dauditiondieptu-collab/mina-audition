@@ -1,6 +1,6 @@
 {
   "name": "mina-audition",
-  "version": "8.0.0",
+  "version": "8.1.0",
   "private": true,
   "engines": {
     "node": ">=20"
@@ -8,7 +8,7 @@
   "scripts": {
     "generate:seo": "node scripts/generate-sitemap.mjs",
     "generate:sitemap": "node scripts/generate-sitemap.mjs",
-    "build": "npm run validate:v8 && node scripts/build-site.mjs",
-    "validate:v8": "node scripts/validate-v8.mjs"
+    "validate:v8": "node scripts/validate-v8.mjs",
+    "build": "npm run validate:v8 && node scripts/build-site.mjs"
   }
 }
