@@ -34,15 +34,6 @@
       ]
     },
     {
-      "source": "/database/wiki-skills.json",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        }
-      ]
-    },
-    {
       "source": "/(sitemap.*\\.xml|rss\\.xml|feed.*\\.json|robots\\.txt)",
       "headers": [
         {
@@ -59,6 +50,29 @@
           "value": "noindex, nofollow"
         }
       ]
+    },
+    {
+      "source": "/database/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(post|wiki)\\.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
     }
-  ]
+  ],
+  "functions": {
+    "api/wiki-skills.js": {
+      "includeFiles": "database/master-skills.json"
+    }
+  }
 }
