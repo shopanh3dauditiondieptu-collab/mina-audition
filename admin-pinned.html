@@ -1,0 +1,65 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Quản lý bài viết ghim - Mina Audition</title>  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="/css/mina-blog-cms-pro.css?v=1.0.0">
+  <link rel="stylesheet" href="/css/mina-cms-v3-stable.css?v=3.0.0">
+  <link rel="stylesheet" href="/css/mina-cms-v3.1.1-fix.css?v=3.1.1">
+  <link rel="stylesheet" href="/css/mina-cms-v4-category-service.css?v=4.0.0">
+  <link rel="stylesheet" href="/css/mina-category-collapse-v4.1.css?v=4.1.0">
+  <link rel="stylesheet" href="/css/mina-featured-posts-v5.css?v=5.0.0">
+  <link rel="stylesheet" href="/css/mina-admin-pages-v3.2.css?v=3.2.0"></head>
+<body data-admin-page="pinned">  <section id="loginBox" class="login-box">
+    <div class="login-card">
+      <div class="eyebrow">Mina Audition CMS</div><h1>Đăng nhập Admin</h1>
+      <p class="muted">Chỉ tài khoản quản trị mới có quyền truy cập.</p>
+      <form id="loginForm"><label>Email</label><input type="email" id="loginEmail" required>
+      <label>Mật khẩu</label><input type="password" id="loginPassword" required>
+      <button type="submit">Đăng nhập</button></form><p id="loginMessage" class="login-message"></p>
+    </div>
+  </section><main id="adminApp" class="admin hidden mina-admin-app"><button class="mina-menu-toggle" id="minaMenuToggle" type="button">☰ Menu quản trị</button>
+<aside class="mina-admin-sidebar" id="minaAdminSidebar">
+  <div class="mina-sidebar-brand"><strong>MINA CMS</strong><small>Admin v3.2</small></div>
+  <nav>
+    <a href="/admin.html" data-admin-page="dashboard">🏠 Tổng quan</a>
+    <a href="/admin-bulk.html" data-admin-page="bulk">📦 Đăng hàng loạt</a>
+    <a href="/admin-post.html" data-admin-page="post">✍️ Đăng thủ công</a>
+    <a href="/admin-categories.html" data-admin-page="categories">📂 Danh mục CMS</a>
+    <a href="/admin-posts.html" data-admin-page="posts">📝 Quản lý bài viết</a>
+    <a href="/admin-pinned.html" data-admin-page="pinned">📌 Bài viết ghim</a>
+  </nav>
+  <div class="mina-sidebar-bottom"><a href="/">🌐 Xem website</a><button id="logoutBtn" type="button">🚪 Đăng xuất</button></div>
+</aside><div class="mina-admin-content"><header class="admin-header mina-page-header"><div><div class="eyebrow">Mina Audition CMS</div><h1>Quản lý bài viết ghim</h1><p class="muted">Chọn tối đa 8 bài và sắp xếp vị trí hiển thị trên trang chủ.</p><p id="adminEmail" class="muted small-text"></p></div><div class="top-actions"><a href="/" class="home-link">Về trang chủ</a></div></header>    <section class="panel mina-featured-manager" id="featuredPostsManager">
+      <div class="panel-title">
+        <div>
+          <h2>📌 Bài viết ghim trên Trang Chủ</h2>
+          <p class="muted">
+            Chọn tối đa 8 bài và sắp xếp vị trí. Bài mới đăng sẽ không tự thay đổi khu vực này.
+          </p>
+        </div>
+
+        <div class="mina-featured-counter">
+          <strong id="featuredCount">0 / 8</strong>
+          <span>đang ghim</span>
+        </div>
+      </div>
+
+      <div class="mina-featured-toolbar">
+        <input
+          type="text"
+          id="featuredSearch"
+          class="search-input"
+          placeholder="Tìm tiêu đề hoặc ID bài viết..."
+        >
+
+        <button type="button" id="reloadFeaturedPosts" class="secondary-btn">
+          Tải lại
+        </button>
+
+        <button type="button" id="saveFeaturedPosts">
+          Lưu danh sách ghim
+        </button>
+      </div>
+
+      <p id="featuredManagerMessage" class="muted"></p>
+      <div id="featuredPostsList" class="mina-featured-list"></div>
+    </section>
+</div></main>
+<script type="module" src="/js/admin.js?v=3.2.0"></script><script src="/js/mina-admin-shell-v3.2.js?v=3.2.0"></script><script type="module" src="/js/admin-featured-posts.js?v=5.0.0"></script></body></html>

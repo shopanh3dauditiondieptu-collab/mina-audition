@@ -1,290 +1,41 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Mina Audition</title>
-  <link rel="icon" href="images/favicon.png">
-  <link rel="stylesheet" href="css/admin.css">
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Trang tổng quan - Mina Audition</title>  <link rel="stylesheet" href="css/admin.css">
   <link rel="stylesheet" href="/css/mina-blog-cms-pro.css?v=1.0.0">
   <link rel="stylesheet" href="/css/mina-cms-v3-stable.css?v=3.0.0">
   <link rel="stylesheet" href="/css/mina-cms-v3.1.1-fix.css?v=3.1.1">
   <link rel="stylesheet" href="/css/mina-cms-v4-category-service.css?v=4.0.0">
   <link rel="stylesheet" href="/css/mina-category-collapse-v4.1.css?v=4.1.0">
   <link rel="stylesheet" href="/css/mina-featured-posts-v5.css?v=5.0.0">
-</head>
-
-<body>
-  <!-- LOGIN -->
-  <section id="loginBox" class="login-box">
+  <link rel="stylesheet" href="/css/mina-admin-pages-v3.2.css?v=3.2.0"></head>
+<body data-admin-page="dashboard">  <section id="loginBox" class="login-box">
     <div class="login-card">
-      <div class="eyebrow">Mina Audition CMS</div>
-      <h1>Đăng nhập Admin</h1>
-      <p class="muted">Chỉ tài khoản quản trị mới có quyền đăng bài.</p>
-
-      <form id="loginForm">
-        <label>Email</label>
-        <input type="email" id="loginEmail" placeholder="Nhập email admin" required>
-
-        <label>Mật khẩu</label>
-        <input type="password" id="loginPassword" placeholder="Nhập mật khẩu" required>
-
-        <button type="submit">Đăng nhập</button>
-      </form>
-
-      <p id="loginMessage" class="login-message"></p>
+      <div class="eyebrow">Mina Audition CMS</div><h1>Đăng nhập Admin</h1>
+      <p class="muted">Chỉ tài khoản quản trị mới có quyền truy cập.</p>
+      <form id="loginForm"><label>Email</label><input type="email" id="loginEmail" required>
+      <label>Mật khẩu</label><input type="password" id="loginPassword" required>
+      <button type="submit">Đăng nhập</button></form><p id="loginMessage" class="login-message"></p>
     </div>
-  </section>
-
-  <!-- ADMIN APP -->
-  <main id="adminApp" class="admin hidden">
-
-    <!-- HEADER -->
-    <header class="admin-header">
-      <div>
-        <div class="eyebrow">Mina Audition CMS</div>
-        <h1>Trang quản trị</h1>
-        <p class="muted">Quản lý bài viết, hình ảnh và nội dung website Mina.</p>
-        <p id="adminEmail" class="muted small-text"></p>
-      </div>
-
-      <div class="top-actions">
-        <a href="#featuredPostsManager" class="home-link">Quản lý bài ghim</a>
-        <a href="/" class="home-link">Về trang chủ</a>
-        <button id="logoutBtn" type="button">Đăng xuất</button>
-      </div>
-    </header>
-
-    <!-- DASHBOARD -->
-    <section class="dashboard-grid">
-      <div class="stat-card">
-        <span class="stat-icon">📝</span>
-        <div>
-          <strong id="totalPosts">0</strong>
-          <p>Bài viết</p>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <span class="stat-icon">⭐</span>
-        <div>
-          <strong>Skill</strong>
-          <p>Nội dung review</p>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <span class="stat-icon">📌</span>
-        <div>
-          <strong>Nổi bật</strong>
-          <p>Bài ghim trang chủ</p>
-        </div>
-      </div>
-
-      <div class="stat-card">
-        <span class="stat-icon">👁</span>
-        <div>
-          <strong>Public</strong>
-          <p>Người dùng chỉ xem</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- CONTENT LAYOUT -->
-    <section class="admin-layout">
-
-      <!-- FORM POST -->
-      <section class="panel post-editor">
-        <div class="panel-title">
-          <div>
-            <h2>Đăng bài viết</h2>
-            <p class="muted">Tạo nội dung mới cho website Mina Audition.</p>
-          </div>
-        </div>
-
-        <form id="postForm">
-          <input type="hidden" id="editIndex">
-
-          <div class="form-grid">
-            <div>
-              <label>Tiêu đề</label>
-              <input type="text" id="title" placeholder="Ví dụ: Review Skill Audition đẹp nhất tuần">
-            </div>
-
-            <div>
-              <label>Danh mục</label>
-              <input type="text" id="category" placeholder="Review Skill / Mix Match / D8 Team">
-            </div>
-          </div>
-
-          <label>Link ảnh đại diện</label>
-          <input type="text" id="image" placeholder="images/ten-anh.png hoặc link ảnh Firebase">
-          <label>Chọn ảnh từ máy tính</label>
-
-<input
-  type="file"
-  id="imageFile"
-  accept="image/*">
-
-<p id="uploadMessage" class="muted"></p>
-
-<img
-  id="imagePreview"
-  style="
-    display:none;
-    max-width:220px;
-    margin-top:12px;
-    border-radius:16px;
-    border:1px solid rgba(255,255,255,.15);
-  ">
-
-          <label>Mô tả ngắn</label>
-          <textarea id="desc" rows="3" placeholder="Viết mô tả ngắn hiển thị ngoài trang chủ"></textarea>
-
-          <label>Nội dung bài viết</label>
-
-          <div class="block-editor">
-            <div class="block-toolbar">
-              <button type="button" id="addTextBlock" class="secondary-btn">+ Đoạn văn</button>
-              <button type="button" id="addImageBlock" class="secondary-btn">+ Ảnh</button>
-              <button type="button" id="addYoutubeBlock" class="secondary-btn">+ Video YouTube</button>
-              <button type="button" id="addQuoteBlock" class="secondary-btn">+ Trích dẫn</button>
-            </div>
-
-            <p class="muted small-text">
-              Bạn có thể sắp xếp bài viết theo dạng: Đoạn văn → Ảnh → Đoạn văn → Video → Đoạn văn.
-            </p>
-
-            <div id="contentBlocks" class="content-blocks"></div>
-
-            <textarea
-              id="content"
-              class="hidden"
-              rows="9"
-              placeholder="Nội dung dự phòng cho bài viết cũ"></textarea>
-          </div>
-
-          <div class="form-grid">
-            <div>
-    <label>🔗 Liên kết bài viết (Facebook / YouTube / TikTok)</label>
-
-    <input
-        type="url"
-        id="link"
-        placeholder="https://www.facebook.com/share/p/..."
-        autocomplete="off"
-    >
-
-    <small class="field-note">
-  Dán link Facebook của bài viết. Website Mina sẽ tự hiển thị nút
-  <strong>Xem bài viết Facebook</strong>.
-</small>
-</div>
-            <div>
-              <label>Trạng thái</label>
-              <select id="status">
-                <option value="published">Đăng công khai</option>
-                <option value="draft">Lưu nháp</option>
-              </select>
-            </div>
-          </div>
-
-          <label class="checkbox-row">
-            <input type="checkbox" id="featured">
-            <span>Ghim bài này làm bài nổi bật</span>
-          </label>
-
-          <div class="actions">
-            <button type="submit">Lưu bài viết</button>
-            <button type="button" id="resetBtn" class="secondary-btn">Làm mới</button>
-          </div>
-        </form>
-      </section>
-
-      <!-- QUICK GUIDE -->
-      <aside class="panel side-panel">
-        <h2>Gợi ý nội dung Mina</h2>
-
-        <div class="guide-item">
-          <strong>Review Skill</strong>
-          <p>Ảnh skill rõ, tiêu đề có ID skill, thêm nhận xét đẹp/hiếm/dễ phối.</p>
-        </div>
-
-        <div class="guide-item">
-          <strong>Mix & Match</strong>
-          <p>Gợi ý outfit, tone màu, phong cách nhân vật và caption đăng mạng xã hội.</p>
-        </div>
-
-        <div class="guide-item">
-          <strong>D8 Team</strong>
-          <p>Chia sẻ video, đội hình, khoảnh khắc fam và playlist YouTube.</p>
-        </div>
-
-        <div class="guide-item">
-          <strong>Ảnh bài viết</strong>
-          <p>Nên dùng ảnh ngang hoặc vuông, dung lượng nhẹ để web tải nhanh.</p>
-        </div>
-      </aside>
-
-    </section>
-
-    <!-- POST LIST -->
-    <section class="panel">
-      <div class="panel-title">
-        <div>
-          <h2>Danh sách bài viết</h2>
-          <p class="muted">Quản lý, sửa hoặc xoá bài đã đăng.</p>
-        </div>
-
-        <input type="text" id="searchPost" class="search-input" placeholder="Tìm bài viết...">
-      </div>
-
-      <div id="postList" class="post-list"></div>
-    </section>
-
-
-    <!-- FEATURED POSTS MANAGER - ĐƯA XUỐNG CUỐI TRANG ĐỂ KHÔNG CẢN TRỞ ĐĂNG BÀI -->
-<!-- FEATURED POSTS MANAGER -->
-    <section class="panel mina-featured-manager" id="featuredPostsManager">
-      <div class="panel-title">
-        <div>
-          <h2>📌 Bài viết ghim trên Trang Chủ</h2>
-          <p class="muted">
-            Chọn tối đa 8 bài và sắp xếp vị trí. Bài mới đăng sẽ không tự thay đổi khu vực này.
-          </p>
-        </div>
-
-        <div class="mina-featured-counter">
-          <strong id="featuredCount">0 / 8</strong>
-          <span>đang ghim</span>
-        </div>
-      </div>
-
-      <div class="mina-featured-toolbar">
-        <input
-          type="text"
-          id="featuredSearch"
-          class="search-input"
-          placeholder="Tìm tiêu đề hoặc ID bài viết..."
-        >
-
-        <button type="button" id="reloadFeaturedPosts" class="secondary-btn">
-          Tải lại
-        </button>
-
-        <button type="button" id="saveFeaturedPosts">
-          Lưu danh sách ghim
-        </button>
-      </div>
-
-      <p id="featuredManagerMessage" class="muted"></p>
-      <div id="featuredPostsList" class="mina-featured-list"></div>
-    </section>
-
-  </main>
-  <script type="module" src="/js/admin.js?v=3.1.0"></script>
-  <script type="module" src="/js/admin-featured-posts.js?v=5.0.0"></script>
-  <script type="module" src="/js/mina-bulk-blog.js?v=3.1.0"></script>
-  <script src="/js/mina-category-collapse-v4.1.js?v=4.1.0"></script>
-</body>
-</html>
+  </section><main id="adminApp" class="admin hidden mina-admin-app"><button class="mina-menu-toggle" id="minaMenuToggle" type="button">☰ Menu quản trị</button>
+<aside class="mina-admin-sidebar" id="minaAdminSidebar">
+  <div class="mina-sidebar-brand"><strong>MINA CMS</strong><small>Admin v3.2</small></div>
+  <nav>
+    <a href="/admin.html" data-admin-page="dashboard">🏠 Tổng quan</a>
+    <a href="/admin-bulk.html" data-admin-page="bulk">📦 Đăng hàng loạt</a>
+    <a href="/admin-post.html" data-admin-page="post">✍️ Đăng thủ công</a>
+    <a href="/admin-categories.html" data-admin-page="categories">📂 Danh mục CMS</a>
+    <a href="/admin-posts.html" data-admin-page="posts">📝 Quản lý bài viết</a>
+    <a href="/admin-pinned.html" data-admin-page="pinned">📌 Bài viết ghim</a>
+  </nav>
+  <div class="mina-sidebar-bottom"><a href="/">🌐 Xem website</a><button id="logoutBtn" type="button">🚪 Đăng xuất</button></div>
+</aside><div class="mina-admin-content"><header class="admin-header mina-page-header"><div><div class="eyebrow">Mina Audition CMS</div><h1>Trang tổng quan</h1><p class="muted">Chọn đúng khu vực cần quản lý. Dữ liệu bài viết hiện tại được giữ nguyên.</p><p id="adminEmail" class="muted small-text"></p></div><div class="top-actions"><a href="/" class="home-link">Về trang chủ</a></div></header><section class="dashboard-grid">
+<div class="stat-card"><span class="stat-icon">📝</span><div><strong id="totalPosts">0</strong><p>Bài viết hiện có</p></div></div>
+<div class="stat-card"><span class="stat-icon">📦</span><div><strong>Excel</strong><p>Đăng hàng loạt</p></div></div>
+<div class="stat-card"><span class="stat-icon">📌</span><div><strong>8</strong><p>Vị trí ghim tối đa</p></div></div>
+<div class="stat-card"><span class="stat-icon">👁</span><div><strong>Public</strong><p>Website đang hoạt động</p></div></div></section>
+<section class="mina-module-grid">
+<a class="mina-module-card" href="/admin-bulk.html"><span>📦</span><h2>Đăng bài hàng loạt</h2><p>Nhập Excel, ghép ảnh và đăng nhiều bài.</p></a>
+<a class="mina-module-card" href="/admin-post.html"><span>✍️</span><h2>Đăng bài thủ công</h2><p>Tạo một bài viết với trình soạn thảo đầy đủ.</p></a>
+<a class="mina-module-card" href="/admin-categories.html"><span>📂</span><h2>Quản lý danh mục</h2><p>Thêm, xóa và đồng bộ danh mục Mina Blog.</p></a>
+<a class="mina-module-card" href="/admin-posts.html"><span>📝</span><h2>Quản lý bài viết</h2><p>Tìm kiếm, xem, sửa hoặc xóa bài đã đăng.</p></a>
+<a class="mina-module-card" href="/admin-pinned.html"><span>📌</span><h2>Quản lý bài ghim</h2><p>Chọn tối đa 8 bài và sắp xếp vị trí.</p></a>
+<a class="mina-module-card" href="/admin-wiki.html"><span>⭐</span><h2>Admin Wiki Skill</h2><p>Quản lý dữ liệu Wikipedia Skill Dance.</p></a></section></div></main>
+<script type="module" src="/js/admin.js?v=3.2.0"></script><script src="/js/mina-admin-shell-v3.2.js?v=3.2.0"></script></body></html>

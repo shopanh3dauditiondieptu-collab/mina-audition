@@ -1,0 +1,137 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Đăng bài viết thủ công - Mina Audition</title>  <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" href="/css/mina-blog-cms-pro.css?v=1.0.0">
+  <link rel="stylesheet" href="/css/mina-cms-v3-stable.css?v=3.0.0">
+  <link rel="stylesheet" href="/css/mina-cms-v3.1.1-fix.css?v=3.1.1">
+  <link rel="stylesheet" href="/css/mina-cms-v4-category-service.css?v=4.0.0">
+  <link rel="stylesheet" href="/css/mina-category-collapse-v4.1.css?v=4.1.0">
+  <link rel="stylesheet" href="/css/mina-featured-posts-v5.css?v=5.0.0">
+  <link rel="stylesheet" href="/css/mina-admin-pages-v3.2.css?v=3.2.0"></head>
+<body data-admin-page="post">  <section id="loginBox" class="login-box">
+    <div class="login-card">
+      <div class="eyebrow">Mina Audition CMS</div><h1>Đăng nhập Admin</h1>
+      <p class="muted">Chỉ tài khoản quản trị mới có quyền truy cập.</p>
+      <form id="loginForm"><label>Email</label><input type="email" id="loginEmail" required>
+      <label>Mật khẩu</label><input type="password" id="loginPassword" required>
+      <button type="submit">Đăng nhập</button></form><p id="loginMessage" class="login-message"></p>
+    </div>
+  </section><main id="adminApp" class="admin hidden mina-admin-app"><button class="mina-menu-toggle" id="minaMenuToggle" type="button">☰ Menu quản trị</button>
+<aside class="mina-admin-sidebar" id="minaAdminSidebar">
+  <div class="mina-sidebar-brand"><strong>MINA CMS</strong><small>Admin v3.2</small></div>
+  <nav>
+    <a href="/admin.html" data-admin-page="dashboard">🏠 Tổng quan</a>
+    <a href="/admin-bulk.html" data-admin-page="bulk">📦 Đăng hàng loạt</a>
+    <a href="/admin-post.html" data-admin-page="post">✍️ Đăng thủ công</a>
+    <a href="/admin-categories.html" data-admin-page="categories">📂 Danh mục CMS</a>
+    <a href="/admin-posts.html" data-admin-page="posts">📝 Quản lý bài viết</a>
+    <a href="/admin-pinned.html" data-admin-page="pinned">📌 Bài viết ghim</a>
+  </nav>
+  <div class="mina-sidebar-bottom"><a href="/">🌐 Xem website</a><button id="logoutBtn" type="button">🚪 Đăng xuất</button></div>
+</aside><div class="mina-admin-content"><header class="admin-header mina-page-header"><div><div class="eyebrow">Mina Audition CMS</div><h1>Đăng bài viết thủ công</h1><p class="muted">Tạo mới hoặc chỉnh sửa từng bài viết mà không ảnh hưởng dữ liệu cũ.</p><p id="adminEmail" class="muted small-text"></p></div><div class="top-actions"><a href="/" class="home-link">Về trang chủ</a></div></header><section class="admin-layout mina-single-column"><section class="panel post-editor">
+        <div class="panel-title">
+          <div>
+            <h2>Đăng bài viết</h2>
+            <p class="muted">Tạo nội dung mới cho website Mina Audition.</p>
+          </div>
+        </div>
+
+        <form id="postForm">
+          <input type="hidden" id="editIndex">
+
+          <div class="form-grid">
+            <div>
+              <label>Tiêu đề</label>
+              <input type="text" id="title" placeholder="Ví dụ: Review Skill Audition đẹp nhất tuần">
+            </div>
+
+            <div>
+              <label>Danh mục</label>
+              <input type="text" id="category" placeholder="Review Skill / Mix Match / D8 Team">
+            </div>
+          </div>
+
+          <label>Link ảnh đại diện</label>
+          <input type="text" id="image" placeholder="images/ten-anh.png hoặc link ảnh Firebase">
+          <label>Chọn ảnh từ máy tính</label>
+
+<input
+  type="file"
+  id="imageFile"
+  accept="image/*">
+
+<p id="uploadMessage" class="muted"></p>
+
+<img
+  id="imagePreview"
+  style="
+    display:none;
+    max-width:220px;
+    margin-top:12px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.15);
+  ">
+
+          <label>Mô tả ngắn</label>
+          <textarea id="desc" rows="3" placeholder="Viết mô tả ngắn hiển thị ngoài trang chủ"></textarea>
+
+          <label>Nội dung bài viết</label>
+
+          <div class="block-editor">
+            <div class="block-toolbar">
+              <button type="button" id="addTextBlock" class="secondary-btn">+ Đoạn văn</button>
+              <button type="button" id="addImageBlock" class="secondary-btn">+ Ảnh</button>
+              <button type="button" id="addYoutubeBlock" class="secondary-btn">+ Video YouTube</button>
+              <button type="button" id="addQuoteBlock" class="secondary-btn">+ Trích dẫn</button>
+            </div>
+
+            <p class="muted small-text">
+              Bạn có thể sắp xếp bài viết theo dạng: Đoạn văn → Ảnh → Đoạn văn → Video → Đoạn văn.
+            </p>
+
+            <div id="contentBlocks" class="content-blocks"></div>
+
+            <textarea
+              id="content"
+              class="hidden"
+              rows="9"
+              placeholder="Nội dung dự phòng cho bài viết cũ"></textarea>
+          </div>
+
+          <div class="form-grid">
+            <div>
+    <label>🔗 Liên kết bài viết (Facebook / YouTube / TikTok)</label>
+
+    <input
+        type="url"
+        id="link"
+        placeholder="https://www.facebook.com/share/p/..."
+        autocomplete="off"
+    >
+
+    <small class="field-note">
+  Dán link Facebook của bài viết. Website Mina sẽ tự hiển thị nút
+  <strong>Xem bài viết Facebook</strong>.
+</small>
+</div>
+            <div>
+              <label>Trạng thái</label>
+              <select id="status">
+                <option value="published">Đăng công khai</option>
+                <option value="draft">Lưu nháp</option>
+              </select>
+            </div>
+          </div>
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="featured">
+            <span>Ghim bài này làm bài nổi bật</span>
+          </label>
+
+          <div class="actions">
+            <button type="submit">Lưu bài viết</button>
+            <button type="button" id="resetBtn" class="secondary-btn">Làm mới</button>
+          </div>
+        </form>
+      </section>
+
+</section></div></main>
+<script type="module" src="/js/admin.js?v=3.2.0"></script><script src="/js/mina-admin-shell-v3.2.js?v=3.2.0"></script><script src="/js/mina-category-collapse-v4.1.js?v=4.1.0"></script></body></html>
