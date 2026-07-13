@@ -7,14 +7,6 @@
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/favicon.ico",
-      "destination": "/images/logo-mina.png"
-    },
-    {
-      "source": "/images/logo.png",
-      "destination": "/images/logo-mina.png"
-    },
-    {
       "source": "/wiki",
       "destination": "/wiki.html"
     },
