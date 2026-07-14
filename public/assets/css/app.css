@@ -786,3 +786,135 @@ body[data-page="home"] .latest-section {
     height: 150px;
   }
 }
+/* =========================================================
+   HERO HEIGHT FIX v2
+   Thu gọn Hero thêm ~10% nhưng vẫn giữ bố cục đẹp
+   ========================================================= */
+
+:root{
+    --hero-height: 620px;
+}
+
+/* Hero */
+.hero,
+.hero-section,
+.hero-banner{
+    min-height: var(--hero-height) !important;
+    height: var(--hero-height) !important;
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
+    display:flex;
+    align-items:center;
+    overflow:hidden;
+}
+
+/* Container */
+.hero .container,
+.hero-section .container,
+.hero-banner .container{
+    min-height:100%;
+    display:flex;
+    align-items:center;
+}
+
+/* Hai cột cân giữa */
+.hero-left,
+.hero-right{
+    display:flex;
+    justify-content:center;
+    flex-direction:column;
+}
+
+/* Thu nhỏ logo bên phải nhẹ */
+.hero-right img,
+.hero-logo,
+.hero-image{
+    max-height:470px !important;
+    width:auto;
+    object-fit:contain;
+}
+
+/* Thu khoảng cách giữa các thành phần */
+.hero h1{
+    margin-bottom:16px !important;
+}
+
+.hero p{
+    margin:18px 0 26px !important;
+}
+
+.hero-buttons{
+    margin-top:24px !important;
+}
+
+/* Scroll icon */
+.hero-scroll{
+    bottom:16px !important;
+}
+
+/* Desktop lớn */
+@media (min-width:1600px){
+
+    :root{
+        --hero-height:660px;
+    }
+
+    .hero-right img,
+    .hero-logo,
+    .hero-image{
+        max-height:510px !important;
+    }
+
+}
+
+/* Laptop */
+@media (max-width:1366px){
+
+    :root{
+        --hero-height:590px;
+    }
+
+    .hero-right img,
+    .hero-logo,
+    .hero-image{
+        max-height:430px !important;
+    }
+
+}
+
+/* Tablet */
+@media (max-width:991px){
+
+    .hero,
+    .hero-section,
+    .hero-banner{
+        height:auto !important;
+        min-height:auto !important;
+        padding:70px 0 50px !important;
+    }
+
+    .hero-right img,
+    .hero-logo,
+    .hero-image{
+        max-height:360px !important;
+        margin-top:30px;
+    }
+
+}
+
+/* Mobile */
+@media (max-width:767px){
+
+    .hero,
+    .hero-section,
+    .hero-banner{
+        padding:60px 0 40px !important;
+    }
+
+    .hero-right img,
+    .hero-logo,
+    .hero-image{
+        max-height:280px !important;
+    }
+
+}
