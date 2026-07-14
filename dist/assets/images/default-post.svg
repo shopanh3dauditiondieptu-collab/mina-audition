@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#7df9ff"/><stop offset="1" stop-color="#ff4fd8"/></linearGradient></defs>
+  <rect width="1200" height="800" fill="#070817"/>
+  <circle cx="210" cy="160" r="260" fill="#ff4fd8" opacity=".25"/>
+  <circle cx="980" cy="170" r="260" fill="#7df9ff" opacity=".2"/>
+  <text x="80" y="360" fill="url(#g)" font-size="92" font-family="Arial" font-weight="900">Mina Audition</text>
+  <text x="85" y="450" fill="#fff" font-size="40" font-family="Arial" font-weight="700">Dance • Poppin • Audition VTC</text>
+  <text x="85" y="520" fill="#b9bdd8" font-size="28" font-family="Arial">Share Skill • Edit Video • 3D Audition</text>
+</svg>
