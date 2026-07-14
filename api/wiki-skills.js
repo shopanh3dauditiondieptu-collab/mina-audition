@@ -211,7 +211,7 @@ async function mutateDatabase(mutator, commitMessage, attempts = 3) {
   throw lastError;
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
       const { data } = await readDatabase();
