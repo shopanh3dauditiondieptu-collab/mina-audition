@@ -787,134 +787,121 @@ body[data-page="home"] .latest-section {
   }
 }
 /* =========================================================
-   HERO HEIGHT FIX v2
-   Thu gọn Hero thêm ~10% nhưng vẫn giữ bố cục đẹp
+   MINA AUDITION — FIX CHIỀU CAO HERO
+   Dán ở cuối file public/assets/css/app.css
    ========================================================= */
 
-:root{
-    --hero-height: 620px;
-}
+@media (min-width: 992px) {
 
-/* Hero */
-.hero,
-.hero-section,
-.hero-banner{
-    min-height: var(--hero-height) !important;
-    height: var(--hero-height) !important;
-    padding-top: 40px !important;
-    padding-bottom: 40px !important;
-    display:flex;
-    align-items:center;
-    overflow:hidden;
-}
+    .hero {
+        box-sizing: border-box !important;
 
-/* Container */
-.hero .container,
-.hero-section .container,
-.hero-banner .container{
-    min-height:100%;
-    display:flex;
-    align-items:center;
-}
+        height: 590px !important;
+        min-height: 590px !important;
+        max-height: 590px !important;
 
-/* Hai cột cân giữa */
-.hero-left,
-.hero-right{
-    display:flex;
-    justify-content:center;
-    flex-direction:column;
-}
+        padding-top: 20px !important;
+        padding-bottom: 20px !important;
 
-/* Thu nhỏ logo bên phải nhẹ */
-.hero-right img,
-.hero-logo,
-.hero-image{
-    max-height:470px !important;
-    width:auto;
-    object-fit:contain;
-}
-
-/* Thu khoảng cách giữa các thành phần */
-.hero h1{
-    margin-bottom:16px !important;
-}
-
-.hero p{
-    margin:18px 0 26px !important;
-}
-
-.hero-buttons{
-    margin-top:24px !important;
-}
-
-/* Scroll icon */
-.hero-scroll{
-    bottom:16px !important;
-}
-
-/* Desktop lớn */
-@media (min-width:1600px){
-
-    :root{
-        --hero-height:660px;
+        overflow: hidden !important;
     }
 
-    .hero-right img,
-    .hero-logo,
-    .hero-image{
-        max-height:510px !important;
+    .hero-inner,
+    .hero .container {
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: 100% !important;
+
+        display: flex !important;
+        align-items: center !important;
     }
 
+    .hero-copy,
+    .hero-content {
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
+
+    .hero-visual {
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: 550px !important;
+
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .hero-visual img,
+    .hero-image,
+    .hero-logo {
+        width: auto !important;
+        max-width: 100% !important;
+        max-height: 470px !important;
+        object-fit: contain !important;
+    }
+
+    .hero-scroll,
+    .scroll-indicator,
+    .scroll-down {
+        bottom: 10px !important;
+    }
 }
 
-/* Laptop */
-@media (max-width:1366px){
+/* Màn hình laptop thấp giống ảnh của bạn */
+@media (min-width: 992px) and (max-height: 850px) {
 
-    :root{
-        --hero-height:590px;
+    .hero {
+        height: 550px !important;
+        min-height: 550px !important;
+        max-height: 550px !important;
     }
 
-    .hero-right img,
-    .hero-logo,
-    .hero-image{
-        max-height:430px !important;
+    .hero-visual {
+        max-height: 510px !important;
     }
 
+    .hero-visual img,
+    .hero-image,
+    .hero-logo {
+        max-height: 430px !important;
+    }
 }
 
-/* Tablet */
-@media (max-width:991px){
+/* Tablet và mobile: để nội dung tự giãn, tránh bị cắt */
+@media (max-width: 991px) {
 
-    .hero,
-    .hero-section,
-    .hero-banner{
-        height:auto !important;
-        min-height:auto !important;
-        padding:70px 0 50px !important;
+    .hero {
+        box-sizing: border-box !important;
+
+        height: auto !important;
+        min-height: auto !important;
+        max-height: none !important;
+
+        padding-top: 60px !important;
+        padding-bottom: 45px !important;
+
+        overflow: hidden !important;
     }
 
-    .hero-right img,
-    .hero-logo,
-    .hero-image{
-        max-height:360px !important;
-        margin-top:30px;
+    .hero-inner,
+    .hero .container {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
     }
 
-}
-
-/* Mobile */
-@media (max-width:767px){
-
-    .hero,
-    .hero-section,
-    .hero-banner{
-        padding:60px 0 40px !important;
+    .hero-visual {
+        height: auto !important;
+        max-height: none !important;
     }
 
-    .hero-right img,
-    .hero-logo,
-    .hero-image{
-        max-height:280px !important;
+    .hero-visual img,
+    .hero-image,
+    .hero-logo {
+        width: 100% !important;
+        height: auto !important;
+        max-height: 380px !important;
+        object-fit: contain !important;
     }
-
 }
