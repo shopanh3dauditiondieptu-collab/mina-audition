@@ -1,6 +1,6 @@
-import { db } from "./firebase.js";
-import { MINA_CONFIG } from "./config.js";
-import { withTimeout } from "./utils.js";
+import { db } from "./firebase.js?v=14.1.0";
+import { MINA_CONFIG } from "./config.js?v=14.1.0";
+import { withTimeout } from "./utils.js?v=14.1.0";
 import { collection, doc, getDoc, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 export async function getPostById(id) {
