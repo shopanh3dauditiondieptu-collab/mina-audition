@@ -3,7 +3,7 @@ import {
   formatDate,
   optimizeCloudinary,
   showFatal
-} from "./utils.js";
+} from "./utils.js?v=14.1.0";
 
 const root = document.getElementById("postDetail");
 
@@ -219,7 +219,7 @@ function renderBlocks(post = {}) {
 }
 
 async function loadRepository() {
-  const repository = await import("./repository.js");
+  const repository = await import("./repository.js?v=14.1.0");
 
   const reader =
     repository.getPostById ||
