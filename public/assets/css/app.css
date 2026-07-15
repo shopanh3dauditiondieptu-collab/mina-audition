@@ -1069,3 +1069,10 @@ body[data-page="home"] .hero-brand-title > small{
   }
 }
 
+
+/* =========================================================
+   MINA ADMIN — SMART LINK V1
+   ========================================================= */
+.admin-section{min-width:0}.admin-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}.form-grid label{display:grid;gap:7px;font-weight:700}.check-row{display:flex!important;align-items:center;gap:10px!important;align-self:end;min-height:48px}.check-row input{width:18px;height:18px}.table-actions{display:flex;gap:7px;flex-wrap:wrap}.btn.mini{padding:7px 10px;font-size:12px}.btn.danger{background:#8f2945;border-color:#b13b5c}.badge-off{opacity:.6}.preview code{display:inline-block;max-width:320px;overflow-wrap:anywhere;color:#c6b8ff}.metric-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}.metric-card{padding:18px;border:1px solid #34385f;border-radius:18px;background:#11132b}.metric-card span{display:block;color:#9da3bf;font-size:13px;margin-bottom:8px}.metric-card b{font-size:23px;color:#fff}.section-title{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.preview small{color:#9399b3}.preview table{min-width:850px}
+@media(max-width:1050px){.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){.metric-grid{grid-template-columns:1fr}.section-title{display:block}.section-title>.btn{margin-top:12px}.admin-shell{display:block}.sidebar{position:static;width:auto}.preview{overflow:auto}}
