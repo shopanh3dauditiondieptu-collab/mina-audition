@@ -1,13 +1,29 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
     match /posts/{id} {
       allow read: if resource.data.status != 'draft';
-      allow write: if request.auth != null;
+      allow write: if signedIn();
     }
+
     match /wikiSkills/{id} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if signedIn();
+    }
+
+    // Smart Link chỉ được quản trị từ tài khoản Firebase đã đăng nhập.
+    // API Vercel dùng Firebase Admin SDK nên không bị giới hạn bởi rule này.
+    match /smartLinks/{slug} {
+      allow read, write: if signedIn();
+    }
+
+    match /smartLinkClicks/{clickId} {
+      allow read: if signedIn();
+      allow write: if false;
     }
   }
 }
