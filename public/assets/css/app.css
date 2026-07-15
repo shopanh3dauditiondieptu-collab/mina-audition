@@ -992,3 +992,80 @@ body[data-page="home"] .latest-section {
         object-fit: contain !important;
     }
 }
+
+/* =========================================================
+   MINA AUDITION — HERO BRAND TITLE INLINE
+   - Xóa dòng phụ "MINA AUDITION • D8 TEAM" trong index.html
+   - Đặt AUDITION ngang hàng bên phải MINA
+   - AUDITION có kích thước xấp xỉ 1/3 MINA
+   - Không thay đổi các phần Hero còn lại
+   ========================================================= */
+
+body[data-page="home"] .hero-brand-title{
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:flex-end !important;
+  flex-wrap:nowrap !important;
+  gap:18px !important;
+  width:max-content !important;
+  margin:14px 0 8px !important;
+  line-height:.86 !important;
+}
+
+body[data-page="home"] .hero-brand-title > span{
+  flex:0 0 auto !important;
+  white-space:nowrap !important;
+}
+
+body[data-page="home"] .hero-brand-title > small{
+  flex:0 0 auto !important;
+  margin:0 0 12px 0 !important;
+  font-size:clamp(24px,2.55vw,38px) !important;
+  line-height:1 !important;
+  letter-spacing:-.035em !important;
+  white-space:nowrap !important;
+}
+
+/* Tablet */
+@media(max-width:980px){
+  body[data-page="home"] .hero-brand-title{
+    margin-left:auto !important;
+    margin-right:auto !important;
+    justify-content:center !important;
+    gap:14px !important;
+  }
+
+  body[data-page="home"] .hero-brand-title > small{
+    margin-bottom:9px !important;
+    font-size:clamp(22px,4.5vw,34px) !important;
+  }
+}
+
+/* Mobile */
+@media(max-width:760px){
+  body[data-page="home"] .hero-brand-title{
+    gap:10px !important;
+  }
+
+  body[data-page="home"] .hero-brand-title > small{
+    margin-top:0 !important;
+    margin-bottom:7px !important;
+    margin-left:0 !important;
+    font-size:clamp(18px,6vw,28px) !important;
+  }
+}
+
+/* Mobile nhỏ: cho phép xuống dòng nếu màn hình quá hẹp */
+@media(max-width:420px){
+  body[data-page="home"] .hero-brand-title{
+    flex-wrap:wrap !important;
+    row-gap:8px !important;
+  }
+
+  body[data-page="home"] .hero-brand-title > small{
+    width:100% !important;
+    margin-bottom:0 !important;
+    text-align:center !important;
+  }
+}
+
