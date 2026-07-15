@@ -1,1 +1,92 @@
-<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Excel | Mina Audition</title><link rel="stylesheet" href="/assets/css/app.css"><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script></head><body><header class="header"><div class="wrap nav"><a class="brand" href="/">Mina Audition Admin</a><nav class="links"><a href="/">Xem website</a><button id="logout" class="btn secondary">Đăng xuất</button></nav></div></header><main><section id="loginPanel" class="article"><h1>Đăng nhập Admin</h1><p class="muted">Dùng tài khoản Firebase Authentication của bạn.</p><form id="loginForm" class="form-grid"><input class="field full" name="email" type="email" placeholder="Email" required><input class="field full" name="password" type="password" placeholder="Mật khẩu" required><button class="btn full">Đăng nhập</button></form><div id="loginMessage" class="hidden"></div></section><section id="adminApp" class="admin-shell hidden"><aside class="sidebar"><h3>Nhập dữ liệu</h3><button class="btn" data-tab="blog">Blog Excel</button><button class="btn secondary" data-tab="wiki">Wiki Excel</button><hr style="border-color:#30345a"><a class="btn secondary" href="/templates/blog-import-template.xlsx" download>Tải mẫu Blog</a><a class="btn secondary" style="margin-top:8px" href="/templates/wiki-import-template.xlsx" download>Tải mẫu Wiki</a></aside><div class="admin-main"><div class="panel"><h1 id="typeTitle">Nhập bài Blog bằng Excel</h1><p class="muted">Hệ thống dùng ID hoặc tiêu đề/tên đã chuẩn hóa để nhận diện nội dung tương đồng. Dòng trùng sẽ được cập nhật thay vì tạo thêm bản sao.</p><div class="drop"><input id="file" type="file" accept=".xlsx,.xls"><p>Chọn file Excel theo mẫu.</p></div><div class="actions"><button id="importBtn" class="btn">Nhập dữ liệu</button><span id="count" class="muted"></span></div><div id="importMessage" class="hidden"></div></div><div class="panel"><h2>Xem trước</h2><div id="preview" class="preview"><div class="empty">Chưa có dữ liệu xem trước.</div></div></div></div></section></main><script type="module" src="/assets/js/admin.js?v=1.0.0"></script></body></html>
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Quản trị Mina Audition</title>
+  <link rel="stylesheet" href="/assets/css/app.css?v=2.2.0">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body data-page="admin">
+<header class="header">
+  <div class="wrap nav">
+    <a class="brand" href="/"><img src="/assets/images/logo-mina.png" alt=""><span>Mina Audition Admin</span></a>
+    <nav class="links"><a href="/">Xem website</a><button id="logout" class="btn secondary" type="button">Đăng xuất</button></nav>
+  </div>
+</header>
+<main>
+  <section id="loginPanel" class="article">
+    <h1>Đăng nhập Admin</h1>
+    <p class="muted">Dùng tài khoản Firebase Authentication của bạn.</p>
+    <form id="loginForm" class="form-grid">
+      <input class="field full" name="email" type="email" placeholder="Email" required>
+      <input class="field full" name="password" type="password" placeholder="Mật khẩu" required>
+      <button class="btn full">Đăng nhập</button>
+    </form>
+    <div id="loginMessage" class="hidden"></div>
+  </section>
+
+  <section id="adminApp" class="admin-shell hidden">
+    <aside class="sidebar">
+      <h3>Quản trị Mina</h3>
+      <button class="btn" data-section="import">Nhập dữ liệu</button>
+      <button class="btn secondary" data-section="smartlinks">Smart Link</button>
+      <button class="btn secondary" data-section="analytics">Thống kê click</button>
+      <hr style="border-color:#30345a">
+      <a class="btn secondary" href="/templates/blog-import-template.xlsx" download>Tải mẫu Blog</a>
+      <a class="btn secondary" style="margin-top:8px" href="/templates/wiki-import-template.xlsx" download>Tải mẫu Wiki</a>
+    </aside>
+
+    <div class="admin-main">
+      <section id="section-import" class="admin-section">
+        <div class="panel">
+          <div class="admin-tabs">
+            <button class="btn" data-import-tab="blog">Blog Excel</button>
+            <button class="btn secondary" data-import-tab="wiki">Wiki Excel</button>
+          </div>
+          <h1 id="typeTitle">Nhập bài Blog bằng Excel</h1>
+          <p class="muted">Hệ thống dùng ID hoặc tiêu đề/tên đã chuẩn hóa để nhận diện nội dung tương đồng.</p>
+          <div class="drop"><input id="file" type="file" accept=".xlsx,.xls"><p>Chọn file Excel theo mẫu.</p></div>
+          <div class="actions"><button id="importBtn" class="btn">Nhập dữ liệu</button><span id="count" class="muted"></span></div>
+          <div id="importMessage" class="hidden"></div>
+        </div>
+        <div class="panel"><h2>Xem trước</h2><div id="preview" class="preview"><div class="empty">Chưa có dữ liệu xem trước.</div></div></div>
+      </section>
+
+      <section id="section-smartlinks" class="admin-section hidden">
+        <div class="panel">
+          <div class="section-title"><div><span class="eyebrow">SMART LINK</span><h1>Quản lý liên kết chuyển hướng</h1></div></div>
+          <p class="muted">Tạo đường dẫn dạng <b>minaaudition.vn/go/AI-0007</b>, đổi URL đích bất cứ lúc nào và không phải sửa bài cũ.</p>
+          <form id="smartLinkForm" class="form-grid">
+            <input type="hidden" name="editingSlug">
+            <label>Tên nội bộ<input class="field" name="title" placeholder="Outfit AI-0007" required></label>
+            <label>Slug<input class="field" name="slug" placeholder="AI-0007" pattern="[A-Za-z0-9_-]+" required></label>
+            <label class="full">URL đích affiliate<input class="field full" name="targetUrl" type="url" placeholder="https://..." required></label>
+            <label>Mã bài<input class="field" name="postCode" placeholder="AI-0007"></label>
+            <label>Campaign<input class="field" name="campaign" placeholder="mix-match"></label>
+            <label>Nguồn mặc định<input class="field" name="defaultSource" placeholder="mina-outfit"></label>
+            <label class="check-row"><input name="active" type="checkbox" checked> Đang hoạt động</label>
+            <div class="actions full"><button class="btn" type="submit">Lưu Smart Link</button><button id="cancelSmartLink" class="btn secondary hidden" type="button">Hủy chỉnh sửa</button></div>
+          </form>
+          <div id="smartLinkMessage" class="hidden"></div>
+        </div>
+        <div class="panel">
+          <div class="section-title"><div><h2>Danh sách Smart Link</h2><p class="muted">Bấm sao chép để dùng trong bài Outfit hoặc Facebook.</p></div><button id="refreshSmartLinks" class="btn secondary" type="button">Làm mới</button></div>
+          <div id="smartLinksTable" class="preview"><div class="status">Đang tải…</div></div>
+        </div>
+      </section>
+
+      <section id="section-analytics" class="admin-section hidden">
+        <div class="panel">
+          <div class="section-title"><div><span class="eyebrow">ANALYTICS</span><h1>Thống kê Smart Link</h1></div><button id="refreshAnalytics" class="btn secondary" type="button">Làm mới</button></div>
+          <div id="metricCards" class="metric-grid"></div>
+        </div>
+        <div class="panel"><h2>Click gần đây</h2><div id="clicksTable" class="preview"><div class="status">Đang tải…</div></div></div>
+      </section>
+    </div>
+  </section>
+</main>
+<script type="module" src="/assets/js/admin.js?v=2.2.0"></script>
+</body>
+</html>
