@@ -7,6 +7,46 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/api/wiki-skills",
+      "destination": "/api/wiki?action=skills"
+    },
+    {
+      "source": "/api/wiki-admin-data",
+      "destination": "/api/wiki?action=admin-data"
+    },
+    {
+      "source": "/api/wiki-save-skill",
+      "destination": "/api/wiki?action=save-skill"
+    },
+    {
+      "source": "/api/wiki-delete-skill",
+      "destination": "/api/wiki?action=delete-skill"
+    },
+    {
+      "source": "/api/wiki-save-database",
+      "destination": "/api/wiki?action=save-database"
+    },
+    {
+      "source": "/api/seo-sitemap",
+      "destination": "/api/seo?action=sitemap"
+    },
+    {
+      "source": "/api/seo-feed",
+      "destination": "/api/seo?action=feed"
+    },
+    {
+      "source": "/api/seo-health",
+      "destination": "/api/seo?action=health"
+    },
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/seo?action=sitemap"
+    },
+    {
+      "source": "/rss.xml",
+      "destination": "/api/seo?action=feed"
+    },
+    {
       "source": "/",
       "destination": "/index.html"
     },
