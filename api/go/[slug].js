@@ -33,7 +33,9 @@ function deviceType(userAgent = '') {
 
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Pragma', 'no-cache');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 
   if (!['GET', 'HEAD'].includes(req.method)) {
     res.setHeader('Allow', 'GET, HEAD');
@@ -72,10 +74,12 @@ module.exports = async function handler(req, res) {
     const referrer = clean(req.headers.referer || '', 500);
     const userAgent = clean(req.headers['user-agent'] || '', 500);
 
-    try {
-      const clickRef = db.collection('smartLinkClicks').doc();
-      const batch = db.batch();
-      batch.set(clickRef, {
+    // HEAD thường do bot/preview/link checker gọi. Không tính là click thật.
+    if (req.method === 'GET') {
+      try {
+        const clickRef = db.collection('smartLinkClicks').doc();
+        const batch = db.batch();
+        batch.set(clickRef, {
         linkSlug: slug,
         linkTitle: clean(link.title || slug, 160),
         postCode,
@@ -91,9 +95,11 @@ module.exports = async function handler(req, res) {
         lastClickedAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp()
       }, { merge: true });
-      await batch.commit();
-    } catch (trackingError) {
-      console.error('[Mina Smart Link] Tracking failed:', trackingError);
+        await batch.commit();
+      } catch (trackingError) {
+        // Chuyển hướng vẫn hoạt động dù hệ thống thống kê tạm lỗi.
+        console.error('[Mina Smart Link] Tracking failed:', trackingError);
+      }
     }
 
     return res.redirect(302, target.toString());

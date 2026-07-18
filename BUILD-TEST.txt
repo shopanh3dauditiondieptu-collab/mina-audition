@@ -1,0 +1,30 @@
+$ npm install --no-audit --no-fund && npm run verify
+
+
+added 178 packages in 7s
+
+> mina-clean-rebuild@2.0.0 verify
+> npm run preflight && npm run build
+
+
+> mina-clean-rebuild@2.0.0 preflight
+> node scripts/preflight.js
+
+Serverless Functions dự kiến: 8
+ - api/_mina-seo-utils.js
+ - api/admin/login.js
+ - api/categories.js
+ - api/go/[slug].js
+ - api/save-wiki-skill.js
+ - api/seo.js
+ - api/upload-image.js
+ - api/wiki.js
+Preflight thành công.
+
+> mina-clean-rebuild@2.0.0 build
+> node -e "const fs=require('fs'); if(!fs.existsSync('public')){throw new Error('Khong tim thay thu muc public o goc repository');} fs.rmSync('dist',{recursive:true,force:true}); fs.cpSync('public','dist',{recursive:true}); console.log('Mina Clean build completed');"
+
+Mina Clean build completed
+
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+npm warn deprecated uuid@9.0.1: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
