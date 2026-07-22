@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#09061a">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Mina CMS v6 Enterprise</title>
+  <link rel="icon" href="/assets/images/logo-mina.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin-v6.css?v=6.0.0">
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="/"><img src="/assets/images/logo-mina.png" alt=""><span>Mina CMS v6</span></a>
+    <nav>
+      <button class="nav-item active" data-view="editor">✦ Đăng bài</button>
+      <button class="nav-item" data-view="posts">▦ Quản lý bài</button>
+      <button class="nav-item" data-view="smartlinks">🔗 Smart Link Manager</button>
+      <a class="nav-link" href="/admin-v4.html">↩ CMS v4</a>
+      <a class="nav-link" href="/" target="_blank" rel="noopener">↗ Xem website</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div id="authBadge" class="auth-badge">Đang kiểm tra…</div>
+      <button id="logoutButton" class="nav-item danger">Đăng xuất</button>
+    </div>
+  </aside>
+
+  <main class="workspace">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Mina Audition</p>
+        <h1 id="pageTitle">Đăng bài viết</h1>
+      </div>
+      <div class="top-actions">
+        <button id="newPostButton" class="btn ghost" type="button">Làm mới</button>
+        <button id="savePostTopButton" class="btn primary" type="button">Lưu bài viết</button>
+      </div>
+    </header>
+
+    <div id="notice" class="notice" hidden></div>
+
+    <section id="view-editor" class="view active">
+      <form id="postForm" class="editor-shell">
+        <input id="postId" type="hidden">
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Đăng bài viết</h2>
+              <p>Tạo nội dung mới cho website Mina Audition.</p>
+            </div>
+          </div>
+
+          <div class="grid two">
+            <label>
+              <span>Tiêu đề *</span>
+              <input id="title" required placeholder="Ví dụ: Review Skill Audition đẹp nhất tuần">
+            </label>
+          </div>
+
+          <div class="grid four category-grid">
+            <label><span>Chuyên mục</span><select id="categoryLevel1"><option value="">Chọn chuyên mục</option></select></label>
+            <label><span>Danh mục</span><select id="categoryLevel2" disabled><option value="">Chọn danh mục</option></select></label>
+            <label><span>Danh mục con</span><select id="categoryLevel3" disabled><option value="">Chọn danh mục con</option></select></label>
+            <label><span>Loại</span><select id="categoryLevel4" disabled><option value="">Chọn loại</option></select></label>
+          </div>
+          <div id="categoryPathPreview" class="category-path">Chưa chọn danh mục.</div>
+
+          <div class="grid two">
+            <label>
+              <span>Slug</span>
+              <input id="slug" placeholder="tu-dong-tao-tu-tieu-de">
+            </label>
+            <label>
+              <span>AI ID / Mã nội bộ</span>
+              <input id="internalId" placeholder="AI-0104 hoặc TEST-0001">
+            </label>
+          </div>
+
+          <div class="grid two">
+            <label>
+              <span>Link ảnh đại diện</span>
+              <input id="coverUrl" type="url" placeholder="https://res.cloudinary.com/...">
+            </label>
+            <label>
+              <span>Chọn ảnh đại diện từ máy</span>
+              <input id="coverInput" type="file" accept="image/*">
+            </label>
+          </div>
+
+          <div id="coverPreview" class="cover-preview"></div>
+
+          <label>
+            <span>Mô tả ngắn</span>
+            <textarea id="excerpt" maxlength="320" rows="4" placeholder="Viết mô tả ngắn hiển thị ngoài trang chủ"></textarea>
+            <small><b id="excerptCount">0</b>/320 ký tự</small>
+          </label>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Nội dung bài viết</h2>
+              <p>Sắp xếp bài theo từng khối: Đoạn văn → Ảnh → Gallery → YouTube → Trích dẫn.</p>
+            </div>
+          </div>
+
+          <div class="block-toolbar" id="blockToolbar">
+            <button type="button" data-add-block="paragraph">+ Đoạn văn</button>
+            <button type="button" data-add-block="image">+ Ảnh</button>
+            <button type="button" data-add-block="gallery">+ Gallery</button>
+            <button type="button" data-add-block="youtube">+ YouTube</button>
+            <button type="button" data-add-block="quote">+ Trích dẫn</button>
+          </div>
+
+          <div id="contentBlocks" class="content-blocks"></div>
+        </section>
+
+        <section class="panel">
+          <div class="grid two">
+            <label>
+              <span>Liên kết bài viết</span>
+              <input id="facebookUrl" type="url" placeholder="Facebook / YouTube / TikTok">
+            </label>
+            <label>
+              <span>Trạng thái</span>
+              <select id="status">
+                <option value="published">Đăng công khai</option>
+                <option value="draft">Bản nháp</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="checkbox-row">
+            <input id="featured" type="checkbox">
+            <span>Ghim bài này làm bài nổi bật</span>
+          </label>
+
+          <details class="seo-box">
+            <summary>Thiết lập SEO</summary>
+            <div class="grid two">
+              <label><span>SEO title</span><input id="seoTitle"></label>
+              <label><span>SEO description</span><textarea id="seoDescription" rows="3"></textarea></label>
+            </div>
+          </details>
+
+          <div class="form-actions">
+            <button id="savePostButton" class="btn primary" type="submit">Lưu bài viết</button>
+            <button id="resetPostButton" class="btn ghost" type="button">Làm mới</button>
+            <button id="restoreDraftButton" class="btn ghost" type="button">Khôi phục bản tạm</button>
+          </div>
+        </section>
+      </form>
+    </section>
+
+    <section id="view-posts" class="view">
+      <section class="panel content-manager">
+        <div class="panel-head manager-head">
+          <div>
+            <h2>Trung tâm quản lý nội dung</h2>
+            <p>Lọc danh mục, tìm dữ liệu đã đăng và kiểm tra bài có khả năng trùng lặp.</p>
+          </div>
+        </div>
+
+        <div class="manager-toolbar">
+          <input id="postSearch" type="search" placeholder="Tìm tiêu đề, ID, danh mục, nội dung, link ảnh...">
+          <select id="postStatusFilter">
+            <option value="">Tất cả trạng thái</option>
+            <option value="published">Công khai</option>
+            <option value="draft">Bản nháp</option>
+          </select>
+          <button id="checkDuplicatesButton" class="btn ghost" type="button">Kiểm tra trùng lặp</button>
+          <button id="refreshPostsButton" class="btn ghost" type="button">Tải lại dữ liệu</button>
+        </div>
+
+        <div class="manager-stats enterprise-stats">
+          <article class="stat-card"><strong id="statTotal">0</strong><span>Tổng bài</span></article>
+          <article class="stat-card"><strong id="statPublished">0</strong><span>Công khai</span></article>
+          <article class="stat-card"><strong id="statDraft">0</strong><span>Bản nháp</span></article>
+          <article class="stat-card"><strong id="statFeatured">0</strong><span>Nổi bật</span></article>
+          <article class="stat-card"><strong id="statDuplicates">0</strong><span>Có thể trùng</span></article>
+          <article class="stat-card"><strong id="statViews">0</strong><span>Lượt xem</span></article>
+          <article class="stat-card"><strong id="statClicks">0</strong><span>Smart Click</span></article>
+        </div>
+
+        <div class="enterprise-manager-grid">
+          <aside class="category-tree-panel">
+            <div class="category-tree-head">
+              <div>
+                <strong>Danh mục bài viết</strong>
+                <small>Chọn một cấp để lọc toàn bộ mục con.</small>
+              </div>
+              <button id="expandAllCategories" class="tree-mini-button" type="button">Mở hết</button>
+            </div>
+            <button id="allPostsTreeButton" class="category-tree-all active" type="button" data-tree-path="">Tất cả bài viết <b id="allPostsTreeCount">0</b></button>
+            <div id="categoryTreeFilter" class="category-tree-filter"></div>
+          </aside>
+
+          <section class="enterprise-posts-panel">
+            <div class="bulk-toolbar enterprise-bulk-toolbar">
+              <label class="bulk-select-all"><input id="selectAllPosts" type="checkbox"><span>Chọn tất cả đang hiển thị</span></label>
+              <strong id="selectedPostsCount">0 bài đã chọn</strong>
+              <div class="bulk-quick-actions" aria-label="Thao tác hàng loạt">
+                <button class="bulk-action-button publish" type="button" data-bulk-action="publish" title="Đăng công khai">✓ Công khai</button>
+                <button class="bulk-action-button draft" type="button" data-bulk-action="draft" title="Chuyển thành bản nháp">◷ Bản nháp</button>
+                <button class="bulk-action-button feature" type="button" data-bulk-action="feature" title="Đánh dấu nổi bật">★ Nổi bật</button>
+                <button class="bulk-action-button unfeature" type="button" data-bulk-action="unfeature" title="Bỏ nổi bật">☆ Bỏ ghim</button>
+                <button class="bulk-action-button delete" type="button" data-bulk-action="delete" title="Xóa bài đã chọn">✕ Xóa</button>
+              </div>
+            </div>
+
+            <div class="current-filter-bar">
+              <div><span>Đang xem:</span> <strong id="currentCategoryLabel">Tất cả bài viết</strong></div>
+              <div><strong id="visiblePostsCount">0</strong> bài phù hợp</div>
+            </div>
+
+            <div class="posts-table-wrap">
+              <div class="posts-table-head enterprise-head">
+                <span>Chọn</span><span>Ảnh</span><span>Nội dung</span><span>ID / Ngày</span><span>Danh mục</span><span>Liên kết</span><span>Trạng thái</span><span>Thao tác</span>
+              </div>
+              <div id="postsTable" class="posts-table enterprise-table"></div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </section>
+
+    <section id="view-smartlinks" class="view">
+      <section class="panel smartlink-manager">
+        <div class="panel-head">
+          <div>
+            <h2>Smart Link Manager</h2>
+            <p>Tạo và quản lý đường dẫn rút gọn dạng <b>/go/slug</b>.</p>
+          </div>
+          <button id="newSmartLinkButton" class="btn primary" type="button">+ Tạo Smart Link</button>
+        </div>
+
+        <div class="smartlink-grid">
+          <form id="smartLinkForm" class="smartlink-form">
+            <input id="smartLinkId" type="hidden">
+            <label><span>Tên liên kết *</span><input id="smartLinkName" required placeholder="Ví dụ: Aumix3D Store"></label>
+            <label><span>Slug *</span><input id="smartLinkSlug" required placeholder="aumix3d"></label>
+            <label><span>URL đích *</span><input id="smartLinkTarget" type="url" required placeholder="https://..."></label>
+            <label><span>Ghi chú</span><textarea id="smartLinkNote" rows="3" placeholder="Mục đích sử dụng liên kết"></textarea></label>
+            <label class="checkbox-row"><input id="smartLinkActive" type="checkbox" checked><span>Đang hoạt động</span></label>
+            <div class="form-actions">
+              <button class="btn primary" type="submit">Lưu Smart Link</button>
+              <button id="resetSmartLinkButton" class="btn ghost" type="button">Làm mới</button>
+            </div>
+          </form>
+
+          <div class="smartlink-list-panel">
+            <div class="smartlink-list-toolbar">
+              <input id="smartLinkSearch" type="search" placeholder="Tìm tên, slug hoặc URL đích...">
+              <button id="refreshSmartLinksButton" class="btn ghost" type="button">Tải lại</button>
+            </div>
+            <div id="smartLinksTable" class="smartlinks-table"></div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+  </main>
+
+  <dialog id="confirmDialog">
+    <form method="dialog" class="dialog-card">
+      <h3 id="confirmTitle">Xác nhận</h3>
+      <p id="confirmMessage"></p>
+      <div class="form-actions">
+        <button value="cancel" class="btn ghost">Hủy</button>
+        <button value="confirm" class="btn danger">Xác nhận</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module">
+    import("/js/admin-v5.js?v=1.5.0").catch(error => {
+      console.error("Không tải được admin-v5.js", error);
+      const badge = document.getElementById("authBadge");
+      const notice = document.getElementById("notice");
+      if (badge) badge.textContent = "Lỗi tải JavaScript";
+      if (notice) {
+        notice.hidden = false;
+        notice.className = "notice error";
+        notice.textContent = `Không tải được CMS: ${error?.message || error}`;
+      }
+    });
+  </script>
+</body>
+</html>
