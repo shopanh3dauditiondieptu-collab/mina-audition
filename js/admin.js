@@ -10,7 +10,10 @@ import { ADMIN_EMAIL } from "./admin/config.js";
 import { safeOn } from "./admin/utils.js";
 import { initCategories } from "./admin/categories.js";
 import { initEditor } from "./admin/editor.js";
-import { initPosts, loadPosts } from "./admin/posts.js";
+import {
+  initPosts,
+  loadPosts
+} from "./admin/posts.js?v=3.3.0";
 import { initComments } from "./admin/comments.js";
 
 const loginBox = document.getElementById("loginBox");
