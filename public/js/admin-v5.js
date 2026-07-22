@@ -666,7 +666,7 @@ function renderPosts() {
             </div>
 
             <div class="post-buttons">
-              <a
+<a
   class="btn ghost view-post-button"
   href="${getPostViewUrl(post)}"
   target="_blank"
