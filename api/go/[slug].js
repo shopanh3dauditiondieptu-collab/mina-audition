@@ -1,110 +1,196 @@
-const admin = require('firebase-admin');
+const admin = require("firebase-admin");
 
 function getAdminApp() {
-  if (admin.apps.length) return admin.app();
+  if (admin.apps.length) {
+    return admin.app();
+  }
 
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-  if (!raw) throw new Error('Thiếu FIREBASE_SERVICE_ACCOUNT_JSON trên Vercel.');
+
+  if (!raw) {
+    throw new Error(
+      "Thiếu FIREBASE_SERVICE_ACCOUNT_JSON trong Environment Variables của Vercel."
+    );
+  }
 
   let serviceAccount;
+
   try {
     serviceAccount = JSON.parse(raw);
   } catch {
     try {
-      serviceAccount = JSON.parse(Buffer.from(raw, 'base64').toString('utf8'));
+      serviceAccount = JSON.parse(
+        Buffer.from(raw, "base64").toString("utf8")
+      );
     } catch {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON không đúng định dạng JSON hoặc Base64.');
+      throw new Error(
+        "FIREBASE_SERVICE_ACCOUNT_JSON không đúng định dạng JSON hoặc Base64."
+      );
     }
   }
 
-  return admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+  return admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
 }
 
 function clean(value, max = 160) {
-  return String(value || '').trim().slice(0, max);
+  return String(value || "").trim().slice(0, max);
 }
 
-function deviceType(userAgent = '') {
+function getDeviceType(userAgent = "") {
   const value = userAgent.toLowerCase();
-  if (/tablet|ipad/.test(value)) return 'tablet';
-  if (/mobile|iphone|android/.test(value)) return 'mobile';
-  return 'desktop';
+
+  if (/tablet|ipad/.test(value)) {
+    return "tablet";
+  }
+
+  if (/mobile|iphone|android/.test(value)) {
+    return "mobile";
+  }
+
+  return "desktop";
 }
 
 module.exports = async function handler(req, res) {
-  res.setHeader('Cache-Control', 'no-store');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader("Cache-Control", "no-store, max-age=0");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("X-Robots-Tag", "noindex, nofollow");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
 
-  if (!['GET', 'HEAD'].includes(req.method)) {
-    res.setHeader('Allow', 'GET, HEAD');
-    return res.status(405).send('Method not allowed');
+  if (!["GET", "HEAD"].includes(req.method)) {
+    res.setHeader("Allow", "GET, HEAD");
+    return res.status(405).send("Method not allowed");
   }
 
-  const slug = clean(req.query.slug, 100);
-  if (!slug || !/^[A-Za-z0-9_-]+$/.test(slug)) {
-    return res.status(400).send('Liên kết không hợp lệ.');
+  const slug = clean(req.query.slug, 100).toLowerCase();
+
+  if (!slug || !/^[a-z0-9_-]+$/.test(slug)) {
+    return res.status(400).send("Liên kết không hợp lệ.");
   }
 
   try {
     getAdminApp();
+
     const db = admin.firestore();
-    const linkRef = db.collection('smartLinks').doc(slug);
-    const snapshot = await linkRef.get();
 
-    if (!snapshot.exists) return res.status(404).send('Liên kết không tồn tại.');
+    /*
+     * Smart Link đang được CMS lưu với ID ngẫu nhiên,
+     * vì vậy phải tìm theo field slug.
+     */
+    const querySnapshot = await db
+      .collection("smartLinks")
+      .where("slug", "==", slug)
+      .limit(1)
+      .get();
 
-    const link = snapshot.data() || {};
-    if (link.active !== true || !link.targetUrl) {
-      return res.status(404).send('Liên kết hiện không hoạt động.');
+    if (querySnapshot.empty) {
+      return res.status(404).send("Liên kết không tồn tại.");
     }
 
-    let target;
+    const documentSnapshot = querySnapshot.docs[0];
+    const linkRef = documentSnapshot.ref;
+    const link = documentSnapshot.data() || {};
+
+    if (link.active !== true) {
+      return res.status(404).send("Liên kết hiện không hoạt động.");
+    }
+
+    const destination = clean(
+      link.targetUrl || link.url || link.destination,
+      2000
+    );
+
+    if (!destination) {
+      return res.status(500).send("Smart Link chưa có URL đích.");
+    }
+
+    let targetUrl;
+
     try {
-      target = new URL(String(link.targetUrl));
-      if (!['http:', 'https:'].includes(target.protocol)) throw new Error('protocol');
+      targetUrl = new URL(destination);
+
+      if (!["http:", "https:"].includes(targetUrl.protocol)) {
+        throw new Error("Unsupported protocol");
+      }
     } catch {
-      return res.status(500).send('URL đích chưa được cấu hình đúng.');
+      return res.status(500).send("URL đích chưa được cấu hình đúng.");
     }
 
-    const source = clean(req.query.source || link.defaultSource || 'direct', 80);
-    const postCode = clean(req.query.post || link.postCode || '', 80);
-    const campaign = clean(req.query.campaign || link.campaign || '', 80);
-    const referrer = clean(req.headers.referer || '', 500);
-    const userAgent = clean(req.headers['user-agent'] || '', 500);
+    const source = clean(
+      req.query.source || link.defaultSource || "direct",
+      80
+    );
 
-    // HEAD thường do bot/preview/link checker gọi. Không tính là click thật.
-    if (req.method === 'GET') {
+    const postCode = clean(
+      req.query.post || link.postCode || "",
+      80
+    );
+
+    const campaign = clean(
+      req.query.campaign || link.campaign || "",
+      80
+    );
+
+    const referrer = clean(req.headers.referer || "", 500);
+    const userAgent = clean(req.headers["user-agent"] || "", 500);
+
+    /*
+     * HEAD thường do bot hoặc công cụ kiểm tra link gọi.
+     * Chỉ ghi nhận click thật với GET.
+     */
+    if (req.method === "GET") {
       try {
-        const clickRef = db.collection('smartLinkClicks').doc();
+        const clickRef = db.collection("smartLinkClicks").doc();
         const batch = db.batch();
+
         batch.set(clickRef, {
-        linkSlug: slug,
-        linkTitle: clean(link.title || slug, 160),
-        postCode,
-        campaign,
-        source,
-        referrer,
-        deviceType: deviceType(userAgent),
-        userAgent,
-        clickedAt: admin.firestore.FieldValue.serverTimestamp()
-      });
-      batch.set(linkRef, {
-        totalClicks: admin.firestore.FieldValue.increment(1),
-        lastClickedAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
+          linkId: documentSnapshot.id,
+          linkSlug: slug,
+          linkName: clean(link.name || link.title || slug, 160),
+          targetUrl: targetUrl.toString(),
+          postCode,
+          campaign,
+          source,
+          referrer,
+          deviceType: getDeviceType(userAgent),
+          userAgent,
+          clickedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        batch.set(
+          linkRef,
+          {
+            /*
+             * CMS hiện tại khởi tạo field clicks.
+             * Vì vậy tăng clicks để số liệu hiển thị thống nhất.
+             */
+            clicks: admin.firestore.FieldValue.increment(1),
+            totalClicks: admin.firestore.FieldValue.increment(1),
+            lastClickedAt:
+              admin.firestore.FieldValue.serverTimestamp()
+          },
+          { merge: true }
+        );
+
         await batch.commit();
       } catch (trackingError) {
-        // Chuyển hướng vẫn hoạt động dù hệ thống thống kê tạm lỗi.
-        console.error('[Mina Smart Link] Tracking failed:', trackingError);
+        /*
+         * Nếu thống kê lỗi, người dùng vẫn được chuyển hướng.
+         */
+        console.error(
+          "[Mina Smart Link] Tracking failed:",
+          trackingError
+        );
       }
     }
 
-    return res.redirect(302, target.toString());
+    return res.redirect(302, targetUrl.toString());
   } catch (error) {
-    console.error('[Mina Smart Link]', error);
-    return res.status(500).send('Smart Link chưa được cấu hình hoặc đang tạm gián đoạn.');
+    console.error("[Mina Smart Link]", error);
+
+    return res
+      .status(500)
+      .send("Smart Link chưa được cấu hình hoặc đang tạm gián đoạn.");
   }
 };
