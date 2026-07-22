@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#09061a">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Mina CMS v5 Enterprise</title>
+  <link rel="icon" href="/assets/images/logo-mina.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin-v5.css?v=1.0.0">
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="/"><img src="/assets/images/logo-mina.png" alt=""><span>Mina CMS v5</span></a>
+    <nav>
+      <button class="nav-item active" data-view="editor">✦ Đăng bài</button>
+      <button class="nav-item" data-view="posts">▦ Quản lý bài</button>
+      <a class="nav-link" href="/admin-v4.html">↩ CMS v4</a>
+      <a class="nav-link" href="/" target="_blank" rel="noopener">↗ Xem website</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div id="authBadge" class="auth-badge">Đang kiểm tra…</div>
+      <button id="logoutButton" class="nav-item danger">Đăng xuất</button>
+    </div>
+  </aside>
+
+  <main class="workspace">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Mina Audition</p>
+        <h1 id="pageTitle">Đăng bài viết</h1>
+      </div>
+      <div class="top-actions">
+        <button id="newPostButton" class="btn ghost" type="button">Làm mới</button>
+        <button id="savePostTopButton" class="btn primary" type="button">Lưu bài viết</button>
+      </div>
+    </header>
+
+    <div id="notice" class="notice" hidden></div>
+
+    <section id="view-editor" class="view active">
+      <form id="postForm" class="editor-shell">
+        <input id="postId" type="hidden">
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Đăng bài viết</h2>
+              <p>Tạo nội dung mới cho website Mina Audition.</p>
+            </div>
+          </div>
+
+          <div class="grid two">
+            <label>
+              <span>Tiêu đề *</span>
+              <input id="title" required placeholder="Ví dụ: Review Skill Audition đẹp nhất tuần">
+            </label>
+            <label>
+              <span>Danh mục</span>
+              <select id="categoryId"><option value="">Chọn danh mục bài viết</option></select>
+            </label>
+          </div>
+
+          <div class="grid two">
+            <label>
+              <span>Slug</span>
+              <input id="slug" placeholder="tu-dong-tao-tu-tieu-de">
+            </label>
+            <label>
+              <span>AI ID / Mã nội bộ</span>
+              <input id="internalId" placeholder="AI-0104 hoặc TEST-0001">
+            </label>
+          </div>
+
+          <div class="grid two">
+            <label>
+              <span>Link ảnh đại diện</span>
+              <input id="coverUrl" type="url" placeholder="https://res.cloudinary.com/...">
+            </label>
+            <label>
+              <span>Chọn ảnh đại diện từ máy</span>
+              <input id="coverInput" type="file" accept="image/*">
+            </label>
+          </div>
+
+          <div id="coverPreview" class="cover-preview"></div>
+
+          <label>
+            <span>Mô tả ngắn</span>
+            <textarea id="excerpt" maxlength="320" rows="4" placeholder="Viết mô tả ngắn hiển thị ngoài trang chủ"></textarea>
+            <small><b id="excerptCount">0</b>/320 ký tự</small>
+          </label>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h2>Nội dung bài viết</h2>
+              <p>Sắp xếp bài theo từng khối: Đoạn văn → Ảnh → Gallery → YouTube → Trích dẫn.</p>
+            </div>
+          </div>
+
+          <div class="block-toolbar" id="blockToolbar">
+            <button type="button" data-add-block="paragraph">+ Đoạn văn</button>
+            <button type="button" data-add-block="image">+ Ảnh</button>
+            <button type="button" data-add-block="gallery">+ Gallery</button>
+            <button type="button" data-add-block="youtube">+ YouTube</button>
+            <button type="button" data-add-block="quote">+ Trích dẫn</button>
+          </div>
+
+          <div id="contentBlocks" class="content-blocks"></div>
+        </section>
+
+        <section class="panel">
+          <div class="grid two">
+            <label>
+              <span>Liên kết bài viết</span>
+              <input id="facebookUrl" type="url" placeholder="Facebook / YouTube / TikTok">
+            </label>
+            <label>
+              <span>Trạng thái</span>
+              <select id="status">
+                <option value="published">Đăng công khai</option>
+                <option value="draft">Bản nháp</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="checkbox-row">
+            <input id="featured" type="checkbox">
+            <span>Ghim bài này làm bài nổi bật</span>
+          </label>
+
+          <details class="seo-box">
+            <summary>Thiết lập SEO</summary>
+            <div class="grid two">
+              <label><span>SEO title</span><input id="seoTitle"></label>
+              <label><span>SEO description</span><textarea id="seoDescription" rows="3"></textarea></label>
+            </div>
+          </details>
+
+          <div class="form-actions">
+            <button id="savePostButton" class="btn primary" type="submit">Lưu bài viết</button>
+            <button id="resetPostButton" class="btn ghost" type="button">Làm mới</button>
+            <button id="restoreDraftButton" class="btn ghost" type="button">Khôi phục bản tạm</button>
+          </div>
+        </section>
+      </form>
+    </section>
+
+    <section id="view-posts" class="view">
+      <section class="panel">
+        <div class="panel-head">
+          <div><h2>Quản lý bài viết</h2><p>Sửa hoặc xóa bài hiện có.</p></div>
+          <button id="refreshPostsButton" class="btn ghost" type="button">Làm mới</button>
+        </div>
+        <div class="grid two">
+          <input id="postSearch" placeholder="Tìm theo tiêu đề, slug hoặc mã nội bộ">
+          <select id="postStatusFilter">
+            <option value="">Tất cả trạng thái</option>
+            <option value="published">Đã đăng</option>
+            <option value="draft">Bản nháp</option>
+          </select>
+        </div>
+        <div id="postsTable" class="posts-table"></div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="confirmDialog">
+    <form method="dialog" class="dialog-card">
+      <h3 id="confirmTitle">Xác nhận</h3>
+      <p id="confirmMessage"></p>
+      <div class="form-actions">
+        <button value="cancel" class="btn ghost">Hủy</button>
+        <button value="confirm" class="btn danger">Xác nhận</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="/js/admin-v5.js?v=1.0.0"></script>
+</body>
+</html>
