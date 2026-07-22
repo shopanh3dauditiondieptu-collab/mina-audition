@@ -14,7 +14,7 @@ const DRAFT_KEY = "mina-cms-v5-draft";
 const state = {
   user: null,
   posts: [],
-  categories: [],
+  categoryTree: [],
   blocks: [],
   coverFile: null,
   coverUrl: "",
@@ -200,6 +200,7 @@ function resetForm() {
   state.blocks = [defaultBlock("paragraph")];
   $("#excerptCount").textContent = "0";
   delete $("#slug").dataset.touched;
+  setCategoryPath([]);
   renderCover();
   renderBlocks();
 }
@@ -211,7 +212,7 @@ function fillForm(post) {
   $("#slug").value = post.slug || "";
   $("#internalId").value = post.internalId || post.aiId || "";
   $("#excerpt").value = post.excerpt || post.description || "";
-  $("#categoryId").value = post.categoryId || "";
+  setCategoryPath(post.categoryPathIds || []);
   $("#facebookUrl").value = post.facebookUrl || "";
   $("#status").value = post.status || "draft";
   $("#featured").checked = Boolean(post.featured);
@@ -270,7 +271,8 @@ async function savePost(event) {
     if (state.coverFile) coverImage = await uploadImage(state.coverFile, "cms-v5/covers");
 
     const contentBlocks = await prepareBlocksForSave();
-    const category = state.categories.find(item => item.id === $("#categoryId").value);
+    const categoryNodes = selectedCategoryNodes();
+    const categoryLeaf = categoryNodes.at(-1) || null;
     const excerpt = $("#excerpt").value.trim();
     const status = $("#status").value;
 
@@ -284,9 +286,15 @@ async function savePost(event) {
       content: buildLegacyContent(contentBlocks),
       gallery: collectLegacyGallery(contentBlocks),
       status,
-      categoryId: category?.id || "",
-      categoryName: category?.name || category?.categoryName || "",
-      category: category?.name || category?.categoryName || "",
+      section: categoryNodes[0]?.name || "",
+      sectionId: categoryNodes[0]?.id || "",
+      categoryId: categoryLeaf?.id || "",
+      categoryName: categoryLeaf?.name || "",
+      category: categoryLeaf?.name || "",
+      categoryPath: categoryNodes.map(node => node.name),
+      categoryPathIds: categoryNodes.map(node => node.id),
+      categorySlugs: categoryNodes.map(node => node.slug),
+      categoryUrl: "/" + categoryNodes.map(node => node.slug).filter(Boolean).join("/") + "/",
       featured: $("#featured").checked,
       coverImage,
       image: coverImage,
@@ -325,7 +333,7 @@ function serializeDraft() {
     slug: $("#slug").value,
     internalId: $("#internalId").value,
     excerpt: $("#excerpt").value,
-    categoryId: $("#categoryId").value,
+    categoryPathIds: selectedCategoryNodes().map(node => node.id),
     coverUrl: $("#coverUrl").value || state.coverUrl,
     facebookUrl: $("#facebookUrl").value,
     status: $("#status").value,
@@ -346,7 +354,7 @@ function restoreDraft() {
   $("#slug").value = draft.slug || "";
   $("#internalId").value = draft.internalId || "";
   $("#excerpt").value = draft.excerpt || "";
-  $("#categoryId").value = draft.categoryId || "";
+  setCategoryPath(draft.categoryPathIds || []);
   $("#coverUrl").value = draft.coverUrl || "";
   $("#facebookUrl").value = draft.facebookUrl || "";
   $("#status").value = draft.status || "draft";
@@ -360,23 +368,57 @@ function restoreDraft() {
   showNotice("Đã khôi phục bản tạm.");
 }
 
-function renderCategories() {
-  $("#categoryId").innerHTML = `<option value="">Chọn danh mục bài viết</option>` +
-    state.categories.map(category => `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name || category.categoryName || category.id)}</option>`).join("");
+function findNode(nodes, id) { return (nodes || []).find(node => node.id === id) || null; }
+
+function selectedCategoryNodes() {
+  const values = [1,2,3,4].map(level => $(`#categoryLevel${level}`).value).filter(Boolean);
+  const selected = []; let nodes = state.categoryTree;
+  for (const id of values) { const node = findNode(nodes,id); if (!node) break; selected.push(node); nodes = node.children || []; }
+  return selected;
 }
+
+function fillCategorySelect(select,nodes,placeholder) {
+  select.innerHTML = `<option value="">${placeholder}</option>` + (nodes || []).map(node => `<option value="${escapeHtml(node.id)}">${escapeHtml(node.name)}</option>`).join("");
+  select.disabled = !(nodes || []).length;
+}
+
+function renderCategoryPath() {
+  const nodes = selectedCategoryNodes();
+  $("#categoryPathPreview").textContent = nodes.length ? nodes.map(node => node.name).join(" → ") : "Chưa chọn danh mục.";
+}
+
+function renderCategoryRoot() {
+  fillCategorySelect($("#categoryLevel1"),state.categoryTree,"Chọn chuyên mục");
+  fillCategorySelect($("#categoryLevel2"),[],"Chọn danh mục");
+  fillCategorySelect($("#categoryLevel3"),[],"Chọn danh mục con");
+  fillCategorySelect($("#categoryLevel4"),[],"Chọn loại"); renderCategoryPath();
+}
+
+function renderCategoryLevel(level) {
+  const a=findNode(state.categoryTree,$("#categoryLevel1").value);
+  const b=a?findNode(a.children,$("#categoryLevel2").value):null;
+  const c=b?findNode(b.children,$("#categoryLevel3").value):null;
+  if(level<=2){fillCategorySelect($("#categoryLevel2"),a?.children||[],"Chọn danh mục");fillCategorySelect($("#categoryLevel3"),[],"Chọn danh mục con");fillCategorySelect($("#categoryLevel4"),[],"Chọn loại");}
+  if(level<=3){fillCategorySelect($("#categoryLevel3"),b?.children||[],"Chọn danh mục con");fillCategorySelect($("#categoryLevel4"),[],"Chọn loại");}
+  if(level<=4)fillCategorySelect($("#categoryLevel4"),c?.children||[],"Chọn loại"); renderCategoryPath();
+}
+
+async function loadCategoryTree(){const response=await fetch("/data/category-tree.json",{cache:"no-store"});if(!response.ok)throw new Error("Không tải được cây danh mục.");state.categoryTree=await response.json();renderCategoryRoot();}
+
+function setCategoryPath(ids=[]){renderCategoryRoot();if(!ids.length)return;$("#categoryLevel1").value=ids[0]||"";renderCategoryLevel(2);$("#categoryLevel2").value=ids[1]||"";renderCategoryLevel(3);$("#categoryLevel3").value=ids[2]||"";renderCategoryLevel(4);$("#categoryLevel4").value=ids[3]||"";renderCategoryPath();}
 
 function renderPosts() {
   const term = $("#postSearch").value.trim().toLowerCase();
   const status = $("#postStatusFilter").value;
   const posts = state.posts.filter(post => {
-    const haystack = `${post.title || ""} ${post.slug || ""} ${post.internalId || ""}`.toLowerCase();
+    const haystack = `${post.title || ""} ${post.slug || ""} ${post.internalId || ""} ${(post.categoryPath || []).join(" ")}`.toLowerCase();
     return (!term || haystack.includes(term)) && (!status || post.status === status);
   });
   $("#postsTable").innerHTML = posts.length ? posts.map(post => `
     <article class="post-row">
       <div>
         <h3>${escapeHtml(post.title || "(Không có tiêu đề)")}</h3>
-        <div class="post-meta">${escapeHtml(post.internalId || post.slug || post.id)} · ${post.status === "published" ? "Đã đăng" : "Bản nháp"} · ${escapeHtml(post.categoryName || "Chưa phân loại")}</div>
+        <div class="post-meta">${escapeHtml(post.internalId || post.slug || post.id)} · ${post.status === "published" ? "Đã đăng" : "Bản nháp"} · ${escapeHtml((post.categoryPath || []).join(" → ") || post.categoryName || "Chưa phân loại")}</div>
       </div>
       <div class="post-buttons">
         <button class="btn ghost" type="button" data-edit-post="${escapeHtml(post.id)}">Sửa</button>
@@ -386,8 +428,7 @@ function renderPosts() {
 }
 
 async function refreshData() {
-  [state.posts, state.categories] = await Promise.all([repo.listPosts(), repo.listCategories()]);
-  renderCategories();
+  state.posts = await repo.listPosts();
   renderPosts();
 }
 
@@ -413,6 +454,11 @@ function bindEvents() {
   $("#newPostButton").addEventListener("click", resetForm);
   $("#resetPostButton").addEventListener("click", resetForm);
   $("#restoreDraftButton").addEventListener("click", restoreDraft);
+
+  $("#categoryLevel1").addEventListener("change",()=>renderCategoryLevel(2));
+  $("#categoryLevel2").addEventListener("change",()=>renderCategoryLevel(3));
+  $("#categoryLevel3").addEventListener("change",()=>renderCategoryLevel(4));
+  $("#categoryLevel4").addEventListener("change",renderCategoryPath);
 
   $("#title").addEventListener("input", () => {
     if (!$("#postId").value && !$("#slug").dataset.touched) $("#slug").value = slugify($("#title").value);
@@ -503,6 +549,7 @@ onAuthStateChanged(auth, async user => {
   state.user = user;
   $("#authBadge").textContent = user.email || user.displayName || "Đã đăng nhập";
   try {
+    await loadCategoryTree();
     await refreshData();
   } catch (error) {
     console.error(error);

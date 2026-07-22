@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#09061a">
   <meta name="robots" content="noindex,nofollow">
-  <title>Mina CMS v5 Enterprise</title>
+  <title>Mina CMS v5.1 Enterprise</title>
   <link rel="icon" href="/assets/images/logo-mina.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/admin-v5.css?v=1.0.0">
+  <link rel="stylesheet" href="/css/admin-v5.css?v=1.1.0">
 </head>
 <body>
   <aside class="sidebar">
-    <a class="brand" href="/"><img src="/assets/images/logo-mina.png" alt=""><span>Mina CMS v5</span></a>
+    <a class="brand" href="/"><img src="/assets/images/logo-mina.png" alt=""><span>Mina CMS v5.1</span></a>
     <nav>
       <button class="nav-item active" data-view="editor">✦ Đăng bài</button>
       <button class="nav-item" data-view="posts">▦ Quản lý bài</button>
@@ -58,11 +58,15 @@
               <span>Tiêu đề *</span>
               <input id="title" required placeholder="Ví dụ: Review Skill Audition đẹp nhất tuần">
             </label>
-            <label>
-              <span>Danh mục</span>
-              <select id="categoryId"><option value="">Chọn danh mục bài viết</option></select>
-            </label>
           </div>
+
+          <div class="grid four category-grid">
+            <label><span>Chuyên mục</span><select id="categoryLevel1"><option value="">Chọn chuyên mục</option></select></label>
+            <label><span>Danh mục</span><select id="categoryLevel2" disabled><option value="">Chọn danh mục</option></select></label>
+            <label><span>Danh mục con</span><select id="categoryLevel3" disabled><option value="">Chọn danh mục con</option></select></label>
+            <label><span>Loại</span><select id="categoryLevel4" disabled><option value="">Chọn loại</option></select></label>
+          </div>
+          <div id="categoryPathPreview" class="category-path">Chưa chọn danh mục.</div>
 
           <div class="grid two">
             <label>
@@ -181,6 +185,6 @@
     </form>
   </dialog>
 
-  <script type="module" src="/js/admin-v5.js?v=1.0.0"></script>
+  <script type="module" src="/js/admin-v5.js?v=1.1.0"></script>
 </body>
 </html>

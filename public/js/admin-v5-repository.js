@@ -7,7 +7,6 @@ export class CmsV5Repository {
   constructor(db) {
     this.db = db;
     this.posts = collection(db, "posts");
-    this.categories = collection(db, "categories");
   }
 
   async listPosts(max = 500) {
@@ -29,7 +28,7 @@ export class CmsV5Repository {
   async savePost(payload, id = "") {
     const data = {
       ...payload,
-      cmsVersion: "mina-cms-v5-enterprise",
+      cmsVersion: "mina-cms-v5.1-enterprise",
       updatedAt: serverTimestamp()
     };
     if (id) {
@@ -44,13 +43,4 @@ export class CmsV5Repository {
     await deleteDoc(doc(this.db, "posts", id));
   }
 
-  async listCategories() {
-    let snapshot;
-    try {
-      snapshot = await getDocs(query(this.categories, orderBy("name", "asc")));
-    } catch {
-      snapshot = await getDocs(this.categories);
-    }
-    return snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
-  }
 }
