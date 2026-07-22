@@ -667,13 +667,13 @@ function renderPosts() {
 
             <div class="post-buttons">
               <a
-                class="btn ghost view"
-                href="${getPostViewUrl(post)}"
-                target="_blank"
-                rel="noopener"
-              >
-                Xem
-              </a>
+  class="btn ghost view-post-button"
+  href="${getPostViewUrl(post)}"
+  target="_blank"
+  rel="noopener"
+>
+  Xem
+</a>
 
               <button
                 class="btn ghost"
