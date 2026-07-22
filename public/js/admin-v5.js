@@ -4,6 +4,9 @@ import {
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import {
+  collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 const repo = new CmsV5Repository(db);
 const CLOUDINARY_CLOUD_NAME = "rpwcnrfg";
@@ -23,7 +26,8 @@ const state = {
   expandedCategoryPaths: new Set(),
   selectedPostIds: new Set(),
   duplicateIds: new Set(),
-  duplicateScanDone: false
+  duplicateScanDone: false,
+  smartLinks: []
 };
 
 const $ = selector => document.querySelector(selector);
@@ -785,10 +789,106 @@ async function refreshData() {
   renderPosts();
 }
 
+
+function normalizeSmartLinkSlug(value = "") {
+  return slugify(value).replace(/^-+|-+$/g, "");
+}
+
+function getSmartLinkPublicPath(item) {
+  return `/go/${normalizeSmartLinkSlug(item.slug || "")}`;
+}
+
+async function loadSmartLinks() {
+  try {
+    const ref = collection(db, "smartLinks");
+    let snapshot;
+    try { snapshot = await getDocs(query(ref, orderBy("updatedAt", "desc"))); }
+    catch { snapshot = await getDocs(ref); }
+    state.smartLinks = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+    renderSmartLinks();
+  } catch (error) {
+    console.error("Không tải được Smart Links", error);
+    state.smartLinks = [];
+    renderSmartLinks();
+    showNotice("Chưa đọc được collection smartLinks. Kiểm tra Firestore Rules.", "error");
+  }
+}
+
+function resetSmartLinkForm() {
+  const form = $("#smartLinkForm");
+  if (!form) return;
+  form.reset();
+  $("#smartLinkId").value = "";
+  $("#smartLinkActive").checked = true;
+}
+
+function fillSmartLinkForm(item) {
+  $("#smartLinkId").value = item.id || "";
+  $("#smartLinkName").value = item.name || "";
+  $("#smartLinkSlug").value = item.slug || "";
+  $("#smartLinkTarget").value = item.targetUrl || item.url || "";
+  $("#smartLinkNote").value = item.note || "";
+  $("#smartLinkActive").checked = item.active !== false;
+  openView("smartlinks");
+}
+
+function renderSmartLinks() {
+  const table = $("#smartLinksTable");
+  if (!table) return;
+  const term = normalizeSearchValue($("#smartLinkSearch")?.value || "");
+  const items = state.smartLinks.filter(item => normalizeSearchValue([
+    item.name, item.slug, item.targetUrl, item.url, item.note
+  ].filter(Boolean).join(" ")).includes(term));
+  table.innerHTML = items.length ? items.map(item => {
+    const path = getSmartLinkPublicPath(item);
+    return `<article class="smartlink-row">
+      <div class="smartlink-main"><strong>${escapeHtml(item.name || "Không tên")}</strong><div class="smartlink-path">${escapeHtml(path)}</div></div>
+      <div class="smartlink-target">${escapeHtml(item.targetUrl || item.url || "")}</div>
+      <span class="smartlink-status ${item.active === false ? "off" : ""}">${item.active === false ? "Đã tắt" : "Hoạt động"}</span>
+      <div class="smartlink-actions">
+        <button class="btn ghost" type="button" data-copy-manager-link="${escapeHtml(path)}">Copy</button>
+        <button class="btn ghost" type="button" data-edit-smart-link="${escapeHtml(item.id)}">Sửa</button>
+        <button class="btn danger" type="button" data-delete-smart-link="${escapeHtml(item.id)}">Xóa</button>
+      </div>
+    </article>`;
+  }).join("") : `<div class="smartlink-empty">Chưa có Smart Link phù hợp.</div>`;
+}
+
+async function saveSmartLink(event) {
+  event.preventDefault();
+  const id = $("#smartLinkId").value;
+  const name = $("#smartLinkName").value.trim();
+  const slug = normalizeSmartLinkSlug($("#smartLinkSlug").value);
+  const targetUrl = $("#smartLinkTarget").value.trim();
+  if (!name || !slug || !targetUrl) return showNotice("Bạn cần nhập đủ tên, slug và URL đích.", "error");
+  try { new URL(targetUrl); } catch { return showNotice("URL đích không hợp lệ.", "error"); }
+  const duplicate = state.smartLinks.find(item => normalizeSmartLinkSlug(item.slug) === slug && item.id !== id);
+  if (duplicate) return showNotice("Slug này đã tồn tại.", "error");
+  const payload = {
+    name, slug, targetUrl,
+    note: $("#smartLinkNote").value.trim(),
+    active: $("#smartLinkActive").checked,
+    updatedAt: serverTimestamp()
+  };
+  try {
+    if (id) await updateDoc(doc(db, "smartLinks", id), payload);
+    else await addDoc(collection(db, "smartLinks"), { ...payload, clicks: 0, createdAt: serverTimestamp() });
+    resetSmartLinkForm();
+    await loadSmartLinks();
+    showNotice("Đã lưu Smart Link.");
+  } catch (error) {
+    console.error(error);
+    showNotice(error.message || "Không thể lưu Smart Link. Kiểm tra Firestore Rules.", "error");
+  }
+}
+
 function openView(name) {
   $$(".view").forEach(view => view.classList.toggle("active", view.id === `view-${name}`));
   $$(".nav-item[data-view]").forEach(button => button.classList.toggle("active", button.dataset.view === name));
-  $("#pageTitle").textContent = name === "posts" ? "Quản lý bài viết" : "Đăng bài viết";
+  $("#pageTitle").textContent = name === "posts" ? "Quản lý bài viết" : name === "smartlinks" ? "Smart Link Manager" : "Đăng bài viết";
+  const editing = name === "editor";
+  $("#savePostTopButton").hidden = !editing;
+  $("#newPostButton").hidden = !editing;
 }
 
 async function confirmAction(title, message) {
@@ -801,6 +901,27 @@ async function confirmAction(title, message) {
 
 function bindEvents() {
   $$(".nav-item[data-view]").forEach(button => button.addEventListener("click", () => openView(button.dataset.view)));
+  $("#smartLinkForm")?.addEventListener("submit", saveSmartLink);
+  $("#newSmartLinkButton")?.addEventListener("click", resetSmartLinkForm);
+  $("#resetSmartLinkButton")?.addEventListener("click", resetSmartLinkForm);
+  $("#smartLinkSearch")?.addEventListener("input", renderSmartLinks);
+  $("#refreshSmartLinksButton")?.addEventListener("click", loadSmartLinks);
+  $("#smartLinksTable")?.addEventListener("click", async event => {
+    const copyPath = event.target.closest("[data-copy-manager-link]")?.dataset.copyManagerLink;
+    if (copyPath) {
+      const absolute = new URL(copyPath, location.origin).href;
+      try { await navigator.clipboard.writeText(absolute); showNotice(`Đã copy: ${absolute}`); }
+      catch { showNotice("Không thể copy Smart Link.", "error"); }
+      return;
+    }
+    const editId = event.target.closest("[data-edit-smart-link]")?.dataset.editSmartLink;
+    if (editId) { const item = state.smartLinks.find(link => link.id === editId); if (item) fillSmartLinkForm(item); return; }
+    const deleteId = event.target.closest("[data-delete-smart-link]")?.dataset.deleteSmartLink;
+    if (deleteId && await confirmAction("Xóa Smart Link", "Smart Link này sẽ bị xóa khỏi hệ thống.")) {
+      try { await deleteDoc(doc(db, "smartLinks", deleteId)); await loadSmartLinks(); showNotice("Đã xóa Smart Link."); }
+      catch (error) { console.error(error); showNotice("Không thể xóa Smart Link.", "error"); }
+    }
+  });
   $("#logoutButton").addEventListener("click", () => signOut(auth));
   $("#postForm").addEventListener("submit", savePost);
   $("#savePostTopButton").addEventListener("click", savePost);
@@ -1027,6 +1148,7 @@ onAuthStateChanged(auth, async user => {
   try {
     await loadCategoryTree();
     await refreshData();
+    await loadSmartLinks();
   } catch (error) {
     console.error(error);
     showNotice("CMS đã mở nhưng không đọc được dữ liệu. Kiểm tra Firestore Rules.", "error");

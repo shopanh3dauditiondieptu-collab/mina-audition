@@ -5,19 +5,20 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#09061a">
   <meta name="robots" content="noindex,nofollow">
-  <title>Mina CMS v5.2.1 Enterprise</title>
+  <title>Mina CMS v5.2.2 Enterprise</title>
   <link rel="icon" href="/assets/images/logo-mina.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/admin-v5.css?v=1.4.0">
+  <link rel="stylesheet" href="/css/admin-v5.css?v=1.4.1">
 </head>
 <body>
   <aside class="sidebar">
-    <a class="brand" href="/"><img src="/assets/images/logo-mina.png" alt=""><span>Mina CMS v5.2.1</span></a>
+    <a class="brand" href="/"><img src="/assets/images/logo-mina.png" alt=""><span>Mina CMS v5.2.2</span></a>
     <nav>
       <button class="nav-item active" data-view="editor">✦ Đăng bài</button>
       <button class="nav-item" data-view="posts">▦ Quản lý bài</button>
+      <button class="nav-item" data-view="smartlinks">🔗 Smart Link Manager</button>
       <a class="nav-link" href="/admin-v4.html">↩ CMS v4</a>
       <a class="nav-link" href="/" target="_blank" rel="noopener">↗ Xem website</a>
     </nav>
@@ -227,6 +228,41 @@
       </section>
     </section>
 
+    <section id="view-smartlinks" class="view">
+      <section class="panel smartlink-manager">
+        <div class="panel-head">
+          <div>
+            <h2>Smart Link Manager</h2>
+            <p>Tạo và quản lý đường dẫn rút gọn dạng <b>/go/slug</b>.</p>
+          </div>
+          <button id="newSmartLinkButton" class="btn primary" type="button">+ Tạo Smart Link</button>
+        </div>
+
+        <div class="smartlink-grid">
+          <form id="smartLinkForm" class="smartlink-form">
+            <input id="smartLinkId" type="hidden">
+            <label><span>Tên liên kết *</span><input id="smartLinkName" required placeholder="Ví dụ: Aumix3D Store"></label>
+            <label><span>Slug *</span><input id="smartLinkSlug" required placeholder="aumix3d"></label>
+            <label><span>URL đích *</span><input id="smartLinkTarget" type="url" required placeholder="https://..."></label>
+            <label><span>Ghi chú</span><textarea id="smartLinkNote" rows="3" placeholder="Mục đích sử dụng liên kết"></textarea></label>
+            <label class="checkbox-row"><input id="smartLinkActive" type="checkbox" checked><span>Đang hoạt động</span></label>
+            <div class="form-actions">
+              <button class="btn primary" type="submit">Lưu Smart Link</button>
+              <button id="resetSmartLinkButton" class="btn ghost" type="button">Làm mới</button>
+            </div>
+          </form>
+
+          <div class="smartlink-list-panel">
+            <div class="smartlink-list-toolbar">
+              <input id="smartLinkSearch" type="search" placeholder="Tìm tên, slug hoặc URL đích...">
+              <button id="refreshSmartLinksButton" class="btn ghost" type="button">Tải lại</button>
+            </div>
+            <div id="smartLinksTable" class="smartlinks-table"></div>
+          </div>
+        </div>
+      </section>
+    </section>
+
   </main>
 
   <dialog id="confirmDialog">
@@ -240,6 +276,6 @@
     </form>
   </dialog>
 
-  <script type="module" src="/js/admin-v5.js?v=1.4.0"></script>
+  <script type="module" src="/js/admin-v5.js?v=1.4.1"></script>
 </body>
 </html>
