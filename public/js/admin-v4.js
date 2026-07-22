@@ -73,13 +73,37 @@ function openView(name) {
 }
 
 async function uploadImage(file, folder = "cms-v4/media") {
-  if (!file.type.startsWith("image/")) throw new Error(`${file.name} không phải ảnh.`);
-  if (file.size > 12 * 1024 * 1024) throw new Error(`${file.name} vượt quá 12MB.`);
-  const cleanName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${slugify(file.name.replace(/\.[^.]+$/, "")) || "image"}`;
-  const extension = file.name.split(".").pop()?.toLowerCase() || "webp";
-  const storageRef = ref(storage, `${folder}/${cleanName}.${extension}`);
-  await uploadBytes(storageRef, file, { contentType: file.type });
-  return getDownloadURL(storageRef);
+  if (!file?.type?.startsWith("image/")) {
+    throw new Error(`${file?.name || "Tệp"} không phải ảnh.`);
+  }
+
+  if (file.size > 12 * 1024 * 1024) {
+    throw new Error(`${file.name} vượt quá 12MB.`);
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  formData.append("folder", folder);
+
+  const response = await fetch(CLOUDINARY_UPLOAD_ENDPOINT, {
+    method: "POST",
+    body: formData
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result?.error?.message || `Không thể tải ảnh ${file.name} lên Cloudinary.`
+    );
+  }
+
+  if (!result.secure_url) {
+    throw new Error(`Cloudinary không trả về đường dẫn ảnh cho ${file.name}.`);
+  }
+
+  return result.secure_url;
 }
 
 async function uploadMany(files, folder) {
