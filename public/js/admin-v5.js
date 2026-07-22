@@ -45,6 +45,47 @@ function escapeHtml(value = "") {
   }[char]));
 }
 
+function escapeRegExp(value = "") {
+  return String(value).replace(/[.*+?^${}()|[\]\]/g, "\$&");
+}
+
+function highlightSearch(value = "") {
+  const safe = escapeHtml(value);
+  const rawTerm = $("#postSearch")?.value?.trim() || "";
+  if (!rawTerm) return safe;
+  const words = rawTerm.split(/\s+/).filter(word => word.length >= 2).slice(0, 6);
+  if (!words.length) return safe;
+  try {
+    const pattern = new RegExp(`(${words.map(escapeRegExp).join("|")})`, "gi");
+    return safe.replace(pattern, "<mark>$1</mark>");
+  } catch {
+    return safe;
+  }
+}
+
+function getNumericValue(post, keys) {
+  for (const key of keys) {
+    const value = Number(post?.[key]);
+    if (Number.isFinite(value) && value > 0) return value;
+  }
+  return 0;
+}
+
+function getPostYouTubeUrl(post) {
+  if (post.youtubeUrl) return post.youtubeUrl;
+  const block = Array.isArray(post.contentBlocks)
+    ? post.contentBlocks.find(item => item?.type === "youtube" && item.url)
+    : null;
+  return block?.url || "";
+}
+
+function getPostSmartLink(post) {
+  const direct = post.smartLinkUrl || post.smartLink || post.shortUrl || "";
+  if (direct) return direct;
+  const slug = post.smartLinkSlug || post.goSlug || "";
+  return slug ? `/go/${String(slug).replace(/^\/+|\/+$/g, "")}` : "";
+}
+
 function showNotice(message, type = "success") {
   const el = $("#notice");
   el.textContent = message;
@@ -499,7 +540,7 @@ function renderCategoryTreeNodes(nodes = [], parentParts = [], depth = 0) {
         <div class="tree-node-row">
           <button class="tree-toggle ${hasChildren ? "" : "empty"}" type="button" data-tree-toggle="${escapeHtml(key)}" aria-label="${expanded ? "Thu gọn" : "Mở rộng"}">${expanded ? "▼" : "▶"}</button>
           <button class="tree-node-button ${active ? "active" : ""}" type="button" data-tree-path="${escapeHtml(key)}">
-            <span class="tree-node-name">${escapeHtml(node.name)}</span>
+            <span class="tree-node-name"><span class="tree-folder-icon">${hasChildren ? (expanded ? "📂" : "📁") : "•"}</span>${escapeHtml(node.name)}</span>
             <span class="tree-count">${count}</span>
           </button>
         </div>
@@ -593,12 +634,16 @@ function renderManagerStats() {
   const published = state.posts.filter(post => post.status === "published").length;
   const draft = state.posts.filter(post => post.status === "draft").length;
   const featured = state.posts.filter(post => Boolean(post.featured)).length;
+  const views = state.posts.reduce((sum, post) => sum + getNumericValue(post, ["views", "viewCount", "viewsCount"]), 0);
+  const clicks = state.posts.reduce((sum, post) => sum + getNumericValue(post, ["smartLinkClicks", "clickCount", "clicks"]), 0);
 
   $("#statTotal").textContent = String(total);
   $("#statPublished").textContent = String(published);
   $("#statDraft").textContent = String(draft);
   $("#statFeatured").textContent = String(featured);
   $("#statDuplicates").textContent = String(state.duplicateIds.size);
+  $("#statViews").textContent = views.toLocaleString("vi-VN");
+  $("#statClicks").textContent = clicks.toLocaleString("vi-VN");
 }
 
 function getFilteredPosts() {
@@ -654,86 +699,60 @@ function renderPosts() {
         const categoryLabel = getPostCategoryLabel(post);
         const excerpt = getPostExcerpt(post);
         const date = getPostDate(post);
+        const internalId = post.internalId || post.aiId || "—";
+        const facebookUrl = post.facebookUrl || "";
+        const youtubeUrl = getPostYouTubeUrl(post);
+        const smartLink = getPostSmartLink(post);
+        const viewCount = getNumericValue(post, ["views", "viewCount", "viewsCount"]);
+        const clickCount = getNumericValue(post, ["smartLinkClicks", "clickCount", "clicks"]);
 
         return `
           <article class="post-row ${duplicate ? "duplicate-highlight" : ""} ${state.selectedPostIds.has(post.id) ? "selected" : ""}">
             <div class="post-select-cell"><input class="post-select-checkbox" type="checkbox" data-select-post="${escapeHtml(post.id)}" ${state.selectedPostIds.has(post.id) ? "checked" : ""}></div>
-            <div class="post-thumb">
-              <img
-                src="${escapeHtml(getPostImage(post))}"
-                alt="${escapeHtml(post.title || "Ảnh bài viết")}"
-                loading="lazy"
-                onerror="this.onerror=null;this.src='/assets/images/logo-mina.png'"
-              >
+            <div class="post-thumb enterprise-thumb">
+              <img src="${escapeHtml(getPostImage(post))}" alt="${escapeHtml(post.title || "Ảnh bài viết")}" loading="lazy" onerror="this.onerror=null;this.src='/assets/images/logo-mina.png'">
             </div>
 
             <div class="post-content-cell">
-              <h3>${escapeHtml(post.title || "(Không có tiêu đề)")}</h3>
+              <h3>${highlightSearch(post.title || "(Không có tiêu đề)")}</h3>
+              ${excerpt ? `<p class="post-excerpt">${highlightSearch(excerpt)}</p>` : ""}
+              <div class="post-submeta">${highlightSearch(post.slug || post.id)}</div>
+            </div>
 
-              ${excerpt
-                ? `<p class="post-excerpt">${escapeHtml(excerpt)}</p>`
-                : ""
-              }
-
-              <div class="post-submeta">
-                ${escapeHtml(post.internalId || post.slug || post.id)}
-                ${date ? ` · ${escapeHtml(date)}` : ""}
-              </div>
+            <div class="post-identity-cell">
+              <strong>${highlightSearch(internalId)}</strong>
+              <span>${date || "Chưa có ngày"}</span>
+              ${viewCount ? `<small>👁 ${viewCount.toLocaleString("vi-VN")} lượt xem</small>` : ""}
             </div>
 
             <div class="post-category-cell">
-              <div class="post-category-path">${escapeHtml(categoryLabel)}</div>
+              <div class="post-category-path">${highlightSearch(categoryLabel)}</div>
               <div class="post-category-id">${escapeHtml(post.categoryId || "")}</div>
             </div>
 
+            <div class="post-link-cell">
+              <a class="mini-link web" href="${getPostViewUrl(post)}" target="_blank" rel="noopener" title="Xem trên website">🌐</a>
+              ${facebookUrl ? `<a class="mini-link facebook" href="${escapeHtml(facebookUrl)}" target="_blank" rel="noopener" title="Mở Facebook">f</a>` : `<span class="mini-link disabled" title="Chưa có Facebook">f</span>`}
+              ${youtubeUrl ? `<a class="mini-link youtube" href="${escapeHtml(youtubeUrl)}" target="_blank" rel="noopener" title="Mở YouTube">▶</a>` : `<span class="mini-link disabled" title="Chưa có YouTube">▶</span>`}
+              ${smartLink ? `<button class="mini-link smart" type="button" data-copy-smart-link="${escapeHtml(smartLink)}" title="Copy Smart Link">🔗</button>` : `<span class="mini-link disabled" title="Smart Link chưa được gắn">🔗</span>`}
+              ${clickCount ? `<small>${clickCount.toLocaleString("vi-VN")} click</small>` : ""}
+            </div>
+
             <div class="status-stack">
-              <span class="status-badge ${post.status === "draft" ? "draft" : ""}">
-                ${post.status === "draft" ? "Bản nháp" : "Công khai"}
-              </span>
-
-              ${post.featured
-                ? `<span class="status-badge featured">Nổi bật</span>`
-                : ""
-              }
-
-              ${duplicate
-                ? `<span class="status-badge duplicate">Có thể trùng</span>`
-                : ""
-              }
+              <span class="status-badge ${post.status === "draft" ? "draft" : "published"}">${post.status === "draft" ? "● Bản nháp" : "● Công khai"}</span>
+              ${post.featured ? `<span class="status-badge featured">★ Nổi bật</span>` : ""}
+              ${duplicate ? `<span class="status-badge duplicate">! Có thể trùng</span>` : ""}
             </div>
 
-            <div class="post-buttons">
-<a
-  class="btn ghost view-post-button"
-  href="${getPostViewUrl(post)}"
-  target="_blank"
-  rel="noopener"
->
-  Xem
-</a>
-
-              <button
-                class="btn ghost"
-                type="button"
-                data-edit-post="${escapeHtml(post.id)}"
-              >
-                Sửa
-              </button>
-
-              <button
-                class="btn danger"
-                type="button"
-                data-delete-post="${escapeHtml(post.id)}"
-              >
-                Xóa
-              </button>
+            <div class="post-buttons compact-actions">
+              <a class="icon-action view-post-button" href="${getPostViewUrl(post)}" target="_blank" rel="noopener" title="Xem Website">🌐</a>
+              <button class="icon-action edit" type="button" data-edit-post="${escapeHtml(post.id)}" title="Sửa bài">✎</button>
+              <button class="icon-action delete" type="button" data-delete-post="${escapeHtml(post.id)}" title="Xóa bài">✕</button>
             </div>
-          </article>
-        `;
+          </article>`;
       }).join("")
     : `<div class="manager-empty">Không có bài viết phù hợp với bộ lọc.</div>`;
 }
-
 async function refreshData() {
   state.posts = await repo.listPosts();
 
@@ -916,8 +935,7 @@ function bindEvents() {
     renderPosts();
   });
 
-  $("#applyBulkAction").addEventListener("click", async () => {
-    const action = $("#bulkAction").value;
+  async function applyBulkAction(action, triggerButton) {
     const ids = [...state.selectedPostIds];
     if (!action) return showNotice("Bạn chưa chọn thao tác hàng loạt.", "error");
     if (!ids.length) return showNotice("Bạn chưa chọn bài viết nào.", "error");
@@ -927,8 +945,7 @@ function bindEvents() {
       if (!ok) return;
     }
 
-    const button = $("#applyBulkAction");
-    setBusy(button, true, "Đang áp dụng…");
+    setBusy(triggerButton, true, "Đang xử lý…");
     try {
       for (const id of ids) {
         if (action === "delete") {
@@ -946,18 +963,34 @@ function bindEvents() {
         await repo.savePost(payload, id);
       }
       state.selectedPostIds.clear();
-      $("#bulkAction").value = "";
       await refreshData();
       showNotice(`Đã áp dụng thao tác cho ${ids.length} bài viết.`);
     } catch (error) {
       console.error(error);
       showNotice(error.message || "Không thể áp dụng thao tác hàng loạt.", "error");
     } finally {
-      setBusy(button, false);
+      setBusy(triggerButton, false);
     }
+  }
+
+  $(".bulk-quick-actions").addEventListener("click", event => {
+    const button = event.target.closest("[data-bulk-action]");
+    if (!button) return;
+    applyBulkAction(button.dataset.bulkAction, button);
   });
 
   $("#postsTable").addEventListener("click", async event => {
+    const copySmartLink = event.target.closest("[data-copy-smart-link]")?.dataset.copySmartLink;
+    if (copySmartLink) {
+      try {
+        const absoluteUrl = new URL(copySmartLink, location.origin).href;
+        await navigator.clipboard.writeText(absoluteUrl);
+        showNotice(`Đã copy: ${absoluteUrl}`);
+      } catch {
+        showNotice("Không thể copy Smart Link.", "error");
+      }
+      return;
+    }
     const selectId = event.target.dataset.selectPost;
     if (selectId) {
       if (event.target.checked) state.selectedPostIds.add(selectId);
