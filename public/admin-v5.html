@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#09061a">
   <meta name="robots" content="noindex,nofollow">
-  <title>Mina CMS v5.2 Enterprise</title>
+  <title>Mina CMS v5.2.1 Enterprise</title>
   <link rel="icon" href="/assets/images/logo-mina.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/admin-v5.css?v=1.3.0">
+  <link rel="stylesheet" href="/css/admin-v5.css?v=1.4.0">
 </head>
 <body>
   <aside class="sidebar">
-    <a class="brand" href="/"><img src="/assets/images/logo-mina.png" alt=""><span>Mina CMS v5.2</span></a>
+    <a class="brand" href="/"><img src="/assets/images/logo-mina.png" alt=""><span>Mina CMS v5.2.1</span></a>
     <nav>
       <button class="nav-item active" data-view="editor">✦ Đăng bài</button>
       <button class="nav-item" data-view="posts">▦ Quản lý bài</button>
@@ -175,12 +175,14 @@
           <button id="refreshPostsButton" class="btn ghost" type="button">Tải lại dữ liệu</button>
         </div>
 
-        <div class="manager-stats">
+        <div class="manager-stats enterprise-stats">
           <article class="stat-card"><strong id="statTotal">0</strong><span>Tổng bài</span></article>
           <article class="stat-card"><strong id="statPublished">0</strong><span>Công khai</span></article>
           <article class="stat-card"><strong id="statDraft">0</strong><span>Bản nháp</span></article>
           <article class="stat-card"><strong id="statFeatured">0</strong><span>Nổi bật</span></article>
           <article class="stat-card"><strong id="statDuplicates">0</strong><span>Có thể trùng</span></article>
+          <article class="stat-card"><strong id="statViews">0</strong><span>Lượt xem</span></article>
+          <article class="stat-card"><strong id="statClicks">0</strong><span>Smart Click</span></article>
         </div>
 
         <div class="enterprise-manager-grid">
@@ -197,18 +199,16 @@
           </aside>
 
           <section class="enterprise-posts-panel">
-            <div class="bulk-toolbar">
+            <div class="bulk-toolbar enterprise-bulk-toolbar">
               <label class="bulk-select-all"><input id="selectAllPosts" type="checkbox"><span>Chọn tất cả đang hiển thị</span></label>
               <strong id="selectedPostsCount">0 bài đã chọn</strong>
-              <select id="bulkAction">
-                <option value="">Thao tác hàng loạt</option>
-                <option value="publish">Đăng công khai</option>
-                <option value="draft">Chuyển thành bản nháp</option>
-                <option value="feature">Đánh dấu nổi bật</option>
-                <option value="unfeature">Bỏ nổi bật</option>
-                <option value="delete">Xóa các bài đã chọn</option>
-              </select>
-              <button id="applyBulkAction" class="btn ghost" type="button">Áp dụng</button>
+              <div class="bulk-quick-actions" aria-label="Thao tác hàng loạt">
+                <button class="bulk-action-button publish" type="button" data-bulk-action="publish" title="Đăng công khai">✓ Công khai</button>
+                <button class="bulk-action-button draft" type="button" data-bulk-action="draft" title="Chuyển thành bản nháp">◷ Bản nháp</button>
+                <button class="bulk-action-button feature" type="button" data-bulk-action="feature" title="Đánh dấu nổi bật">★ Nổi bật</button>
+                <button class="bulk-action-button unfeature" type="button" data-bulk-action="unfeature" title="Bỏ nổi bật">☆ Bỏ ghim</button>
+                <button class="bulk-action-button delete" type="button" data-bulk-action="delete" title="Xóa bài đã chọn">✕ Xóa</button>
+              </div>
             </div>
 
             <div class="current-filter-bar">
@@ -218,7 +218,7 @@
 
             <div class="posts-table-wrap">
               <div class="posts-table-head enterprise-head">
-                <span>Chọn</span><span>Ảnh</span><span>Nội dung</span><span>Danh mục</span><span>Trạng thái</span><span>Thao tác</span>
+                <span>Chọn</span><span>Ảnh</span><span>Nội dung</span><span>ID / Ngày</span><span>Danh mục</span><span>Liên kết</span><span>Trạng thái</span><span>Thao tác</span>
               </div>
               <div id="postsTable" class="posts-table enterprise-table"></div>
             </div>
@@ -240,6 +240,6 @@
     </form>
   </dialog>
 
-  <script type="module" src="/js/admin-v5.js?v=1.3.0"></script>
+  <script type="module" src="/js/admin-v5.js?v=1.4.0"></script>
 </body>
 </html>
