@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "private": true,
   "engines": {
-    "node": "22.x"
+    "node": "20.x"
   },
   "scripts": {
     "build": "node -e \"const fs=require('fs'); if(!fs.existsSync('public')){throw new Error('Khong tim thay thu muc public o goc repository');} fs.rmSync('dist',{recursive:true,force:true}); fs.cpSync('public','dist',{recursive:true}); console.log('Mina Clean build completed');\"",
