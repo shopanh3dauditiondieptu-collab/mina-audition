@@ -4,6 +4,10 @@ import {
   onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 const repo = new CmsRepository(db);
+const CLOUDINARY_CLOUD_NAME = "rpwcnrfg";
+const CLOUDINARY_UPLOAD_PRESET = "mina-upload";
+const CLOUDINARY_UPLOAD_ENDPOINT =
+  `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 const state = {
   user: null,
   posts: [],
