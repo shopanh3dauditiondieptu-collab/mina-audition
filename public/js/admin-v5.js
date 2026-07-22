@@ -4,9 +4,6 @@ import {
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-import {
-  collection, addDoc, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 const repo = new CmsV5Repository(db);
 const CLOUDINARY_CLOUD_NAME = "rpwcnrfg";
@@ -800,11 +797,7 @@ function getSmartLinkPublicPath(item) {
 
 async function loadSmartLinks() {
   try {
-    const ref = collection(db, "smartLinks");
-    let snapshot;
-    try { snapshot = await getDocs(query(ref, orderBy("updatedAt", "desc"))); }
-    catch { snapshot = await getDocs(ref); }
-    state.smartLinks = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+    state.smartLinks = await repo.listSmartLinks();
     renderSmartLinks();
   } catch (error) {
     console.error("Không tải được Smart Links", error);
@@ -867,12 +860,10 @@ async function saveSmartLink(event) {
   const payload = {
     name, slug, targetUrl,
     note: $("#smartLinkNote").value.trim(),
-    active: $("#smartLinkActive").checked,
-    updatedAt: serverTimestamp()
+    active: $("#smartLinkActive").checked
   };
   try {
-    if (id) await updateDoc(doc(db, "smartLinks", id), payload);
-    else await addDoc(collection(db, "smartLinks"), { ...payload, clicks: 0, createdAt: serverTimestamp() });
+    await repo.saveSmartLink(payload, id);
     resetSmartLinkForm();
     await loadSmartLinks();
     showNotice("Đã lưu Smart Link.");
@@ -918,7 +909,7 @@ function bindEvents() {
     if (editId) { const item = state.smartLinks.find(link => link.id === editId); if (item) fillSmartLinkForm(item); return; }
     const deleteId = event.target.closest("[data-delete-smart-link]")?.dataset.deleteSmartLink;
     if (deleteId && await confirmAction("Xóa Smart Link", "Smart Link này sẽ bị xóa khỏi hệ thống.")) {
-      try { await deleteDoc(doc(db, "smartLinks", deleteId)); await loadSmartLinks(); showNotice("Đã xóa Smart Link."); }
+      try { await repo.deleteSmartLink(deleteId); await loadSmartLinks(); showNotice("Đã xóa Smart Link."); }
       catch (error) { console.error(error); showNotice("Không thể xóa Smart Link.", "error"); }
     }
   });
@@ -1135,22 +1126,43 @@ function bindEvents() {
   }, 10000);
 }
 
-bindEvents();
-resetForm();
+function showFatalStartupError(error) {
+  console.error("CMS startup error:", error);
+  const badge = $("#authBadge");
+  if (badge) badge.textContent = "Lỗi khởi động CMS";
+  const notice = $("#notice");
+  if (notice) {
+    notice.hidden = false;
+    notice.className = "notice error";
+    notice.textContent = `JavaScript gặp lỗi: ${error?.message || error}. Mở Console để xem chi tiết.`;
+  }
+}
 
-onAuthStateChanged(auth, async user => {
-  if (!user) {
-    location.replace(`/admin-login.html?returnUrl=${encodeURIComponent("/admin-v5.html")}`);
-    return;
-  }
-  state.user = user;
-  $("#authBadge").textContent = user.email || user.displayName || "Đã đăng nhập";
-  try {
-    await loadCategoryTree();
-    await refreshData();
-    await loadSmartLinks();
-  } catch (error) {
-    console.error(error);
-    showNotice("CMS đã mở nhưng không đọc được dữ liệu. Kiểm tra Firestore Rules.", "error");
-  }
-});
+try {
+  bindEvents();
+  resetForm();
+} catch (error) {
+  showFatalStartupError(error);
+}
+
+try {
+  onAuthStateChanged(auth, async user => {
+    if (!user) {
+      location.replace(`/admin-login.html?returnUrl=${encodeURIComponent("/admin-v5.html")}`);
+      return;
+    }
+    state.user = user;
+    $("#authBadge").textContent = user.email || user.displayName || "Đã đăng nhập";
+
+    try { await loadCategoryTree(); }
+    catch (error) { console.error("Category tree:", error); showNotice("Không tải được cây danh mục.", "error"); }
+
+    try { await refreshData(); }
+    catch (error) { console.error("Posts:", error); showNotice("Không đọc được danh sách bài viết. Kiểm tra Firestore Rules.", "error"); }
+
+    try { await loadSmartLinks(); }
+    catch (error) { console.error("Smart Links:", error); }
+  }, showFatalStartupError);
+} catch (error) {
+  showFatalStartupError(error);
+}

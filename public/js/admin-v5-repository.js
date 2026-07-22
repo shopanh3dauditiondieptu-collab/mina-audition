@@ -28,7 +28,7 @@ export class CmsV5Repository {
   async savePost(payload, id = "") {
     const data = {
       ...payload,
-      cmsVersion: "mina-cms-v5.1-enterprise",
+      cmsVersion: "mina-cms-v5.2.3-enterprise",
       updatedAt: serverTimestamp()
     };
     if (id) {
