@@ -10,6 +10,7 @@ const CLOUDINARY_CLOUD_NAME = "rpwcnrfg";
 const CLOUDINARY_UPLOAD_PRESET = "mina-upload";
 const CLOUDINARY_ENDPOINT = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 const DRAFT_KEY = "mina-cms-v5-draft";
+const PUBLIC_SITE_ORIGIN = "https://www.minaaudition.vn";
 
 const state = {
   user: null,
@@ -920,7 +921,7 @@ function bindEvents() {
   $("#smartLinksTable")?.addEventListener("click", async event => {
     const copyPath = event.target.closest("[data-copy-manager-link]")?.dataset.copyManagerLink;
     if (copyPath) {
-      const absolute = new URL(copyPath, location.origin).href;
+      const absolute = new URL(copyPath, PUBLIC_SITE_ORIGIN).href;
       try { await navigator.clipboard.writeText(absolute); showNotice(`Đã copy: ${absolute}`); }
       catch { showNotice("Không thể copy Smart Link.", "error"); }
       return;
@@ -1115,7 +1116,7 @@ function bindEvents() {
     const copySmartLink = event.target.closest("[data-copy-smart-link]")?.dataset.copySmartLink;
     if (copySmartLink) {
       try {
-        const absoluteUrl = new URL(copySmartLink, location.origin).href;
+        const absoluteUrl = new URL(copySmartLink, PUBLIC_SITE_ORIGIN).href;
         await navigator.clipboard.writeText(absoluteUrl);
         showNotice(`Đã copy: ${absoluteUrl}`);
       } catch {
