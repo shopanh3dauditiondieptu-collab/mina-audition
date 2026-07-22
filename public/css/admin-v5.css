@@ -242,3 +242,27 @@
 .posts-table-head.enterprise-head,.posts-table.enterprise-table .post-row{grid-template-columns:46px 82px minmax(260px,1.5fr) minmax(190px,1fr) 125px 205px;min-width:980px}.post-select-cell{display:flex;justify-content:center}.post-select-checkbox{width:18px;height:18px}.enterprise-table .post-row.selected{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(125,232,255,.12)}
 @media(max-width:1180px){.enterprise-manager-grid{grid-template-columns:260px minmax(0,1fr)}.bulk-toolbar{grid-template-columns:1fr 1fr}.category-tree-panel{position:static;max-height:520px}}
 @media(max-width:850px){.enterprise-manager-grid{grid-template-columns:1fr}.category-tree-panel{max-height:none}.bulk-toolbar{grid-template-columns:1fr}.current-filter-bar{align-items:flex-start;flex-direction:column}}
+
+
+/* ===== Mina CMS v5.2.1 polish ===== */
+.enterprise-manager-grid{grid-template-columns:minmax(340px,380px) minmax(0,1fr)}
+.category-tree-panel{resize:horizontal;min-width:320px;max-width:520px}
+.tree-folder-icon{display:inline-flex;width:24px;justify-content:center;margin-right:4px;filter:saturate(.9)}
+.tree-node-name{display:flex;align-items:center}
+.tree-node-row{transition:background .18s ease}.tree-children{transition:opacity .18s ease}
+.enterprise-stats{grid-template-columns:repeat(7,minmax(120px,1fr));overflow-x:auto;padding-bottom:4px}
+.enterprise-bulk-toolbar{grid-template-columns:minmax(190px,1fr) auto minmax(420px,auto)}
+.bulk-quick-actions{display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+.bulk-action-button{border:1px solid #355f78;background:#17172f;color:#fff;border-radius:999px;padding:9px 12px;font:inherit;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap}
+.bulk-action-button:hover{transform:translateY(-1px);border-color:var(--cyan)}
+.bulk-action-button.publish{color:#85ffd4}.bulk-action-button.draft{color:#ffc1ec}.bulk-action-button.feature{color:#ffd66e}.bulk-action-button.unfeature{color:#d8d4e8}.bulk-action-button.delete{color:#ff9ab4}
+.posts-table-head.enterprise-head,.posts-table.enterprise-table .post-row{grid-template-columns:46px 104px minmax(260px,1.35fr) 145px minmax(210px,.95fr) 150px 130px 120px;min-width:1260px}
+.enterprise-thumb{width:96px;height:96px}.post-identity-cell{display:grid;gap:6px;align-content:center}.post-identity-cell strong{color:#9eeeff;font-size:13px;overflow-wrap:anywhere}.post-identity-cell span{color:#d0cde0;font-size:12px}.post-identity-cell small{color:#8f8aa7;font-size:11px}
+.post-link-cell{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.post-link-cell small{width:100%;color:#8f8aa7;font-size:11px}
+.mini-link{width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #355f78;border-radius:9px;background:#17172f;color:#fff;text-decoration:none;font:inherit;font-weight:900;cursor:pointer;padding:0}.mini-link:hover{border-color:var(--cyan);transform:translateY(-1px)}.mini-link.facebook{color:#8ab4ff}.mini-link.youtube{color:#ff8e9c}.mini-link.smart{color:#9ef5ff}.mini-link.disabled{opacity:.28;cursor:not-allowed}
+.status-badge.published{background:#12352f;color:#83ffd8}.status-badge.draft{background:#38243e;color:#ffc1ec}
+.compact-actions{gap:7px}.icon-action{width:34px;height:34px;border:1px solid #355f78;border-radius:10px;background:#17172f;color:#fff;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font:inherit;font-weight:900;cursor:pointer;padding:0}.icon-action:hover{transform:translateY(-1px);border-color:var(--cyan)}.icon-action.edit{color:#9eeeff}.icon-action.delete{color:#ff9ab4}
+mark{background:rgba(255,214,110,.3);color:#fff3b3;border-radius:4px;padding:0 2px}
+@media(max-width:1380px){.enterprise-stats{grid-template-columns:repeat(4,minmax(130px,1fr))}.enterprise-bulk-toolbar{grid-template-columns:1fr auto}.bulk-quick-actions{grid-column:1/-1;justify-content:flex-start}}
+@media(max-width:1180px){.enterprise-manager-grid{grid-template-columns:300px minmax(0,1fr)}.category-tree-panel{resize:none;min-width:0;max-width:none}}
+@media(max-width:850px){.enterprise-manager-grid{grid-template-columns:1fr}.enterprise-stats{grid-template-columns:repeat(2,minmax(130px,1fr))}.enterprise-bulk-toolbar{grid-template-columns:1fr}.bulk-quick-actions{justify-content:flex-start}}
