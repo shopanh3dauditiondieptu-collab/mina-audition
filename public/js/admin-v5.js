@@ -20,6 +20,8 @@ const state = {
   coverUrl: "",
   saving: false,
   activeCategoryFilter: "",
+  expandedCategoryPaths: new Set(),
+  selectedPostIds: new Set(),
   duplicateIds: new Set(),
   duplicateScanDone: false
 };
@@ -406,7 +408,7 @@ function renderCategoryLevel(level) {
   if(level<=4)fillCategorySelect($("#categoryLevel4"),c?.children||[],"Chọn loại"); renderCategoryPath();
 }
 
-async function loadCategoryTree(){const response=await fetch("/data/category-tree.json",{cache:"no-store"});if(!response.ok)throw new Error("Không tải được cây danh mục.");state.categoryTree=await response.json();renderCategoryRoot();}
+async function loadCategoryTree(){const response=await fetch("/data/category-tree.json",{cache:"no-store"});if(!response.ok)throw new Error("Không tải được cây danh mục.");state.categoryTree=await response.json();renderCategoryRoot();state.categoryTree.forEach(node=>state.expandedCategoryPaths.add(pathKey([node.name])));}
 
 function setCategoryPath(ids=[]){renderCategoryRoot();if(!ids.length)return;$("#categoryLevel1").value=ids[0]||"";renderCategoryLevel(2);$("#categoryLevel2").value=ids[1]||"";renderCategoryLevel(3);$("#categoryLevel3").value=ids[2]||"";renderCategoryLevel(4);$("#categoryLevel4").value=ids[3]||"";renderCategoryPath();}
 
@@ -460,41 +462,74 @@ function getPostViewUrl(post) {
   return `/post.html?id=${encodeURIComponent(post.id)}`;
 }
 
-function buildCategoryCounts(posts) {
-  const counts = new Map();
-
-  for (const post of posts) {
-    const category = getPostCategoryLabel(post);
-    counts.set(category, (counts.get(category) || 0) + 1);
+function getPostCategoryPath(post) {
+  if (Array.isArray(post.categoryPath) && post.categoryPath.length) {
+    return post.categoryPath.map(String).filter(Boolean);
   }
-
-  return [...counts.entries()]
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "vi"));
+  return [post.section, post.categoryName || post.category].filter(Boolean).map(String);
 }
 
-function renderCategoryChips() {
-  const chips = $("#categoryFilterChips");
-  const categoryCounts = buildCategoryCounts(state.posts);
+function pathKey(parts = []) {
+  return parts.map(part => String(part).trim()).filter(Boolean).join(" / ");
+}
 
-  chips.innerHTML = `
-    <button
-      type="button"
-      class="category-chip ${state.activeCategoryFilter ? "" : "active"}"
-      data-category-filter=""
-    >
-      Tất cả (${state.posts.length})
-    </button>
+function postMatchesCategoryPath(post, selectedPath) {
+  if (!selectedPath) return true;
+  const postPath = pathKey(getPostCategoryPath(post));
+  return postPath === selectedPath || postPath.startsWith(`${selectedPath} / `);
+}
 
-    ${categoryCounts.map(([category, count]) => `
-      <button
-        type="button"
-        class="category-chip ${state.activeCategoryFilter === category ? "active" : ""}"
-        data-category-filter="${escapeHtml(category)}"
-      >
-        ${escapeHtml(category)} (${count})
-      </button>
-    `).join("")}
-  `;
+function countPostsForPath(parts) {
+  const key = pathKey(parts);
+  return state.posts.filter(post => postMatchesCategoryPath(post, key)).length;
+}
+
+function renderCategoryTreeNodes(nodes = [], parentParts = [], depth = 0) {
+  return nodes.map(node => {
+    const parts = [...parentParts, node.name];
+    const key = pathKey(parts);
+    const children = Array.isArray(node.children) ? node.children : [];
+    const hasChildren = children.length > 0;
+    const expanded = state.expandedCategoryPaths.has(key);
+    const active = state.activeCategoryFilter === key;
+    const count = countPostsForPath(parts);
+
+    return `
+      <div class="tree-node" data-tree-depth="${depth}">
+        <div class="tree-node-row">
+          <button class="tree-toggle ${hasChildren ? "" : "empty"}" type="button" data-tree-toggle="${escapeHtml(key)}" aria-label="${expanded ? "Thu gọn" : "Mở rộng"}">${expanded ? "▼" : "▶"}</button>
+          <button class="tree-node-button ${active ? "active" : ""}" type="button" data-tree-path="${escapeHtml(key)}">
+            <span class="tree-node-name">${escapeHtml(node.name)}</span>
+            <span class="tree-count">${count}</span>
+          </button>
+        </div>
+        ${hasChildren ? `<div class="tree-children" ${expanded ? "" : "hidden"}>${renderCategoryTreeNodes(children, parts, depth + 1)}</div>` : ""}
+      </div>`;
+  }).join("");
+}
+
+function renderCategoryTreeFilter() {
+  const box = $("#categoryTreeFilter");
+  if (!box) return;
+  $("#allPostsTreeCount").textContent = String(state.posts.length);
+  $("#allPostsTreeButton").classList.toggle("active", !state.activeCategoryFilter);
+  box.innerHTML = renderCategoryTreeNodes(state.categoryTree);
+  $("#currentCategoryLabel").textContent = state.activeCategoryFilter || "Tất cả bài viết";
+}
+
+function syncSelectionToVisiblePosts(posts) {
+  const visibleIds = new Set(posts.map(post => post.id));
+  for (const id of [...state.selectedPostIds]) {
+    if (!state.posts.some(post => post.id === id)) state.selectedPostIds.delete(id);
+  }
+  const allVisibleSelected = posts.length > 0 && posts.every(post => state.selectedPostIds.has(post.id));
+  const selectAll = $("#selectAllPosts");
+  if (selectAll) {
+    selectAll.checked = allVisibleSelected;
+    selectAll.indeterminate = !allVisibleSelected && posts.some(post => state.selectedPostIds.has(post.id));
+  }
+  $("#selectedPostsCount").textContent = `${state.selectedPostIds.size} bài đã chọn`;
+  $("#visiblePostsCount").textContent = String(posts.length);
 }
 
 function detectDuplicatePosts() {
@@ -600,17 +635,18 @@ function getFilteredPosts() {
 
     const matchesSearch = !term || haystack.includes(term);
     const matchesStatus = !status || post.status === status;
-    const matchesCategory = !category || getPostCategoryLabel(post) === category;
+    const matchesCategory = postMatchesCategoryPath(post, category);
 
     return matchesSearch && matchesStatus && matchesCategory;
   });
 }
 
 function renderPosts() {
-  renderCategoryChips();
+  renderCategoryTreeFilter();
   renderManagerStats();
 
   const posts = getFilteredPosts();
+  syncSelectionToVisiblePosts(posts);
 
   $("#postsTable").innerHTML = posts.length
     ? posts.map(post => {
@@ -620,7 +656,8 @@ function renderPosts() {
         const date = getPostDate(post);
 
         return `
-          <article class="post-row ${duplicate ? "duplicate-highlight" : ""}">
+          <article class="post-row ${duplicate ? "duplicate-highlight" : ""} ${state.selectedPostIds.has(post.id) ? "selected" : ""}">
+            <div class="post-select-cell"><input class="post-select-checkbox" type="checkbox" data-select-post="${escapeHtml(post.id)}" ${state.selectedPostIds.has(post.id) ? "checked" : ""}></div>
             <div class="post-thumb">
               <img
                 src="${escapeHtml(getPostImage(post))}"
@@ -833,15 +870,101 @@ function bindEvents() {
 
   $("#checkDuplicatesButton").addEventListener("click", detectDuplicatePosts);
 
-  $("#categoryFilterChips").addEventListener("click", event => {
-    const button = event.target.closest("[data-category-filter]");
-    if (!button) return;
 
-    state.activeCategoryFilter = button.dataset.categoryFilter || "";
+  $("#categoryTreeFilter").addEventListener("click", event => {
+    const toggle = event.target.closest("[data-tree-toggle]");
+    if (toggle) {
+      const key = toggle.dataset.treeToggle;
+      if (state.expandedCategoryPaths.has(key)) state.expandedCategoryPaths.delete(key);
+      else state.expandedCategoryPaths.add(key);
+      renderCategoryTreeFilter();
+      return;
+    }
+    const button = event.target.closest("[data-tree-path]");
+    if (!button) return;
+    state.activeCategoryFilter = button.dataset.treePath || "";
     renderPosts();
   });
 
+  $("#allPostsTreeButton").addEventListener("click", () => {
+    state.activeCategoryFilter = "";
+    renderPosts();
+  });
+
+  $("#expandAllCategories").addEventListener("click", event => {
+    const paths = [];
+    const walk = (nodes, parent = []) => (nodes || []).forEach(node => {
+      const parts = [...parent, node.name];
+      if (node.children?.length) {
+        paths.push(pathKey(parts));
+        walk(node.children, parts);
+      }
+    });
+    walk(state.categoryTree);
+    const shouldCollapse = paths.length && paths.every(path => state.expandedCategoryPaths.has(path));
+    state.expandedCategoryPaths = shouldCollapse ? new Set() : new Set(paths);
+    event.currentTarget.textContent = shouldCollapse ? "Mở hết" : "Thu gọn";
+    renderCategoryTreeFilter();
+  });
+
+  $("#selectAllPosts").addEventListener("change", event => {
+    const visiblePosts = getFilteredPosts();
+    for (const post of visiblePosts) {
+      if (event.target.checked) state.selectedPostIds.add(post.id);
+      else state.selectedPostIds.delete(post.id);
+    }
+    renderPosts();
+  });
+
+  $("#applyBulkAction").addEventListener("click", async () => {
+    const action = $("#bulkAction").value;
+    const ids = [...state.selectedPostIds];
+    if (!action) return showNotice("Bạn chưa chọn thao tác hàng loạt.", "error");
+    if (!ids.length) return showNotice("Bạn chưa chọn bài viết nào.", "error");
+
+    if (action === "delete") {
+      const ok = await confirmAction("Xóa nhiều bài viết", `Bạn chuẩn bị xóa ${ids.length} bài. Hành động này không thể hoàn tác.`);
+      if (!ok) return;
+    }
+
+    const button = $("#applyBulkAction");
+    setBusy(button, true, "Đang áp dụng…");
+    try {
+      for (const id of ids) {
+        if (action === "delete") {
+          await repo.deletePost(id);
+          continue;
+        }
+        const post = await repo.getPost(id);
+        if (!post) continue;
+        const payload = { ...post };
+        delete payload.id;
+        if (action === "publish") payload.status = "published";
+        if (action === "draft") payload.status = "draft";
+        if (action === "feature") payload.featured = true;
+        if (action === "unfeature") payload.featured = false;
+        await repo.savePost(payload, id);
+      }
+      state.selectedPostIds.clear();
+      $("#bulkAction").value = "";
+      await refreshData();
+      showNotice(`Đã áp dụng thao tác cho ${ids.length} bài viết.`);
+    } catch (error) {
+      console.error(error);
+      showNotice(error.message || "Không thể áp dụng thao tác hàng loạt.", "error");
+    } finally {
+      setBusy(button, false);
+    }
+  });
+
   $("#postsTable").addEventListener("click", async event => {
+    const selectId = event.target.dataset.selectPost;
+    if (selectId) {
+      if (event.target.checked) state.selectedPostIds.add(selectId);
+      else state.selectedPostIds.delete(selectId);
+      renderPosts();
+      return;
+    }
     const editId = event.target.dataset.editPost;
     const deleteId = event.target.dataset.deletePost;
     if (editId) fillForm(await repo.getPost(editId));
