@@ -1,14 +1,112 @@
-import {listPosts,listSkills,getPost} from './repository.js';import {esc,formatDate,placeholder,normalize} from './utils.js';
-const page=document.body.dataset.page;
-const cardPost=p=>`<article class="card"><img src="${esc(p.imageUrl||p.image||placeholder)}" onerror="this.src='${placeholder}'"><div class="card-body"><span class="badge">${esc(p.category||'Mina Blog')}</span><h3>${esc(p.title||'Chưa có tiêu đề')}</h3><p class="muted">${esc(p.summary||p.description||'')}</p><div class="meta"><span>${formatDate(p.updatedAt||p.createdAt)}</span></div><div class="actions"><a class="btn" href="post.html?id=${encodeURIComponent(p.id)}">Đọc bài</a>${p.facebookUrl?`<a class="btn secondary" target="_blank" rel="noopener" href="${esc(p.facebookUrl)}">Facebook</a>`:''}</div></div></article>`;
-async function home(){const box=document.querySelector('#latest');try{box.innerHTML=(await listPosts(6)).map(cardPost).join('')||'<div class="empty">Chưa có bài viết.</div>'}catch(e){box.innerHTML=`<div class="empty">Không tải được dữ liệu: ${esc(e.message)}</div>`}}
-async function blog(){const box=document.querySelector('#posts'),q=document.querySelector('#q'),cat=document.querySelector('#cat');try{const all=await listPosts();const cats=[...new Set(all.map(x=>x.category).filter(Boolean))].sort();cat.innerHTML='<option value="">Tất cả danh mục</option>'+cats.map(x=>`<option>${esc(x)}</option>`).join('');const render=()=>{const n=normalize(q.value),c=cat.value;box.innerHTML=all.filter(x=>(!c||x.category===c)&&(!n||normalize(`${x.title} ${x.summary} ${x.category}`).includes(n))).map(cardPost).join('')||'<div class="empty">Không có bài phù hợp.</div>'};q.oninput=cat.onchange=render;render()}catch(e){box.innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
-async function post(){const box=document.querySelector('#article'),id=new URLSearchParams(location.search).get('id');if(!id){box.innerHTML='<h1>Thiếu ID bài viết</h1>';return}try{const p=await getPost(id);if(!p){box.innerHTML='<h1>Bài viết không tồn tại</h1>';return}document.title=`${p.title} | Mina Audition`;box.innerHTML=`<span class="badge">${esc(p.category||'Mina Blog')}</span><h1>${esc(p.title)}</h1><div class="meta"><span>${formatDate(p.updatedAt||p.createdAt)}</span></div>${p.imageUrl||p.image?`<img class="article-cover" src="${esc(p.imageUrl||p.image)}">`:''}<p class="muted">${esc(p.summary||'')}</p><div class="article-content"><p>${esc(p.content||'').replace(/\n/g,'<br>')}</p></div>${p.facebookUrl?`<div class="actions"><a class="btn" target="_blank" href="${esc(p.facebookUrl)}">Xem Facebook</a></div>`:''}`;}catch(e){box.innerHTML=`<h1>Không tải được bài</h1><div class="notice err">${esc(e.message)}</div>`}}
-async function wiki(){const box=document.querySelector('#skills'),q=document.querySelector('#q'),type=document.querySelector('#type');try{const all=await listSkills();const types=[...new Set(all.map(x=>x.type).filter(Boolean))].sort();type.innerHTML='<option value="">Tất cả loại</option>'+types.map(x=>`<option>${esc(x)}</option>`).join('');const render=()=>{const n=normalize(q.value),t=type.value;box.innerHTML=all.filter(x=>(!t||x.type===t)&&(!n||normalize(`${x.id} ${x.name} ${x.style} ${x.type} ${x.bpm}`).includes(n))).map(s=>`<article class="wiki-card"><img src="${esc(s.imageUrl||placeholder)}" onerror="this.src='${placeholder}'"><div class="card-body"><span class="badge">${esc(s.type||'Skill')}</span><h3>${esc(s.name||s.id)}</h3><div class="meta"><span>${esc(s.level||'')}</span><span>${esc(s.style||'')}</span><span>${esc(s.bpm||'')} BPM</span></div><p class="muted">${esc(s.description||'')}</p>${s.youtubeUrl?`<a class="btn" target="_blank" href="${esc(s.youtubeUrl)}">Xem video</a>`:''}</div></article>`).join('')||'<div class="empty">Chưa có Skill.</div>'};q.oninput=type.onchange=render;render()}catch(e){box.innerHTML=`<div class="empty">${esc(e.message)}</div>`}}
-({home,blog,post,wiki}[page]||(()=>{}))();
+async function post() {
+  const box = document.querySelector('#article');
+  const id = new URLSearchParams(location.search).get('id');
 
-// Shared navigation behavior
-const navToggle=document.querySelector('.nav-toggle');
-const navLinks=document.querySelector('.links');
-if(navToggle&&navLinks){navToggle.addEventListener('click',()=>{const open=navLinks.classList.toggle('open');navToggle.setAttribute('aria-expanded',String(open));navToggle.textContent=open?'✕':'☰'});navLinks.addEventListener('click',e=>{if(e.target.closest('a')){navLinks.classList.remove('open');navToggle.setAttribute('aria-expanded','false');navToggle.textContent='☰'}})}
-document.querySelector(`[data-nav="${page}"]`)?.classList.add('active');
+  if (!id) {
+    box.innerHTML = '<h1>Thiếu ID bài viết</h1>';
+    return;
+  }
+
+  try {
+    const p = await getPost(id);
+
+    if (!p) {
+      box.innerHTML = '<h1>Bài viết không tồn tại</h1>';
+      return;
+    }
+
+    document.title = `${p.title || 'Bài viết'} | Mina Audition`;
+
+    // Lấy ảnh bìa theo tất cả field CMS đang sử dụng
+    const coverImage =
+      p.coverImage ||
+      p.imageUrl ||
+      p.image ||
+      p.thumbnail ||
+      '';
+
+    // Chuẩn hóa gallery thành mảng URL hợp lệ
+    const gallery = Array.isArray(p.gallery)
+      ? p.gallery.filter(url => typeof url === 'string' && url.trim())
+      : [];
+
+    const coverHtml = coverImage
+      ? `
+        <img
+          class="article-cover"
+          src="${esc(coverImage)}"
+          alt="${esc(p.title || 'Mina Audition')}"
+          loading="eager"
+          onerror="this.onerror=null;this.src='${placeholder}'"
+        >
+      `
+      : '';
+
+    const contentHtml = p.content
+      ? `
+        <div class="article-content">
+          <p>${esc(p.content).replace(/\n/g, '<br>')}</p>
+        </div>
+      `
+      : '';
+
+    const galleryHtml = gallery.length
+      ? `
+        <div class="article-gallery">
+          ${gallery.map((url, index) => `
+            <img
+              src="${esc(url)}"
+              alt="${esc(p.title || 'Mina Audition')} - ảnh ${index + 1}"
+              loading="lazy"
+              onerror="this.onerror=null;this.src='${placeholder}'"
+            >
+          `).join('')}
+        </div>
+      `
+      : '';
+
+    box.innerHTML = `
+      <span class="badge">${esc(p.category || 'Mina Blog')}</span>
+
+      <h1>${esc(p.title || 'Chưa có tiêu đề')}</h1>
+
+      <div class="meta">
+        <span>${formatDate(p.updatedAt || p.createdAt)}</span>
+      </div>
+
+      ${coverHtml}
+
+      ${p.summary || p.description
+        ? `<p class="muted">${esc(p.summary || p.description)}</p>`
+        : ''
+      }
+
+      ${contentHtml}
+
+      ${galleryHtml}
+
+      ${p.facebookUrl
+        ? `
+          <div class="actions">
+            <a
+              class="btn"
+              target="_blank"
+              rel="noopener"
+              href="${esc(p.facebookUrl)}"
+            >
+              Xem Facebook
+            </a>
+          </div>
+        `
+        : ''
+      }
+    `;
+  } catch (e) {
+    console.error('Không tải được bài viết:', e);
+
+    box.innerHTML = `
+      <h1>Không tải được bài</h1>
+      <div class="notice err">${esc(e.message)}</div>
+    `;
+  }
+}
