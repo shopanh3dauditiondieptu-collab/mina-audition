@@ -24,7 +24,9 @@ const state = {
   selectedPostIds: new Set(),
   duplicateIds: new Set(),
   duplicateScanDone: false,
-  smartLinks: []
+  smartLinks: [],
+  smartLinksLoaded: false,
+  smartLinksLoading: false
 };
 
 const $ = selector => document.querySelector(selector);
@@ -795,15 +797,29 @@ function getSmartLinkPublicPath(item) {
   return `/go/${normalizeSmartLinkSlug(item.slug || "")}`;
 }
 
-async function loadSmartLinks() {
+async function loadSmartLinks({ force = false, silent = false } = {}) {
+  if (state.smartLinksLoading) return;
+  if (state.smartLinksLoaded && !force) {
+    renderSmartLinks();
+    return;
+  }
+
+  state.smartLinksLoading = true;
+  const table = $("#smartLinksTable");
+  if (table) table.innerHTML = `<div class="smartlink-empty">Đang tải Smart Link…</div>`;
+
   try {
     state.smartLinks = await repo.listSmartLinks();
+    state.smartLinksLoaded = true;
     renderSmartLinks();
   } catch (error) {
     console.error("Không tải được Smart Links", error);
     state.smartLinks = [];
-    renderSmartLinks();
-    showNotice("Chưa đọc được collection smartLinks. Kiểm tra Firestore Rules.", "error");
+    state.smartLinksLoaded = false;
+    if (table) table.innerHTML = `<div class="smartlink-empty error-state">Không đọc được Smart Link. Hãy kiểm tra Firestore Rules của collection <b>smartLinks</b>.</div>`;
+    if (!silent) showNotice("Smart Link chưa sẵn sàng. Các phần Đăng bài và Quản lý bài vẫn hoạt động bình thường.", "error");
+  } finally {
+    state.smartLinksLoading = false;
   }
 }
 
@@ -865,7 +881,7 @@ async function saveSmartLink(event) {
   try {
     await repo.saveSmartLink(payload, id);
     resetSmartLinkForm();
-    await loadSmartLinks();
+    await loadSmartLinks({ force: true });
     showNotice("Đã lưu Smart Link.");
   } catch (error) {
     console.error(error);
@@ -880,6 +896,10 @@ function openView(name) {
   const editing = name === "editor";
   $("#savePostTopButton").hidden = !editing;
   $("#newPostButton").hidden = !editing;
+
+  if (name === "smartlinks") {
+    loadSmartLinks({ silent: false });
+  }
 }
 
 async function confirmAction(title, message) {
@@ -896,7 +916,7 @@ function bindEvents() {
   $("#newSmartLinkButton")?.addEventListener("click", resetSmartLinkForm);
   $("#resetSmartLinkButton")?.addEventListener("click", resetSmartLinkForm);
   $("#smartLinkSearch")?.addEventListener("input", renderSmartLinks);
-  $("#refreshSmartLinksButton")?.addEventListener("click", loadSmartLinks);
+  $("#refreshSmartLinksButton")?.addEventListener("click", () => loadSmartLinks({ force: true }));
   $("#smartLinksTable")?.addEventListener("click", async event => {
     const copyPath = event.target.closest("[data-copy-manager-link]")?.dataset.copyManagerLink;
     if (copyPath) {
@@ -909,7 +929,7 @@ function bindEvents() {
     if (editId) { const item = state.smartLinks.find(link => link.id === editId); if (item) fillSmartLinkForm(item); return; }
     const deleteId = event.target.closest("[data-delete-smart-link]")?.dataset.deleteSmartLink;
     if (deleteId && await confirmAction("Xóa Smart Link", "Smart Link này sẽ bị xóa khỏi hệ thống.")) {
-      try { await repo.deleteSmartLink(deleteId); await loadSmartLinks(); showNotice("Đã xóa Smart Link."); }
+      try { await repo.deleteSmartLink(deleteId); await loadSmartLinks({ force: true }); showNotice("Đã xóa Smart Link."); }
       catch (error) { console.error(error); showNotice("Không thể xóa Smart Link.", "error"); }
     }
   });
@@ -1160,8 +1180,6 @@ try {
     try { await refreshData(); }
     catch (error) { console.error("Posts:", error); showNotice("Không đọc được danh sách bài viết. Kiểm tra Firestore Rules.", "error"); }
 
-    try { await loadSmartLinks(); }
-    catch (error) { console.error("Smart Links:", error); }
   }, showFatalStartupError);
 } catch (error) {
   showFatalStartupError(error);

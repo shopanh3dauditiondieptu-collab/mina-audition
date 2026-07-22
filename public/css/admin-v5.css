@@ -270,3 +270,10 @@ mark{background:rgba(255,214,110,.3);color:#fff3b3;border-radius:4px;padding:0 2
 
 /* ===== Smart Link Manager v5.2.2 ===== */
 .smartlink-grid{display:grid;grid-template-columns:minmax(280px,380px) minmax(0,1fr);gap:20px}.smartlink-form,.smartlink-list-panel{border:1px solid #31516e;border-radius:18px;padding:18px;background:#0d0d22}.smartlink-list-toolbar{display:grid;grid-template-columns:1fr auto;gap:12px;margin-bottom:14px}.smartlinks-table{display:grid;gap:10px}.smartlink-row{display:grid;grid-template-columns:minmax(220px,1fr) minmax(180px,.8fr) 110px 190px;gap:12px;align-items:center;padding:14px;border:1px solid #31516e;border-radius:16px;background:#111126}.smartlink-main strong{display:block;margin-bottom:5px}.smartlink-path{color:var(--cyan);font-size:13px;overflow-wrap:anywhere}.smartlink-target{color:var(--muted);font-size:12px;overflow-wrap:anywhere}.smartlink-status{font-weight:900;font-size:12px;padding:7px 10px;border-radius:999px;width:max-content;background:#15362b;color:#72f5bd}.smartlink-status.off{background:#3d2028;color:#ff9fb5}.smartlink-actions{display:flex;gap:7px;flex-wrap:wrap}.smartlink-actions .btn{padding:8px 11px;font-size:12px}.smartlink-empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed #31516e;border-radius:16px}@media(max-width:980px){.smartlink-grid{grid-template-columns:1fr}.smartlink-row{grid-template-columns:1fr}.smartlink-list-toolbar{grid-template-columns:1fr}}
+
+/* Mina CMS v5.3 - module isolation */
+.smartlink-empty.error-state{
+  border-color:#ff6b8b;
+  background:#35131f;
+  color:#ffd5df;
+}
