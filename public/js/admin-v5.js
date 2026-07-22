@@ -18,7 +18,10 @@ const state = {
   blocks: [],
   coverFile: null,
   coverUrl: "",
-  saving: false
+  saving: false,
+  activeCategoryFilter: "",
+  duplicateIds: new Set(),
+  duplicateScanDone: false
 };
 
 const $ = selector => document.querySelector(selector);
@@ -407,28 +410,322 @@ async function loadCategoryTree(){const response=await fetch("/data/category-tre
 
 function setCategoryPath(ids=[]){renderCategoryRoot();if(!ids.length)return;$("#categoryLevel1").value=ids[0]||"";renderCategoryLevel(2);$("#categoryLevel2").value=ids[1]||"";renderCategoryLevel(3);$("#categoryLevel3").value=ids[2]||"";renderCategoryLevel(4);$("#categoryLevel4").value=ids[3]||"";renderCategoryPath();}
 
-function renderPosts() {
-  const term = $("#postSearch").value.trim().toLowerCase();
+function normalizeSearchValue(value = "") {
+  return String(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function getPostCategoryLabel(post) {
+  const path = Array.isArray(post.categoryPath) && post.categoryPath.length
+    ? post.categoryPath
+    : [post.section, post.categoryName || post.category].filter(Boolean);
+
+  return path.join(" / ") || "Chưa phân loại";
+}
+
+function getPostImage(post) {
+  return post.coverImage || post.image || post.thumbnail || post.imageUrl || "/assets/images/logo-mina.png";
+}
+
+function getPostExcerpt(post) {
+  return post.excerpt || post.description || post.summary || post.content || "";
+}
+
+function getPostDate(post) {
+  const value = post.updatedAt || post.createdAt || post.publishedAt;
+  if (!value) return "";
+
+  try {
+    const date = typeof value?.toDate === "function"
+      ? value.toDate()
+      : new Date(value);
+
+    if (Number.isNaN(date.getTime())) return "";
+
+    return new Intl.DateTimeFormat("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    }).format(date);
+  } catch {
+    return "";
+  }
+}
+
+function getPostViewUrl(post) {
+  return `/post.html?id=${encodeURIComponent(post.id)}`;
+}
+
+function buildCategoryCounts(posts) {
+  const counts = new Map();
+
+  for (const post of posts) {
+    const category = getPostCategoryLabel(post);
+    counts.set(category, (counts.get(category) || 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "vi"));
+}
+
+function renderCategoryChips() {
+  const chips = $("#categoryFilterChips");
+  const categoryCounts = buildCategoryCounts(state.posts);
+
+  chips.innerHTML = `
+    <button
+      type="button"
+      class="category-chip ${state.activeCategoryFilter ? "" : "active"}"
+      data-category-filter=""
+    >
+      Tất cả (${state.posts.length})
+    </button>
+
+    ${categoryCounts.map(([category, count]) => `
+      <button
+        type="button"
+        class="category-chip ${state.activeCategoryFilter === category ? "active" : ""}"
+        data-category-filter="${escapeHtml(category)}"
+      >
+        ${escapeHtml(category)} (${count})
+      </button>
+    `).join("")}
+  `;
+}
+
+function detectDuplicatePosts() {
+  const duplicateIds = new Set();
+  const titleMap = new Map();
+  const slugMap = new Map();
+  const internalIdMap = new Map();
+  const imageMap = new Map();
+
+  const register = (map, key, id) => {
+    if (!key) return;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(id);
+  };
+
+  for (const post of state.posts) {
+    register(titleMap, normalizeSearchValue(post.title), post.id);
+    register(slugMap, normalizeSearchValue(post.slug), post.id);
+    register(internalIdMap, normalizeSearchValue(post.internalId || post.aiId), post.id);
+    register(imageMap, normalizeSearchValue(getPostImage(post)), post.id);
+  }
+
+  for (const map of [titleMap, slugMap, internalIdMap, imageMap]) {
+    for (const ids of map.values()) {
+      if (ids.length > 1) ids.forEach(id => duplicateIds.add(id));
+    }
+  }
+
+  // Kiểm tra tiêu đề gần giống: cùng chuỗi sau khi loại mã AI/TEST và ký tự đặc biệt.
+  const softGroups = new Map();
+
+  for (const post of state.posts) {
+    const softTitle = normalizeSearchValue(post.title)
+      .replace(/\b(ai|test)[-\s]*\d+\b/g, "")
+      .replace(/[^a-z0-9\s]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    if (softTitle.length < 12) continue;
+    register(softGroups, softTitle, post.id);
+  }
+
+  for (const ids of softGroups.values()) {
+    if (ids.length > 1) ids.forEach(id => duplicateIds.add(id));
+  }
+
+  state.duplicateIds = duplicateIds;
+  state.duplicateScanDone = true;
+  renderManagerStats();
+  renderPosts();
+
+  showNotice(
+    duplicateIds.size
+      ? `Đã phát hiện ${duplicateIds.size} bài có khả năng trùng.`
+      : "Không phát hiện bài có khả năng trùng."
+  );
+}
+
+function renderManagerStats() {
+  const total = state.posts.length;
+  const published = state.posts.filter(post => post.status === "published").length;
+  const draft = state.posts.filter(post => post.status === "draft").length;
+  const featured = state.posts.filter(post => Boolean(post.featured)).length;
+
+  $("#statTotal").textContent = String(total);
+  $("#statPublished").textContent = String(published);
+  $("#statDraft").textContent = String(draft);
+  $("#statFeatured").textContent = String(featured);
+  $("#statDuplicates").textContent = String(state.duplicateIds.size);
+}
+
+function getFilteredPosts() {
+  const term = normalizeSearchValue($("#postSearch").value);
   const status = $("#postStatusFilter").value;
-  const posts = state.posts.filter(post => {
-    const haystack = `${post.title || ""} ${post.slug || ""} ${post.internalId || ""} ${(post.categoryPath || []).join(" ")}`.toLowerCase();
-    return (!term || haystack.includes(term)) && (!status || post.status === status);
+  const category = state.activeCategoryFilter;
+
+  return state.posts.filter(post => {
+    const blockText = Array.isArray(post.contentBlocks)
+      ? post.contentBlocks.map(block => [
+          block.text,
+          block.caption,
+          block.author,
+          block.url,
+          ...(Array.isArray(block.images) ? block.images : [])
+        ].filter(Boolean).join(" ")).join(" ")
+      : "";
+
+    const haystack = normalizeSearchValue([
+      post.title,
+      post.slug,
+      post.internalId,
+      post.aiId,
+      post.excerpt,
+      post.description,
+      post.summary,
+      post.content,
+      post.facebookUrl,
+      post.youtubeUrl,
+      getPostImage(post),
+      getPostCategoryLabel(post),
+      blockText
+    ].filter(Boolean).join(" "));
+
+    const matchesSearch = !term || haystack.includes(term);
+    const matchesStatus = !status || post.status === status;
+    const matchesCategory = !category || getPostCategoryLabel(post) === category;
+
+    return matchesSearch && matchesStatus && matchesCategory;
   });
-  $("#postsTable").innerHTML = posts.length ? posts.map(post => `
-    <article class="post-row">
-      <div>
-        <h3>${escapeHtml(post.title || "(Không có tiêu đề)")}</h3>
-        <div class="post-meta">${escapeHtml(post.internalId || post.slug || post.id)} · ${post.status === "published" ? "Đã đăng" : "Bản nháp"} · ${escapeHtml((post.categoryPath || []).join(" → ") || post.categoryName || "Chưa phân loại")}</div>
-      </div>
-      <div class="post-buttons">
-        <button class="btn ghost" type="button" data-edit-post="${escapeHtml(post.id)}">Sửa</button>
-        <button class="btn danger" type="button" data-delete-post="${escapeHtml(post.id)}">Xóa</button>
-      </div>
-    </article>`).join("") : `<div class="empty">Chưa có bài viết.</div>`;
+}
+
+function renderPosts() {
+  renderCategoryChips();
+  renderManagerStats();
+
+  const posts = getFilteredPosts();
+
+  $("#postsTable").innerHTML = posts.length
+    ? posts.map(post => {
+        const duplicate = state.duplicateIds.has(post.id);
+        const categoryLabel = getPostCategoryLabel(post);
+        const excerpt = getPostExcerpt(post);
+        const date = getPostDate(post);
+
+        return `
+          <article class="post-row ${duplicate ? "duplicate-highlight" : ""}">
+            <div class="post-thumb">
+              <img
+                src="${escapeHtml(getPostImage(post))}"
+                alt="${escapeHtml(post.title || "Ảnh bài viết")}"
+                loading="lazy"
+                onerror="this.onerror=null;this.src='/assets/images/logo-mina.png'"
+              >
+            </div>
+
+            <div class="post-content-cell">
+              <h3>${escapeHtml(post.title || "(Không có tiêu đề)")}</h3>
+
+              ${excerpt
+                ? `<p class="post-excerpt">${escapeHtml(excerpt)}</p>`
+                : ""
+              }
+
+              <div class="post-submeta">
+                ${escapeHtml(post.internalId || post.slug || post.id)}
+                ${date ? ` · ${escapeHtml(date)}` : ""}
+              </div>
+            </div>
+
+            <div class="post-category-cell">
+              <div class="post-category-path">${escapeHtml(categoryLabel)}</div>
+              <div class="post-category-id">${escapeHtml(post.categoryId || "")}</div>
+            </div>
+
+            <div class="status-stack">
+              <span class="status-badge ${post.status === "draft" ? "draft" : ""}">
+                ${post.status === "draft" ? "Bản nháp" : "Công khai"}
+              </span>
+
+              ${post.featured
+                ? `<span class="status-badge featured">Nổi bật</span>`
+                : ""
+              }
+
+              ${duplicate
+                ? `<span class="status-badge duplicate">Có thể trùng</span>`
+                : ""
+              }
+            </div>
+
+            <div class="post-buttons">
+              <a
+                class="btn ghost view"
+                href="${getPostViewUrl(post)}"
+                target="_blank"
+                rel="noopener"
+              >
+                Xem
+              </a>
+
+              <button
+                class="btn ghost"
+                type="button"
+                data-edit-post="${escapeHtml(post.id)}"
+              >
+                Sửa
+              </button>
+
+              <button
+                class="btn danger"
+                type="button"
+                data-delete-post="${escapeHtml(post.id)}"
+              >
+                Xóa
+              </button>
+            </div>
+          </article>
+        `;
+      }).join("")
+    : `<div class="manager-empty">Không có bài viết phù hợp với bộ lọc.</div>`;
 }
 
 async function refreshData() {
   state.posts = await repo.listPosts();
+
+  if (state.duplicateScanDone) {
+    const shouldRescan = state.duplicateIds.size > 0;
+    state.duplicateIds = new Set();
+
+    if (shouldRescan) {
+      // Chạy lại yên lặng sau khi dữ liệu thay đổi.
+      const titleMap = new Map();
+      const register = (map, key, id) => {
+        if (!key) return;
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(id);
+      };
+
+      for (const post of state.posts) {
+        register(titleMap, normalizeSearchValue(post.title), post.id);
+        register(titleMap, normalizeSearchValue(post.slug), post.id);
+        register(titleMap, normalizeSearchValue(post.internalId || post.aiId), post.id);
+        register(titleMap, normalizeSearchValue(getPostImage(post)), post.id);
+      }
+
+      for (const ids of titleMap.values()) {
+        if (ids.length > 1) ids.forEach(id => state.duplicateIds.add(id));
+      }
+    }
+  }
+
   renderPosts();
 }
 
@@ -519,7 +816,30 @@ function bindEvents() {
 
   $("#postSearch").addEventListener("input", renderPosts);
   $("#postStatusFilter").addEventListener("change", renderPosts);
-  $("#refreshPostsButton").addEventListener("click", refreshData);
+  $("#refreshPostsButton").addEventListener("click", async () => {
+    const button = $("#refreshPostsButton");
+    setBusy(button, true, "Đang tải…");
+
+    try {
+      await refreshData();
+      showNotice("Đã tải lại dữ liệu.");
+    } catch (error) {
+      console.error(error);
+      showNotice(error.message || "Không thể tải lại dữ liệu.", "error");
+    } finally {
+      setBusy(button, false);
+    }
+  });
+
+  $("#checkDuplicatesButton").addEventListener("click", detectDuplicatePosts);
+
+  $("#categoryFilterChips").addEventListener("click", event => {
+    const button = event.target.closest("[data-category-filter]");
+    if (!button) return;
+
+    state.activeCategoryFilter = button.dataset.categoryFilter || "";
+    renderPosts();
+  });
 
   $("#postsTable").addEventListener("click", async event => {
     const editId = event.target.dataset.editPost;

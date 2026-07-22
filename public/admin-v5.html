@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/admin-v5.css?v=1.1.0">
+  <link rel="stylesheet" href="/css/admin-v5.css?v=1.2.0">
 </head>
 <body>
   <aside class="sidebar">
@@ -156,22 +156,79 @@
     </section>
 
     <section id="view-posts" class="view">
-      <section class="panel">
-        <div class="panel-head">
-          <div><h2>Quản lý bài viết</h2><p>Sửa hoặc xóa bài hiện có.</p></div>
-          <button id="refreshPostsButton" class="btn ghost" type="button">Làm mới</button>
+      <section class="panel content-manager">
+        <div class="panel-head manager-head">
+          <div>
+            <h2>Trung tâm quản lý nội dung</h2>
+            <p>Lọc danh mục, tìm dữ liệu đã đăng và kiểm tra bài có khả năng trùng lặp.</p>
+          </div>
         </div>
-        <div class="grid two">
-          <input id="postSearch" placeholder="Tìm theo tiêu đề, slug hoặc mã nội bộ">
+
+        <div class="manager-toolbar">
+          <input
+            id="postSearch"
+            type="search"
+            placeholder="Tìm tiêu đề, mô tả, danh mục, nội dung, link ảnh, YouTube..."
+          >
+
           <select id="postStatusFilter">
             <option value="">Tất cả trạng thái</option>
-            <option value="published">Đã đăng</option>
+            <option value="published">Công khai</option>
             <option value="draft">Bản nháp</option>
           </select>
+
+          <button id="checkDuplicatesButton" class="btn ghost" type="button">
+            Kiểm tra trùng lặp
+          </button>
+
+          <button id="refreshPostsButton" class="btn ghost" type="button">
+            Tải lại dữ liệu
+          </button>
         </div>
-        <div id="postsTable" class="posts-table"></div>
+
+        <div id="categoryFilterChips" class="category-filter-chips"></div>
+
+        <div class="manager-stats">
+          <article class="stat-card">
+            <strong id="statTotal">0</strong>
+            <span>Tổng bài</span>
+          </article>
+
+          <article class="stat-card">
+            <strong id="statPublished">0</strong>
+            <span>Công khai</span>
+          </article>
+
+          <article class="stat-card">
+            <strong id="statDraft">0</strong>
+            <span>Bản nháp</span>
+          </article>
+
+          <article class="stat-card">
+            <strong id="statFeatured">0</strong>
+            <span>Nổi bật</span>
+          </article>
+
+          <article class="stat-card">
+            <strong id="statDuplicates">0</strong>
+            <span>Có thể trùng</span>
+          </article>
+        </div>
+
+        <div class="posts-table-wrap">
+          <div class="posts-table-head">
+            <span>Ảnh</span>
+            <span>Nội dung</span>
+            <span>Danh mục</span>
+            <span>Trạng thái</span>
+            <span>Thao tác</span>
+          </div>
+
+          <div id="postsTable" class="posts-table"></div>
+        </div>
       </section>
     </section>
+
   </main>
 
   <dialog id="confirmDialog">
@@ -185,6 +242,6 @@
     </form>
   </dialog>
 
-  <script type="module" src="/js/admin-v5.js?v=1.1.0"></script>
+  <script type="module" src="/js/admin-v5.js?v=1.2.0"></script>
 </body>
 </html>
