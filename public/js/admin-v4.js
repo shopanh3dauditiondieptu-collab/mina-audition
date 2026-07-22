@@ -1,12 +1,8 @@
-import { auth, db, storage } from "/js/firebase-config.js";
+import { auth, db } from "/js/firebase-config.js";
 import { CmsRepository } from "/js/admin-v4-repository.js";
 import {
   onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-import {
-  ref, uploadBytes, getDownloadURL, deleteObject
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
-
 const repo = new CmsRepository(db);
 const state = {
   user: null,
