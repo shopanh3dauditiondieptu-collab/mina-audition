@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/admin-v5.css?v=1.5.0">
-  <link rel="stylesheet" href="/css/smartlink-dashboard.css?v=1.0.0">
+  <link rel="stylesheet" href="/css/smartlink-dashboard.css?v=1.1.0">
 </head>
 <body>
   <aside class="sidebar">
@@ -239,6 +239,147 @@
           <button id="newSmartLinkButton" class="btn primary" type="button">+ Tạo Smart Link</button>
         </div>
 
+        <section class="smart-analytics-shell" aria-label="Smart Link Analytics">
+          <div class="smart-analytics-head">
+            <div>
+              <h3>📊 Smart Link Dashboard</h3>
+              <p>
+                Tổng hợp lượt click theo thời gian, nguồn, bài viết,
+                chiến dịch và thiết bị.
+              </p>
+            </div>
+
+            <div class="smart-analytics-actions">
+              <button id="refreshSmartAnalyticsButton" class="btn ghost" type="button">
+                Tải thống kê
+              </button>
+              <button id="exportSmartAnalyticsButton" class="btn primary" type="button">
+                Xuất CSV
+              </button>
+            </div>
+          </div>
+
+          <div class="smart-analytics-filters">
+            <label>
+              <span>Khoảng thời gian</span>
+              <select id="smartAnalyticsRange">
+                <option value="1">Hôm nay</option>
+                <option value="7">7 ngày</option>
+                <option value="30" selected>30 ngày</option>
+                <option value="90">90 ngày</option>
+                <option value="365">365 ngày</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Smart Link</span>
+              <select id="smartAnalyticsLink">
+                <option value="">Tất cả Smart Link</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Nguồn</span>
+              <input id="smartAnalyticsSource" placeholder="facebook">
+            </label>
+
+            <label>
+              <span>Mã bài</span>
+              <input id="smartAnalyticsPost" placeholder="AI-0180">
+            </label>
+
+            <label>
+              <span>Campaign</span>
+              <input id="smartAnalyticsCampaign" placeholder="summer-2026">
+            </label>
+          </div>
+
+          <div class="smart-analytics-stats">
+            <article class="smart-analytics-stat">
+              <strong id="smartStatTotalLinks">0</strong>
+              <span>Tổng Smart Link</span>
+            </article>
+            <article class="smart-analytics-stat">
+              <strong id="smartStatActiveLinks">0</strong>
+              <span>Đang hoạt động</span>
+            </article>
+            <article class="smart-analytics-stat">
+              <strong id="smartStatTotalClicks">0</strong>
+              <span>Tổng click đã lưu</span>
+            </article>
+            <article class="smart-analytics-stat">
+              <strong id="smartStatToday">0</strong>
+              <span>Click hôm nay</span>
+            </article>
+            <article class="smart-analytics-stat">
+              <strong id="smartStat7Days">0</strong>
+              <span>Click 7 ngày</span>
+            </article>
+            <article class="smart-analytics-stat">
+              <strong id="smartStat30Days">0</strong>
+              <span>Click 30 ngày</span>
+            </article>
+            <article class="smart-analytics-stat">
+              <strong id="smartStatFiltered">0</strong>
+              <span>Click theo bộ lọc</span>
+            </article>
+          </div>
+
+          <div id="smartAnalyticsWarning" class="analytics-warning" hidden></div>
+
+          <div class="smart-analytics-grid">
+            <article class="analytics-card wide">
+              <div class="analytics-card-head">
+                <h4>Click theo ngày</h4>
+                <small>
+                  Cập nhật:
+                  <span id="smartAnalyticsUpdatedAt">—</span>
+                </small>
+              </div>
+              <div id="smartDailyChart"></div>
+            </article>
+
+            <article class="analytics-card">
+              <div class="analytics-card-head"><h4>Nguồn truy cập</h4></div>
+              <div id="smartSourceBreakdown" class="analytics-bars"></div>
+            </article>
+
+            <article class="analytics-card">
+              <div class="analytics-card-head"><h4>Thiết bị</h4></div>
+              <div id="smartDeviceBreakdown" class="analytics-bars"></div>
+            </article>
+
+            <article class="analytics-card">
+              <div class="analytics-card-head"><h4>Top bài viết</h4></div>
+              <div id="smartPostBreakdown" class="analytics-bars"></div>
+            </article>
+
+            <article class="analytics-card">
+              <div class="analytics-card-head"><h4>Top Campaign</h4></div>
+              <div id="smartCampaignBreakdown" class="analytics-bars"></div>
+            </article>
+
+            <article class="analytics-card">
+              <div class="analytics-card-head"><h4>Top Smart Link</h4></div>
+              <div id="smartTopLinks" class="analytics-bars"></div>
+            </article>
+
+            <article class="analytics-card">
+              <div class="analytics-card-head"><h4>Top Referrer</h4></div>
+              <div id="smartReferrerBreakdown" class="analytics-bars"></div>
+            </article>
+
+            <article class="analytics-card wide">
+              <div class="analytics-card-head"><h4>Click gần nhất</h4></div>
+              <div id="smartRecentClicks" class="analytics-click-list"></div>
+            </article>
+          </div>
+
+          <div id="smartAnalyticsStatus" class="analytics-status">
+            Bấm “Tải thống kê” để xem dữ liệu.
+          </div>
+        </section>
+
         <div class="smartlink-grid">
           <form id="smartLinkForm" class="smartlink-form">
             <input id="smartLinkId" type="hidden">
@@ -277,8 +418,9 @@
     </form>
   </dialog>
 
+  <script type="module" src="/js/smartlink-dashboard.js?v=1.1.0"></script>
   <script type="module">
-    import("/js/admin-v5.js?v=1.5.0").catch(error => {
+    import("/js/admin-v5.js?v=1.5.1").catch(error => {
       console.error("Không tải được admin-v5.js", error);
       const badge = document.getElementById("authBadge");
       const notice = document.getElementById("notice");

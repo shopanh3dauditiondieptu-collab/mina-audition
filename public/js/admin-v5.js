@@ -900,6 +900,9 @@ function openView(name) {
 
   if (name === "smartlinks") {
     loadSmartLinks({ silent: false });
+    import("/js/smartlink-dashboard.js?v=1.1.0")
+      .then(module => module.loadSmartLinkAnalytics())
+      .catch(error => console.error("Smart Link Dashboard:", error));
   }
 }
 

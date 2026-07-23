@@ -1,5 +1,5 @@
 const {
-  requireAdminApiKey,
+  requireAdmin,
   getFirestore
 } = require("../../../lib/mina-admin-server");
 
@@ -29,7 +29,7 @@ module.exports = async function handler(req, res) {
     return res.status(405).send("Method not allowed");
   }
 
-  if (!requireAdminApiKey(req, res)) return;
+  if (!await requireAdmin(req, res)) return;
 
   try {
     const days = Math.min(
