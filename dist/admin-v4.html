@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Mina CMS v4 Enterprise</title>
+  <link rel="stylesheet" href="/css/admin-v4-enterprise.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="/admin-v4.html"><span class="brand-icon">M</span><span><strong>Mina Audition</strong><small>CMS v4 Enterprise</small></span></a>
+    <nav>
+      <button class="nav-item active" data-view="dashboard">Tổng quan</button>
+      <button class="nav-item" data-view="editor">Thêm nội dung</button>
+      <button class="nav-item" data-view="posts">Quản lý nội dung</button>
+      <button class="nav-item" data-view="media">Media</button>
+      <button class="nav-item" data-view="categories">Danh mục</button>
+      <button class="nav-item" data-view="settings">Cài đặt</button>
+    </nav>
+    <div class="sidebar-bottom"><a href="/" target="_blank">Xem website</a><button id="logoutButton">Đăng xuất</button></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div><span class="eyebrow">MINA ADMIN</span><h1 id="pageTitle">Tổng quan</h1></div>
+      <div class="top-actions"><span id="sessionBadge" class="badge">Đang kiểm tra phiên…</span><button id="quickAdd" class="button primary">+ Thêm nội dung</button></div>
+    </header>
+    <div id="notice" class="notice" hidden></div>
+
+    <section id="view-dashboard" class="view active">
+      <div class="stats">
+        <article><span>Tổng nội dung</span><strong id="statTotal">0</strong></article>
+        <article><span>Đã đăng</span><strong id="statPublished">0</strong></article>
+        <article><span>Bản nháp</span><strong id="statDraft">0</strong></article>
+        <article><span>Danh mục</span><strong id="statCategories">0</strong></article>
+      </div>
+      <div class="panel"><div class="panel-head"><div><h2>Nội dung gần đây</h2><p>10 mục cập nhật mới nhất.</p></div><button class="button ghost" data-open="posts">Xem tất cả</button></div><div id="recentTable" class="table-wrap"></div></div>
+    </section>
+
+    <section id="view-editor" class="view">
+      <form id="contentForm" class="editor-layout">
+        <div>
+          <div class="panel">
+            <div class="field"><label for="contentType">Loại nội dung</label>
+              <select id="contentType">
+                <option value="blog">Blog</option><option value="outfit">Outfit</option><option value="prompt">Prompt AI</option><option value="wiki">Wiki Skill</option>
+              </select>
+            </div>
+            <div class="field"><label for="title">Tiêu đề *</label><input id="title" required maxlength="180"></div>
+            <div class="two">
+              <div class="field"><label for="slug">Slug</label><input id="slug"></div>
+              <div class="field"><label for="internalId">AI ID / Mã nội bộ</label><input id="internalId" placeholder="AI-0001"></div>
+            </div>
+            <div class="field"><label for="excerpt">Mô tả ngắn</label><textarea id="excerpt" rows="3" maxlength="320"></textarea></div>
+            <div class="field"><label for="content">Nội dung *</label><textarea id="content" rows="13" required></textarea></div>
+            <div class="field"><label for="prompt">Prompt AI</label><textarea id="prompt" rows="9"></textarea></div>
+            <div class="two">
+              <div class="field"><label for="smartLinkSlug">Smart Link slug</label><input id="smartLinkSlug" placeholder="aumix3d"></div>
+              <div class="field"><label for="destinationUrl">URL đích</label><input id="destinationUrl" type="url" placeholder="https://..."></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><div><h2>Album ảnh</h2><p>Có thể chọn nhiều ảnh.</p></div></div>
+            <input id="galleryInput" type="file" accept="image/*" multiple hidden>
+            <button id="galleryPick" class="upload-zone" type="button">Chọn ảnh album</button>
+            <div id="galleryPreview" class="media-grid"></div>
+          </div>
+
+          <div class="panel">
+            <h2>SEO</h2>
+            <div class="field"><label for="seoTitle">SEO title</label><input id="seoTitle" maxlength="70"></div>
+            <div class="field"><label for="seoDescription">SEO description</label><textarea id="seoDescription" rows="3" maxlength="160"></textarea></div>
+          </div>
+        </div>
+
+        <aside>
+          <div class="panel sticky">
+            <h2>Xuất bản</h2>
+            <div class="field"><label for="status">Trạng thái</label><select id="status"><option value="draft">Bản nháp</option><option value="published">Công khai</option></select></div>
+            <div class="field"><label for="categoryId">Danh mục</label><select id="categoryId"><option value="">Chưa phân loại</option></select></div>
+            <label class="check"><input id="featured" type="checkbox"> Nội dung nổi bật</label>
+            <input id="postId" type="hidden">
+            <button id="saveButton" class="button primary full" type="submit">Lưu nội dung</button>
+            <button id="newButton" class="button ghost full" type="button">Tạo mới</button>
+          </div>
+          <div class="panel">
+            <h2>Ảnh đại diện</h2>
+            <input id="coverInput" type="file" accept="image/*" hidden>
+            <button id="coverPick" class="upload-zone cover" type="button">Chọn ảnh đại diện</button>
+            <div id="coverPreview"></div>
+          </div>
+        </aside>
+      </form>
+    </section>
+
+    <section id="view-posts" class="view">
+      <div class="panel">
+        <div class="toolbar"><input id="searchInput" placeholder="Tìm tiêu đề, AI ID, slug…"><select id="typeFilter"><option value="">Mọi loại</option><option value="blog">Blog</option><option value="outfit">Outfit</option><option value="prompt">Prompt AI</option><option value="wiki">Wiki</option></select><select id="statusFilter"><option value="">Mọi trạng thái</option><option value="published">Đã đăng</option><option value="draft">Bản nháp</option></select></div>
+        <div id="postsTable" class="table-wrap"></div>
+      </div>
+    </section>
+
+    <section id="view-media" class="view">
+      <div class="panel"><h2>Media Library</h2><p class="muted">Upload ảnh lên Firebase Storage và copy URL.</p><input id="mediaInput" type="file" accept="image/*" multiple hidden><button id="mediaPick" class="upload-zone" type="button">Chọn ảnh để upload</button><div id="mediaLibrary" class="media-grid"></div></div>
+    </section>
+
+    <section id="view-categories" class="view">
+      <div class="split">
+        <form id="categoryForm" class="panel"><h2>Thêm danh mục</h2><div class="field"><label for="categoryName">Tên *</label><input id="categoryName" required></div><div class="field"><label for="categorySlug">Slug</label><input id="categorySlug"></div><div class="field"><label for="categoryDescription">Mô tả</label><textarea id="categoryDescription" rows="4"></textarea></div><button class="button primary" type="submit">Lưu danh mục</button></form>
+        <div class="panel"><h2>Danh sách danh mục</h2><div id="categoryList"></div></div>
+      </div>
+    </section>
+
+    <section id="view-settings" class="view">
+      <form id="settingsForm" class="panel narrow"><h2>Cài đặt</h2><div class="field"><label for="siteName">Tên website</label><input id="siteName" value="Mina Audition"></div><div class="field"><label for="siteUrl">URL website</label><input id="siteUrl" value="https://mina-audition.vercel.app"></div><div class="field"><label for="defaultAuthor">Tác giả mặc định</label><input id="defaultAuthor" value="Mina"></div><button class="button primary" type="submit">Lưu cài đặt</button></form>
+    </section>
+  </main>
+</div>
+
+<dialog id="confirmDialog"><form method="dialog"><h3 id="confirmTitle">Xác nhận</h3><p id="confirmMessage"></p><div class="dialog-actions"><button value="cancel" class="button ghost">Hủy</button><button value="confirm" class="button danger">Xác nhận</button></div></form></dialog>
+<script type="module" src="/js/admin-v4-enterprise.js"></script>
+</body>
+</html>
