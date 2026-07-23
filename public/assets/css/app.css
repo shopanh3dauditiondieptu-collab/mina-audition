@@ -117,7 +117,7 @@ body[data-page="home"] .hero::after{
   z-index:-3;
   background:
     linear-gradient(180deg,rgba(3,5,22,.14),rgba(3,5,22,.76)),
-    url("/assets/images/mina-hero-bg.jpg") center/cover no-repeat;
+    url("/assets/images/hero-bg1.webp") center/cover no-repeat;
   opacity:.48;
 }
 
