@@ -7,6 +7,10 @@ const root = path.resolve(__dirname, "..");
 const required = [
   "api/go/[slug].js",
   "public/admin.html",
+  "public/admin-v5.html",
+  "public/css/admin-v5.css",
+  "public/js/admin-v5.js",
+  "public/js/admin-v5-repository.js",
   "public/assets/js/admin.js",
   "public/assets/js/firebase.js",
   "firestore.rules",
