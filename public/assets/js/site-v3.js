@@ -60,6 +60,65 @@ function renderCategorySelect(select, tree, posts) {
     postOnly.map(name => `<option value="${esc(name)}">${esc(name)}</option>`).join("");
 }
 
+
+function collectNodeTokens(node) {
+  const own = [node?.id, node?.slug, node?.name].filter(Boolean).map(normalize);
+  const children = (node?.children || []).flatMap(collectNodeTokens);
+  return [...new Set([...own, ...children])];
+}
+
+function countPostsForNode(node, posts) {
+  const tokens = collectNodeTokens(node);
+  return posts.filter(post => {
+    const haystack = categoryTokens(post);
+    return tokens.some(token => token && haystack.includes(token));
+  }).length;
+}
+
+function renderCategorySidebar(container, tree, posts, onSelect) {
+  if (!container) return;
+  const palette = [
+    "#21d6a1", "#e34ed5", "#ff9a2f", "#5b8cff",
+    "#a968ff", "#ff5f78", "#20c8e7", "#f2c94c"
+  ];
+
+  const renderNodes = (nodes, depth = 0, rootIndex = 0) => (nodes || []).map((node, index) => {
+    const children = Array.isArray(node.children) ? node.children : [];
+    const token = node.slug || node.id || node.name || "";
+    const color = palette[depth === 0 ? index % palette.length : rootIndex % palette.length];
+    const branchId = `cat-${String(node.id || node.slug || node.name || index).replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+    const count = countPostsForNode(node, posts);
+    return `<div class="blog-category-branch" style="--cat-accent:${color}">
+      <div class="blog-category-row" style="--depth:${depth}">
+        <button type="button" class="blog-category-toggle ${children.length ? "" : "is-placeholder"}" data-category-toggle="${esc(branchId)}" aria-expanded="${depth === 0 ? "true" : "false"}" aria-controls="${esc(branchId)}">${children.length ? (depth === 0 ? "−" : "+") : "+"}</button>
+        <button type="button" class="blog-category-select" data-category-value="${esc(token)}" data-category-name="${esc(node.name || token)}">${esc(node.icon || "◆")} ${esc(node.name || token)}</button>
+        <span class="blog-category-count">${count}</span>
+      </div>
+      ${children.length ? `<div id="${esc(branchId)}" class="blog-category-children" ${depth === 0 ? "" : "hidden"}>${renderNodes(children, depth + 1, depth === 0 ? index : rootIndex)}</div>` : ""}
+    </div>`;
+  }).join("");
+
+  container.innerHTML = `<button type="button" class="blog-category-all is-active" data-category-value="" style="--cat-accent:#9b5cff"><span>🔥 Tất cả bài viết</span><span class="blog-category-count">${posts.length}</span></button>${renderNodes(tree)}`;
+
+  container.addEventListener("click", event => {
+    const toggle = event.target.closest("[data-category-toggle]");
+    if (toggle) {
+      const target = document.getElementById(toggle.dataset.categoryToggle);
+      if (!target) return;
+      const willOpen = target.hidden;
+      target.hidden = !willOpen;
+      toggle.textContent = willOpen ? "−" : "+";
+      toggle.setAttribute("aria-expanded", String(willOpen));
+      return;
+    }
+
+    const select = event.target.closest("[data-category-value]");
+    if (!select) return;
+    container.querySelectorAll("[data-category-value]").forEach(item => item.classList.toggle("is-active", item === select));
+    onSelect(select.dataset.categoryValue || "", select.dataset.categoryName || "");
+  });
+}
+
 function categoryLink(node) {
   const params = new URLSearchParams();
   params.set("category", node.slug || node.id || node.name || "");
@@ -271,6 +330,7 @@ async function blog() {
   const box = document.querySelector("#posts");
   const search = document.querySelector("#q");
   const category = document.querySelector("#cat");
+  const sidebar = document.querySelector("#categorySidebar");
   const count = document.querySelector("#resultCount");
   const chips = [...document.querySelectorAll("[data-type]")];
 
@@ -287,35 +347,31 @@ async function blog() {
     const requestedCategory = urlParams.get("category") || "";
     const requestedCategoryName = urlParams.get("categoryName") || "";
     let activeType = requestedType;
+    let activeCategory = requestedCategory;
+    let activeCategoryName = requestedCategoryName;
 
-    if (requestedCategory || requestedCategoryName) {
-      const candidates = [requestedCategory, requestedCategoryName].filter(Boolean).map(normalize);
+    if (activeCategory || activeCategoryName) {
+      const candidates = [activeCategory, activeCategoryName].filter(Boolean).map(normalize);
       const matched = [...category.options].find(option =>
         candidates.includes(normalize(option.value)) ||
         candidates.includes(normalize(option.dataset.name || option.textContent))
       );
-      if (matched) category.value = matched.value;
-      else {
-        const label = requestedCategoryName || requestedCategory;
-        category.add(new Option(label, requestedCategory || label));
-        category.value = requestedCategory || label;
+      if (matched) {
+        category.value = matched.value;
+        activeCategory = matched.value;
+        activeCategoryName = matched.dataset.name || matched.textContent || activeCategoryName;
       }
     }
+
     chips.forEach(chip => chip.classList.toggle("active", chip.dataset.type === activeType));
 
     const render = () => {
       const term = normalize(search.value);
-      const selectedCategory = category.value;
-      const selectedOption = category.options[category.selectedIndex];
-      const selectedName = selectedOption?.dataset?.name || selectedOption?.textContent || "";
+      const selectedTokens = [activeCategory, activeCategoryName].filter(Boolean).map(normalize);
       const filtered = all.filter(post => {
         const typeOk = !activeType || classify(post) === activeType;
         const tokens = categoryTokens(post);
-        const selectedTokens = [selectedCategory, selectedName].filter(Boolean).map(normalize);
-        const requestedTokens = [requestedCategory, requestedCategoryName].filter(Boolean).map(normalize);
-        const categoryOk = (!selectedCategory && !requestedCategory && !requestedCategoryName) ||
-          selectedTokens.some(token => token && tokens.includes(token)) ||
-          requestedTokens.some(token => token && tokens.includes(token));
+        const categoryOk = !selectedTokens.length || selectedTokens.some(token => token && tokens.includes(token));
         const searchOk = !term || normalize([
           post.title,
           getExcerpt(post),
@@ -329,8 +385,31 @@ async function blog() {
       renderCards(box, filtered, "Không có nội dung phù hợp.");
     };
 
+    renderCategorySidebar(sidebar, categoryTree, all, (categoryValue, categoryName) => {
+      activeCategory = categoryValue;
+      activeCategoryName = categoryName;
+      category.value = categoryValue;
+      render();
+    });
+
+    if (activeCategory || activeCategoryName) {
+      const activeButton = [...sidebar.querySelectorAll("[data-category-value]")].find(button => {
+        const candidates = [button.dataset.categoryValue, button.dataset.categoryName].filter(Boolean).map(normalize);
+        return candidates.includes(normalize(activeCategory)) || candidates.includes(normalize(activeCategoryName));
+      });
+      if (activeButton) {
+        sidebar.querySelectorAll("[data-category-value]").forEach(item => item.classList.toggle("is-active", item === activeButton));
+        let parent = activeButton.closest(".blog-category-children");
+        while (parent) {
+          parent.hidden = false;
+          const toggle = sidebar.querySelector(`[aria-controls="${parent.id}"]`);
+          if (toggle) { toggle.textContent = "−"; toggle.setAttribute("aria-expanded", "true"); }
+          parent = parent.parentElement?.closest(".blog-category-children");
+        }
+      }
+    }
+
     search.addEventListener("input", render);
-    category.addEventListener("change", render);
     chips.forEach(chip => chip.addEventListener("click", () => {
       activeType = chip.dataset.type;
       chips.forEach(item => item.classList.toggle("active", item === chip));
@@ -341,6 +420,7 @@ async function blog() {
     render();
   } catch (error) {
     box.innerHTML = `<div class="empty">${esc(error.message)}</div>`;
+    if (sidebar) sidebar.innerHTML = `<div class="empty">Không tải được danh mục.</div>`;
   }
 }
 

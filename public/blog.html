@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/app-v3.css?v=6.0.0-banner-categories">
+<link rel="stylesheet" href="/assets/css/blog-category-sidebar.css?v=1.0.0">
 
 <title>Kho nội dung | Mina Audition</title>
 </head>
@@ -46,20 +47,27 @@
     </div>
   </section>
   <section class="section library-section">
-    <div class="wrap">
-      <div class="library-toolbar">
-        <div class="search-field"><span>⌕</span><input id="q" type="search" placeholder="Tìm tiêu đề, AI ID, nội dung..."></div>
-        <select id="cat"><option value="">Tất cả danh mục</option></select>
-        <div id="typeChips" class="type-chips">
-          <button type="button" data-type="" class="active">Tất cả</button>
-          <button type="button" data-type="prompt">AI Prompt</button>
-          <button type="button" data-type="outfit">Outfit</button>
-          <button type="button" data-type="academy">Academy</button>
-          <button type="button" data-type="video">Video</button>
+    <div class="wrap blog-library-layout">
+      <aside class="blog-category-sidebar" aria-label="Danh mục Mina Blog">
+        <h2 class="blog-category-sidebar__title"><span>▰</span> DANH MỤC MINA BLOG</h2>
+        <div id="categorySidebar" class="blog-category-tree"><div class="status">Đang tải danh mục…</div></div>
+      </aside>
+
+      <div class="blog-library-content">
+        <div class="library-toolbar">
+          <div class="search-field"><span>⌕</span><input id="q" type="search" placeholder="Tìm tiêu đề, AI ID, nội dung..."></div>
+          <select id="cat" aria-hidden="true" tabindex="-1"><option value="">Tất cả danh mục</option></select>
+          <div id="typeChips" class="type-chips">
+            <button type="button" data-type="" class="active">Tất cả</button>
+            <button type="button" data-type="prompt">AI Prompt</button>
+            <button type="button" data-type="outfit">Outfit</button>
+            <button type="button" data-type="academy">Academy</button>
+            <button type="button" data-type="video">Video</button>
+          </div>
         </div>
+        <div id="resultCount" class="result-count">Đang tải…</div>
+        <div id="posts" class="content-grid"><div class="status">Đang tải bài viết…</div></div>
       </div>
-      <div id="resultCount" class="result-count">Đang tải…</div>
-      <div id="posts" class="content-grid"><div class="status">Đang tải bài viết…</div></div>
     </div>
   </section>
 </main>
