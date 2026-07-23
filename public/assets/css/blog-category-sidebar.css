@@ -26,121 +26,222 @@
 
 
 /* =========================================================
-   FIX MÀU DANH MỤC — BẮT BUỘC KẾ THỪA MÀU TỪ NHÓM CHA
-   Nguyên nhân cũ: .blog-category-row tự đặt lại --cat-accent
-   thành màu tím nên mọi nhóm đều hiển thị cùng màu.
+   MINA BLOG — SIDEBAR COLOR COLUMN V3
+   Giao diện cột màu giống ảnh mẫu:
+   - Danh mục cấp 1 là thanh màu nổi bật.
+   - Danh mục con nền tối, viền trái theo màu nhóm.
+   - Nút +/- và badge đồng bộ, gọn và dễ nhìn.
 ========================================================= */
 
-/* Không cho từng dòng tự ghi đè màu của nhóm cha */
+/* Khung cột trái */
+.blog-category-sidebar{
+  padding:16px 14px 18px !important;
+  border:1px solid rgba(91,196,255,.34) !important;
+  background:
+    radial-gradient(circle at 18% 0%,rgba(61,199,255,.09),transparent 28%),
+    linear-gradient(180deg,#17142a 0%,#0c0b18 100%) !important;
+  box-shadow:
+    0 18px 55px rgba(0,0,0,.36),
+    inset 0 1px 0 rgba(255,255,255,.04) !important;
+}
+
+.blog-category-tree{
+  gap:8px !important;
+}
+
+/* Xóa kiểu kế thừa màu phủ kín ở bản trước */
+.blog-category-branch,
 .blog-category-branch .blog-category-row{
-  --cat-accent: inherit !important;
+  --cat-accent:#7c5cff;
 }
 
-/* Gán màu theo thứ tự nhóm thực tế trong cây danh mục */
+/* Mỗi nhánh cấp 1 một màu */
 .blog-category-tree > .blog-category-branch:nth-child(2){
-  --cat-accent:#ec4899 !important;
+  --cat-accent:#1bd5a3; /* Kinh nghiệm / Mina Blog */
 }
-
 .blog-category-tree > .blog-category-branch:nth-child(3){
-  --cat-accent:#22c55e !important;
+  --cat-accent:#e35bd9; /* Mix & Match */
 }
-
 .blog-category-tree > .blog-category-branch:nth-child(4){
-  --cat-accent:#f97316 !important;
+  --cat-accent:#ff7b2f; /* Video */
 }
-
 .blog-category-tree > .blog-category-branch:nth-child(5){
-  --cat-accent:#3b82f6 !important;
+  --cat-accent:#ef63c9; /* Tâm sự */
 }
-
 .blog-category-tree > .blog-category-branch:nth-child(6){
-  --cat-accent:#8b5cf6 !important;
+  --cat-accent:#20c9b2; /* Game Gear */
 }
-
 .blog-category-tree > .blog-category-branch:nth-child(7){
-  --cat-accent:#eab308 !important;
+  --cat-accent:#8f5cff; /* Wikipedia */
 }
-
 .blog-category-tree > .blog-category-branch:nth-child(8){
-  --cat-accent:#ef4444 !important;
+  --cat-accent:#ffbf3f;
 }
 
-/* Ô danh mục cha */
+/* Tất cả bài viết */
+.blog-category-all{
+  --cat-accent:#36e6ef !important;
+  min-height:38px !important;
+  padding:9px 11px !important;
+  border-color:rgba(64,231,241,.64) !important;
+  background:
+    linear-gradient(90deg,#262236 0%,#29283a 72%,#24313c 100%) !important;
+  box-shadow:
+    inset 4px 0 0 #ff8f20,
+    0 0 18px rgba(55,222,239,.14) !important;
+}
+
+.blog-category-all.is-active,
+.blog-category-all:hover{
+  background:
+    linear-gradient(90deg,#6e35bd 0%,#9252e9 100%) !important;
+  border-color:#b785ff !important;
+}
+
+/* Nhánh cấp 1: thanh màu đầy đủ giống ảnh 1 */
+.blog-category-branch > .blog-category-row{
+  grid-template-columns:28px minmax(0,1fr) auto !important;
+  gap:7px !important;
+  padding-left:0 !important;
+}
+
 .blog-category-branch > .blog-category-row > .blog-category-select{
-  border-color:color-mix(in srgb,var(--cat-accent) 78%,transparent) !important;
+  min-height:38px !important;
+  padding:9px 10px !important;
+  border:1px solid color-mix(in srgb,var(--cat-accent) 88%,white 8%) !important;
+  border-radius:11px !important;
+  color:#fff !important;
   background:
     linear-gradient(
       100deg,
-      color-mix(in srgb,var(--cat-accent) 48%,#171329),
-      color-mix(in srgb,var(--cat-accent) 16%,#11101d)
+      color-mix(in srgb,var(--cat-accent) 92%,#111 3%) 0%,
+      color-mix(in srgb,var(--cat-accent) 72%,#8d36d7 18%) 100%
     ) !important;
   box-shadow:
-    inset 4px 0 0 var(--cat-accent),
-    0 7px 18px rgba(0,0,0,.2) !important;
+    inset 0 1px 0 rgba(255,255,255,.23),
+    0 7px 18px color-mix(in srgb,var(--cat-accent) 20%,transparent) !important;
+  font-weight:900 !important;
+  text-transform:none;
 }
 
-/* Ô danh mục con */
-.blog-category-branch .blog-category-children .blog-category-select{
-  border-color:color-mix(in srgb,var(--cat-accent) 55%,transparent) !important;
-  background:
-    linear-gradient(
-      100deg,
-      color-mix(in srgb,var(--cat-accent) 30%,#18142a),
-      rgba(20,17,35,.98)
-    ) !important;
-  box-shadow:
-    inset 3px 0 0 color-mix(in srgb,var(--cat-accent) 82%,transparent) !important;
-}
-
-/* Nút cộng/trừ */
-.blog-category-branch .blog-category-toggle{
-  border-color:color-mix(in srgb,var(--cat-accent) 82%,transparent) !important;
+/* Nút +/- cấp 1 */
+.blog-category-branch > .blog-category-row > .blog-category-toggle{
+  width:27px !important;
+  height:27px !important;
+  border-color:color-mix(in srgb,var(--cat-accent) 75%,#fff 8%) !important;
+  color:#fff !important;
   background:
     linear-gradient(
       145deg,
-      color-mix(in srgb,var(--cat-accent) 52%,#171329),
-      color-mix(in srgb,var(--cat-accent) 18%,#171329)
+      color-mix(in srgb,var(--cat-accent) 78%,#151121),
+      color-mix(in srgb,var(--cat-accent) 38%,#151121)
     ) !important;
-  box-shadow:0 0 14px color-mix(in srgb,var(--cat-accent) 25%,transparent) !important;
-}
-
-/* Số lượng */
-.blog-category-branch .blog-category-count{
-  color:#fff !important;
-  background:
-    linear-gradient(
-      135deg,
-      color-mix(in srgb,var(--cat-accent) 95%,#fff 4%),
-      color-mix(in srgb,var(--cat-accent) 66%,#11101d)
-    ) !important;
-  border:1px solid color-mix(in srgb,var(--cat-accent) 84%,#fff 8%) !important;
   box-shadow:
-    0 0 13px color-mix(in srgb,var(--cat-accent) 34%,transparent),
-    inset 0 1px 0 rgba(255,255,255,.25) !important;
+    0 0 12px color-mix(in srgb,var(--cat-accent) 25%,transparent) !important;
 }
 
-/* Đường cây danh mục con */
-.blog-category-branch .blog-category-children{
-  border-left-color:color-mix(in srgb,var(--cat-accent) 80%,transparent) !important;
+/* Badge cấp 1 */
+.blog-category-branch > .blog-category-row > .blog-category-count{
+  color:#0b1620 !important;
+  background:#52e8f4 !important;
+  border:0 !important;
+  box-shadow:0 0 12px rgba(78,229,242,.34) !important;
 }
 
-/* Hover */
-.blog-category-branch .blog-category-select:hover{
-  border-color:var(--cat-accent) !important;
-  filter:brightness(1.14);
+/* Cây danh mục con */
+.blog-category-children{
+  margin:6px 0 2px 13px !important;
+  padding-left:12px !important;
+  gap:7px !important;
+  border-left:1px dashed color-mix(in srgb,var(--cat-accent) 68%,transparent) !important;
 }
 
-/* Đang chọn */
-.blog-category-branch .blog-category-select.is-active{
-  color:#fff !important;
-  border-color:#fff !important;
+/* Dòng con: nền tối, chỉ viền trái màu như ảnh 1 */
+.blog-category-children .blog-category-row{
+  grid-template-columns:28px minmax(0,1fr) auto !important;
+  gap:6px !important;
+  padding-left:calc(var(--depth,0) * 8px) !important;
+}
+
+.blog-category-children .blog-category-select{
+  min-height:36px !important;
+  padding:8px 10px !important;
+  border:1px solid rgba(255,255,255,.17) !important;
+  border-left:4px solid var(--cat-accent) !important;
+  border-radius:10px !important;
+  color:#f8f7ff !important;
+  background:
+    linear-gradient(90deg,#29283a 0%,#28273a 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.035),
+    0 5px 13px rgba(0,0,0,.18) !important;
+  font-weight:800 !important;
+}
+
+.blog-category-children .blog-category-select:hover{
+  transform:translateX(2px) !important;
+  border-color:color-mix(in srgb,var(--cat-accent) 72%,white 10%) !important;
+  border-left-color:var(--cat-accent) !important;
   background:
     linear-gradient(
-      100deg,
-      color-mix(in srgb,var(--cat-accent) 88%,#fff 4%),
-      color-mix(in srgb,var(--cat-accent) 50%,#241735)
+      90deg,
+      color-mix(in srgb,var(--cat-accent) 16%,#29283a),
+      #2c2a40
+    ) !important;
+}
+
+/* Con đang chọn */
+.blog-category-children .blog-category-select.is-active{
+  color:#fff !important;
+  border-color:color-mix(in srgb,var(--cat-accent) 82%,white 12%) !important;
+  border-left-color:#fff !important;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb,var(--cat-accent) 42%,#262438),
+      color-mix(in srgb,var(--cat-accent) 18%,#262438)
     ) !important;
   box-shadow:
     inset 4px 0 0 #fff,
-    0 8px 24px color-mix(in srgb,var(--cat-accent) 38%,transparent) !important;
+    0 7px 18px color-mix(in srgb,var(--cat-accent) 19%,transparent) !important;
+}
+
+/* Nút +/- con */
+.blog-category-children .blog-category-toggle{
+  width:27px !important;
+  height:27px !important;
+  border-color:color-mix(in srgb,var(--cat-accent) 75%,transparent) !important;
+  color:#fff !important;
+  background:
+    color-mix(in srgb,var(--cat-accent) 34%,#242236) !important;
+  box-shadow:none !important;
+}
+
+/* Badge con: đồng nhất xanh cyan giống ảnh 1 */
+.blog-category-children .blog-category-count{
+  min-width:28px !important;
+  height:20px !important;
+  color:#07141b !important;
+  background:#4fe5f3 !important;
+  border:0 !important;
+  box-shadow:0 0 10px rgba(79,229,243,.25) !important;
+}
+
+/* Danh mục cấp 1 đang chọn */
+.blog-category-branch > .blog-category-row > .blog-category-select.is-active{
+  border-color:#fff !important;
+  box-shadow:
+    inset 4px 0 0 #fff,
+    0 8px 22px color-mix(in srgb,var(--cat-accent) 32%,transparent) !important;
+}
+
+/* Mobile vẫn giữ dạng cột, tránh vỡ bố cục màu */
+@media(max-width:900px){
+  .blog-category-tree{
+    grid-template-columns:1fr !important;
+  }
+
+  .blog-category-all{
+    grid-column:auto !important;
+  }
 }
