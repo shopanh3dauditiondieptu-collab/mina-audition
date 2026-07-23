@@ -183,6 +183,7 @@
     }
   </style>
   <link rel="stylesheet" href="css/11-home-redesign.css?v=20260715-v1" />
+  <link rel="stylesheet" href="css/12-hero-boxed-upgrade.css?v=20260723-v1" />
 </head>
 
 <body>
@@ -208,17 +209,51 @@
     </header>
 
     <main>
-      <!-- HERO -->
-      <section class="home-hero" id="home">
-        <div class="hero-inner">
-          <div class="hero-copy">
-            <div class="hero-script">Feel the Beat ♡</div>
-            <h1><span class="mina">MINA</span><span class="audition">AUDITION</span></h1>
-            <div class="music-pill"><i class="fa-solid fa-music"></i> DANCE • POPPIN • AUDITION VTC</div>
-            <p>Chào mừng bạn đến với thế giới Audition cùng Mina!<br>Nơi chia sẻ đam mê, kỹ năng và những khoảnh khắc cháy hết mình trên sàn nhảy ảo.</p>
-            <a class="cta-btn" href="https://www.youtube.com/@mina.audition" target="_blank" rel="noopener"><i class="fa-solid fa-play"></i> XEM YOUTUBE NGAY</a>
+      <!-- HERO BOXED - MINA AUDITION -->
+      <section class="mina-home-hero" id="home" aria-labelledby="minaHeroTitle">
+        <div class="mina-home-hero__frame">
+          <div class="mina-home-hero__background" aria-hidden="true"></div>
+          <div class="mina-home-hero__overlay" aria-hidden="true"></div>
+          <div class="mina-home-hero__glow mina-home-hero__glow--pink" aria-hidden="true"></div>
+          <div class="mina-home-hero__glow mina-home-hero__glow--blue" aria-hidden="true"></div>
+
+          <div class="mina-home-hero__content">
+            <p class="mina-home-hero__script">Feel the Beat ♡</p>
+
+            <div class="mina-home-hero__brand" aria-label="Mina Audition">
+              <span class="mina-home-hero__mina">MINA</span>
+              <span class="mina-home-hero__audition">AUDITION</span>
+            </div>
+
+            <h1 id="minaHeroTitle" class="mina-home-hero__title">
+              Chạm nhịp điệu.
+              <span>Tỏa chất riêng.</span>
+            </h1>
+
+            <p class="mina-home-hero__description">
+              Nơi lưu giữ những màn Dance Performance, Poppin D8, hướng dẫn
+              và kho Skill Audition được xây dựng dành riêng cho cộng đồng.
+            </p>
+
+            <div class="mina-home-hero__tag">
+              <i class="fa-solid fa-music" aria-hidden="true"></i>
+              <span>DANCE</span><b>•</b><span>POPPIN</span><b>•</b><span>AUDITION VTC</span>
+            </div>
+
+            <div class="mina-home-hero__actions">
+              <a class="mina-home-hero__button mina-home-hero__button--primary" href="blog.html">
+                Khám phá Mina Blog <span aria-hidden="true">→</span>
+              </a>
+              <a class="mina-home-hero__button mina-home-hero__button--secondary" href="wiki.html">
+                Tra cứu Skill D8
+              </a>
+            </div>
           </div>
-          <div class="hero-character"><img src="images/avatar.png" alt="Nhân vật Mina Audition" /></div>
+
+          <div class="mina-home-hero__visual" aria-hidden="true">
+            <div class="mina-home-hero__visual-ring"></div>
+            <img src="images/avatar.png" alt="" />
+          </div>
         </div>
       </section>
 
