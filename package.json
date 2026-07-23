@@ -1,6 +1,6 @@
 {
   "name": "mina-clean-rebuild",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "private": true,
   "engines": {
     "node": "20.x"
@@ -12,5 +12,6 @@
   },
   "dependencies": {
     "firebase-admin": "^13.0.0"
-  }
+  },
+  "description": "Mina Audition Production with CMS v5.3 Enterprise and Smart Link"
 }

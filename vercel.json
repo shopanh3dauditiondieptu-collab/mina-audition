@@ -65,6 +65,14 @@
     {
       "source": "/go/:slug",
       "destination": "/api/go/:slug"
+    },
+    {
+      "source": "/admin-v5",
+      "destination": "/admin-v5.html"
+    },
+    {
+      "source": "/cms-v5",
+      "destination": "/admin-v5.html"
     }
   ],
   "headers": [
@@ -96,6 +104,45 @@
         {
           "key": "X-Robots-Tag",
           "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/admin-v5.html",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/admin-v5",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/cms-v5",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
         }
       ]
     }
