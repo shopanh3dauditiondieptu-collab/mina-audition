@@ -78,3 +78,199 @@ a{color:inherit;text-decoration:none}img{display:block;max-width:100%}button,inp
 .toast{position:fixed;right:18px;bottom:18px;z-index:100;padding:13px 17px;border:1px solid var(--line);border-radius:14px;background:#151128;box-shadow:var(--shadow);font-size:13px;font-weight:800;animation:toast-in .2s ease}@keyframes toast-in{from{transform:translateY(12px);opacity:0}}
 @media(max-width:980px){.links{display:none}.nav-toggle{display:block;margin-left:auto}.links.open{display:flex;position:absolute;top:78px;left:14px;right:14px;flex-direction:column;align-items:stretch;padding:12px;border:1px solid var(--line);border-radius:17px;background:rgba(10,8,23,.98);box-shadow:var(--shadow)}.links a{text-align:center}.header-cta{display:none}.hero-v3-grid{grid-template-columns:1fr;text-align:center}.hero-v3-copy>p{margin-left:auto;margin-right:auto}.hero-actions,.hero-proof{justify-content:center}.hero-showcase{display:none}.quick-paths{margin-top:0;padding-top:22px}.quick-path-grid{grid-template-columns:1fr}.content-grid{grid-template-columns:repeat(2,1fr)}.article-layout{grid-template-columns:1fr}.article-sidebar{position:static}.wiki-grid-v3{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:720px){.wrap{width:min(100% - 28px,1220px)}.hero-v3{min-height:auto}.hero-v3-grid{min-height:auto;padding:75px 0}.hero-v3 h1{font-size:clamp(43px,14vw,62px)}.hero-proof{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.hero-proof span{font-size:9px}.section{padding:68px 0}.section-heading{align-items:flex-start;flex-direction:column}.content-grid,.wiki-grid-v3{grid-template-columns:1fr}.affiliate-inner{align-items:flex-start;flex-direction:column;padding:30px}.library-toolbar,.wiki-toolbar{top:88px;grid-template-columns:1fr}.type-chips{grid-column:auto}.article-content .gallery{grid-template-columns:1fr}.footer-grid{flex-direction:column}.card-actions{flex-wrap:wrap}.btn{width:100%}}
+
+/* ==================================================
+   MINA HERO V4 — 16:9 FULL-BANNER SLIDER
+================================================== */
+.mina-hero-slider{
+  --hero-delay:6500ms;
+  position:relative;
+  min-height:clamp(560px,56.25vw,760px);
+  overflow:hidden;
+  isolation:isolate;
+  background:#070611;
+}
+.mina-hero-slides,
+.mina-hero-slide{
+  position:absolute;
+  inset:0;
+}
+.mina-hero-slide{
+  z-index:0;
+  opacity:0;
+  visibility:hidden;
+  transform:scale(1.035);
+  transition:opacity .9s ease,visibility .9s ease,transform 7s ease;
+}
+.mina-hero-slide.is-active{
+  z-index:1;
+  opacity:1;
+  visibility:visible;
+  transform:scale(1);
+}
+.mina-hero-slide img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+  user-select:none;
+  pointer-events:none;
+}
+.mina-hero-shade{
+  position:absolute;
+  inset:0;
+  z-index:2;
+  background:
+    linear-gradient(90deg,rgba(7,6,17,.94) 0%,rgba(7,6,17,.82) 29%,rgba(7,6,17,.43) 54%,rgba(7,6,17,.12) 78%,rgba(7,6,17,.08) 100%),
+    linear-gradient(0deg,rgba(7,6,17,.66) 0%,rgba(7,6,17,.08) 45%,rgba(7,6,17,.15) 100%);
+}
+.mina-hero-content{
+  position:relative;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  min-height:clamp(560px,56.25vw,760px);
+  padding:72px 0 92px;
+}
+.mina-hero-copy{
+  width:min(690px,62%);
+}
+.mina-hero-copy>p{
+  max-width:650px;
+  color:rgba(255,255,255,.82);
+  font-size:18px;
+  text-shadow:0 3px 18px rgba(0,0,0,.55);
+}
+.mina-hero-slider h1{
+  max-width:850px;
+  margin:17px 0 22px;
+  font-size:clamp(52px,7vw,88px);
+  line-height:1.01;
+  letter-spacing:-.065em;
+  text-shadow:0 8px 38px rgba(0,0,0,.58);
+}
+.mina-hero-slider .hero-kicker{
+  text-shadow:0 3px 16px rgba(0,0,0,.7);
+}
+.mina-hero-slider .btn-glass{
+  background:rgba(7,6,17,.42);
+  backdrop-filter:blur(14px);
+}
+.mina-hero-slider .hero-proof strong,
+.mina-hero-slider .hero-proof span{
+  text-shadow:0 2px 12px rgba(0,0,0,.7);
+}
+.mina-hero-arrow{
+  position:absolute;
+  top:50%;
+  z-index:5;
+  display:grid;
+  place-items:center;
+  width:48px;
+  height:48px;
+  padding:0;
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:50%;
+  color:#fff;
+  font-size:34px;
+  line-height:1;
+  cursor:pointer;
+  background:rgba(7,6,17,.36);
+  backdrop-filter:blur(14px);
+  transform:translateY(-50%);
+  transition:transform .2s ease,background .2s ease,border-color .2s ease;
+}
+.mina-hero-arrow:hover{
+  border-color:rgba(255,255,255,.58);
+  background:rgba(139,92,255,.68);
+  transform:translateY(-50%) scale(1.06);
+}
+.mina-hero-prev{left:22px}
+.mina-hero-next{right:22px}
+.mina-hero-dots{
+  position:absolute;
+  left:50%;
+  bottom:28px;
+  z-index:5;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  transform:translateX(-50%);
+}
+.mina-hero-dot{
+  width:9px;
+  height:9px;
+  padding:0;
+  border:0;
+  border-radius:999px;
+  cursor:pointer;
+  background:rgba(255,255,255,.44);
+  transition:width .25s ease,transform .25s ease,background .25s ease;
+}
+.mina-hero-dot:hover{
+  background:rgba(255,255,255,.82);
+  transform:scale(1.18);
+}
+.mina-hero-dot.is-active{
+  width:34px;
+  background:#fff;
+}
+.mina-hero-progress{
+  position:absolute;
+  right:0;
+  bottom:0;
+  left:0;
+  z-index:6;
+  height:4px;
+  overflow:hidden;
+  background:rgba(255,255,255,.13);
+}
+.mina-hero-progress span{
+  display:block;
+  width:0;
+  height:100%;
+  background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink));
+}
+.mina-hero-progress span.is-running{
+  animation:mina-hero-progress var(--hero-delay) linear forwards;
+}
+@keyframes mina-hero-progress{
+  from{width:0}
+  to{width:100%}
+}
+@media(max-width:980px){
+  .mina-hero-slider{min-height:650px}
+  .mina-hero-content{
+    min-height:650px;
+    justify-content:center;
+    text-align:center;
+  }
+  .mina-hero-copy{width:min(760px,92%)}
+  .mina-hero-copy>p{margin-left:auto;margin-right:auto}
+  .mina-hero-slider .hero-actions,
+  .mina-hero-slider .hero-proof{justify-content:center}
+  .mina-hero-shade{
+    background:linear-gradient(0deg,rgba(7,6,17,.94) 0%,rgba(7,6,17,.7) 54%,rgba(7,6,17,.35) 100%);
+  }
+}
+@media(max-width:720px){
+  .mina-hero-slider,
+  .mina-hero-content{min-height:610px}
+  .mina-hero-content{
+    align-items:flex-end;
+    padding:96px 0 76px;
+  }
+  .mina-hero-copy{width:100%}
+  .mina-hero-slider h1{font-size:clamp(42px,13vw,60px)}
+  .mina-hero-copy>p{font-size:15px;line-height:1.65}
+  .mina-hero-slide img{object-position:center}
+  .mina-hero-arrow{display:none}
+  .mina-hero-dots{bottom:21px}
+  .mina-hero-slider .hero-proof{grid-template-columns:repeat(3,1fr)}
+}
+@media(prefers-reduced-motion:reduce){
+  .mina-hero-slide,
+  .mina-hero-arrow,
+  .mina-hero-dot{transition:none}
+  .mina-hero-progress span.is-running{animation:none}
+}

@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/app-v3.css?v=3.0.0">
+<link rel="stylesheet" href="/assets/css/app-v3.css?v=4.0.0">
 
 <title>Mina Audition | AI Prompt • Outfit • Audition VTC</title>
 </head>
@@ -38,38 +38,123 @@
 </header>
 
 <main>
-  <section class="hero-v3">
-    <div class="hero-grid-lines" aria-hidden="true"></div>
-    <div class="hero-orb hero-orb-one" aria-hidden="true"></div>
-    <div class="hero-orb hero-orb-two" aria-hidden="true"></div>
-    <div class="wrap hero-v3-grid">
-      <div class="hero-v3-copy">
+  <section
+    class="hero-v3 mina-hero-slider"
+    id="minaHeroSlider"
+    aria-label="Nội dung nổi bật của Mina Audition"
+  >
+    <div class="mina-hero-slides">
+      <article class="mina-hero-slide is-active" aria-hidden="false">
+        <img
+          src="/images/hero/hero-01.webp"
+          alt="Mina Audition - Banner nổi bật số 1"
+          width="1920"
+          height="1080"
+          fetchpriority="high"
+          decoding="async"
+        >
+      </article>
+
+      <article class="mina-hero-slide" aria-hidden="true">
+        <img
+          data-src="/images/hero/hero-02.webp"
+          alt="Mina Audition - Banner nổi bật số 2"
+          width="1920"
+          height="1080"
+          loading="lazy"
+          decoding="async"
+        >
+      </article>
+
+      <article class="mina-hero-slide" aria-hidden="true">
+        <img
+          data-src="/images/hero/hero-03.webp"
+          alt="Mina Audition - Banner nổi bật số 3"
+          width="1920"
+          height="1080"
+          loading="lazy"
+          decoding="async"
+        >
+      </article>
+
+      <article class="mina-hero-slide" aria-hidden="true">
+        <img
+          data-src="/images/hero/hero-04.webp"
+          alt="Mina Audition - Banner nổi bật số 4"
+          width="1920"
+          height="1080"
+          loading="lazy"
+          decoding="async"
+        >
+      </article>
+
+      <article class="mina-hero-slide" aria-hidden="true">
+        <img
+          data-src="/images/hero/hero-05.webp"
+          alt="Mina Audition - Banner nổi bật số 5"
+          width="1920"
+          height="1080"
+          loading="lazy"
+          decoding="async"
+        >
+      </article>
+    </div>
+
+    <div class="mina-hero-shade" aria-hidden="true"></div>
+
+    <div class="wrap mina-hero-content">
+      <div class="mina-hero-copy">
         <div class="hero-kicker"><span>✦</span> MINA AUDITION CREATIVE HUB</div>
+
         <h1>Biến ý tưởng thành<br><em>hình ảnh có chất.</em></h1>
-        <p>Kho AI Prompt, Mix & Match Outfit, kinh nghiệm Audition và Wiki Skill được sắp xếp để bạn tìm nhanh, dùng ngay và tạo ra nội dung đẹp hơn.</p>
+
+        <p>
+          Kho AI Prompt, Mix & Match Outfit, kinh nghiệm Audition và Wiki Skill
+          được sắp xếp để bạn tìm nhanh, dùng ngay và tạo ra nội dung đẹp hơn.
+        </p>
+
         <div class="hero-actions">
-          <a class="btn btn-primary" href="/blog.html?type=prompt">Khám phá AI Prompt <span>→</span></a>
-          <a class="btn btn-glass" href="/go/taoanh3d?source=website-hero&campaign=weekend-launch">Mở AUMIX3D <span>↗</span></a>
+          <a class="btn btn-primary" href="/blog.html?type=prompt">
+            Khám phá AI Prompt <span>→</span>
+          </a>
+          <a
+            class="btn btn-glass"
+            href="/go/taoanh3d?source=website-hero&campaign=weekend-launch"
+          >
+            Mở AUMIX3D <span>↗</span>
+          </a>
         </div>
+
         <div class="hero-proof">
           <div><strong>AI Prompt</strong><span>Lệnh dễ copy</span></div>
           <div><strong>Outfit</strong><span>Phối đồ có hệ thống</span></div>
           <div><strong>Smart Link</strong><span>Đi đúng công cụ</span></div>
         </div>
       </div>
-      <div class="hero-showcase">
-        <div class="showcase-frame">
-          <img src="/assets/images/mina-hero.png" onerror="this.onerror=null;this.src='/assets/images/logo-mina.png'" alt="Mina Audition">
-          <div class="showcase-overlay"></div>
-          <span class="showcase-label">Mina Creative</span>
-        </div>
-        <div class="float-chip chip-one">📋 Copy Prompt</div>
-        <div class="float-chip chip-two">👗 Mix & Match</div>
-        <div class="float-chip chip-three">✨ Tạo ảnh 3D</div>
-      </div>
+    </div>
+
+    <button
+      class="mina-hero-arrow mina-hero-prev"
+      type="button"
+      aria-label="Xem banner trước"
+    >
+      ‹
+    </button>
+
+    <button
+      class="mina-hero-arrow mina-hero-next"
+      type="button"
+      aria-label="Xem banner tiếp theo"
+    >
+      ›
+    </button>
+
+    <div class="mina-hero-dots" aria-label="Chọn banner"></div>
+
+    <div class="mina-hero-progress" aria-hidden="true">
+      <span></span>
     </div>
   </section>
-
   <section class="quick-paths">
     <div class="wrap quick-path-grid">
       <a href="/blog.html?type=prompt" class="quick-path prompt">
@@ -142,6 +227,6 @@
   <div class="wrap copyright">© 2026 Mina Audition. Nội dung dành cho cộng đồng Audition.</div>
 </footer>
 
-<script type="module" src="/assets/js/site-v3.js?v=3.0.0"></script>
+<script type="module" src="/assets/js/site-v3.js?v=4.0.0"></script>
 </body>
 </html>

@@ -375,3 +375,175 @@ if (navToggle && navLinks) {
 document.querySelector(`[data-nav="${page}"]`)?.classList.add("active");
 
 ({ home, blog, post: postPage, wiki }[page] || (() => {}))();
+
+function initMinaHeroSlider() {
+  const slider = document.querySelector("#minaHeroSlider");
+  if (!slider) return;
+
+  const slides = [...slider.querySelectorAll(".mina-hero-slide")];
+  const dotsBox = slider.querySelector(".mina-hero-dots");
+  const previousButton = slider.querySelector(".mina-hero-prev");
+  const nextButton = slider.querySelector(".mina-hero-next");
+  const progress = slider.querySelector(".mina-hero-progress span");
+
+  if (!slides.length) return;
+
+  const delay = 6500;
+  let currentIndex = 0;
+  let timer = null;
+  let touchStartX = 0;
+  let paused = false;
+
+  slider.style.setProperty("--hero-delay", `${delay}ms`);
+
+  function loadImage(index) {
+    const image = slides[index]?.querySelector("img[data-src]");
+    if (!image) return;
+    image.src = image.dataset.src;
+    image.removeAttribute("data-src");
+  }
+
+  function preloadNext(index) {
+    loadImage((index + 1) % slides.length);
+  }
+
+  function createDots() {
+    if (!dotsBox) return;
+    dotsBox.innerHTML = "";
+
+    slides.forEach((_, index) => {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.className = "mina-hero-dot";
+      dot.setAttribute("aria-label", `Xem banner ${index + 1}`);
+      dot.addEventListener("click", () => {
+        showSlide(index);
+        restart();
+      });
+      dotsBox.append(dot);
+    });
+  }
+
+  function updateDots() {
+    const dots = [...slider.querySelectorAll(".mina-hero-dot")];
+    dots.forEach((dot, index) => {
+      const active = index === currentIndex;
+      dot.classList.toggle("is-active", active);
+      dot.setAttribute("aria-current", active ? "true" : "false");
+    });
+  }
+
+  function restartProgress() {
+    if (!progress) return;
+    progress.classList.remove("is-running");
+    void progress.offsetWidth;
+    if (!paused && !document.hidden) progress.classList.add("is-running");
+  }
+
+  function showSlide(index) {
+    currentIndex = (index + slides.length) % slides.length;
+    loadImage(currentIndex);
+
+    slides.forEach((slide, slideIndex) => {
+      const active = slideIndex === currentIndex;
+      slide.classList.toggle("is-active", active);
+      slide.setAttribute("aria-hidden", String(!active));
+    });
+
+    updateDots();
+    restartProgress();
+    preloadNext(currentIndex);
+  }
+
+  function next() {
+    showSlide(currentIndex + 1);
+  }
+
+  function previous() {
+    showSlide(currentIndex - 1);
+  }
+
+  function stop() {
+    if (timer !== null) {
+      window.clearInterval(timer);
+      timer = null;
+    }
+    progress?.classList.remove("is-running");
+  }
+
+  function start() {
+    stop();
+    if (slides.length < 2 || paused || document.hidden) return;
+    restartProgress();
+    timer = window.setInterval(next, delay);
+  }
+
+  function restart() {
+    start();
+  }
+
+  previousButton?.addEventListener("click", () => {
+    previous();
+    restart();
+  });
+
+  nextButton?.addEventListener("click", () => {
+    next();
+    restart();
+  });
+
+  slider.addEventListener("mouseenter", () => {
+    paused = true;
+    stop();
+  });
+
+  slider.addEventListener("mouseleave", () => {
+    paused = false;
+    start();
+  });
+
+  slider.addEventListener("focusin", () => {
+    paused = true;
+    stop();
+  });
+
+  slider.addEventListener("focusout", event => {
+    if (!slider.contains(event.relatedTarget)) {
+      paused = false;
+      start();
+    }
+  });
+
+  slider.addEventListener("touchstart", event => {
+    touchStartX = event.changedTouches[0].clientX;
+  }, { passive: true });
+
+  slider.addEventListener("touchend", event => {
+    const distance = event.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(distance) < 45) return;
+
+    distance > 0 ? previous() : next();
+    restart();
+  }, { passive: true });
+
+  slider.addEventListener("keydown", event => {
+    if (event.key === "ArrowLeft") {
+      previous();
+      restart();
+    } else if (event.key === "ArrowRight") {
+      next();
+      restart();
+    }
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stop();
+    else if (!paused) start();
+  });
+
+  createDots();
+  showSlide(0);
+  start();
+}
+
+initMinaHeroSlider();
