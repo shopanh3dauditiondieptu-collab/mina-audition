@@ -1,5 +1,5 @@
 const {
-  requireAdminApiKey,
+  requireAdmin,
   getFirestore,
   setJsonHeaders
 } = require("../../../lib/mina-admin-server");
@@ -82,7 +82,8 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  if (!requireAdminApiKey(req, res)) return;
+  const auth = await requireAdmin(req, res);
+  if (!auth) return;
 
   try {
     const days = clampInteger(req.query.days, 1, MAX_RANGE_DAYS, DEFAULT_DAYS);
