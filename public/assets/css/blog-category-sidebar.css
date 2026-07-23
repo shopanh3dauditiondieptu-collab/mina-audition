@@ -26,157 +26,121 @@
 
 
 /* =========================================================
-   MINA BLOG — CATEGORY COLOR SYSTEM
-   Mỗi nhóm danh mục cấp 1 có một màu riêng.
-   Chỉ tác động sidebar Blog, không ảnh hưởng CMS/Firebase.
+   FIX MÀU DANH MỤC — BẮT BUỘC KẾ THỪA MÀU TỪ NHÓM CHA
+   Nguyên nhân cũ: .blog-category-row tự đặt lại --cat-accent
+   thành màu tím nên mọi nhóm đều hiển thị cùng màu.
 ========================================================= */
 
-/* Tất cả bài viết */
-.blog-category-all{
-  --cat-accent:#b65cff;
-  background:
-    linear-gradient(100deg,rgba(183,80,255,.34),rgba(83,56,160,.24));
-  border-color:rgba(204,126,255,.58);
+/* Không cho từng dòng tự ghi đè màu của nhóm cha */
+.blog-category-branch .blog-category-row{
+  --cat-accent: inherit !important;
 }
 
-/* Màu mặc định cho nhóm danh mục */
-.blog-category-branch{
-  --cat-accent:#9b5cff;
-  padding:3px;
-  border-radius:13px;
-  transition:background .2s ease,box-shadow .2s ease;
+/* Gán màu theo thứ tự nhóm thực tế trong cây danh mục */
+.blog-category-tree > .blog-category-branch:nth-child(2){
+  --cat-accent:#ec4899 !important;
 }
 
-/* Mỗi nhóm cấp 1 một màu riêng */
-.blog-category-tree > .blog-category-branch:nth-of-type(2){
-  --cat-accent:#f04fd7; /* Mina Blog / AI Prompt */
+.blog-category-tree > .blog-category-branch:nth-child(3){
+  --cat-accent:#22c55e !important;
 }
 
-.blog-category-tree > .blog-category-branch:nth-of-type(3){
-  --cat-accent:#22cfa2; /* Outfit / Mix & Match */
+.blog-category-tree > .blog-category-branch:nth-child(4){
+  --cat-accent:#f97316 !important;
 }
 
-.blog-category-tree > .blog-category-branch:nth-of-type(4){
-  --cat-accent:#ff9f38; /* Video / Gameplay */
+.blog-category-tree > .blog-category-branch:nth-child(5){
+  --cat-accent:#3b82f6 !important;
 }
 
-.blog-category-tree > .blog-category-branch:nth-of-type(5){
-  --cat-accent:#56a8ff; /* Academy / Kinh nghiệm */
+.blog-category-tree > .blog-category-branch:nth-child(6){
+  --cat-accent:#8b5cf6 !important;
 }
 
-.blog-category-tree > .blog-category-branch:nth-of-type(6){
-  --cat-accent:#7e78ff; /* Wikipedia D8 */
+.blog-category-tree > .blog-category-branch:nth-child(7){
+  --cat-accent:#eab308 !important;
 }
 
-.blog-category-tree > .blog-category-branch:nth-of-type(7){
-  --cat-accent:#ff667d; /* Shop */
+.blog-category-tree > .blog-category-branch:nth-child(8){
+  --cat-accent:#ef4444 !important;
 }
 
-.blog-category-tree > .blog-category-branch:nth-of-type(8){
-  --cat-accent:#f5c84c; /* Tâm sự / Chia sẻ */
-}
-
-/* Làm nổi từng ô */
+/* Ô danh mục cha */
 .blog-category-branch > .blog-category-row > .blog-category-select{
+  border-color:color-mix(in srgb,var(--cat-accent) 78%,transparent) !important;
   background:
     linear-gradient(
       100deg,
-      color-mix(in srgb,var(--cat-accent) 34%,#181329),
-      color-mix(in srgb,var(--cat-accent) 12%,#12101f)
-    );
-  border-color:color-mix(in srgb,var(--cat-accent) 68%,transparent);
+      color-mix(in srgb,var(--cat-accent) 48%,#171329),
+      color-mix(in srgb,var(--cat-accent) 16%,#11101d)
+    ) !important;
   box-shadow:
     inset 4px 0 0 var(--cat-accent),
-    0 7px 18px rgba(0,0,0,.16);
+    0 7px 18px rgba(0,0,0,.2) !important;
 }
 
-/* Danh mục con dùng cùng tông nhưng nhẹ hơn */
-.blog-category-children .blog-category-select{
+/* Ô danh mục con */
+.blog-category-branch .blog-category-children .blog-category-select{
+  border-color:color-mix(in srgb,var(--cat-accent) 55%,transparent) !important;
   background:
     linear-gradient(
       100deg,
-      color-mix(in srgb,var(--cat-accent) 22%,#19152c),
-      rgba(20,17,35,.96)
-    );
-  border-color:color-mix(in srgb,var(--cat-accent) 43%,transparent);
-  box-shadow:inset 3px 0 0 color-mix(in srgb,var(--cat-accent) 72%,transparent);
+      color-mix(in srgb,var(--cat-accent) 30%,#18142a),
+      rgba(20,17,35,.98)
+    ) !important;
+  box-shadow:
+    inset 3px 0 0 color-mix(in srgb,var(--cat-accent) 82%,transparent) !important;
 }
 
-/* Nút cộng/trừ đồng bộ màu nhóm */
-.blog-category-toggle{
-  border-color:color-mix(in srgb,var(--cat-accent) 72%,transparent);
+/* Nút cộng/trừ */
+.blog-category-branch .blog-category-toggle{
+  border-color:color-mix(in srgb,var(--cat-accent) 82%,transparent) !important;
   background:
     linear-gradient(
       145deg,
-      color-mix(in srgb,var(--cat-accent) 37%,#171329),
-      color-mix(in srgb,var(--cat-accent) 14%,#171329)
-    );
-  box-shadow:0 0 14px color-mix(in srgb,var(--cat-accent) 14%,transparent);
+      color-mix(in srgb,var(--cat-accent) 52%,#171329),
+      color-mix(in srgb,var(--cat-accent) 18%,#171329)
+    ) !important;
+  box-shadow:0 0 14px color-mix(in srgb,var(--cat-accent) 25%,transparent) !important;
 }
 
-.blog-category-toggle:hover{
-  transform:scale(1.05);
-  border-color:var(--cat-accent);
-  background:color-mix(in srgb,var(--cat-accent) 48%,#171329);
-}
-
-/* Badge số lượng đổi theo màu nhóm */
-.blog-category-row .blog-category-count{
-  color:#fff;
+/* Số lượng */
+.blog-category-branch .blog-category-count{
+  color:#fff !important;
   background:
     linear-gradient(
       135deg,
-      color-mix(in srgb,var(--cat-accent) 92%,#fff 5%),
-      color-mix(in srgb,var(--cat-accent) 66%,#12101f)
-    );
-  border:1px solid color-mix(in srgb,var(--cat-accent) 78%,#fff 8%);
+      color-mix(in srgb,var(--cat-accent) 95%,#fff 4%),
+      color-mix(in srgb,var(--cat-accent) 66%,#11101d)
+    ) !important;
+  border:1px solid color-mix(in srgb,var(--cat-accent) 84%,#fff 8%) !important;
   box-shadow:
-    0 0 13px color-mix(in srgb,var(--cat-accent) 25%,transparent),
-    inset 0 1px 0 rgba(255,255,255,.24);
+    0 0 13px color-mix(in srgb,var(--cat-accent) 34%,transparent),
+    inset 0 1px 0 rgba(255,255,255,.25) !important;
 }
 
-/* Trạng thái hover và đang chọn */
-.blog-category-row:hover .blog-category-select{
-  transform:translateX(3px);
-  border-color:var(--cat-accent);
-  filter:brightness(1.1);
+/* Đường cây danh mục con */
+.blog-category-branch .blog-category-children{
+  border-left-color:color-mix(in srgb,var(--cat-accent) 80%,transparent) !important;
 }
 
-.blog-category-select.is-active{
-  color:#fff;
-  border-color:color-mix(in srgb,var(--cat-accent) 90%,#fff 10%);
+/* Hover */
+.blog-category-branch .blog-category-select:hover{
+  border-color:var(--cat-accent) !important;
+  filter:brightness(1.14);
+}
+
+/* Đang chọn */
+.blog-category-branch .blog-category-select.is-active{
+  color:#fff !important;
+  border-color:#fff !important;
   background:
     linear-gradient(
       100deg,
-      color-mix(in srgb,var(--cat-accent) 88%,#fff 2%),
-      color-mix(in srgb,var(--cat-accent) 48%,#251839)
-    );
+      color-mix(in srgb,var(--cat-accent) 88%,#fff 4%),
+      color-mix(in srgb,var(--cat-accent) 50%,#241735)
+    ) !important;
   box-shadow:
     inset 4px 0 0 #fff,
-    0 8px 24px color-mix(in srgb,var(--cat-accent) 30%,transparent);
-}
-
-/* Viền cây con rõ hơn */
-.blog-category-children{
-  border-left-color:color-mix(in srgb,var(--cat-accent) 72%,transparent);
-}
-
-/* Tăng độ tương phản tiêu đề sidebar */
-.blog-category-sidebar__title{
-  padding-bottom:11px;
-  border-bottom:1px solid rgba(255,255,255,.1);
-}
-
-/* Giữ sidebar gọn trên màn hình nhỏ */
-@media(max-width:900px){
-  .blog-category-branch{
-    align-self:start;
-  }
-}
-
-@media(max-width:620px){
-  .blog-category-branch > .blog-category-row > .blog-category-select,
-  .blog-category-children .blog-category-select{
-    box-shadow:inset 3px 0 0 var(--cat-accent);
-  }
+    0 8px 24px color-mix(in srgb,var(--cat-accent) 38%,transparent) !important;
 }
