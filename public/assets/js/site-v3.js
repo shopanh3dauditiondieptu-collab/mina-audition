@@ -6,6 +6,35 @@ const AFFILIATE_SLUG = "taoanh3d";
 
 const CATEGORY_TREE_URL = "/data/category-tree.json";
 
+
+const CATEGORY_COLOR_RULES = [
+  { color: "#ec4899", keywords: ["mina blog", "prompt", "ai prompt", "lenh ai", "lệnh ai"] },
+  { color: "#14b8a6", keywords: ["shop anh", "shop ảnh", "2d/3d", "anh 2d", "ảnh 2d", "anh 3d", "ảnh 3d"] },
+  { color: "#22c55e", keywords: ["kinh nghiem", "kinh nghiệm", "academy", "huong dan", "hướng dẫn"] },
+  { color: "#f97316", keywords: ["mix & match", "mix match", "outfit", "style girl", "style boy", "couple"] },
+  { color: "#ef4444", keywords: ["video", "gameplay", "review nhac", "review nhạc"] },
+  { color: "#8b5cf6", keywords: ["wikipedia", "wiki", "skill d8", "4k", "8k"] },
+  { color: "#eab308", keywords: ["game gear", "gear"] },
+  { color: "#f472b6", keywords: ["tam su", "tâm sự", "chia se", "chia sẻ"] }
+];
+
+function categoryIdentity(node) {
+  return normalize([
+    node?.id,
+    node?.slug,
+    node?.name
+  ].filter(Boolean).join(" "));
+}
+
+function getCategoryColor(node, inheritedColor = "") {
+  const identity = categoryIdentity(node);
+  const matched = CATEGORY_COLOR_RULES.find(rule =>
+    rule.keywords.some(keyword => identity.includes(normalize(keyword)))
+  );
+  return matched?.color || inheritedColor || "#7c5cff";
+}
+
+
 function getCategoryPath(post) {
   if (Array.isArray(post?.categoryPath)) {
     return post.categoryPath.map(item => String(item || "").trim()).filter(Boolean);
@@ -77,34 +106,71 @@ function countPostsForNode(node, posts) {
 
 function renderCategorySidebar(container, tree, posts, onSelect) {
   if (!container) return;
-  const palette = [
-    "#21d6a1", "#e34ed5", "#ff9a2f", "#5b8cff",
-    "#a968ff", "#ff5f78", "#20c8e7", "#f2c94c"
-  ];
 
-  const renderNodes = (nodes, depth = 0, rootIndex = 0) => (nodes || []).map((node, index) => {
-    const children = Array.isArray(node.children) ? node.children : [];
-    const token = node.slug || node.id || node.name || "";
-    const color = palette[depth === 0 ? index % palette.length : rootIndex % palette.length];
-    const branchId = `cat-${String(node.id || node.slug || node.name || index).replace(/[^a-zA-Z0-9_-]/g, "-")}`;
-    const count = countPostsForNode(node, posts);
-    return `<div class="blog-category-branch" style="--cat-accent:${color}">
-      <div class="blog-category-row" style="--depth:${depth}">
-        <button type="button" class="blog-category-toggle ${children.length ? "" : "is-placeholder"}" data-category-toggle="${esc(branchId)}" aria-expanded="${depth === 0 ? "true" : "false"}" aria-controls="${esc(branchId)}">${children.length ? (depth === 0 ? "−" : "+") : "+"}</button>
-        <button type="button" class="blog-category-select" data-category-value="${esc(token)}" data-category-name="${esc(node.name || token)}">${esc(node.icon || "◆")} ${esc(node.name || token)}</button>
-        <span class="blog-category-count">${count}</span>
-      </div>
-      ${children.length ? `<div id="${esc(branchId)}" class="blog-category-children" ${depth === 0 ? "" : "hidden"}>${renderNodes(children, depth + 1, depth === 0 ? index : rootIndex)}</div>` : ""}
-    </div>`;
-  }).join("");
+  const renderNodes = (nodes, depth = 0, inheritedColor = "") =>
+    (nodes || []).map((node, index) => {
+      const children = Array.isArray(node.children) ? node.children : [];
+      const token = node.slug || node.id || node.name || "";
+      const color = getCategoryColor(node, inheritedColor);
+      const branchId = `cat-${String(node.id || node.slug || node.name || index)
+        .replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+      const count = countPostsForNode(node, posts);
+      const opened = depth === 0;
 
-  container.innerHTML = `<button type="button" class="blog-category-all is-active" data-category-value="" style="--cat-accent:#9b5cff"><span>🔥 Tất cả bài viết</span><span class="blog-category-count">${posts.length}</span></button>${renderNodes(tree)}`;
+      return `<div class="blog-category-branch"
+        data-category-key="${esc(categoryIdentity(node))}"
+        style="--cat-accent:${esc(color)}">
+        <div class="blog-category-row" style="--depth:${depth};--cat-accent:${esc(color)}">
+          <button
+            type="button"
+            class="blog-category-toggle ${children.length ? "" : "is-placeholder"}"
+            data-category-toggle="${esc(branchId)}"
+            aria-expanded="${opened ? "true" : "false"}"
+            aria-controls="${esc(branchId)}">
+            ${children.length ? (opened ? "−" : "+") : "+"}
+          </button>
+
+          <button
+            type="button"
+            class="blog-category-select"
+            data-category-value="${esc(token)}"
+            data-category-name="${esc(node.name || token)}"
+            style="--cat-accent:${esc(color)}">
+            ${esc(node.icon || "◆")} ${esc(node.name || token)}
+          </button>
+
+          <span class="blog-category-count" style="--cat-accent:${esc(color)}">${count}</span>
+        </div>
+
+        ${children.length
+          ? `<div
+              id="${esc(branchId)}"
+              class="blog-category-children"
+              style="--cat-accent:${esc(color)}"
+              ${opened ? "" : "hidden"}>
+              ${renderNodes(children, depth + 1, color)}
+            </div>`
+          : ""}
+      </div>`;
+    }).join("");
+
+  container.innerHTML = `
+    <button
+      type="button"
+      class="blog-category-all is-active"
+      data-category-value="">
+      <span>🔥 Tất cả bài viết</span>
+      <span class="blog-category-count">${posts.length}</span>
+    </button>
+    ${renderNodes(tree)}
+  `;
 
   container.addEventListener("click", event => {
     const toggle = event.target.closest("[data-category-toggle]");
     if (toggle) {
       const target = document.getElementById(toggle.dataset.categoryToggle);
       if (!target) return;
+
       const willOpen = target.hidden;
       target.hidden = !willOpen;
       toggle.textContent = willOpen ? "−" : "+";
@@ -114,8 +180,15 @@ function renderCategorySidebar(container, tree, posts, onSelect) {
 
     const select = event.target.closest("[data-category-value]");
     if (!select) return;
-    container.querySelectorAll("[data-category-value]").forEach(item => item.classList.toggle("is-active", item === select));
-    onSelect(select.dataset.categoryValue || "", select.dataset.categoryName || "");
+
+    container.querySelectorAll("[data-category-value]").forEach(item => {
+      item.classList.toggle("is-active", item === select);
+    });
+
+    onSelect(
+      select.dataset.categoryValue || "",
+      select.dataset.categoryName || ""
+    );
   });
 }
 
