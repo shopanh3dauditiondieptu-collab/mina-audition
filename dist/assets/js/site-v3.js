@@ -4,6 +4,68 @@ import { esc, formatDate, placeholder, normalize } from "./utils.js";
 const page = document.body.dataset.page;
 const AFFILIATE_SLUG = "taoanh3d";
 
+const CATEGORY_TREE_URL = "/data/category-tree.json";
+
+function getCategoryPath(post) {
+  if (Array.isArray(post?.categoryPath)) {
+    return post.categoryPath.map(item => String(item || "").trim()).filter(Boolean);
+  }
+  const raw = value(post, ["categoryPathText", "categoryFullPath"], "");
+  if (raw) return String(raw).split(/[>/|]/).map(item => item.trim()).filter(Boolean);
+  return [getCategory(post)].filter(Boolean);
+}
+
+function categoryTokens(post) {
+  return normalize([
+    ...getCategoryPath(post),
+    value(post, ["categoryId", "categorySlug", "categoryLevel1", "categoryLevel2", "categoryLevel3", "categoryLevel4"], ""),
+    getCategory(post)
+  ].join(" "));
+}
+
+async function loadSharedCategoryTree() {
+  const response = await fetch(`${CATEGORY_TREE_URL}?v=5`, { cache: "no-store" });
+  if (!response.ok) throw new Error("Không tải được danh mục CMS V5.");
+  const tree = await response.json();
+  return Array.isArray(tree) ? tree : [];
+}
+
+function categoryLink(node) {
+  const params = new URLSearchParams();
+  params.set("category", node.slug || node.id || node.name || "");
+  params.set("categoryName", node.name || "");
+  return `/blog.html?${params}`;
+}
+
+function countDescendants(node) {
+  return (node.children || []).reduce((total, child) => total + 1 + countDescendants(child), 0);
+}
+
+function renderHomeCategories(tree) {
+  const box = document.querySelector("#homeCategoryGrid");
+  if (!box) return;
+  if (!tree.length) {
+    box.innerHTML = `<div class="empty">CMS V5 chưa có danh mục.</div>`;
+    return;
+  }
+  box.innerHTML = tree.map((node, index) => {
+    const children = Array.isArray(node.children) ? node.children : [];
+    const visible = children.slice(0, 4);
+    const icon = node.icon || ["✦", "♛", "⌁", "🎮", "🎬", "📚"][index % 6];
+    return `<article class="home-category-card">
+      <div class="home-category-card__top">
+        <span class="home-category-card__icon">${esc(icon)}</span>
+        <span class="home-category-card__count">${countDescendants(node)} mục con</span>
+      </div>
+      <h3><a href="${categoryLink(node)}">${esc(node.name || node.id || "Danh mục")}</a></h3>
+      <div class="home-category-children">
+        ${visible.map(child => `<a class="home-category-child" href="${categoryLink(child)}">${esc(child.name || child.id)}</a>`).join("")}
+        ${children.length > visible.length ? `<a class="home-category-more" href="${categoryLink(node)}">+${children.length - visible.length} mục khác</a>` : ""}
+      </div>
+    </article>`;
+  }).join("");
+}
+
 function value(post, keys, fallback = "") {
   for (const key of keys) {
     const current = post?.[key];
@@ -152,6 +214,13 @@ async function home() {
   const latestBox = document.querySelector("#latest");
   const promptBox = document.querySelector("#promptHighlights");
 
+  loadSharedCategoryTree()
+    .then(renderHomeCategories)
+    .catch(error => {
+      const box = document.querySelector("#homeCategoryGrid");
+      if (box) box.innerHTML = `<div class="empty">${esc(error.message)}</div>`;
+    });
+
   try {
     const all = await listPosts();
     const published = all.filter(post => post.status !== "draft");
@@ -181,8 +250,19 @@ async function blog() {
     category.innerHTML = `<option value="">Tất cả danh mục</option>` +
       categories.map(item => `<option>${esc(item)}</option>`).join("");
 
-    const requestedType = new URLSearchParams(location.search).get("type") || "";
+    const urlParams = new URLSearchParams(location.search);
+    const requestedType = urlParams.get("type") || "";
+    const requestedCategory = urlParams.get("category") || "";
+    const requestedCategoryName = urlParams.get("categoryName") || "";
     let activeType = requestedType;
+
+    if (requestedCategory || requestedCategoryName) {
+      const label = requestedCategoryName || requestedCategory;
+      if (![...category.options].some(option => option.value === label)) {
+        category.add(new Option(label, label));
+      }
+      category.value = label;
+    }
     chips.forEach(chip => chip.classList.toggle("active", chip.dataset.type === activeType));
 
     const render = () => {
@@ -190,7 +270,11 @@ async function blog() {
       const selectedCategory = category.value;
       const filtered = all.filter(post => {
         const typeOk = !activeType || classify(post) === activeType;
-        const categoryOk = !selectedCategory || getCategory(post) === selectedCategory;
+        const selectedToken = normalize(selectedCategory);
+        const requestedToken = normalize(requestedCategory);
+        const categoryOk = (!selectedCategory && !requestedCategory) ||
+          categoryTokens(post).includes(selectedToken) ||
+          (requestedToken && categoryTokens(post).includes(requestedToken));
         const searchOk = !term || normalize([
           post.title,
           getExcerpt(post),
