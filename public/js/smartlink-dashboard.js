@@ -79,6 +79,59 @@ function renderRecentClicks(rows = []) {
   }).join("");
 }
 
+
+function renderHourlyHeatmap(rows = []) {
+  const container = $("#smartHourlyHeatmap");
+  if (!container) return;
+
+  const normalized = Array.from({ length: 24 }, (_, hour) => {
+    const found = rows.find(item => Number(item.hour) === hour);
+    return { hour, clicks: Number(found?.clicks || 0) };
+  });
+
+  const max = Math.max(...normalized.map(item => item.clicks), 1);
+
+  container.innerHTML = normalized.map(item => {
+    const level = Math.ceil((item.clicks / max) * 5);
+    return `
+      <div class="hour-cell level-${level}" title="${item.hour}:00 — ${number(item.clicks)} click">
+        <strong>${String(item.hour).padStart(2, "0")}h</strong>
+        <span>${number(item.clicks)}</span>
+      </div>`;
+  }).join("");
+}
+
+function renderPostPerformance(rows = []) {
+  const container = $("#smartPostPerformance");
+  if (!container) return;
+
+  if (!rows.length) {
+    container.innerHTML =
+      `<div class="analytics-empty">Chưa có dữ liệu bài viết.</div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="post-performance-head">
+      <span>Mã bài / Tiêu đề</span>
+      <span>Lượt xem</span>
+      <span>Click</span>
+      <span>CTR</span>
+    </div>
+    ${rows.slice(0, 30).map(row => `
+      <article class="post-performance-row">
+        <div>
+          <strong>${escapeHtml(row.postCode)}</strong>
+          <small>${escapeHtml(row.title || row.postCode)}</small>
+        </div>
+        <span>${number(row.views)}</span>
+        <span>${number(row.clicks)}</span>
+        <span>${row.ctr === null ? "Chưa có view" : `${row.ctr}%`}</span>
+      </article>
+    `).join("")}
+  `;
+}
+
 function renderDashboard(data) {
   renderSummary(data); renderDailyChart(data.daily || []);
   renderBars("#smartSourceBreakdown", data.breakdowns?.sources || [], "Chưa có dữ liệu nguồn.");
@@ -87,6 +140,19 @@ function renderDashboard(data) {
   renderBars("#smartCampaignBreakdown", data.breakdowns?.campaigns || [], "Chưa có dữ liệu campaign.");
   renderBars("#smartTopLinks", data.breakdowns?.links || [], "Chưa có dữ liệu Smart Link.");
   renderBars("#smartReferrerBreakdown", data.breakdowns?.referrers || [], "Chưa có dữ liệu referrer.");
+  renderHourlyHeatmap(data.hourly || []);
+  renderBars(
+    "#smartBrowserBreakdown",
+    data.breakdowns?.browsers || [],
+    "Chưa có dữ liệu trình duyệt."
+  );
+  renderBars(
+    "#smartCountryBreakdown",
+    data.breakdowns?.countries || [],
+    "Chưa có dữ liệu quốc gia."
+  );
+  renderPostPerformance(data.postPerformance || []);
+
   populateLinkFilter(data.links || []); renderRecentClicks(data.recentClicks || []);
   const warning = $("#smartAnalyticsWarning");
   if (warning) { warning.hidden = !data.summary?.scanLimitReached; warning.textContent = data.summary?.scanLimitReached ? "Dữ liệu đã chạm giới hạn quét. Hãy chọn khoảng ngày ngắn hơn." : ""; }

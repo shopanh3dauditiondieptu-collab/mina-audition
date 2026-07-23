@@ -1,5 +1,5 @@
 const {
-  requireAdmin,
+  requireAdminApiKey,
   getFirestore,
   setJsonHeaders
 } = require("../../../lib/mina-admin-server");
@@ -21,28 +21,32 @@ function clampInteger(value, min, max, fallback) {
 function toDate(value) {
   if (!value) return null;
   if (typeof value.toDate === "function") return value.toDate();
-
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function startOfLocalDay(date, timeZoneOffsetMinutes) {
-  const shifted = new Date(date.getTime() + timeZoneOffsetMinutes * 60000);
+function startOfLocalDay(date, offsetMinutes) {
+  const shifted = new Date(date.getTime() + offsetMinutes * 60000);
   shifted.setUTCHours(0, 0, 0, 0);
-  return new Date(shifted.getTime() - timeZoneOffsetMinutes * 60000);
+  return new Date(shifted.getTime() - offsetMinutes * 60000);
 }
 
-function dateKey(date, timeZoneOffsetMinutes) {
-  const shifted = new Date(date.getTime() + timeZoneOffsetMinutes * 60000);
+function dateKey(date, offsetMinutes) {
+  const shifted = new Date(date.getTime() + offsetMinutes * 60000);
   return shifted.toISOString().slice(0, 10);
 }
 
-function increment(map, key, amount = 1) {
-  const normalized = clean(key || "Không xác định", 120) || "Không xác định";
-  map.set(normalized, (map.get(normalized) || 0) + amount);
+function localHour(date, offsetMinutes) {
+  const shifted = new Date(date.getTime() + offsetMinutes * 60000);
+  return shifted.getUTCHours();
 }
 
-function topEntries(map, limit = 12) {
+function increment(map, key, amount = 1) {
+  const label = clean(key || "Không xác định", 120) || "Không xác định";
+  map.set(label, (map.get(label) || 0) + amount);
+}
+
+function topEntries(map, limit = 15) {
   return [...map.entries()]
     .map(([label, value]) => ({ label, value }))
     .sort((a, b) => b.value - a.value || a.label.localeCompare(b.label))
@@ -52,6 +56,19 @@ function topEntries(map, limit = 12) {
 function serializeDate(value) {
   const date = toDate(value);
   return date ? date.toISOString() : null;
+}
+
+function browserFromUserAgent(userAgent = "") {
+  const value = String(userAgent);
+  if (/Edg\//i.test(value)) return "Edge";
+  if (/OPR\/|Opera/i.test(value)) return "Opera";
+  if (/SamsungBrowser/i.test(value)) return "Samsung Internet";
+  if (/Firefox\//i.test(value)) return "Firefox";
+  if (/CriOS\//i.test(value)) return "Chrome iOS";
+  if (/Chrome\//i.test(value)) return "Chrome";
+  if (/FxiOS\//i.test(value)) return "Firefox iOS";
+  if (/Safari\//i.test(value) && /Version\//i.test(value)) return "Safari";
+  return "Khác";
 }
 
 module.exports = async function handler(req, res) {
@@ -65,23 +82,11 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  if (!await requireAdmin(req, res)) return;
+  if (!requireAdminApiKey(req, res)) return;
 
   try {
-    const days = clampInteger(
-      req.query.days,
-      1,
-      MAX_RANGE_DAYS,
-      DEFAULT_DAYS
-    );
-
-    // Việt Nam UTC+7. Có thể truyền tzOffset=420 nếu cần.
-    const tzOffset = clampInteger(
-      req.query.tzOffset,
-      -720,
-      840,
-      420
-    );
+    const days = clampInteger(req.query.days, 1, MAX_RANGE_DAYS, DEFAULT_DAYS);
+    const tzOffset = clampInteger(req.query.tzOffset, -720, 840, 420);
 
     const linkId = clean(req.query.linkId, 120);
     const sourceFilter = clean(req.query.source, 80).toLowerCase();
@@ -95,13 +100,14 @@ module.exports = async function handler(req, res) {
 
     const db = getFirestore();
 
-    const [linksSnapshot, clicksSnapshot] = await Promise.all([
+    const [linksSnapshot, clicksSnapshot, postsSnapshot] = await Promise.all([
       db.collection("smartLinks").get(),
       db.collection("smartLinkClicks")
         .where("clickedAt", ">=", rangeStart)
         .orderBy("clickedAt", "desc")
         .limit(MAX_CLICK_DOCUMENTS)
-        .get()
+        .get(),
+      db.collection("posts").limit(5000).get()
     ]);
 
     const links = linksSnapshot.docs.map(doc => {
@@ -113,16 +119,29 @@ module.exports = async function handler(req, res) {
         targetUrl: clean(data.targetUrl || data.url || "", 1000),
         active: data.active === true,
         clicks: Number(data.clicks || 0),
-        lastClickedAt: serializeDate(data.lastClickedAt),
-        createdAt: serializeDate(data.createdAt),
-        updatedAt: serializeDate(data.updatedAt)
+        lastClickedAt: serializeDate(data.lastClickedAt)
       };
     });
 
+    const postViews = new Map();
+    for (const doc of postsSnapshot.docs) {
+      const data = doc.data() || {};
+      const code = clean(data.internalId || data.aiId || data.postCode, 80);
+      if (!code) continue;
+      const views = Number(
+        data.views || data.viewCount || data.viewsCount || 0
+      );
+      postViews.set(code.toLowerCase(), {
+        code,
+        title: clean(data.title || code, 180),
+        views: Number.isFinite(views) ? views : 0
+      });
+    }
+
     const dailyMap = new Map();
-    for (let index = 0; index < days; index += 1) {
+    for (let i = 0; i < days; i += 1) {
       const day = new Date(rangeStart);
-      day.setUTCDate(day.getUTCDate() + index);
+      day.setUTCDate(day.getUTCDate() + i);
       dailyMap.set(dateKey(day, tzOffset), 0);
     }
 
@@ -132,6 +151,9 @@ module.exports = async function handler(req, res) {
     const campaignMap = new Map();
     const linkMap = new Map();
     const referrerMap = new Map();
+    const browserMap = new Map();
+    const countryMap = new Map();
+    const hourMap = new Map(Array.from({ length: 24 }, (_, h) => [String(h), 0]));
 
     let todayClicks = 0;
     let sevenDayClicks = 0;
@@ -157,55 +179,51 @@ module.exports = async function handler(req, res) {
         clickedAt: clickedAt.toISOString(),
         linkId: clean(data.linkId, 120),
         linkSlug: clean(data.linkSlug, 120),
-        linkTitle: clean(data.linkTitle || data.linkSlug || data.linkId, 160),
+        linkTitle: clean(
+          data.linkTitle || data.linkName || data.linkSlug || data.linkId,
+          160
+        ),
         source: clean(data.source || "direct", 80),
         postCode: clean(data.postCode, 80),
         campaign: clean(data.campaign, 80),
         deviceType: clean(data.deviceType || "unknown", 40),
+        browser: clean(data.browser || browserFromUserAgent(data.userAgent), 80),
+        country: clean(data.country || "UNKNOWN", 20).toUpperCase(),
         referrer: clean(data.referrer, 500),
         targetUrl: clean(data.targetUrl, 1000)
       };
 
       if (linkId && row.linkId !== linkId) continue;
-      if (
-        sourceFilter &&
-        row.source.toLowerCase() !== sourceFilter
-      ) continue;
-      if (
-        postFilter &&
-        row.postCode.toLowerCase() !== postFilter
-      ) continue;
-      if (
-        campaignFilter &&
-        row.campaign.toLowerCase() !== campaignFilter
-      ) continue;
+      if (sourceFilter && row.source.toLowerCase() !== sourceFilter) continue;
+      if (postFilter && row.postCode.toLowerCase() !== postFilter) continue;
+      if (campaignFilter && row.campaign.toLowerCase() !== campaignFilter) continue;
 
       filteredClicks += 1;
       clickRows.push(row);
 
-      if (!newestClickAt || clickedAt > newestClickAt) {
-        newestClickAt = clickedAt;
-      }
-
+      if (!newestClickAt || clickedAt > newestClickAt) newestClickAt = clickedAt;
       if (clickedAt >= todayStart) todayClicks += 1;
       if (clickedAt >= sevenDayStart) sevenDayClicks += 1;
       if (clickedAt >= thirtyDayStart) thirtyDayClicks += 1;
 
       const key = dateKey(clickedAt, tzOffset);
-      if (dailyMap.has(key)) {
-        dailyMap.set(key, dailyMap.get(key) + 1);
-      }
+      if (dailyMap.has(key)) dailyMap.set(key, dailyMap.get(key) + 1);
+
+      const hour = String(localHour(clickedAt, tzOffset));
+      hourMap.set(hour, (hourMap.get(hour) || 0) + 1);
 
       increment(sourceMap, row.source || "direct");
       increment(deviceMap, row.deviceType || "unknown");
       increment(postMap, row.postCode || "Không có mã bài");
       increment(campaignMap, row.campaign || "Không có campaign");
       increment(linkMap, row.linkTitle || row.linkSlug || row.linkId);
+      increment(browserMap, row.browser || "Khác");
+      increment(countryMap, row.country || "UNKNOWN");
 
       if (row.referrer) {
         try {
           increment(referrerMap, new URL(row.referrer).hostname);
-        } catch (_) {
+        } catch {
           increment(referrerMap, row.referrer);
         }
       } else {
@@ -213,11 +231,22 @@ module.exports = async function handler(req, res) {
       }
     }
 
+    const postPerformance = topEntries(postMap, 50).map(item => {
+      const meta = postViews.get(item.label.toLowerCase());
+      const views = meta?.views || 0;
+      return {
+        postCode: item.label,
+        title: meta?.title || item.label,
+        clicks: item.value,
+        views,
+        ctr: views > 0 ? Number(((item.value / views) * 100).toFixed(2)) : null
+      };
+    }).sort((a, b) => b.clicks - a.clicks);
+
     const totalStoredClicks = links.reduce(
       (sum, link) => sum + Number(link.clicks || 0),
       0
     );
-
     const activeLinks = links.filter(link => link.active).length;
 
     return res.status(200).json({
@@ -244,15 +273,13 @@ module.exports = async function handler(req, res) {
         todayClicks,
         sevenDayClicks,
         thirtyDayClicks,
-        newestClickAt: newestClickAt
-          ? newestClickAt.toISOString()
-          : null,
+        newestClickAt: newestClickAt ? newestClickAt.toISOString() : null,
         scannedDocuments: clicksSnapshot.size,
-        scanLimitReached:
-          clicksSnapshot.size >= MAX_CLICK_DOCUMENTS
+        scanLimitReached: clicksSnapshot.size >= MAX_CLICK_DOCUMENTS
       },
-      daily: [...dailyMap.entries()].map(([date, clicks]) => ({
-        date,
+      daily: [...dailyMap.entries()].map(([date, clicks]) => ({ date, clicks })),
+      hourly: [...hourMap.entries()].map(([hour, clicks]) => ({
+        hour: Number(hour),
         clicks
       })),
       breakdowns: {
@@ -261,22 +288,20 @@ module.exports = async function handler(req, res) {
         posts: topEntries(postMap),
         campaigns: topEntries(campaignMap),
         links: topEntries(linkMap),
-        referrers: topEntries(referrerMap)
+        referrers: topEntries(referrerMap),
+        browsers: topEntries(browserMap),
+        countries: topEntries(countryMap)
       },
-      links: links
-        .sort((a, b) => b.clicks - a.clicks)
-        .slice(0, 100),
+      postPerformance,
+      links: links.sort((a, b) => b.clicks - a.clicks).slice(0, 100),
       recentClicks: clickRows.slice(0, 100)
     });
   } catch (error) {
     console.error("[Mina Smart Link Dashboard] Error:", error);
-
     return res.status(500).json({
       success: false,
       code: error.code || "DASHBOARD_ERROR",
-      message:
-        error.message ||
-        "Không thể tải dữ liệu Smart Link Dashboard."
+      message: error.message || "Không thể tải dữ liệu Smart Link Dashboard."
     });
   }
 };

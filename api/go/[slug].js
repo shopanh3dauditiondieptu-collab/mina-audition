@@ -1,12 +1,9 @@
 const admin = require("firebase-admin");
 
 function getAdminApp() {
-  if (admin.apps.length) {
-    return admin.app();
-  }
+  if (admin.apps.length) return admin.app();
 
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-
   if (!raw) {
     throw new Error(
       "Thiếu FIREBASE_SERVICE_ACCOUNT_JSON trong Environment Variables của Vercel."
@@ -14,7 +11,6 @@ function getAdminApp() {
   }
 
   let serviceAccount;
-
   try {
     serviceAccount = JSON.parse(raw);
   } catch {
@@ -29,8 +25,13 @@ function getAdminApp() {
     }
   }
 
+  serviceAccount.private_key = String(
+    serviceAccount.private_key || ""
+  ).replace(/\\n/g, "\n");
+
   return admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+    credential: admin.credential.cert(serviceAccount),
+    projectId: serviceAccount.project_id
   });
 }
 
@@ -39,17 +40,34 @@ function clean(value, max = 160) {
 }
 
 function getDeviceType(userAgent = "") {
-  const value = userAgent.toLowerCase();
-
-  if (/tablet|ipad/.test(value)) {
-    return "tablet";
-  }
-
-  if (/mobile|iphone|android/.test(value)) {
-    return "mobile";
-  }
-
+  const value = String(userAgent).toLowerCase();
+  if (/tablet|ipad/.test(value)) return "tablet";
+  if (/mobile|iphone|android/.test(value)) return "mobile";
   return "desktop";
+}
+
+function getBrowser(userAgent = "") {
+  const value = String(userAgent);
+
+  if (/Edg\//i.test(value)) return "Edge";
+  if (/OPR\/|Opera/i.test(value)) return "Opera";
+  if (/SamsungBrowser/i.test(value)) return "Samsung Internet";
+  if (/Firefox\//i.test(value)) return "Firefox";
+  if (/CriOS\//i.test(value)) return "Chrome iOS";
+  if (/Chrome\//i.test(value)) return "Chrome";
+  if (/FxiOS\//i.test(value)) return "Firefox iOS";
+  if (/Safari\//i.test(value) && /Version\//i.test(value)) return "Safari";
+
+  return "Khác";
+}
+
+function getCountry(req) {
+  return clean(
+    req.headers["x-vercel-ip-country"] ||
+    req.headers["cf-ipcountry"] ||
+    "UNKNOWN",
+    12
+  ).toUpperCase();
 }
 
 module.exports = async function handler(req, res) {
@@ -71,13 +89,8 @@ module.exports = async function handler(req, res) {
 
   try {
     getAdminApp();
-
     const db = admin.firestore();
 
-    /*
-     * Smart Link đang được CMS lưu với ID ngẫu nhiên,
-     * vì vậy phải tìm theo field slug.
-     */
     const querySnapshot = await db
       .collection("smartLinks")
       .where("slug", "==", slug)
@@ -106,10 +119,8 @@ module.exports = async function handler(req, res) {
     }
 
     let targetUrl;
-
     try {
       targetUrl = new URL(destination);
-
       if (!["http:", "https:"].includes(targetUrl.protocol)) {
         throw new Error("Unsupported protocol");
       }
@@ -123,7 +134,7 @@ module.exports = async function handler(req, res) {
     );
 
     const postCode = clean(
-      req.query.post || link.postCode || "",
+      req.query.post || req.query.postCode || link.postCode || "",
       80
     );
 
@@ -135,25 +146,25 @@ module.exports = async function handler(req, res) {
     const referrer = clean(req.headers.referer || "", 500);
     const userAgent = clean(req.headers["user-agent"] || "", 500);
 
-    /*
-     * HEAD thường do bot hoặc công cụ kiểm tra link gọi.
-     * Chỉ ghi nhận click thật với GET.
-     */
     if (req.method === "GET") {
       try {
         const clickRef = db.collection("smartLinkClicks").doc();
         const batch = db.batch();
+        const now = new Date();
 
         batch.set(clickRef, {
           linkId: documentSnapshot.id,
           linkSlug: slug,
-          linkName: clean(link.name || link.title || slug, 160),
+          linkTitle: clean(link.name || link.title || slug, 160),
           targetUrl: targetUrl.toString(),
           postCode,
           campaign,
           source,
           referrer,
           deviceType: getDeviceType(userAgent),
+          browser: getBrowser(userAgent),
+          country: getCountry(req),
+          hourUtc: now.getUTCHours(),
           userAgent,
           clickedAt: admin.firestore.FieldValue.serverTimestamp()
         });
@@ -161,34 +172,23 @@ module.exports = async function handler(req, res) {
         batch.set(
           linkRef,
           {
-            /*
-             * CMS hiện tại khởi tạo field clicks.
-             * Vì vậy tăng clicks để số liệu hiển thị thống nhất.
-             */
             clicks: admin.firestore.FieldValue.increment(1),
             totalClicks: admin.firestore.FieldValue.increment(1),
-            lastClickedAt:
-              admin.firestore.FieldValue.serverTimestamp()
+            lastClickedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
           },
           { merge: true }
         );
 
         await batch.commit();
       } catch (trackingError) {
-        /*
-         * Nếu thống kê lỗi, người dùng vẫn được chuyển hướng.
-         */
-        console.error(
-          "[Mina Smart Link] Tracking failed:",
-          trackingError
-        );
+        console.error("[Mina Smart Link] Tracking failed:", trackingError);
       }
     }
 
     return res.redirect(302, targetUrl.toString());
   } catch (error) {
     console.error("[Mina Smart Link]", error);
-
     return res
       .status(500)
       .send("Smart Link chưa được cấu hình hoặc đang tạm gián đoạn.");
