@@ -1,32 +1,20 @@
-MINA AUDITION MERGE REPORT
+MINA AUDITION - CMS V5.3 TO MAIN SYNCHRONIZATION
+================================================
 
-JS syntax checks:
-- api/go/[slug].js: OK
-- api/admin/smartlinks/dashboard.js: OK
-- api/admin/smartlinks/export.js: OK
+Source of truth:
+- mina-audition-cms-v5-enterprise(1).zip (stable CMS v5.3)
 
-npm run verify: OK
-> mina-clean-rebuild@2.2.0 verify
-> npm run preflight && npm run build
+Applied to Production package:
+- Full CMS v5.3 public/admin/API/Firebase/Smart Link implementation
+- Rotating hero banner assets: public/images/hero/hero-01.webp ... hero-05.webp
+- Production routes retained:
+  /admin-v5 -> /admin-v5.html
+  /cms-v5   -> /admin-v5.html
+- CMS pages are marked noindex and no-store
+- Build output regenerated from public/
 
-
-> mina-clean-rebuild@2.2.0 preflight
-> node scripts/preflight.js
-
-Serverless Functions dự kiến: 10
- - api/_mina-seo-utils.js
- - api/admin/login.js
- - api/admin/smartlinks/dashboard.js
- - api/admin/smartlinks/export.js
- - api/categories.js
- - api/go/[slug].js
- - api/save-wiki-skill.js
- - api/seo.js
- - api/upload-image.js
- - api/wiki.js
-Preflight thành công.
-
-> mina-clean-rebuild@2.2.0 build
-> node -e "const fs=require('fs'); if(!fs.existsSync('public')){throw new Error('Khong tim thay thu muc public o goc repository');} fs.rmSync('dist',{recursive:true,force:true}); fs.cpSync('public','dist',{recursive:true}); console.log('Mina Clean build completed');"
-
-Mina Clean build completed
+Deploy:
+1. Replace the contents of GitHub main with this folder's contents.
+2. Commit and push.
+3. In Vercel, verify Production Branch = main.
+4. Redeploy without build cache if old assets remain visible.

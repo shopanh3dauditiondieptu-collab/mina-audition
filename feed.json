@@ -573,15 +573,6 @@
       "date_modified": "2026-07-12T22:54:36.136Z"
     },
     {
-      "id": "https://www.minaaudition.vn/post.html?id=YPY9wY0nzWBUd8lREimi",
-      "url": "https://www.minaaudition.vn/post.html?id=YPY9wY0nzWBUd8lREimi",
-      "title": "TEST FIRESTORE",
-      "summary": "Kiểm tra CMS",
-      "image": "https://res.cloudinary.com/rpwcnrfg/image/upload/v1784698986/cms-v4/covers/klvxkgumhpkufvsm4x6j.png",
-      "date_published": "2026-07-22T05:50:46.392Z",
-      "date_modified": "2026-07-22T05:50:47.057Z"
-    },
-    {
       "id": "https://www.minaaudition.vn/post.html?id=YUzTR03n3yrlY8Yyd7pF",
       "url": "https://www.minaaudition.vn/post.html?id=YUzTR03n3yrlY8Yyd7pF",
       "title": "AI-0246\tLệnh AI Làm Ảnh 3D",
@@ -904,6 +895,15 @@
       "image": "https://res.cloudinary.com/rpwcnrfg/image/upload/v1783831890/mina-review/unqgze1xe0j6lscviluw.png",
       "date_published": "2026-07-12T04:51:51.751Z",
       "date_modified": "2026-07-12T04:51:51.787Z"
+    },
+    {
+      "id": "https://www.minaaudition.vn/post.html?id=mi9LuANdggxkmcW0IG1L",
+      "url": "https://www.minaaudition.vn/post.html?id=mi9LuANdggxkmcW0IG1L",
+      "title": "AI-0152\tLệnh AI Làm Ảnh 3D",
+      "summary": "✨ Mỗi nhân vật đều có một câu chuyện – Hãy để mình giúp bạn lưu giữ theo cách thật chất! 🎮",
+      "image": "https://res.cloudinary.com/rpwcnrfg/image/upload/v1783832055/mina-review/ix0lkyuhwrklzmoq1qxi.png",
+      "date_published": "2026-07-12T04:55:03.467Z",
+      "date_modified": "2026-07-12T04:55:03.503Z"
     }
   ]
 }
