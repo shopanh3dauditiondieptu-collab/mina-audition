@@ -30,6 +30,36 @@ async function loadSharedCategoryTree() {
   return Array.isArray(tree) ? tree : [];
 }
 
+
+function flattenCategoryTree(nodes, depth = 0, result = []) {
+  for (const node of nodes || []) {
+    result.push({
+      id: String(node.id || "").trim(),
+      slug: String(node.slug || "").trim(),
+      name: String(node.name || node.id || "Danh mục").trim(),
+      depth
+    });
+    flattenCategoryTree(node.children || [], depth + 1, result);
+  }
+  return result;
+}
+
+function renderCategorySelect(select, tree, posts) {
+  const nodes = flattenCategoryTree(tree);
+  const known = new Set(nodes.flatMap(node => [node.name, node.id, node.slug]).filter(Boolean).map(normalize));
+  const postOnly = [...new Set(posts.map(getCategory).filter(Boolean))]
+    .filter(name => !known.has(normalize(name)))
+    .sort((a, b) => a.localeCompare(b, "vi"));
+
+  select.innerHTML = `<option value="">Tất cả danh mục</option>` +
+    nodes.map(node => {
+      const prefix = node.depth ? `${"— ".repeat(node.depth)}` : "";
+      const token = node.slug || node.id || node.name;
+      return `<option value="${esc(token)}" data-name="${esc(node.name)}" data-level="${node.depth}">${prefix}${esc(node.name)}</option>`;
+    }).join("") +
+    postOnly.map(name => `<option value="${esc(name)}">${esc(name)}</option>`).join("");
+}
+
 function categoryLink(node) {
   const params = new URLSearchParams();
   params.set("category", node.slug || node.id || node.name || "");
@@ -245,10 +275,12 @@ async function blog() {
   const chips = [...document.querySelectorAll("[data-type]")];
 
   try {
-    const all = (await listPosts()).filter(post => post.status !== "draft");
-    const categories = [...new Set(all.map(getCategory).filter(Boolean))].sort();
-    category.innerHTML = `<option value="">Tất cả danh mục</option>` +
-      categories.map(item => `<option>${esc(item)}</option>`).join("");
+    const [allPosts, categoryTree] = await Promise.all([
+      listPosts(),
+      loadSharedCategoryTree().catch(() => [])
+    ]);
+    const all = allPosts.filter(post => post.status !== "draft");
+    renderCategorySelect(category, categoryTree, all);
 
     const urlParams = new URLSearchParams(location.search);
     const requestedType = urlParams.get("type") || "";
@@ -257,24 +289,33 @@ async function blog() {
     let activeType = requestedType;
 
     if (requestedCategory || requestedCategoryName) {
-      const label = requestedCategoryName || requestedCategory;
-      if (![...category.options].some(option => option.value === label)) {
-        category.add(new Option(label, label));
+      const candidates = [requestedCategory, requestedCategoryName].filter(Boolean).map(normalize);
+      const matched = [...category.options].find(option =>
+        candidates.includes(normalize(option.value)) ||
+        candidates.includes(normalize(option.dataset.name || option.textContent))
+      );
+      if (matched) category.value = matched.value;
+      else {
+        const label = requestedCategoryName || requestedCategory;
+        category.add(new Option(label, requestedCategory || label));
+        category.value = requestedCategory || label;
       }
-      category.value = label;
     }
     chips.forEach(chip => chip.classList.toggle("active", chip.dataset.type === activeType));
 
     const render = () => {
       const term = normalize(search.value);
       const selectedCategory = category.value;
+      const selectedOption = category.options[category.selectedIndex];
+      const selectedName = selectedOption?.dataset?.name || selectedOption?.textContent || "";
       const filtered = all.filter(post => {
         const typeOk = !activeType || classify(post) === activeType;
-        const selectedToken = normalize(selectedCategory);
-        const requestedToken = normalize(requestedCategory);
-        const categoryOk = (!selectedCategory && !requestedCategory) ||
-          categoryTokens(post).includes(selectedToken) ||
-          (requestedToken && categoryTokens(post).includes(requestedToken));
+        const tokens = categoryTokens(post);
+        const selectedTokens = [selectedCategory, selectedName].filter(Boolean).map(normalize);
+        const requestedTokens = [requestedCategory, requestedCategoryName].filter(Boolean).map(normalize);
+        const categoryOk = (!selectedCategory && !requestedCategory && !requestedCategoryName) ||
+          selectedTokens.some(token => token && tokens.includes(token)) ||
+          requestedTokens.some(token => token && tokens.includes(token));
         const searchOk = !term || normalize([
           post.title,
           getExcerpt(post),
