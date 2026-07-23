@@ -1,4 +1,5 @@
 const API_KEY_STORAGE_KEYS = [
+  "mina_admin_api_key_session",
   "minaAdminApiKey",
   "MINA_ADMIN_API_KEY",
   "mina-admin-api-key"
