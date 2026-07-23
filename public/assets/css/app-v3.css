@@ -80,123 +80,167 @@ a{color:inherit;text-decoration:none}img{display:block;max-width:100%}button,inp
 @media(max-width:720px){.wrap{width:min(100% - 28px,1220px)}.hero-v3{min-height:auto}.hero-v3-grid{min-height:auto;padding:75px 0}.hero-v3 h1{font-size:clamp(43px,14vw,62px)}.hero-proof{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.hero-proof span{font-size:9px}.section{padding:68px 0}.section-heading{align-items:flex-start;flex-direction:column}.content-grid,.wiki-grid-v3{grid-template-columns:1fr}.affiliate-inner{align-items:flex-start;flex-direction:column;padding:30px}.library-toolbar,.wiki-toolbar{top:88px;grid-template-columns:1fr}.type-chips{grid-column:auto}.article-content .gallery{grid-template-columns:1fr}.footer-grid{flex-direction:column}.card-actions{flex-wrap:wrap}.btn{width:100%}}
 
 /* ==================================================
-   MINA HERO V4 — 16:9 FULL-BANNER SLIDER
+   MINA HERO V4.1 — BALANCED 16:9 SLIDER
+   Hiển thị banner cân đối, hạn chế phóng to/cắt ảnh
 ================================================== */
 .mina-hero-slider{
   --hero-delay:6500ms;
   position:relative;
-  min-height:clamp(560px,56.25vw,760px);
+  width:100%;
+  height:min(720px,calc(100vh - 78px));
+  min-height:560px;
   overflow:hidden;
   isolation:isolate;
   background:#070611;
 }
+
 .mina-hero-slides,
 .mina-hero-slide{
   position:absolute;
   inset:0;
 }
+
 .mina-hero-slide{
   z-index:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   opacity:0;
   visibility:hidden;
-  transform:scale(1.035);
-  transition:opacity .9s ease,visibility .9s ease,transform 7s ease;
+  transform:scale(1.012);
+  transition:opacity .85s ease,visibility .85s ease,transform 6.8s ease;
 }
+
 .mina-hero-slide.is-active{
   z-index:1;
   opacity:1;
   visibility:visible;
   transform:scale(1);
 }
+
 .mina-hero-slide img{
+  display:block;
   width:100%;
   height:100%;
   object-fit:cover;
-  object-position:center;
+  object-position:center center;
   user-select:none;
   pointer-events:none;
 }
+
+/* Giảm lớp tối để banner không bị nặng và giữ nhân vật rõ */
 .mina-hero-shade{
   position:absolute;
   inset:0;
   z-index:2;
   background:
-    linear-gradient(90deg,rgba(7,6,17,.94) 0%,rgba(7,6,17,.82) 29%,rgba(7,6,17,.43) 54%,rgba(7,6,17,.12) 78%,rgba(7,6,17,.08) 100%),
-    linear-gradient(0deg,rgba(7,6,17,.66) 0%,rgba(7,6,17,.08) 45%,rgba(7,6,17,.15) 100%);
+    linear-gradient(
+      90deg,
+      rgba(7,6,17,.92) 0%,
+      rgba(7,6,17,.76) 28%,
+      rgba(7,6,17,.34) 52%,
+      rgba(7,6,17,.08) 76%,
+      rgba(7,6,17,.03) 100%
+    ),
+    linear-gradient(
+      0deg,
+      rgba(7,6,17,.44) 0%,
+      rgba(7,6,17,.02) 42%,
+      rgba(7,6,17,.08) 100%
+    );
 }
+
 .mina-hero-content{
   position:relative;
   z-index:3;
   display:flex;
   align-items:center;
-  min-height:clamp(560px,56.25vw,760px);
-  padding:72px 0 92px;
+  height:100%;
+  min-height:0;
+  padding:56px 0 82px;
 }
+
 .mina-hero-copy{
-  width:min(690px,62%);
+  width:min(650px,46%);
 }
+
 .mina-hero-copy>p{
-  max-width:650px;
-  color:rgba(255,255,255,.82);
-  font-size:18px;
-  text-shadow:0 3px 18px rgba(0,0,0,.55);
+  max-width:620px;
+  color:rgba(255,255,255,.84);
+  font-size:17px;
+  line-height:1.65;
+  text-shadow:0 3px 18px rgba(0,0,0,.58);
 }
+
 .mina-hero-slider h1{
-  max-width:850px;
-  margin:17px 0 22px;
-  font-size:clamp(52px,7vw,88px);
-  line-height:1.01;
-  letter-spacing:-.065em;
-  text-shadow:0 8px 38px rgba(0,0,0,.58);
+  max-width:700px;
+  margin:15px 0 19px;
+  font-size:clamp(46px,5.6vw,76px);
+  line-height:1.02;
+  letter-spacing:-.06em;
+  text-shadow:0 8px 34px rgba(0,0,0,.62);
 }
+
 .mina-hero-slider .hero-kicker{
-  text-shadow:0 3px 16px rgba(0,0,0,.7);
+  text-shadow:0 3px 16px rgba(0,0,0,.72);
 }
+
 .mina-hero-slider .btn-glass{
-  background:rgba(7,6,17,.42);
+  background:rgba(7,6,17,.46);
   backdrop-filter:blur(14px);
 }
+
+.mina-hero-slider .hero-proof{
+  gap:26px;
+  margin-top:34px;
+}
+
 .mina-hero-slider .hero-proof strong,
 .mina-hero-slider .hero-proof span{
-  text-shadow:0 2px 12px rgba(0,0,0,.7);
+  text-shadow:0 2px 12px rgba(0,0,0,.72);
 }
+
 .mina-hero-arrow{
   position:absolute;
   top:50%;
   z-index:5;
   display:grid;
   place-items:center;
-  width:48px;
-  height:48px;
+  width:46px;
+  height:46px;
   padding:0;
   border:1px solid rgba(255,255,255,.25);
   border-radius:50%;
   color:#fff;
-  font-size:34px;
+  font-size:32px;
   line-height:1;
   cursor:pointer;
-  background:rgba(7,6,17,.36);
+  background:rgba(7,6,17,.38);
   backdrop-filter:blur(14px);
   transform:translateY(-50%);
   transition:transform .2s ease,background .2s ease,border-color .2s ease;
 }
+
 .mina-hero-arrow:hover{
   border-color:rgba(255,255,255,.58);
   background:rgba(139,92,255,.68);
-  transform:translateY(-50%) scale(1.06);
+  transform:translateY(-50%) scale(1.05);
 }
-.mina-hero-prev{left:22px}
-.mina-hero-next{right:22px}
+
+.mina-hero-prev{left:18px}
+.mina-hero-next{right:18px}
+
 .mina-hero-dots{
   position:absolute;
   left:50%;
-  bottom:28px;
+  bottom:25px;
   z-index:5;
   display:flex;
   align-items:center;
   gap:9px;
   transform:translateX(-50%);
 }
+
 .mina-hero-dot{
   width:9px;
   height:9px;
@@ -207,14 +251,17 @@ a{color:inherit;text-decoration:none}img{display:block;max-width:100%}button,inp
   background:rgba(255,255,255,.44);
   transition:width .25s ease,transform .25s ease,background .25s ease;
 }
+
 .mina-hero-dot:hover{
   background:rgba(255,255,255,.82);
-  transform:scale(1.18);
+  transform:scale(1.16);
 }
+
 .mina-hero-dot.is-active{
-  width:34px;
+  width:32px;
   background:#fff;
 }
+
 .mina-hero-progress{
   position:absolute;
   right:0;
@@ -225,52 +272,116 @@ a{color:inherit;text-decoration:none}img{display:block;max-width:100%}button,inp
   overflow:hidden;
   background:rgba(255,255,255,.13);
 }
+
 .mina-hero-progress span{
   display:block;
   width:0;
   height:100%;
   background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink));
 }
+
 .mina-hero-progress span.is-running{
   animation:mina-hero-progress var(--hero-delay) linear forwards;
 }
+
 @keyframes mina-hero-progress{
   from{width:0}
   to{width:100%}
 }
+
+@media(max-width:1180px){
+  .mina-hero-copy{width:min(610px,52%)}
+  .mina-hero-slider h1{font-size:clamp(44px,5.3vw,68px)}
+}
+
 @media(max-width:980px){
-  .mina-hero-slider{min-height:650px}
-  .mina-hero-content{
+  .mina-hero-slider{
+    height:650px;
     min-height:650px;
+  }
+
+  .mina-hero-content{
     justify-content:center;
     text-align:center;
+    padding:74px 0 84px;
   }
-  .mina-hero-copy{width:min(760px,92%)}
-  .mina-hero-copy>p{margin-left:auto;margin-right:auto}
+
+  .mina-hero-copy{
+    width:min(760px,90%);
+  }
+
+  .mina-hero-copy>p{
+    margin-left:auto;
+    margin-right:auto;
+  }
+
   .mina-hero-slider .hero-actions,
-  .mina-hero-slider .hero-proof{justify-content:center}
+  .mina-hero-slider .hero-proof{
+    justify-content:center;
+  }
+
   .mina-hero-shade{
-    background:linear-gradient(0deg,rgba(7,6,17,.94) 0%,rgba(7,6,17,.7) 54%,rgba(7,6,17,.35) 100%);
+    background:
+      linear-gradient(
+        0deg,
+        rgba(7,6,17,.93) 0%,
+        rgba(7,6,17,.66) 54%,
+        rgba(7,6,17,.28) 100%
+      );
   }
 }
+
 @media(max-width:720px){
-  .mina-hero-slider,
-  .mina-hero-content{min-height:610px}
+  .mina-hero-slider{
+    height:620px;
+    min-height:620px;
+  }
+
   .mina-hero-content{
     align-items:flex-end;
-    padding:96px 0 76px;
+    padding:90px 0 72px;
   }
-  .mina-hero-copy{width:100%}
-  .mina-hero-slider h1{font-size:clamp(42px,13vw,60px)}
-  .mina-hero-copy>p{font-size:15px;line-height:1.65}
-  .mina-hero-slide img{object-position:center}
-  .mina-hero-arrow{display:none}
-  .mina-hero-dots{bottom:21px}
-  .mina-hero-slider .hero-proof{grid-template-columns:repeat(3,1fr)}
+
+  .mina-hero-copy{
+    width:100%;
+  }
+
+  .mina-hero-slider h1{
+    font-size:clamp(40px,12vw,56px);
+  }
+
+  .mina-hero-copy>p{
+    font-size:15px;
+    line-height:1.62;
+  }
+
+  .mina-hero-slide img{
+    object-position:62% center;
+  }
+
+  .mina-hero-arrow{
+    display:none;
+  }
+
+  .mina-hero-dots{
+    bottom:20px;
+  }
+
+  .mina-hero-slider .hero-proof{
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+    margin-top:26px;
+  }
 }
+
 @media(prefers-reduced-motion:reduce){
   .mina-hero-slide,
   .mina-hero-arrow,
-  .mina-hero-dot{transition:none}
-  .mina-hero-progress span.is-running{animation:none}
+  .mina-hero-dot{
+    transition:none;
+  }
+
+  .mina-hero-progress span.is-running{
+    animation:none;
+  }
 }
