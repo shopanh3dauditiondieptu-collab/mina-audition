@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/app-v3.css?v=6.0.6-social-fixed-featured-16x9">
+<link rel="stylesheet" href="/assets/css/app-v3.css?v=6.0.7-home-9cards-buttons">
 
 <title>Mina Audition | AI Prompt • Outfit • Audition VTC</title>
 
@@ -71,11 +71,6 @@ box-shadow:0 0 10px rgba(77,179,255,.9),0 0 22px rgba(183,0,255,.6)!important;
   outline-offset:4px;
 }
 
-/* Chỉ hiện tối đa 8 card bài viết mới */
-#latest > *:not(.status):nth-child(n+9){
-  display:none !important;
-}
-
 @media (max-width:760px){
   .latest-posts-section .section-heading{
     padding-bottom:38px;
@@ -86,6 +81,142 @@ box-shadow:0 0 10px rgba(77,179,255,.9),0 0 22px rgba(183,0,255,.6)!important;
     right:50%;
     bottom:0;
     transform:translateX(50%);
+  }
+}
+
+
+/* ===== MINA: CARD & NÚT BÀI VIẾT MỚI ===== */
+.latest-posts-section #latest .content-card{
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(238,91,214,.24);
+  border-radius:22px;
+  background:
+    linear-gradient(180deg,rgba(27,23,49,.98),rgba(17,15,34,.98));
+  box-shadow:0 14px 34px rgba(0,0,0,.22);
+  transition:
+    transform .25s ease,
+    border-color .25s ease,
+    box-shadow .25s ease;
+}
+
+.latest-posts-section #latest .content-card:hover{
+  transform:translateY(-5px);
+  border-color:rgba(238,91,214,.72);
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.34),
+    0 0 24px rgba(221,55,211,.13);
+}
+
+.latest-posts-section #latest .card-media{
+  overflow:hidden;
+}
+
+.latest-posts-section #latest .card-media img{
+  transition:transform .35s ease,filter .35s ease;
+}
+
+.latest-posts-section #latest .content-card:hover .card-media img{
+  transform:scale(1.035);
+  filter:brightness(1.04);
+}
+
+.latest-posts-section #latest .card-body{
+  display:flex;
+  flex-direction:column;
+  min-height:190px;
+}
+
+.latest-posts-section #latest .card-actions{
+  display:grid;
+  grid-template-columns:1.12fr 1fr 1fr;
+  gap:9px;
+  margin-top:auto;
+  padding-top:16px;
+}
+
+.latest-posts-section #latest .card-actions > a,
+.latest-posts-section #latest .card-actions > button{
+  min-width:0;
+  min-height:46px;
+  padding:10px 9px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:13px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  white-space:nowrap;
+  font-family:inherit;
+  font-size:13px;
+  line-height:1.15;
+  font-weight:800;
+  color:#fff;
+  text-decoration:none;
+  cursor:pointer;
+  transition:
+    transform .2s ease,
+    filter .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease;
+}
+
+.latest-posts-section #latest .card-actions > .primary-action{
+  background:linear-gradient(135deg,#ff3fc9 0%,#c347ee 50%,#8b5cf6 100%);
+  border-color:rgba(255,116,225,.7);
+  box-shadow:0 9px 22px rgba(223,61,213,.28);
+}
+
+.latest-posts-section #latest .card-actions > button{
+  background:
+    linear-gradient(180deg,rgba(57,50,84,.96),rgba(34,30,57,.98));
+  border-color:rgba(167,139,250,.34);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.latest-posts-section #latest .card-actions > a:last-child{
+  background:linear-gradient(135deg,#12cfee 0%,#5b78ff 52%,#985bff 100%);
+  border-color:rgba(109,210,255,.55);
+  box-shadow:0 9px 22px rgba(52,132,255,.2);
+}
+
+.latest-posts-section #latest .card-actions > a:hover,
+.latest-posts-section #latest .card-actions > button:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.1);
+  border-color:rgba(255,255,255,.34);
+}
+
+.latest-posts-section #latest .card-actions > a:focus-visible,
+.latest-posts-section #latest .card-actions > button:focus-visible{
+  outline:3px solid rgba(116,220,255,.9);
+  outline-offset:3px;
+}
+
+@media (max-width:1100px){
+  .latest-posts-section #latest .card-actions{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .latest-posts-section #latest .card-actions > .primary-action{
+    grid-column:1 / -1;
+  }
+}
+
+@media (max-width:760px){
+  .latest-posts-section #latest .card-actions{
+    grid-template-columns:1fr;
+  }
+
+  .latest-posts-section #latest .card-actions > .primary-action{
+    grid-column:auto;
+  }
+
+  .latest-posts-section #latest .card-actions > a,
+  .latest-posts-section #latest .card-actions > button{
+    width:100%;
+    min-height:44px;
+    font-size:14px;
   }
 }
 
@@ -443,7 +574,7 @@ rel="noopener">
   <div class="wrap copyright">© 2026 Mina Audition. Nội dung dành cho cộng đồng Audition.</div>
 </footer>
 
-<script type="module" src="/assets/js/site-v3.js?v=6.0.6-social-fixed-featured-16x9"></script>
+<script type="module" src="/assets/js/site-v3.js?v=6.0.7-home-9cards-buttons"></script>
 
 <script>
 (() => {
@@ -468,7 +599,7 @@ rel="noopener">
     const cards = Array.from(latestGrid.querySelectorAll(CARD_SELECTOR));
 
     cards.forEach((card, index) => {
-      if (index >= 8) {
+      if (index >= 9) {
         card.hidden = true;
         card.setAttribute('aria-hidden', 'true');
         return;

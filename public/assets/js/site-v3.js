@@ -344,9 +344,9 @@ function cardPost(post) {
           <span>${formatDate(post.updatedAt || post.createdAt)}</span>
         </div>
         <div class="card-actions">
-          <a class="primary-action" href="${postUrl(post)}">Xem chi tiết</a>
+          <a class="primary-action" href="${postUrl(post)}">Xem bài</a>
           ${type === "prompt" ? `<button type="button" data-copy-post="${esc(post.id)}">Copy lệnh</button>` : ""}
-          <a href="${affiliateUrl(post)}">Tạo ảnh ↗</a>
+          <a class="create-image-action" href="${affiliateUrl(post)}">Tạo ảnh ↗</a>
         </div>
       </div>
     </article>`;
