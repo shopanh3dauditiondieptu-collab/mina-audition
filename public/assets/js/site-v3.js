@@ -325,12 +325,78 @@ async function copyText(text) {
   toast("Đã copy nội dung.");
 }
 
+function ensureHomeFeaturedStyles() {
+  if (document.getElementById("mina-home-featured-styles")) return;
+  const style = document.createElement("style");
+  style.id = "mina-home-featured-styles";
+  style.textContent = `
+    .content-card.is-featured {
+      position: relative;
+      border-color: rgba(234, 77, 202, .72);
+      box-shadow: 0 0 0 1px rgba(103, 224, 255, .15), 0 14px 36px rgba(234, 77, 202, .16);
+    }
+    .home-featured-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 4;
+      display: inline-flex;
+      align-items: center;
+      min-height: 29px;
+      padding: 5px 10px;
+      border: 1px solid rgba(255,255,255,.32);
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(234,77,202,.96), rgba(124,92,255,.96));
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1;
+      box-shadow: 0 7px 18px rgba(234,77,202,.3);
+      pointer-events: none;
+    }
+  `;
+  document.head.append(style);
+}
+
+function getHomePostTime(post) {
+  const raw = post?.publishedAt || post?.updatedAt || post?.createdAt;
+  if (!raw) return 0;
+  if (typeof raw?.toMillis === "function") return raw.toMillis();
+  if (typeof raw?.seconds === "number") return raw.seconds * 1000;
+  if (raw instanceof Date) return raw.getTime();
+  const parsed = new Date(raw).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function canShowPostOnHome(post) {
+  if (!post) return false;
+  const isPublished = !post.status || post.status === "published";
+  return isPublished && post.showOnHome !== false;
+}
+
+function sortHomePosts(posts = []) {
+  return [...posts].sort((a, b) => {
+    const aFeatured = a?.featured === true;
+    const bFeatured = b?.featured === true;
+    if (aFeatured !== bFeatured) return aFeatured ? -1 : 1;
+
+    if (aFeatured && bFeatured) {
+      const aPriority = Number.parseInt(a.featuredPriority, 10) || 100;
+      const bPriority = Number.parseInt(b.featuredPriority, 10) || 100;
+      if (aPriority !== bPriority) return aPriority - bPriority;
+    }
+
+    return getHomePostTime(b) - getHomePostTime(a);
+  });
+}
+
 function cardPost(post) {
   const type = classify(post);
   const id = getInternalId(post);
 
   return `
-    <article class="content-card" data-type="${type}">
+    <article class="content-card ${post.featured === true ? "is-featured" : ""}" data-type="${type}">
+      ${post.featured === true ? `<span class="home-featured-badge">📌 Bài nổi bật</span>` : ""}
       <a class="card-media" href="${postUrl(post)}">
         <img loading="lazy" src="${esc(getImage(post))}" alt="${esc(post.title || "Mina Audition")}" onerror="this.src='${placeholder}'">
         ${id ? `<span class="card-id">${esc(id)}</span>` : ""}
@@ -384,18 +450,26 @@ async function home() {
     });
 
   try {
+    ensureHomeFeaturedStyles();
     const all = await listPosts();
-    const published = all.filter(post => post.status !== "draft");
-    renderCards(latestBox, published.slice(0, 9));
-    renderCards(
-      promptBox,
-      published.filter(post => classify(post) === "prompt").slice(0, 6),
-      "Chưa có AI Prompt nổi bật."
-    );
-    bindCardActions(published);
+    const homePosts = sortHomePosts(all.filter(canShowPostOnHome));
+
+    if (latestBox) {
+      renderCards(latestBox, homePosts.slice(0, 9), "Chưa có bài viết nào được phép hiển thị trên trang chủ.");
+    }
+
+    if (promptBox) {
+      renderCards(
+        promptBox,
+        homePosts.filter(post => classify(post) === "prompt").slice(0, 6),
+        "Chưa có AI Prompt nổi bật."
+      );
+    }
+
+    bindCardActions(homePosts);
   } catch (error) {
-    latestBox.innerHTML = `<div class="empty">Không tải được dữ liệu: ${esc(error.message)}</div>`;
-    promptBox.innerHTML = `<div class="empty">Không tải được AI Prompt.</div>`;
+    if (latestBox) latestBox.innerHTML = `<div class="empty">Không tải được dữ liệu: ${esc(error.message)}</div>`;
+    if (promptBox) promptBox.innerHTML = `<div class="empty">Không tải được AI Prompt.</div>`;
   }
 }
 
