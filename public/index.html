@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/app-v3.css?v=6.0.7-home-9cards-buttons">
+<link rel="stylesheet" href="/assets/css/app-v3.css?v=6.0.8-home-wiki-skill">
 
 <title>Mina Audition | AI Prompt • Outfit • Audition VTC</title>
 
@@ -217,6 +217,353 @@ box-shadow:0 0 10px rgba(77,179,255,.9),0 0 22px rgba(183,0,255,.6)!important;
     width:100%;
     min-height:44px;
     font-size:14px;
+  }
+}
+
+
+/* ===== MINA: WIKIPEDIA SKILL DANCE TRÊN TRANG CHỦ ===== */
+.home-wiki-section{
+  position:relative;
+  overflow:hidden;
+  padding:78px 0 84px;
+  border-top:1px solid rgba(92,214,255,.12);
+  border-bottom:1px solid rgba(92,214,255,.12);
+  background:
+    radial-gradient(circle at 50% 0%,rgba(46,224,255,.09),transparent 34%),
+    radial-gradient(circle at 12% 45%,rgba(235,63,211,.08),transparent 28%),
+    linear-gradient(180deg,#070615 0%,#050411 100%);
+}
+
+.home-wiki-section::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,transparent,rgba(255,255,255,.015),transparent);
+}
+
+.home-wiki-inner{
+  position:relative;
+  z-index:1;
+}
+
+.home-wiki-heading{
+  max-width:860px;
+  margin:0 auto 34px;
+  text-align:center;
+}
+
+.home-wiki-diamonds{
+  display:flex;
+  justify-content:center;
+  gap:27px;
+  margin-bottom:15px;
+}
+
+.home-wiki-diamonds span{
+  width:10px;
+  height:10px;
+  display:block;
+  transform:rotate(45deg);
+  border-radius:2px;
+  background:#55f2ff;
+  box-shadow:
+    0 0 8px rgba(85,242,255,.95),
+    0 0 18px rgba(85,242,255,.5);
+}
+
+.home-wiki-heading h2{
+  margin:0;
+  color:#fff;
+  font-size:clamp(28px,3vw,44px);
+  line-height:1.15;
+  font-weight:900;
+  letter-spacing:-.04em;
+  text-shadow:
+    2px 2px 0 rgba(236,72,153,.22),
+    0 0 18px rgba(111,216,255,.12);
+}
+
+.home-wiki-heading p{
+  max-width:660px;
+  margin:13px auto 0;
+  color:rgba(255,255,255,.76);
+  font-size:16px;
+  line-height:1.7;
+  font-weight:600;
+}
+
+.home-wiki-search-wrap{
+  max-width:760px;
+  margin:0 auto 32px;
+}
+
+.home-wiki-search{
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+
+.home-wiki-search-icon{
+  position:absolute;
+  left:24px;
+  z-index:2;
+  font-size:22px;
+  pointer-events:none;
+  filter:drop-shadow(0 0 8px rgba(84,228,255,.45));
+}
+
+.home-wiki-search input{
+  width:100%;
+  min-height:70px;
+  padding:0 72px 0 62px;
+  border:1px solid rgba(74,223,255,.62);
+  border-radius:999px;
+  outline:none;
+  background:
+    linear-gradient(180deg,rgba(30,31,51,.97),rgba(22,21,39,.97));
+  color:#fff;
+  font:700 17px/1.4 "Be Vietnam Pro",sans-serif;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04),
+    0 0 0 1px rgba(77,179,255,.03),
+    0 16px 38px rgba(0,0,0,.25);
+  transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease;
+}
+
+.home-wiki-search input::placeholder{
+  color:rgba(255,255,255,.78);
+}
+
+.home-wiki-search input:focus{
+  transform:translateY(-1px);
+  border-color:#63f1ff;
+  box-shadow:
+    0 0 0 4px rgba(85,242,255,.1),
+    0 0 28px rgba(56,219,255,.14),
+    0 18px 42px rgba(0,0,0,.3);
+}
+
+.home-wiki-clear{
+  position:absolute;
+  right:18px;
+  width:38px;
+  height:38px;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  border:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  font-size:18px;
+  cursor:pointer;
+}
+
+.home-wiki-clear.is-visible{
+  display:flex;
+}
+
+.home-skill-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:26px;
+}
+
+.home-skill-card{
+  min-height:365px;
+  display:flex;
+  flex-direction:column;
+  padding:32px 30px 28px;
+  border:1px solid rgba(55,208,238,.52);
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(94,104,176,.09),transparent 42%),
+    linear-gradient(180deg,rgba(28,29,47,.98),rgba(20,19,35,.98));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.035),
+    0 18px 44px rgba(0,0,0,.24);
+  transition:
+    transform .25s ease,
+    border-color .25s ease,
+    box-shadow .25s ease;
+}
+
+.home-skill-card:first-child{
+  border-color:rgba(238,71,207,.72);
+}
+
+.home-skill-card:hover{
+  transform:translateY(-6px);
+  border-color:rgba(102,231,255,.92);
+  box-shadow:
+    0 22px 50px rgba(0,0,0,.34),
+    0 0 28px rgba(68,213,255,.1);
+}
+
+.home-skill-card h3{
+  margin:0;
+  color:#fff;
+  font-size:clamp(23px,2vw,31px);
+  line-height:1.22;
+  text-align:center;
+  font-weight:900;
+  letter-spacing:-.03em;
+}
+
+.home-skill-subtitle{
+  min-height:28px;
+  margin:12px 0 0;
+  color:#fff;
+  text-align:center;
+  font-size:16px;
+  line-height:1.45;
+  font-weight:800;
+}
+
+.home-skill-description{
+  margin:23px 0 19px;
+  color:rgba(255,255,255,.88);
+  text-align:center;
+  font-size:15px;
+  line-height:1.65;
+  font-weight:600;
+}
+
+.home-skill-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:auto;
+}
+
+.home-skill-tags span{
+  min-height:36px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:7px 14px;
+  border:1px solid rgba(68,218,248,.5);
+  border-radius:999px;
+  background:rgba(31,83,99,.43);
+  color:#aef7ff;
+  font-size:12px;
+  line-height:1;
+  font-weight:900;
+  white-space:nowrap;
+}
+
+.home-skill-actions{
+  display:flex;
+  justify-content:center;
+  margin-top:28px;
+}
+
+.home-skill-detail{
+  min-height:47px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:11px 22px;
+  border:0;
+  border-radius:999px;
+  background:linear-gradient(100deg,#e557e9 0%,#c85bea 46%,#55dff4 100%);
+  color:#fff;
+  font-size:14px;
+  line-height:1;
+  font-weight:900;
+  text-decoration:none;
+  box-shadow:0 10px 24px rgba(210,79,225,.24);
+  transition:transform .2s ease,filter .2s ease,box-shadow .2s ease;
+}
+
+.home-skill-detail:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.08);
+  box-shadow:0 13px 29px rgba(210,79,225,.33);
+}
+
+.home-wiki-footer{
+  display:flex;
+  justify-content:center;
+  margin-top:31px;
+}
+
+.home-wiki-all{
+  color:#9eeefa;
+  font-size:14px;
+  font-weight:800;
+  text-decoration:none;
+}
+
+.home-wiki-all:hover{
+  color:#fff;
+}
+
+.home-skill-grid > .empty,
+.home-skill-grid > .status{
+  grid-column:1 / -1;
+  padding:34px;
+  border:1px dashed rgba(93,222,247,.3);
+  border-radius:20px;
+  color:rgba(255,255,255,.75);
+  text-align:center;
+}
+
+@media (max-width:1040px){
+  .home-skill-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .home-skill-card:nth-child(3){
+    grid-column:1 / -1;
+    max-width:620px;
+    width:100%;
+    justify-self:center;
+  }
+}
+
+@media (max-width:700px){
+  .home-wiki-section{
+    padding:58px 0 62px;
+  }
+
+  .home-wiki-heading{
+    margin-bottom:25px;
+  }
+
+  .home-wiki-search input{
+    min-height:60px;
+    padding-left:54px;
+    padding-right:58px;
+    font-size:14px;
+  }
+
+  .home-wiki-search-icon{
+    left:19px;
+    font-size:19px;
+  }
+
+  .home-skill-grid{
+    grid-template-columns:1fr;
+    gap:18px;
+  }
+
+  .home-skill-card,
+  .home-skill-card:nth-child(3){
+    grid-column:auto;
+    max-width:none;
+    min-height:0;
+    padding:26px 22px 24px;
+  }
+
+  .home-skill-card h3{
+    font-size:24px;
+  }
+
+  .home-skill-description{
+    margin-top:18px;
   }
 }
 
@@ -540,16 +887,42 @@ rel="noopener">
     </div>
   </section>
 
-  <section class="affiliate-banner">
-    <div class="wrap affiliate-inner">
-      <div>
-        <span class="eyebrow light-eyebrow">TẠO ẢNH 3D</span>
-        <h2>Đã có prompt.<br>Giờ biến nó thành hình.</h2>
-        <p>Mở AUMIX3D qua Smart Link của Mina để bắt đầu tạo ảnh và giúp Mina theo dõi nội dung nào hữu ích nhất.</p>
+  <section class="home-wiki-section" aria-labelledby="homeWikiTitle">
+    <div class="wrap home-wiki-inner">
+      <div class="home-wiki-heading">
+        <div class="home-wiki-diamonds" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <h2 id="homeWikiTitle">WIKIPEDIA SKILL DANCE</h2>
+        <p>Tìm kiếm ID Skill, Style, BPM và nội dung review nhanh.</p>
       </div>
-      <a class="btn btn-light" href="/go/taoanh3d?source=website-home-banner&campaign=weekend-launch">
-        Bắt đầu tạo ảnh <span>↗</span>
-      </a>
+
+      <div class="home-wiki-search-wrap">
+        <label class="home-wiki-search" for="homeSkillSearch">
+          <span class="home-wiki-search-icon" aria-hidden="true">🔍</span>
+          <input
+            id="homeSkillSearch"
+            type="search"
+            autocomplete="off"
+            placeholder="Nhập ID skill, tên skill, Poppin, Sexy Girl, HipHop..."
+            aria-label="Tìm kiếm Skill Audition"
+          >
+          <button
+            id="homeSkillClear"
+            class="home-wiki-clear"
+            type="button"
+            aria-label="Xóa nội dung tìm kiếm"
+          >✕</button>
+        </label>
+      </div>
+
+      <div id="homeSkillGrid" class="home-skill-grid" aria-live="polite">
+        <div class="status">Đang tải Wikipedia Skill Dance…</div>
+      </div>
+
+      <div class="home-wiki-footer">
+        <a class="home-wiki-all" href="/wiki.html">Xem toàn bộ Wikipedia Skill Dance →</a>
+      </div>
     </div>
   </section>
 </main>
@@ -574,7 +947,7 @@ rel="noopener">
   <div class="wrap copyright">© 2026 Mina Audition. Nội dung dành cho cộng đồng Audition.</div>
 </footer>
 
-<script type="module" src="/assets/js/site-v3.js?v=6.0.7-home-9cards-buttons"></script>
+<script type="module" src="/assets/js/site-v3.js?v=6.0.8-home-wiki-skill"></script>
 
 <script>
 (() => {

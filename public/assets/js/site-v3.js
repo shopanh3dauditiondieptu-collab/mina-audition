@@ -438,9 +438,138 @@ function bindCardActions(posts) {
   });
 }
 
+
+function getSkillTitle(skill) {
+  const id = value(skill, ["id", "skillId", "code"], "");
+  const style = value(skill, ["style", "type", "category"], "");
+  const name = value(skill, ["name", "title"], "");
+
+  if (id && style) return `${id} - ${style}`;
+  if (id && name) return `${id} - ${name}`;
+  return name || id || "Skill Audition";
+}
+
+function getSkillSubtitle(skill) {
+  const title = getSkillTitle(skill);
+  const candidates = [
+    value(skill, ["name", "title"], ""),
+    value(skill, ["reviewTitle", "shortTitle"], ""),
+    value(skill, ["type", "style"], "")
+  ].filter(Boolean);
+
+  return candidates.find(item => normalize(item) !== normalize(title)) || "Skill Dance Review";
+}
+
+function getSkillSearchText(skill) {
+  return normalize([
+    value(skill, ["id", "skillId", "code"], ""),
+    value(skill, ["name", "title"], ""),
+    value(skill, ["style", "type", "category"], ""),
+    value(skill, ["level", "keyMode", "mode", "rank"], ""),
+    value(skill, ["bpm", "tempo"], ""),
+    value(skill, ["description", "summary", "review"], "")
+  ].join(" "));
+}
+
+function getSkillTags(skill) {
+  const rawTags = Array.isArray(skill?.tags) ? skill.tags : [];
+  const bpm = value(skill, ["bpm", "tempo"], "");
+  const values = [
+    value(skill, ["level"], ""),
+    value(skill, ["keyMode", "mode", "keys"], ""),
+    value(skill, ["rank", "grade"], ""),
+    bpm ? `${bpm} BPM` : "",
+    value(skill, ["style"], ""),
+    ...rawTags
+  ];
+
+  const seen = new Set();
+  return values
+    .map(item => String(item || "").trim())
+    .filter(item => {
+      const key = normalize(item);
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 5);
+}
+
+function homeSkillCard(skill) {
+  const id = value(skill, ["id", "skillId", "code"], "");
+  const description = value(
+    skill,
+    ["description", "summary", "review"],
+    "Khám phá thông tin, phong cách chuyển động và video review của Skill Audition này."
+  );
+  const tags = getSkillTags(skill);
+  const query = id || value(skill, ["name", "title"], "");
+
+  return `
+    <article class="home-skill-card">
+      <h3>${esc(getSkillTitle(skill))}</h3>
+      <p class="home-skill-subtitle">${esc(getSkillSubtitle(skill))}</p>
+      <p class="home-skill-description">${esc(description)}</p>
+
+      ${tags.length ? `
+        <div class="home-skill-tags">
+          ${tags.map(tag => `<span>${esc(tag)}</span>`).join("")}
+        </div>
+      ` : `<div class="home-skill-tags"><span>Skill Audition</span></div>`}
+
+      <div class="home-skill-actions">
+        <a
+          class="home-skill-detail"
+          href="/wiki.html?q=${encodeURIComponent(query)}"
+          aria-label="Xem chi tiết ${esc(getSkillTitle(skill))}"
+        >Chi tiết skill</a>
+      </div>
+    </article>
+  `;
+}
+
+async function loadHomeSkills() {
+  const box = document.querySelector("#homeSkillGrid");
+  const search = document.querySelector("#homeSkillSearch");
+  const clearButton = document.querySelector("#homeSkillClear");
+
+  if (!box || !search) return;
+
+  try {
+    const all = await listSkills();
+
+    const render = () => {
+      const term = normalize(search.value);
+      const filtered = all.filter(skill => !term || getSkillSearchText(skill).includes(term));
+      const visible = filtered.slice(0, 3);
+
+      box.innerHTML = visible.length
+        ? visible.map(homeSkillCard).join("")
+        : `<div class="empty">Không tìm thấy Skill phù hợp. Hãy thử ID, tên Skill, Style hoặc BPM khác.</div>`;
+
+      clearButton?.classList.toggle("is-visible", Boolean(search.value.trim()));
+    };
+
+    search.addEventListener("input", render);
+
+    clearButton?.addEventListener("click", () => {
+      search.value = "";
+      search.focus();
+      render();
+    });
+
+    render();
+  } catch (error) {
+    box.innerHTML = `<div class="empty">Không tải được Wikipedia Skill Dance: ${esc(error.message)}</div>`;
+  }
+}
+
+
 async function home() {
   const latestBox = document.querySelector("#latest");
   const promptBox = document.querySelector("#promptHighlights");
+
+  loadHomeSkills();
 
   loadSharedCategoryTree()
     .then(renderHomeCategories)
@@ -937,9 +1066,19 @@ async function wiki() {
 
   try {
     const all = await listSkills();
+    const urlParams = new URLSearchParams(location.search);
+    const requestedQuery = urlParams.get("q") || "";
+    const requestedType = urlParams.get("type") || "";
+
+    if (search && requestedQuery) search.value = requestedQuery;
+
     const types = [...new Set(all.map(item => item.type).filter(Boolean))].sort();
     typeSelect.innerHTML = `<option value="">Tất cả loại</option>` +
       types.map(type => `<option>${esc(type)}</option>`).join("");
+
+    if (requestedType && types.includes(requestedType)) {
+      typeSelect.value = requestedType;
+    }
 
     const render = () => {
       const term = normalize(search.value);
