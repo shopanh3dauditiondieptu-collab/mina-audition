@@ -26,6 +26,69 @@ border:2px solid #4db3ff!important;
 box-shadow:0 0 10px rgba(77,179,255,.9),0 0 22px rgba(183,0,255,.6)!important;
 }
 .btn-hidden-item:hover{transform:translateY(-2px);filter:brightness(1.08);}
+
+/* ===== MINA: BÀI VIẾT MỚI TRÊN TRANG CHỦ ===== */
+.latest-posts-section .section-heading{
+  position:relative;
+  display:block;
+  text-align:center;
+}
+
+.latest-posts-section .section-heading > div{
+  width:100%;
+  margin:0 auto;
+  text-align:center;
+}
+
+.latest-posts-section .section-heading .eyebrow{
+  display:block;
+}
+
+.latest-posts-section .section-heading h2,
+.latest-posts-section .section-heading p{
+  text-align:center;
+}
+
+.latest-posts-section .section-heading p{
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.latest-posts-section .section-heading .text-link{
+  position:absolute;
+  right:0;
+  top:50%;
+  transform:translateY(-50%);
+}
+
+/* Toàn bộ card bài viết mới có thể bấm */
+#latest > *:not(.status){
+  cursor:pointer;
+}
+
+#latest > *:not(.status):focus-visible{
+  outline:3px solid #f05bd8;
+  outline-offset:4px;
+}
+
+/* Chỉ hiện tối đa 8 card bài viết mới */
+#latest > *:not(.status):nth-child(n+9){
+  display:none !important;
+}
+
+@media (max-width:760px){
+  .latest-posts-section .section-heading{
+    padding-bottom:38px;
+  }
+
+  .latest-posts-section .section-heading .text-link{
+    top:auto;
+    right:50%;
+    bottom:0;
+    transform:translateX(50%);
+  }
+}
+
 </style>
 </head>
 <body data-page="home">
@@ -314,13 +377,13 @@ rel="noopener">
   </section>
 
 
-  <section class="section">
+  <section class="section latest-posts-section">
     <div class="wrap">
       <div class="section-heading">
         <div>
           <span class="eyebrow">MỚI CẬP NHẬT</span>
-          <h2>Nội dung mới từ Mina</h2>
-          <p>Những bài vừa đăng, sẵn sàng để xem và sử dụng.</p>
+          <h2>Bài viết mới từ Mina</h2>
+          <p>Những bài viết vừa đăng, sẵn sàng để xem và sử dụng.</p>
         </div>
         <a href="/blog.html" class="text-link">Xem tất cả →</a>
       </div>
@@ -381,5 +444,97 @@ rel="noopener">
 </footer>
 
 <script type="module" src="/assets/js/site-v3.js?v=6.0.6-social-fixed-featured-16x9"></script>
+
+<script>
+(() => {
+  const latestGrid = document.getElementById('latest');
+  if (!latestGrid) return;
+
+  const CARD_SELECTOR = ':scope > *:not(.status)';
+
+  function getCardLink(card) {
+    if (!card) return null;
+
+    if (card.matches('a[href]')) {
+      return card;
+    }
+
+    return card.querySelector(
+      'a[href*="/post"], a[href*="post.html"], a[href*="/blog/"], a[href]'
+    );
+  }
+
+  function prepareLatestCards() {
+    const cards = Array.from(latestGrid.querySelectorAll(CARD_SELECTOR));
+
+    cards.forEach((card, index) => {
+      if (index >= 8) {
+        card.hidden = true;
+        card.setAttribute('aria-hidden', 'true');
+        return;
+      }
+
+      card.hidden = false;
+      card.removeAttribute('aria-hidden');
+
+      const link = getCardLink(card);
+      if (!link) return;
+
+      card.classList.add('mina-whole-card-link');
+
+      if (!card.matches('a[href]')) {
+        card.setAttribute('role', 'link');
+        card.setAttribute('tabindex', '0');
+
+        const title =
+          card.querySelector('h1, h2, h3, h4, [class*="title"]')?.textContent?.trim();
+
+        if (title) {
+          card.setAttribute('aria-label', `Đọc bài: ${title}`);
+        }
+      }
+    });
+  }
+
+  latestGrid.addEventListener('click', (event) => {
+    const card = event.target.closest('#latest > *:not(.status)');
+    if (!card || card.hidden) return;
+
+    /* Giữ nguyên chức năng riêng của nút Copy lệnh, Tạo ảnh... */
+    if (event.target.closest('button, input, textarea, select, [data-copy], .copy-btn')) {
+      return;
+    }
+
+    /* Khi bấm đúng một liên kết thì trình duyệt tự xử lý */
+    if (event.target.closest('a[href]')) {
+      return;
+    }
+
+    const link = getCardLink(card);
+    if (link) {
+      link.click();
+    }
+  });
+
+  latestGrid.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+
+    const card = event.target.closest('#latest > *:not(.status)');
+    if (!card || card.hidden || card.matches('a[href]')) return;
+
+    const link = getCardLink(card);
+    if (!link) return;
+
+    event.preventDefault();
+    link.click();
+  });
+
+  const observer = new MutationObserver(prepareLatestCards);
+  observer.observe(latestGrid, { childList: true, subtree: true });
+
+  prepareLatestCards();
+})();
+</script>
+
 </body>
 </html>
