@@ -5,17 +5,86 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#09061a">
   <meta name="robots" content="noindex,nofollow">
-  <title>Mina CMS v5.3 Enterprise</title>
+  <title>Mina CMS v5.4 Enterprise</title>
   <link rel="icon" href="/assets/images/logo-mina.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/admin-v5.css?v=1.5.0">
   <link rel="stylesheet" href="/css/smartlink-dashboard.css?v=1.1.0">
+
+  <style>
+    .post-smartlink-box {
+      margin: 18px 0;
+      padding: 18px;
+      border: 1px solid rgba(103, 224, 255, .35);
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(64, 224, 255, .07), rgba(234, 77, 202, .08));
+    }
+    .post-smartlink-head,
+    .post-smartlink-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .post-smartlink-head strong {
+      display: block;
+      color: #7eeaff;
+      font-size: 15px;
+    }
+    .post-smartlink-head small {
+      display: block;
+      margin-top: 5px;
+      color: #aeb6d8;
+      line-height: 1.5;
+    }
+    .post-smartlink-grid {
+      margin-top: 14px;
+    }
+    .post-smartlink-grid input[readonly] {
+      color: #7eeaff;
+      background: rgba(4, 8, 25, .7);
+    }
+    .post-smartlink-actions {
+      margin-top: 12px;
+    }
+    .post-smartlink-actions > div {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .post-smartlink-status {
+      color: #aeb6d8;
+      font-size: 13px;
+    }
+    .post-smartlink-status.active {
+      color: #70f3c2;
+      font-weight: 700;
+    }
+    .post-smartlink-status.warning {
+      color: #ffd166;
+      font-weight: 700;
+    }
+    .post-smartlink-reload {
+      white-space: nowrap;
+    }
+    @media (max-width: 760px) {
+      .post-smartlink-head,
+      .post-smartlink-actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+      .post-smartlink-reload {
+        width: 100%;
+      }
+    }
+  </style>
+
 </head>
 <body>
   <aside class="sidebar">
-    <a class="brand" href="/"><img src="/assets/images/logo-mina.png" alt=""><span>Mina CMS v5.3</span></a>
+    <a class="brand" href="/"><img src="/assets/images/logo-mina.png" alt=""><span>Mina CMS v5.4</span></a>
     <nav>
       <button class="nav-item active" data-view="editor">✦ Đăng bài</button>
       <button class="nav-item" data-view="posts">▦ Quản lý bài</button>
@@ -81,6 +150,39 @@
               <input id="internalId" placeholder="AI-0104 hoặc TEST-0001">
             </label>
           </div>
+
+
+          <section class="post-smartlink-box" aria-labelledby="postSmartLinkHeading">
+            <div class="post-smartlink-head">
+              <div>
+                <strong id="postSmartLinkHeading">🔗 Smart Link của bài viết</strong>
+                <small>Chọn một liên kết đã tạo trong Smart Link Manager. Biểu tượng 🔗 tại Quản lý bài sẽ sáng sau khi lưu.</small>
+              </div>
+              <button id="reloadPostSmartLinksButton" class="btn ghost post-smartlink-reload" type="button">Tải lại danh sách</button>
+            </div>
+
+            <div class="grid two post-smartlink-grid">
+              <label>
+                <span>Chọn Smart Link</span>
+                <select id="postSmartLinkSelect">
+                  <option value="">Không gắn Smart Link</option>
+                </select>
+              </label>
+
+              <label>
+                <span>Đường dẫn sẽ lưu</span>
+                <input id="postSmartLinkPreview" type="text" readonly placeholder="Chưa chọn Smart Link">
+              </label>
+            </div>
+
+            <div class="post-smartlink-actions">
+              <span id="postSmartLinkStatus" class="post-smartlink-status">Chưa gắn Smart Link.</span>
+              <div>
+                <button id="copyPostSmartLinkButton" class="btn ghost" type="button" disabled>Copy link</button>
+                <button id="openPostSmartLinkButton" class="btn ghost" type="button" disabled>Mở thử</button>
+              </div>
+            </div>
+          </section>
 
           <div class="grid two">
             <label>
@@ -507,7 +609,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script type="module" src="/js/smartlink-dashboard.js?v=1.1.2"></script>
   <script type="module">
-    import("/js/admin-v5.js?v=1.5.1").catch(error => {
+    import("/js/admin-v5.js?v=1.6.0").catch(error => {
       console.error("Không tải được admin-v5.js", error);
       const badge = document.getElementById("authBadge");
       const notice = document.getElementById("notice");

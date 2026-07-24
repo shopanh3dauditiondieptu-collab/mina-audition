@@ -1,3 +1,7 @@
+/*
+ * Mina CMS v5.4 Enterprise
+ * Nâng cấp: gắn Smart Link trực tiếp vào bài viết.
+ */
 import { auth, db } from "/js/firebase-config.js";
 import { CmsV5Repository } from "/js/admin-v5-repository.js";
 import {
@@ -88,6 +92,103 @@ function getPostSmartLink(post) {
   if (direct) return direct;
   const slug = post.smartLinkSlug || post.goSlug || "";
   return slug ? `/go/${String(slug).replace(/^\/+|\/+$/g, "")}` : "";
+}
+
+function getPostSmartLinkId(post) {
+  return String(post?.smartLinkId || "").trim();
+}
+
+function findSmartLinkBySelection(value = "") {
+  const selected = String(value || "").trim();
+  if (!selected) return null;
+
+  return state.smartLinks.find(item =>
+    String(item.id || "") === selected ||
+    normalizeSmartLinkSlug(item.slug || "") === normalizeSmartLinkSlug(selected)
+  ) || null;
+}
+
+function renderPostSmartLinkOptions(preferredValue = "") {
+  const select = $("#postSmartLinkSelect");
+  if (!select) return;
+
+  const currentValue = String(preferredValue || select.value || "").trim();
+  const items = [...state.smartLinks].sort((a, b) =>
+    String(a.name || a.slug || "").localeCompare(String(b.name || b.slug || ""), "vi")
+  );
+
+  select.innerHTML = `<option value="">Không gắn Smart Link</option>` + items.map(item => {
+    const slug = normalizeSmartLinkSlug(item.slug || "");
+    const value = item.id || slug;
+    const stateText = item.active === false ? " — Đã tắt" : "";
+    return `<option value="${escapeHtml(value)}">${escapeHtml(item.name || slug || "Không tên")} — /go/${escapeHtml(slug)}${stateText}</option>`;
+  }).join("");
+
+  const matching = findSmartLinkBySelection(currentValue);
+  if (matching) select.value = matching.id || normalizeSmartLinkSlug(matching.slug || "");
+  else select.value = "";
+
+  updatePostSmartLinkPreview();
+}
+
+function updatePostSmartLinkPreview() {
+  const select = $("#postSmartLinkSelect");
+  const preview = $("#postSmartLinkPreview");
+  const status = $("#postSmartLinkStatus");
+  const copyButton = $("#copyPostSmartLinkButton");
+  const openButton = $("#openPostSmartLinkButton");
+  if (!select || !preview || !status || !copyButton || !openButton) return;
+
+  const item = findSmartLinkBySelection(select.value);
+  if (!item) {
+    preview.value = "";
+    preview.placeholder = state.smartLinksLoading ? "Đang tải Smart Link…" : "Chưa chọn Smart Link";
+    status.textContent = state.smartLinksLoading ? "Đang tải danh sách Smart Link…" : "Chưa gắn Smart Link.";
+    status.className = "post-smartlink-status";
+    copyButton.disabled = true;
+    openButton.disabled = true;
+    copyButton.dataset.url = "";
+    openButton.dataset.url = "";
+    return;
+  }
+
+  const path = getSmartLinkPublicPath(item);
+  const absoluteUrl = new URL(path, PUBLIC_SITE_ORIGIN).href;
+  preview.value = absoluteUrl;
+  copyButton.dataset.url = absoluteUrl;
+  openButton.dataset.url = absoluteUrl;
+  copyButton.disabled = false;
+  openButton.disabled = false;
+
+  if (item.active === false) {
+    status.textContent = "Smart Link này đang bị tắt. Bài vẫn lưu được nhưng người đọc có thể không mở được liên kết.";
+    status.className = "post-smartlink-status warning";
+  } else {
+    status.textContent = `Đã chọn: ${item.name || item.slug}`;
+    status.className = "post-smartlink-status active";
+  }
+}
+
+function getSelectedPostSmartLinkData() {
+  const item = findSmartLinkBySelection($("#postSmartLinkSelect")?.value || "");
+  if (!item) {
+    return {
+      smartLinkId: "",
+      smartLinkSlug: "",
+      smartLinkUrl: "",
+      smartLink: ""
+    };
+  }
+
+  const slug = normalizeSmartLinkSlug(item.slug || "");
+  const path = slug ? `/go/${slug}` : "";
+
+  return {
+    smartLinkId: item.id || "",
+    smartLinkSlug: slug,
+    smartLinkUrl: path,
+    smartLink: path
+  };
 }
 
 function showNotice(message, type = "success") {
@@ -250,6 +351,7 @@ function resetForm() {
   state.blocks = [defaultBlock("paragraph")];
   $("#excerptCount").textContent = "0";
   delete $("#slug").dataset.touched;
+  renderPostSmartLinkOptions("");
   setCategoryPath([]);
   renderCover();
   renderBlocks();
@@ -264,6 +366,12 @@ function fillForm(post) {
   $("#excerpt").value = post.excerpt || post.description || "";
   setCategoryPath(post.categoryPathIds || []);
   $("#facebookUrl").value = post.facebookUrl || "";
+  renderPostSmartLinkOptions(
+    getPostSmartLinkId(post) ||
+    post.smartLinkSlug ||
+    post.goSlug ||
+    getPostSmartLink(post)
+  );
   $("#status").value = post.status || "draft";
   $("#featured").checked = Boolean(post.featured);
   $("#seoTitle").value = post.seoTitle || "";
@@ -325,6 +433,7 @@ async function savePost(event) {
     const categoryLeaf = categoryNodes.at(-1) || null;
     const excerpt = $("#excerpt").value.trim();
     const status = $("#status").value;
+    const smartLinkData = getSelectedPostSmartLinkData();
 
     const payload = {
       title,
@@ -350,6 +459,7 @@ async function savePost(event) {
       image: coverImage,
       thumbnail: coverImage,
       facebookUrl: $("#facebookUrl").value.trim(),
+      ...smartLinkData,
       seoTitle: $("#seoTitle").value.trim() || title,
       seoDescription: $("#seoDescription").value.trim() || excerpt.slice(0, 160),
       author: state.user?.displayName || state.user?.email || "Mina",
@@ -386,6 +496,7 @@ function serializeDraft() {
     categoryPathIds: selectedCategoryNodes().map(node => node.id),
     coverUrl: $("#coverUrl").value || state.coverUrl,
     facebookUrl: $("#facebookUrl").value,
+    postSmartLinkValue: $("#postSmartLinkSelect")?.value || "",
     status: $("#status").value,
     featured: $("#featured").checked,
     seoTitle: $("#seoTitle").value,
@@ -407,6 +518,7 @@ function restoreDraft() {
   setCategoryPath(draft.categoryPathIds || []);
   $("#coverUrl").value = draft.coverUrl || "";
   $("#facebookUrl").value = draft.facebookUrl || "";
+  renderPostSmartLinkOptions(draft.postSmartLinkValue || "");
   $("#status").value = draft.status || "draft";
   $("#featured").checked = Boolean(draft.featured);
   $("#seoTitle").value = draft.seoTitle || "";
@@ -677,6 +789,8 @@ function getFilteredPosts() {
       post.content,
       post.facebookUrl,
       post.youtubeUrl,
+      getPostSmartLink(post),
+      post.smartLinkSlug,
       getPostImage(post),
       getPostCategoryLabel(post),
       blockText
@@ -849,6 +963,8 @@ function renderSmartLinks() {
   const items = state.smartLinks.filter(item => normalizeSearchValue([
     item.name, item.slug, item.targetUrl, item.url, item.note
   ].filter(Boolean).join(" ")).includes(term));
+  renderPostSmartLinkOptions($("#postSmartLinkSelect")?.value || "");
+
   table.innerHTML = items.length ? items.map(item => {
     const path = getSmartLinkPublicPath(item);
     return `<article class="smartlink-row">
@@ -921,6 +1037,33 @@ function bindEvents() {
   $("#resetSmartLinkButton")?.addEventListener("click", resetSmartLinkForm);
   $("#smartLinkSearch")?.addEventListener("input", renderSmartLinks);
   $("#refreshSmartLinksButton")?.addEventListener("click", () => loadSmartLinks({ force: true }));
+  $("#postSmartLinkSelect")?.addEventListener("change", updatePostSmartLinkPreview);
+  $("#reloadPostSmartLinksButton")?.addEventListener("click", async event => {
+    setBusy(event.currentTarget, true, "Đang tải…");
+    try {
+      await loadSmartLinks({ force: true, silent: true });
+      showNotice("Đã tải lại danh sách Smart Link.");
+    } catch (error) {
+      console.error(error);
+      showNotice("Không thể tải danh sách Smart Link.", "error");
+    } finally {
+      setBusy(event.currentTarget, false);
+    }
+  });
+  $("#copyPostSmartLinkButton")?.addEventListener("click", async event => {
+    const url = event.currentTarget.dataset.url;
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      showNotice(`Đã copy: ${url}`);
+    } catch {
+      showNotice("Không thể copy Smart Link.", "error");
+    }
+  });
+  $("#openPostSmartLinkButton")?.addEventListener("click", event => {
+    const url = event.currentTarget.dataset.url;
+    if (url) window.open(url, "_blank", "noopener,noreferrer");
+  });
   $("#smartLinksTable")?.addEventListener("click", async event => {
     const copyPath = event.target.closest("[data-copy-manager-link]")?.dataset.copyManagerLink;
     if (copyPath) {
@@ -1183,6 +1326,9 @@ try {
 
     try { await refreshData(); }
     catch (error) { console.error("Posts:", error); showNotice("Không đọc được danh sách bài viết. Kiểm tra Firestore Rules.", "error"); }
+
+    try { await loadSmartLinks({ silent: true }); }
+    catch (error) { console.error("Smart Links:", error); }
 
   }, showFatalStartupError);
 } catch (error) {
