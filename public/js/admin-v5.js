@@ -343,9 +343,24 @@ function legacyBlocks(post) {
   return blocks.length ? blocks : [defaultBlock("paragraph")];
 }
 
+function updateHomepageDisplayControls() {
+  const showOnHome = $("#showOnHome");
+  const featured = $("#featured");
+  const priority = $("#featuredPriority");
+  if (!showOnHome || !featured || !priority) return;
+
+  if (!showOnHome.checked) featured.checked = false;
+  featured.disabled = !showOnHome.checked;
+  priority.disabled = !showOnHome.checked || !featured.checked;
+}
+
 function resetForm() {
   $("#postForm").reset();
   $("#postId").value = "";
+  $("#showOnHome").checked = true;
+  $("#featured").checked = false;
+  $("#featuredPriority").value = "100";
+  updateHomepageDisplayControls();
   state.coverFile = null;
   state.coverUrl = "";
   state.blocks = [defaultBlock("paragraph")];
@@ -373,7 +388,14 @@ function fillForm(post) {
     getPostSmartLink(post)
   );
   $("#status").value = post.status || "draft";
-  $("#featured").checked = Boolean(post.featured);
+  $("#showOnHome").checked = post.showOnHome !== false;
+  $("#featured").checked = post.featured === true;
+  $("#featuredPriority").value = String(
+    Number.isFinite(Number(post.featuredPriority))
+      ? Math.max(1, Number(post.featuredPriority))
+      : 100
+  );
+  updateHomepageDisplayControls();
   $("#seoTitle").value = post.seoTitle || "";
   $("#seoDescription").value = post.seoDescription || "";
   state.coverUrl = post.coverImage || post.image || post.thumbnail || "";
@@ -454,7 +476,9 @@ async function savePost(event) {
       categoryPathIds: categoryNodes.map(node => node.id),
       categorySlugs: categoryNodes.map(node => node.slug),
       categoryUrl: "/" + categoryNodes.map(node => node.slug).filter(Boolean).join("/") + "/",
-      featured: $("#featured").checked,
+      showOnHome: $("#showOnHome").checked,
+      featured: $("#showOnHome").checked && $("#featured").checked,
+      featuredPriority: Math.max(1, Number.parseInt($("#featuredPriority").value, 10) || 100),
       coverImage,
       image: coverImage,
       thumbnail: coverImage,
@@ -498,7 +522,9 @@ function serializeDraft() {
     facebookUrl: $("#facebookUrl").value,
     postSmartLinkValue: $("#postSmartLinkSelect")?.value || "",
     status: $("#status").value,
+    showOnHome: $("#showOnHome").checked,
     featured: $("#featured").checked,
+    featuredPriority: Math.max(1, Number.parseInt($("#featuredPriority").value, 10) || 100),
     seoTitle: $("#seoTitle").value,
     seoDescription: $("#seoDescription").value,
     blocks: state.blocks.map(({ file, files, ...block }) => block),
@@ -520,7 +546,14 @@ function restoreDraft() {
   $("#facebookUrl").value = draft.facebookUrl || "";
   renderPostSmartLinkOptions(draft.postSmartLinkValue || "");
   $("#status").value = draft.status || "draft";
+  $("#showOnHome").checked = draft.showOnHome !== false;
   $("#featured").checked = Boolean(draft.featured);
+  $("#featuredPriority").value = String(
+    Number.isFinite(Number(draft.featuredPriority))
+      ? Math.max(1, Number(draft.featuredPriority))
+      : 100
+  );
+  updateHomepageDisplayControls();
   $("#seoTitle").value = draft.seoTitle || "";
   $("#seoDescription").value = draft.seoDescription || "";
   state.coverUrl = draft.coverUrl || "";
@@ -1031,6 +1064,12 @@ async function confirmAction(title, message) {
 }
 
 function bindEvents() {
+  $("#showOnHome")?.addEventListener("change", updateHomepageDisplayControls);
+  $("#featured")?.addEventListener("change", updateHomepageDisplayControls);
+  $("#featuredPriority")?.addEventListener("input", event => {
+    const value = Number.parseInt(event.currentTarget.value, 10);
+    if (Number.isFinite(value) && value < 1) event.currentTarget.value = "1";
+  });
   $$(".nav-item[data-view]").forEach(button => button.addEventListener("click", () => openView(button.dataset.view)));
   $("#smartLinkForm")?.addEventListener("submit", saveSmartLink);
   $("#newSmartLinkButton")?.addEventListener("click", resetSmartLinkForm);
