@@ -535,18 +535,62 @@ function renderContentBlocks(post) {
   }).join("");
 }
 
+
 async function postPage() {
   const box = document.querySelector("#article");
-  const relatedBox = document.querySelector("#relatedPosts");
   const id = new URLSearchParams(location.search).get("id");
+
+  if (!box) return;
 
   if (!id) {
     box.innerHTML = `<div class="empty">Thiếu ID bài viết.</div>`;
     return;
   }
 
+  const buildBreadcrumb = post => {
+    const items = [
+      `<a href="/">Trang chủ</a>`,
+      `<a href="/blog.html">Mina Blog</a>`,
+      ...getCategoryPath(post).map(item =>
+        `<a href="/blog.html?category=${encodeURIComponent(item)}">${esc(item)}</a>`
+      ),
+      `<span>Bài viết</span>`
+    ];
+
+    return items.join(`<b>→</b>`);
+  };
+
+  const renderRelatedMiniCards = posts => posts.map(item => `
+    <a class="post-related-card" href="${postUrl(item)}">
+      <img loading="lazy"
+           src="${esc(getImage(item))}"
+           alt="${esc(item.title || "Bài viết Mina")}"
+           onerror="this.src='${placeholder}'">
+      <strong>${esc(item.title || "Chưa có tiêu đề")}</strong>
+      <span>${esc(getCategory(item))}</span>
+    </a>
+  `).join("");
+
+  const renderFacebookBlock = post => {
+    if (!post.facebookUrl) return "";
+
+    return `
+      <section class="post-facebook-box">
+        <div class="post-facebook-placeholder">
+          <strong>Bài viết Facebook của Mina</strong>
+          <span>Mở bài viết gốc để xem và tương tác trực tiếp.</span>
+        </div>
+        <div class="post-facebook-actions">
+          <a href="${esc(post.facebookUrl)}" target="_blank" rel="noopener">Xem bài viết Facebook</a>
+          <a href="${esc(post.facebookUrl)}" target="_blank" rel="noopener">Bình luận / tương tác</a>
+        </div>
+      </section>
+    `;
+  };
+
   try {
     const post = await getPost(id);
+
     if (!post) {
       box.innerHTML = `<div class="empty">Bài viết không tồn tại.</div>`;
       return;
@@ -556,41 +600,257 @@ async function postPage() {
     const internalId = getInternalId(post);
     const prompt = extractPrompt(post);
     const smartUrl = affiliateUrl(post, "website-post");
-    document.title = `${post.title} | Mina Audition`;
+    const allPosts = (await listPosts()).filter(item => item.status !== "draft");
+    const currentIndex = allPosts.findIndex(item => String(item.id) === String(post.id));
+    const newerPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+    const olderPost = currentIndex >= 0 && currentIndex < allPosts.length - 1
+      ? allPosts[currentIndex + 1]
+      : null;
+
+    const relatedPosts = allPosts
+      .filter(item => item.id !== post.id && classify(item) === type)
+      .slice(0, 4);
+
+    const createdDate = formatDate(post.updatedAt || post.createdAt);
+    const postKey = `mina-post-${post.id}`;
+    const likeKey = `${postKey}-likes`;
+    const commentKey = `${postKey}-comments`;
+    const likedKey = `${postKey}-liked`;
+    const initialLikes = Number(localStorage.getItem(likeKey) || 0);
+    const initialComments = JSON.parse(localStorage.getItem(commentKey) || "[]");
+
+    document.title = `${post.title || "Bài viết"} | Mina Audition`;
 
     box.innerHTML = `
-      <header class="article-header">
-        <span class="eyebrow">${typeLabel(type)}${internalId ? ` • ${esc(internalId)}` : ""}</span>
-        <h1>${esc(post.title || "Chưa có tiêu đề")}</h1>
-        <p class="article-summary">${esc(getExcerpt(post))}</p>
-        <div class="card-meta"><span>${esc(getCategory(post))}</span><span>${formatDate(post.updatedAt || post.createdAt)}</span></div>
-        <img class="article-cover" src="${esc(getImage(post))}" alt="${esc(post.title || "")}" onerror="this.src='${placeholder}'">
-      </header>
-      <div class="article-layout">
-        <div class="article-content">${renderContentBlocks(post)}</div>
-        <aside class="article-sidebar">
-          <div class="side-card">
-            <h3>Dùng nội dung này</h3>
-            <p>Copy lệnh, mở AUMIX3D và thử tạo phiên bản của riêng bạn.</p>
-            <div class="side-actions">
-              ${prompt ? `<button id="copyPromptButton" type="button">📋 Copy nội dung</button>` : ""}
-              <a class="affiliate-action" href="${smartUrl}">✨ Mở AUMIX3D</a>
-              ${post.facebookUrl ? `<a target="_blank" rel="noopener" href="${esc(post.facebookUrl)}">Facebook ↗</a>` : ""}
+      <div class="post-v6-shell">
+        <nav class="post-breadcrumb" aria-label="Đường dẫn bài viết">
+          ${buildBreadcrumb(post)}
+        </nav>
+
+        <section class="post-v6-hero">
+          <div class="post-cover-frame">
+            <img class="post-v6-cover"
+                 src="${esc(getImage(post))}"
+                 alt="${esc(post.title || "Mina Audition")}"
+                 onerror="this.src='${placeholder}'">
+          </div>
+
+          <div class="post-v6-intro">
+            <span class="post-category-pill">
+              ${esc(getCategory(post))}${internalId ? ` • ${esc(internalId)}` : ""}
+            </span>
+
+            <h1>${esc(post.title || "Chưa có tiêu đề")}</h1>
+
+            <div class="post-v6-meta">
+              <span>Ngày đăng: ${createdDate}</span>
+              <span>${typeLabel(type)}</span>
             </div>
+
+            ${getExcerpt(post)
+              ? `<p class="post-v6-lead">${esc(getExcerpt(post))}</p>`
+              : ""}
           </div>
-          <div class="side-card">
-            <h3>Liên kết có theo dõi</h3>
-            <p>Lượt nhấp được ghi nhận để Mina biết nội dung nào hữu ích và tiếp tục phát triển đúng hướng.</p>
-          </div>
-        </aside>
-      </div>`;
+        </section>
+
+        <section class="post-v6-content">
+          ${renderContentBlocks(post)}
+
+          ${prompt ? `
+            <aside class="post-prompt-box">
+              <div>
+                <span>📋 PROMPT AI</span>
+                <strong>Sao chép nội dung để tạo phiên bản của riêng bạn</strong>
+              </div>
+              <button id="copyPromptButton" type="button">Copy Prompt</button>
+            </aside>
+          ` : ""}
+
+          <blockquote class="post-community-note">
+            💙 Đừng ngần ngại chia sẻ mã lệnh Mix Match của bạn dưới phần bình luận
+            để mọi người cùng tham khảo, học hỏi và sáng tạo thêm nhiều phong cách mới!
+          </blockquote>
+
+          ${renderFacebookBlock(post)}
+
+          <section class="post-main-actions">
+            <a href="/">🏠 Trang chủ</a>
+            <a href="/blog.html">📚 Mina Blog</a>
+            <button id="copyPageLinkButton" type="button">📋 Copy link</button>
+          </section>
+
+          <section class="post-discover-box">
+            <h2>📌 Tiếp tục khám phá Mina</h2>
+            <p>
+              Bạn có thể quay lại Mina Blog để xem thêm các bài review Skill,
+              hướng dẫn Audition và nội dung mới được cập nhật thường xuyên.
+            </p>
+            <div>
+              <a href="/blog.html">📚 Xem thêm bài viết</a>
+              <a href="/wiki.html">🎮 Wiki Skill</a>
+              <a href="/">🏠 Về trang chủ</a>
+            </div>
+          </section>
+
+          <section class="post-share-box">
+            <h2>💎 Chia sẻ bài viết</h2>
+            <div>
+              <button type="button" data-share="facebook">Facebook</button>
+              <button type="button" data-share="zalo">Zalo</button>
+              <button type="button" data-share="messenger">Messenger</button>
+              <button type="button" data-share="copy">Copy Link</button>
+            </div>
+          </section>
+
+          <section class="post-author-box">
+            <img src="/assets/images/logo-mina.png" alt="Mina Audition">
+            <div>
+              <h2>Mina Audition</h2>
+              <p>
+                Review Skill Audition, chia sẻ concept ảnh 2D/3D,
+                Mix & Match outfit và nội dung dành cho cộng đồng Audition.
+              </p>
+            </div>
+          </section>
+
+          <section class="post-stats-box">
+            <div>
+              <strong id="postViewCount">1</strong>
+              <span>👁 Lượt xem</span>
+            </div>
+            <button id="likePostButton" type="button" aria-pressed="${localStorage.getItem(likedKey) === "1"}">
+              <strong id="postLikeCount">${initialLikes}</strong>
+              <span>👍 Yêu thích</span>
+            </button>
+          </section>
+
+          <section class="post-prev-next">
+            ${newerPost
+              ? `<a href="${postUrl(newerPost)}"><span>← Bài mới hơn</span><strong>${esc(newerPost.title || "")}</strong></a>`
+              : `<div class="is-empty"><span>← Bài mới hơn</span><strong>Chưa có bài mới hơn</strong></div>`}
+
+            ${olderPost
+              ? `<a href="${postUrl(olderPost)}"><span>Bài cũ hơn →</span><strong>${esc(olderPost.title || "")}</strong></a>`
+              : `<div class="is-empty"><span>Bài cũ hơn →</span><strong>Chưa có bài cũ hơn</strong></div>`}
+          </section>
+
+          <section class="post-related-v6">
+            <h2>📚 Bài viết liên quan</h2>
+            <div class="post-related-grid">
+              ${relatedPosts.length
+                ? renderRelatedMiniCards(relatedPosts)
+                : `<div class="empty">Chưa có bài viết liên quan.</div>`}
+            </div>
+          </section>
+
+          <section class="post-comments-box">
+            <h2>💬 Bình luận</h2>
+
+            <form id="postCommentForm">
+              <input id="commentName" type="text" maxlength="40" placeholder="Tên của bạn" required>
+              <textarea id="commentText" maxlength="500" placeholder="Viết bình luận của bạn..." required></textarea>
+              <button type="submit">Gửi bình luận</button>
+            </form>
+
+            <div id="postCommentList" class="post-comment-list">
+              ${initialComments.length
+                ? initialComments.map(comment => `
+                    <article>
+                      <strong>${esc(comment.name)}</strong>
+                      <p>${esc(comment.text)}</p>
+                      <span>${esc(comment.date)}</span>
+                    </article>
+                  `).join("")
+                : `<p class="post-comment-empty">Chưa có bình luận nào. Hãy là người đầu tiên bình luận nhé.</p>`}
+            </div>
+          </section>
+        </section>
+      </div>
+    `;
+
+    // View count per browser
+    const viewKey = `${postKey}-views`;
+    const nextViews = Number(localStorage.getItem(viewKey) || 0) + 1;
+    localStorage.setItem(viewKey, String(nextViews));
+    document.querySelector("#postViewCount").textContent = String(nextViews);
 
     document.querySelector("#copyPromptButton")?.addEventListener("click", () => copyText(prompt));
 
-    const all = (await listPosts()).filter(item => item.id !== post.id && item.status !== "draft");
-    const sameType = all.filter(item => classify(item) === type).slice(0, 3);
-    renderCards(relatedBox, sameType);
-    bindCardActions(sameType);
+    document.querySelector("#copyPageLinkButton")?.addEventListener("click", async () => {
+      await copyText(location.href);
+      toast("Đã copy link bài viết.");
+    });
+
+    document.querySelector("#likePostButton")?.addEventListener("click", event => {
+      const button = event.currentTarget;
+      const liked = localStorage.getItem(likedKey) === "1";
+      let likes = Number(localStorage.getItem(likeKey) || 0);
+
+      likes = liked ? Math.max(0, likes - 1) : likes + 1;
+      localStorage.setItem(likeKey, String(likes));
+      localStorage.setItem(likedKey, liked ? "0" : "1");
+
+      button.setAttribute("aria-pressed", String(!liked));
+      document.querySelector("#postLikeCount").textContent = String(likes);
+    });
+
+    document.querySelectorAll("[data-share]").forEach(button => {
+      button.addEventListener("click", async () => {
+        const type = button.dataset.share;
+        const url = encodeURIComponent(location.href);
+        const title = encodeURIComponent(post.title || "Mina Audition");
+
+        if (type === "facebook") {
+          window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, "_blank", "noopener");
+          return;
+        }
+
+        if (type === "messenger") {
+          window.open(`https://www.facebook.com/dialog/send?link=${url}&app_id=936619743392459&redirect_uri=${url}`, "_blank", "noopener");
+          return;
+        }
+
+        if (type === "zalo") {
+          window.open(`https://zalo.me/share?url=${url}`, "_blank", "noopener");
+          return;
+        }
+
+        await copyText(location.href);
+        toast("Đã copy link bài viết.");
+      });
+    });
+
+    document.querySelector("#postCommentForm")?.addEventListener("submit", event => {
+      event.preventDefault();
+
+      const nameInput = document.querySelector("#commentName");
+      const textInput = document.querySelector("#commentText");
+      const name = nameInput.value.trim();
+      const text = textInput.value.trim();
+
+      if (!name || !text) return;
+
+      const comments = JSON.parse(localStorage.getItem(commentKey) || "[]");
+      comments.unshift({
+        name,
+        text,
+        date: new Date().toLocaleString("vi-VN")
+      });
+      localStorage.setItem(commentKey, JSON.stringify(comments.slice(0, 50)));
+
+      document.querySelector("#postCommentList").innerHTML = comments.slice(0, 50).map(comment => `
+        <article>
+          <strong>${esc(comment.name)}</strong>
+          <p>${esc(comment.text)}</p>
+          <span>${esc(comment.date)}</span>
+        </article>
+      `).join("");
+
+      nameInput.value = "";
+      textInput.value = "";
+      toast("Đã lưu bình luận trên thiết bị này.");
+    });
+
   } catch (error) {
     box.innerHTML = `<div class="empty">Không tải được bài: ${esc(error.message)}</div>`;
   }
