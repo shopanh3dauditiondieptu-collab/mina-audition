@@ -1173,3 +1173,48 @@ body[data-page="post"] .article-v3{
     font-size:25px;
   }
 }
+
+/* =========================================================
+   HOME — Căn giữa tiêu đề khu vực AI Prompt nổi bật
+   Chỉ áp dụng cho section .soft-section trên trang chủ.
+   Không thay đổi grid card, dữ liệu CMS hoặc JavaScript.
+========================================================= */
+.soft-section .section-heading{
+  position:relative;
+  display:block;
+  text-align:center;
+  margin-bottom:48px;
+}
+
+.soft-section .section-heading > div{
+  width:min(100%, 820px);
+  margin:0 auto;
+}
+
+.soft-section .section-heading .eyebrow{
+  justify-content:center;
+}
+
+.soft-section .section-heading p{
+  max-width:760px;
+  margin:12px auto 0;
+}
+
+.soft-section .section-heading .text-link{
+  position:absolute;
+  right:0;
+  bottom:4px;
+}
+
+@media(max-width:900px){
+  .soft-section .section-heading{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:38px;
+  }
+
+  .soft-section .section-heading .text-link{
+    position:static;
+  }
+}
