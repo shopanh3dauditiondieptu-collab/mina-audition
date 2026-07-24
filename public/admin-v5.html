@@ -69,6 +69,36 @@
     .post-smartlink-reload {
       white-space: nowrap;
     }
+
+    .homepage-display-settings {
+      display: grid;
+      gap: 14px;
+      margin: 18px 0;
+      padding: 18px;
+      border: 1px solid rgba(234, 77, 202, .32);
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(234, 77, 202, .08), rgba(103, 224, 255, .06));
+    }
+    .homepage-display-settings h3 {
+      margin: 0 0 5px;
+      color: #f5b8eb;
+      font-size: 16px;
+    }
+    .homepage-display-settings p {
+      margin: 0;
+      color: #aeb6d8;
+      line-height: 1.5;
+    }
+    .homepage-display-settings .priority-help {
+      display: block;
+      margin-top: 6px;
+      color: #aeb6d8;
+      line-height: 1.45;
+    }
+    .homepage-display-settings input:disabled {
+      cursor: not-allowed;
+      opacity: .55;
+    }
     @media (max-width: 760px) {
       .post-smartlink-head,
       .post-smartlink-actions {
@@ -238,10 +268,28 @@
             </label>
           </div>
 
-          <label class="checkbox-row">
-            <input id="featured" type="checkbox">
-            <span>Ghim bài này làm bài nổi bật</span>
-          </label>
+          <section class="homepage-display-settings" aria-labelledby="homepageDisplayHeading">
+            <div>
+              <h3 id="homepageDisplayHeading">📌 Hiển thị trên trang chủ</h3>
+              <p>Kiểm soát bài nào được xuất hiện và thứ tự bài ghim trên trang chủ.</p>
+            </div>
+
+            <label class="checkbox-row">
+              <input id="showOnHome" type="checkbox" checked>
+              <span>Cho phép hiển thị bài này trên trang chủ</span>
+            </label>
+
+            <label class="checkbox-row">
+              <input id="featured" type="checkbox">
+              <span>Ghim bài này lên đầu danh sách trang chủ</span>
+            </label>
+
+            <label>
+              <span>Thứ tự ưu tiên bài ghim</span>
+              <input id="featuredPriority" type="number" min="1" max="999" step="1" value="100" placeholder="Ví dụ: 1">
+              <small class="priority-help">Số nhỏ hơn hiển thị trước. Ví dụ: ưu tiên 1 đứng trước ưu tiên 2.</small>
+            </label>
+          </section>
 
           <details class="seo-box">
             <summary>Thiết lập SEO</summary>
@@ -609,7 +657,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script type="module" src="/js/smartlink-dashboard.js?v=1.1.2"></script>
   <script type="module">
-    import("/js/admin-v5.js?v=1.6.0").catch(error => {
+    import("/js/admin-v5.js?v=1.7.0").catch(error => {
       console.error("Không tải được admin-v5.js", error);
       const badge = document.getElementById("authBadge");
       const notice = document.getElementById("notice");
