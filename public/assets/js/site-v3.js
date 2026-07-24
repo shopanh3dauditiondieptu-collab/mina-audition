@@ -386,7 +386,7 @@ async function home() {
   try {
     const all = await listPosts();
     const published = all.filter(post => post.status !== "draft");
-    renderCards(latestBox, published.slice(0, 6));
+    renderCards(latestBox, published.slice(0, 8));
     renderCards(
       promptBox,
       published.filter(post => classify(post) === "prompt").slice(0, 6),
