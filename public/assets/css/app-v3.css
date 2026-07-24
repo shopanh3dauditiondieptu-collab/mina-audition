@@ -230,19 +230,23 @@ a{color:inherit;text-decoration:none}img{display:block;max-width:100%}button,inp
 @media(max-width:640px){.home-categories{padding-top:52px}.home-category-grid{grid-template-columns:1fr}.home-category-card{min-height:170px;padding:20px}}
 
 /* =========================================================
-   MINA SOCIAL NETWORK CARDS — OFFICIAL BRAND STYLE
+   MINA SOCIAL NETWORK CARDS
+   Thay cho khu vực quick-paths cũ trên trang chủ
 ========================================================= */
 .mina-social-section{
   position:relative;
-  padding:54px 0 76px;
+  padding:72px 0 82px;
   overflow:hidden;
-  background:#050512;
+  background:
+    radial-gradient(circle at 12% 15%,rgba(30,180,255,.09),transparent 25%),
+    radial-gradient(circle at 88% 75%,rgba(255,47,214,.09),transparent 28%),
+    linear-gradient(180deg,#070611 0%,#090716 100%);
   border-top:1px solid rgba(255,255,255,.06);
   border-bottom:1px solid rgba(255,255,255,.06);
 }
 .mina-social-heading{
   max-width:720px;
-  margin:0 auto 34px;
+  margin:0 auto 38px;
   text-align:center;
 }
 .mina-social-heading .eyebrow{
@@ -273,11 +277,11 @@ a{color:inherit;text-decoration:none}img{display:block;max-width:100%}button,inp
   gap:18px;
 }
 .mina-social-card{
-  --social-accent:#fff;
-  --social-rgb:255,255,255;
+  --social-accent:#70ddff;
+  --social-accent-rgb:112,221,255;
   position:relative;
-  min-height:250px;
-  padding:26px 20px 20px;
+  min-height:310px;
+  padding:28px 24px 24px;
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -285,48 +289,96 @@ a{color:inherit;text-decoration:none}img{display:block;max-width:100%}button,inp
   color:#fff;
   text-align:center;
   text-decoration:none;
-  border:1.5px solid var(--social-accent);
-  border-radius:17px;
-  background:#060617;
-  box-shadow:none;
-  transition:transform .25s ease,box-shadow .25s ease;
+  border:1px solid rgba(var(--social-accent-rgb),.58);
+  border-radius:24px;
+  background:
+    linear-gradient(
+      150deg,
+      rgba(var(--social-accent-rgb),.09),
+      rgba(16,12,34,.92) 42%,
+      rgba(8,7,20,.98)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 20px 45px rgba(0,0,0,.22);
+  isolation:isolate;
+  transition:transform .28s ease,border-color .28s ease,box-shadow .28s ease;
 }
-.mina-social-card::before,
-.mina-social-card::after,
-.social-card-glow{
-  display:none!important;
+.mina-social-card::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:17%;
+  width:66%;
+  height:1px;
+  z-index:2;
+  opacity:.9;
+  background:linear-gradient(90deg,transparent,var(--social-accent),transparent);
+}
+.mina-social-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  opacity:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.06),transparent 42%);
+  transition:opacity .28s ease;
 }
 .mina-social-card:hover{
-  transform:translateY(-5px);
+  transform:translateY(-8px);
+  border-color:var(--social-accent);
   box-shadow:
-    0 18px 42px rgba(0,0,0,.36),
-    0 0 24px rgba(var(--social-rgb),.16);
+    inset 0 1px 0 rgba(255,255,255,.09),
+    0 24px 55px rgba(0,0,0,.35),
+    0 0 26px rgba(var(--social-accent-rgb),.18);
 }
+.mina-social-card:hover::after{opacity:1}
+.social-card-glow{
+  position:absolute;
+  top:-90px;
+  left:50%;
+  width:210px;
+  height:180px;
+  z-index:-1;
+  opacity:.18;
+  pointer-events:none;
+  border-radius:50%;
+  background:var(--social-accent);
+  filter:blur(55px);
+  transform:translateX(-50%);
+  transition:opacity .28s ease;
+}
+.mina-social-card:hover .social-card-glow{opacity:.3}
 .social-icon{
-  width:72px;
-  height:72px;
-  margin-bottom:20px;
+  width:76px;
+  height:76px;
+  margin-bottom:22px;
   display:grid;
   place-items:center;
-  border:0;
-  border-radius:18px;
-  background:transparent;
-  box-shadow:none;
+  border:1px solid rgba(var(--social-accent-rgb),.42);
+  border-radius:22px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(var(--social-accent-rgb),.3),
+      rgba(var(--social-accent-rgb),.08)
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 10px 28px rgba(var(--social-accent-rgb),.18);
+  transition:transform .28s ease,box-shadow .28s ease;
 }
-.social-icon img{
-  display:block;
-  width:64px;
-  height:64px;
-  max-width:none;
-  object-fit:contain;
-  border-radius:14px;
-  filter:none;
-  transition:transform .25s ease;
+.mina-social-card:hover .social-icon{
+  transform:scale(1.06) rotate(-2deg);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.2),
+    0 14px 34px rgba(var(--social-accent-rgb),.28);
 }
-.mina-social-card:hover .social-icon,
-.mina-social-card:hover .social-icon img{
-  transform:scale(1.04);
-  box-shadow:none;
+.social-icon svg{
+  width:39px;
+  height:39px;
+  fill:#fff;
+  filter:drop-shadow(0 0 8px rgba(var(--social-accent-rgb),.35));
 }
 .social-card-content{
   display:flex;
@@ -334,147 +386,132 @@ a{color:inherit;text-decoration:none}img{display:block;max-width:100%}button,inp
   align-items:center;
 }
 .social-card-content small{
-  display:none;
+  margin-bottom:8px;
+  color:var(--social-accent);
+  font-size:10px;
+  line-height:1.4;
+  font-weight:900;
+  letter-spacing:.12em;
 }
 .social-card-content strong{
-  margin:2px 0;
-  color:var(--social-accent);
-  font-size:21px;
-  line-height:1.2;
+  color:#fff;
+  font-size:23px;
+  line-height:1.25;
   font-weight:900;
-  text-transform:uppercase;
 }
 .social-card-content p{
-  margin:7px 0 0;
-  color:#fff;
-  font-size:12px;
-  font-weight:700;
+  margin:8px 0 0;
+  color:rgba(234,231,246,.72);
+  font-size:13px;
+  font-weight:600;
 }
 .social-card-button{
-  min-width:110px;
-  height:36px;
+  min-width:128px;
+  height:40px;
   margin-top:auto;
-  padding:0 14px;
+  padding:0 16px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  gap:7px;
+  gap:8px;
   color:var(--social-accent);
-  font-size:11px;
-  font-weight:900;
-  border:1px solid var(--social-accent);
-  border-radius:9px;
-  background:transparent;
-  transition:color .22s ease,background .22s ease,border-color .22s ease;
+  font-size:12px;
+  font-weight:800;
+  border:1px solid rgba(var(--social-accent-rgb),.62);
+  border-radius:12px;
+  background:rgba(var(--social-accent-rgb),.07);
+  transition:color .25s ease,background .25s ease,box-shadow .25s ease;
 }
 .social-card-button b{
-  font-size:14px;
-  transition:transform .22s ease;
+  font-size:15px;
+  transition:transform .25s ease;
+}
+.mina-social-card:hover .social-card-button{
+  color:#090714;
+  background:var(--social-accent);
+  box-shadow:0 0 18px rgba(var(--social-accent-rgb),.24);
 }
 .mina-social-card:hover .social-card-button b{
   transform:translate(2px,-2px);
 }
-
-/* YouTube */
 .social-youtube{
-  --social-accent:#ff0000;
-  --social-rgb:255,0,0;
+  --social-accent:#ff3b55;
+  --social-accent-rgb:255,59,85;
 }
-.social-youtube:hover .social-card-button{
-  color:#fff;
-  background:#ff0000;
-}
-
-/* Facebook */
 .social-facebook{
-  --social-accent:#1877f2;
-  --social-rgb:24,119,242;
+  --social-accent:#4b9dff;
+  --social-accent-rgb:75,157,255;
 }
-.social-facebook:hover .social-card-button{
-  color:#fff;
-  background:#1877f2;
-}
-
-/* TikTok */
 .social-tiktok{
-  --social-accent:#f1f1f1;
-  --social-rgb:37,244,238;
+  --social-accent:#66f5ff;
+  --social-accent-rgb:102,245,255;
 }
-.social-tiktok .social-card-content strong{
-  color:#fff;
-  text-shadow:-1px 0 #25f4ee,1px 0 #fe2c55;
-}
-.social-tiktok .social-card-button{
-  border-color:#25f4ee;
-  color:#fff;
-}
-.social-tiktok:hover .social-card-button{
-  color:#050505;
-  background:#25f4ee;
-}
-
-/* Instagram */
 .social-instagram{
-  --social-accent:#ff2fc4;
-  --social-rgb:255,47,196;
+  --social-accent:#ff59d2;
+  --social-accent-rgb:255,89,210;
 }
-.social-instagram:hover .social-card-button{
-  color:#fff;
-  border-color:transparent;
-  background:linear-gradient(135deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5);
-}
-
 @media(max-width:1050px){
-  .mina-social-grid{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-  }
+  .mina-social-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mina-social-card{min-height:290px}
 }
 @media(max-width:640px){
-  .mina-social-section{
-    padding:44px 0 58px;
-  }
+  .mina-social-section{padding:54px 0 62px}
   .mina-social-heading{
-    margin-bottom:26px;
+    margin-bottom:28px;
     text-align:left;
   }
-  .mina-social-heading p{
-    margin-left:0;
-  }
+  .mina-social-heading p{margin-left:0}
   .mina-social-grid{
     grid-template-columns:1fr;
     gap:14px;
   }
   .mina-social-card{
-    min-height:120px;
-    padding:18px;
+    min-height:0;
+    padding:20px;
     display:grid;
-    grid-template-columns:64px minmax(0,1fr) 44px;
+    grid-template-columns:62px minmax(0,1fr) auto;
     gap:15px;
     align-items:center;
     text-align:left;
+    border-radius:19px;
   }
   .social-icon{
-    width:58px;
-    height:58px;
+    width:62px;
+    height:62px;
     margin:0;
+    border-radius:18px;
   }
-  .social-icon img{
-    width:54px;
-    height:54px;
+  .social-icon svg{
+    width:32px;
+    height:32px;
   }
-  .social-card-content{
-    align-items:flex-start;
-  }
-  .social-card-content strong{
-    font-size:19px;
-  }
+  .social-card-content{align-items:flex-start}
+  .social-card-content strong{font-size:19px}
+  .social-card-content small{font-size:9px}
+  .social-card-content p{margin-top:4px}
   .social-card-button{
     min-width:42px;
     width:42px;
     padding:0;
     font-size:0;
+    border-radius:12px;
   }
-  .social-card-button b{
-    font-size:16px;
+  .social-card-button b{font-size:17px}
+  .mina-social-card:hover{transform:translateY(-3px)}
+}
+
+/* FIX SOCIAL ICONS — dùng SVG trực tiếp, không phụ thuộc file ảnh */
+.social-icon svg{
+  display:block!important;
+  width:64px!important;
+  height:64px!important;
+  max-width:none!important;
+  overflow:visible!important;
+  filter:none!important;
+}
+@media(max-width:640px){
+  .social-icon svg{
+    width:54px!important;
+    height:54px!important;
   }
 }
