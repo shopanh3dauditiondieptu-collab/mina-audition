@@ -277,3 +277,36 @@ mark{background:rgba(255,214,110,.3);color:#fff3b3;border-radius:4px;padding:0 2
   background:#35131f;
   color:#ffd5df;
 }
+
+/* ===== Mina CMS v5.3 — Import Excel an toàn ===== */
+.excel-import-panel{display:grid;gap:18px}
+.excel-safety-note{padding:14px 16px;border:1px solid #74612d;border-radius:14px;background:#2b2412;color:#ffe6a2;line-height:1.6}
+.excel-import-controls{display:grid;grid-template-columns:minmax(260px,1fr) 220px minmax(280px,1fr);gap:14px;align-items:end}
+.excel-file-label input[type=file]{padding:11px;background:#111126;border:1px dashed #4c6d84;border-radius:12px}
+.excel-checkbox{min-height:48px;margin:0}
+.excel-actions{display:flex;gap:10px;flex-wrap:wrap}
+.excel-message{padding:13px 15px;border-radius:13px;border:1px solid #2d826a;background:#12352f;color:#a6ffe1;font-weight:700}
+.excel-message.error{border-color:#a94462;background:#381522;color:#ffd2de}
+.excel-message.warning{border-color:#92722d;background:#332710;color:#ffe3a0}
+.excel-summary{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:12px}
+.excel-summary article{padding:16px;border:1px solid #31516e;border-radius:16px;background:#111126}
+.excel-summary strong{display:block;font-size:25px;color:#9eeeff}
+.excel-summary span{color:var(--muted);font-size:12px}
+.excel-preview-shell{border:1px solid #31516e;border-radius:18px;background:#0d0d22;overflow:hidden}
+.excel-preview-head{display:flex;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid #31516e}
+.excel-preview-head small{color:var(--muted)}
+.excel-preview{overflow:auto;max-height:620px}
+.excel-preview-table{width:100%;min-width:1100px;border-collapse:collapse}
+.excel-preview-table th,.excel-preview-table td{padding:12px 13px;border-bottom:1px solid #253d53;text-align:left;vertical-align:top;font-size:12px}
+.excel-preview-table th{position:sticky;top:0;z-index:2;background:#17172f;color:#b8efff}
+.excel-preview-table td strong{display:block;color:#fff;margin-bottom:4px}
+.excel-preview-table td small{display:block;color:#8f8aa7;overflow-wrap:anywhere}
+.excel-preview-table a{color:#8defff;text-decoration:underline}
+.excel-action-badge{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:900;white-space:nowrap}
+.excel-action-badge.create{background:#12352f;color:#83ffd8}
+.excel-action-badge.update{background:#2f284b;color:#c9b8ff}
+.excel-action-badge.skip{background:#3d2f11;color:#ffd66e}
+.excel-action-badge.error{background:#451b2a;color:#ff9ab4}
+.excel-row-error{background:rgba(255,80,120,.04)}
+@media(max-width:1050px){.excel-import-controls{grid-template-columns:1fr 1fr}.excel-checkbox{grid-column:1/-1}}
+@media(max-width:700px){.excel-import-controls,.excel-summary{grid-template-columns:1fr}.excel-preview-head{flex-direction:column}}

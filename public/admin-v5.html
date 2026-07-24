@@ -19,6 +19,7 @@
     <nav>
       <button class="nav-item active" data-view="editor">✦ Đăng bài</button>
       <button class="nav-item" data-view="posts">▦ Quản lý bài</button>
+      <button class="nav-item" data-view="excel">📥 Import Excel</button>
       <button class="nav-item" data-view="smartlinks">🔗 Smart Link Manager</button>
       <a class="nav-link" href="/admin-v4.html">↩ CMS v4</a>
       <a class="nav-link" href="/" target="_blank" rel="noopener">↗ Xem website</a>
@@ -225,6 +226,70 @@
               <div id="postsTable" class="posts-table enterprise-table"></div>
             </div>
           </section>
+        </div>
+      </section>
+    </section>
+
+
+    <section id="view-excel" class="view">
+      <section class="panel excel-import-panel">
+        <div class="panel-head manager-head">
+          <div>
+            <h2>Đăng bài hàng loạt bằng Excel</h2>
+            <p>Đọc và kiểm tra dữ liệu trước khi ghi vào Firestore. Mặc định không ghi đè bài trùng.</p>
+          </div>
+          <a class="btn ghost" href="/templates/mina-blog-import-v53.xlsx" download>Tải file Excel mẫu</a>
+        </div>
+
+        <div class="excel-safety-note">
+          <strong>Chế độ an toàn:</strong>
+          Bài trùng theo tiêu đề, slug hoặc mã nội bộ sẽ được bỏ qua.
+          Nên nhập thử 3–5 bài ở trạng thái bản nháp trước.
+        </div>
+
+        <div class="excel-import-controls">
+          <label class="excel-file-label">
+            <span>Chọn file Excel (.xlsx hoặc .xls)</span>
+            <input id="excelImportFile" type="file" accept=".xlsx,.xls">
+          </label>
+
+          <label>
+            <span>Trạng thái mặc định</span>
+            <select id="excelDefaultStatus">
+              <option value="draft" selected>Nhập thành bản nháp</option>
+              <option value="published">Đăng công khai</option>
+            </select>
+          </label>
+
+          <label class="checkbox-row excel-checkbox">
+            <input id="excelAllowUpdate" type="checkbox">
+            <span>Cho phép cập nhật bài trùng mã nội bộ/slug</span>
+          </label>
+        </div>
+
+        <div class="excel-actions">
+          <button id="excelReadButton" class="btn ghost" type="button">Đọc và xem trước</button>
+          <button id="excelImportButton" class="btn primary" type="button" disabled>Xác nhận Import</button>
+          <button id="excelClearButton" class="btn ghost" type="button">Xóa dữ liệu xem trước</button>
+        </div>
+
+        <div id="excelImportMessage" class="excel-message" hidden></div>
+
+        <div class="excel-summary">
+          <article><strong id="excelTotalCount">0</strong><span>Tổng dòng</span></article>
+          <article><strong id="excelValidCount">0</strong><span>Hợp lệ</span></article>
+          <article><strong id="excelDuplicateCount">0</strong><span>Có thể trùng</span></article>
+          <article><strong id="excelErrorCount">0</strong><span>Có lỗi</span></article>
+        </div>
+
+        <div class="excel-preview-shell">
+          <div class="excel-preview-head">
+            <strong>Xem trước dữ liệu</strong>
+            <small>Hiển thị tối đa 100 dòng đầu tiên.</small>
+          </div>
+          <div id="excelPreview" class="excel-preview">
+            <div class="manager-empty">Chưa chọn file Excel.</div>
+          </div>
         </div>
       </section>
     </section>
@@ -439,6 +504,7 @@
     </form>
   </dialog>
 
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script type="module" src="/js/smartlink-dashboard.js?v=1.1.2"></script>
   <script type="module">
     import("/js/admin-v5.js?v=1.5.1").catch(error => {
@@ -450,6 +516,16 @@
         notice.hidden = false;
         notice.className = "notice error";
         notice.textContent = `Không tải được CMS: ${error?.message || error}`;
+      }
+    });
+
+    import("/js/admin-excel-import-v53.js?v=1.0.0").catch(error => {
+      console.error("Không tải được module Import Excel", error);
+      const notice = document.getElementById("notice");
+      if (notice) {
+        notice.hidden = false;
+        notice.className = "notice error";
+        notice.textContent = `Không tải được Import Excel: ${error?.message || error}`;
       }
     });
   </script>
