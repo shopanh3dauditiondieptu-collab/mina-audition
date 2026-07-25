@@ -1651,7 +1651,7 @@ body.wiki-modal-open{overflow:hidden}
 }
 
 /* =========================================================
-   MINA POST ENTERPRISE V6.2 — SAFE VISUAL UPGRADE
+   MINA POST ENTERPRISE V7 — SAFE VISUAL UPGRADE
    Chỉ mở rộng giao diện trang post, không đổi cấu trúc dữ liệu.
 ========================================================= */
 body[data-page="post"]{
