@@ -1514,3 +1514,138 @@ body.wiki-modal-open{overflow:hidden}
   .mina-latest-video-badge{top:10px;right:10px}
 }
 
+
+/* =========================================================
+   MINA ENTERPRISE STABLE v6.0.13 — FINAL UI POLISH
+   1) Skeleton loading
+   2) Premium hover (desktop only)
+   3) Mobile polish
+   Chỉ bổ sung CSS; không đổi cấu trúc HTML/CMS/Firebase.
+========================================================= */
+
+/* ---------- Skeleton loading ---------- */
+.mina-skeleton-card{
+  min-width:0;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:22px;
+  background:linear-gradient(180deg,rgba(25,22,44,.96),rgba(13,12,28,.98));
+  box-shadow:0 16px 38px rgba(0,0,0,.22);
+}
+.mina-skeleton-card--post .mina-skeleton-media{aspect-ratio:4/3}
+.mina-skeleton-card--skill .mina-skeleton-media{aspect-ratio:16/8.2}
+.mina-skeleton-card--wiki .mina-skeleton-media{aspect-ratio:1/1}
+.mina-skeleton-body{padding:17px}
+.mina-skeleton-line{height:13px;margin-top:11px;border-radius:999px}
+.mina-skeleton-line--title{width:82%;height:20px;margin-top:0}
+.mina-skeleton-line--short{width:58%}
+.mina-skeleton-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:20px}
+.mina-skeleton-actions span{height:42px;border-radius:12px}
+.mina-skeleton-shimmer{
+  position:relative;
+  overflow:hidden;
+  background:rgba(255,255,255,.065);
+}
+.mina-skeleton-shimmer::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  transform:translateX(-110%);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.13),transparent);
+  animation:mina-skeleton-wave 1.35s ease-in-out infinite;
+}
+@keyframes mina-skeleton-wave{to{transform:translateX(110%)}}
+
+/* ---------- Premium hover: only mouse/trackpad ---------- */
+@media (hover:hover) and (pointer:fine){
+  :is(.content-card,.home-skill-card,.wiki-card-v3,.social-card,.featured-link-card,.home-category-card){
+    --mina-rotate-x:0deg;
+    --mina-rotate-y:0deg;
+    position:relative;
+    transform:perspective(1000px) rotateX(var(--mina-rotate-x)) rotateY(var(--mina-rotate-y));
+    transform-style:preserve-3d;
+    will-change:transform;
+    transition:transform .28s cubic-bezier(.2,.75,.25,1),border-color .28s ease,box-shadow .28s ease;
+  }
+  :is(.content-card,.home-skill-card,.wiki-card-v3,.social-card,.featured-link-card,.home-category-card)::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:5;
+    pointer-events:none;
+    border-radius:inherit;
+    opacity:0;
+    background:radial-gradient(circle at var(--mina-glow-x,50%) var(--mina-glow-y,50%),rgba(98,232,255,.13),transparent 34%);
+    transition:opacity .28s ease;
+  }
+  :is(.content-card,.home-skill-card,.wiki-card-v3,.social-card,.featured-link-card,.home-category-card):hover{
+    transform:perspective(1000px) translateY(-6px) rotateX(var(--mina-rotate-x)) rotateY(var(--mina-rotate-y));
+    border-color:rgba(111,228,255,.48);
+    box-shadow:0 24px 56px rgba(0,0,0,.38),0 0 28px rgba(218,67,207,.1);
+  }
+  :is(.content-card,.home-skill-card,.wiki-card-v3,.social-card,.featured-link-card,.home-category-card):hover::before{opacity:1}
+  :is(.content-card,.home-skill-card,.wiki-card-v3) img{transition:transform .42s ease,filter .42s ease}
+  :is(.content-card,.home-skill-card,.wiki-card-v3):hover img{transform:scale(1.035);filter:brightness(1.045) saturate(1.03)}
+}
+
+/* Keyboard users */
+:is(.content-card,.home-skill-card,.wiki-card-v3,.social-card,.featured-link-card,.home-category-card):focus-within{
+  border-color:rgba(98,232,255,.72);
+  box-shadow:0 0 0 3px rgba(98,232,255,.1),0 20px 48px rgba(0,0,0,.34);
+}
+
+/* ---------- Mobile polish ---------- */
+@media(max-width:760px){
+  body{font-size:15px}
+  .wrap{width:min(100% - 24px,1220px)}
+  .nav{min-height:68px;gap:10px}
+  .brand{font-size:17px}.brand img{width:42px;height:42px}
+  .nav-toggle{width:42px;height:42px}
+  .links.open{top:70px;left:10px;right:10px;max-height:calc(100dvh - 84px);overflow:auto}
+  .links.open a{min-height:45px;display:flex;align-items:center;justify-content:center}
+
+  .hero-v3.mina-hero-slider{width:calc(100% - 20px);margin-top:14px;border-radius:20px}
+  .mina-hero-content{width:calc(100% - 34px);padding-left:0;padding-right:0}
+  .mina-hero-copy h1{font-size:clamp(31px,9.5vw,45px);line-height:1.06}
+  .mina-hero-copy p{font-size:13px;line-height:1.65}
+  .mina-hero-actions{gap:9px}
+  .mina-hero-actions .btn{min-height:46px;padding:11px 13px;font-size:12px}
+  .btn-hidden-item{min-width:0!important;width:100%!important;height:48px!important;font-size:14px!important;padding:0 14px!important}
+
+  .section{padding:58px 0}
+  .section-heading{margin-bottom:22px;gap:12px}
+  .section-heading h2{font-size:clamp(30px,9vw,40px)}
+  .section-heading p{font-size:13px}
+  .content-grid,.home-skill-grid,.wiki-grid-v3{gap:16px}
+  .content-card,.home-skill-card,.wiki-card-v3{border-radius:19px}
+  .card-body{padding:16px}
+  .card-body h3{font-size:18px}
+  .card-body p{font-size:13px;line-height:1.6}
+  .card-actions{gap:7px;padding-top:14px}
+  .card-actions a,.card-actions button{min-height:44px;font-size:12px}
+
+  .home-wiki-search-wrap{margin-bottom:20px}
+  .home-wiki-search input{font-size:12px}
+  .home-skill-actions{grid-template-columns:1fr 1fr}
+  .home-skill-detail,.home-skill-review{min-height:42px;font-size:11px}
+
+  .video-latest-card,.home-video-card{border-radius:20px}
+  .footer .footer-grid{grid-template-columns:1fr!important;gap:30px!important;padding-top:38px!important}
+  .footer-intro{max-width:none}
+  .footer-list{gap:10px}
+}
+
+@media(max-width:420px){
+  .wrap{width:calc(100% - 18px)}
+  .hero-v3.mina-hero-slider{width:calc(100% - 12px);border-radius:17px}
+  .mina-hero-content{width:calc(100% - 24px)}
+  .card-actions,.latest-posts-section #latest .card-actions{grid-template-columns:1fr!important}
+  .latest-posts-section #latest .card-actions > .primary-action{grid-column:auto!important}
+  .home-skill-actions{grid-template-columns:1fr}
+}
+
+/* Respect accessibility and save battery */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .mina-skeleton-shimmer::after{display:none}
+}

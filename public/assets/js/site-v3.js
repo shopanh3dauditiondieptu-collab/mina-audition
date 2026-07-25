@@ -624,6 +624,8 @@ async function loadHomeSkills() {
 
   if (!box || !search) return;
 
+  renderMinaSkeleton(box, 3, "skill");
+
   try {
     const all = await listSkills();
 
@@ -657,6 +659,9 @@ async function loadHomeSkills() {
 async function home() {
   const latestBox = document.querySelector("#latest");
   const promptBox = document.querySelector("#promptHighlights");
+
+  if (latestBox) renderMinaSkeleton(latestBox, 6, "post");
+  if (promptBox) renderMinaSkeleton(promptBox, 3, "post");
 
   loadHomeSkills();
 
@@ -698,6 +703,8 @@ async function blog() {
   const sidebar = document.querySelector("#categorySidebar");
   const count = document.querySelector("#resultCount");
   const chips = [...document.querySelectorAll("[data-type]")];
+
+  if (box) renderMinaSkeleton(box, 6, "post");
 
   try {
     const [allPosts, categoryTree] = await Promise.all([
@@ -1155,6 +1162,8 @@ async function wiki() {
 
   if (!box || !search || !typeSelect) return;
 
+  renderMinaSkeleton(box, 8, "wiki");
+
   const skillValue = (skill, keys, fallback = "") => value(skill, keys, fallback);
   const skillIdentity = skill => String(skillValue(skill, ["id", "skillId", "code"], ""));
   const skillName = skill => skillValue(skill, ["name", "title"], skillIdentity(skill) || "Skill Audition");
@@ -1505,6 +1514,86 @@ async function wiki() {
     box.innerHTML = `<div class="empty">${esc(error.message)}</div>`;
   }
 }
+
+
+/* =========================================================
+   MINA ENTERPRISE STABLE — UX POLISH
+   Skeleton loading + subtle desktop tilt.
+   Không thay đổi cấu trúc dữ liệu, URL, CMS hoặc Firebase.
+========================================================= */
+function renderMinaSkeleton(container, count = 3, variant = "post") {
+  if (!container || container.dataset.minaSkeleton === "active") return;
+
+  const safeCount = Math.max(1, Math.min(12, Number(count) || 3));
+  container.dataset.minaSkeleton = "active";
+  container.setAttribute("aria-busy", "true");
+
+  container.innerHTML = Array.from({ length: safeCount }, () => `
+    <article class="mina-skeleton-card mina-skeleton-card--${variant}" aria-hidden="true">
+      <div class="mina-skeleton-media mina-skeleton-shimmer"></div>
+      <div class="mina-skeleton-body">
+        <div class="mina-skeleton-line mina-skeleton-line--title mina-skeleton-shimmer"></div>
+        <div class="mina-skeleton-line mina-skeleton-shimmer"></div>
+        <div class="mina-skeleton-line mina-skeleton-line--short mina-skeleton-shimmer"></div>
+        <div class="mina-skeleton-actions">
+          <span class="mina-skeleton-shimmer"></span>
+          <span class="mina-skeleton-shimmer"></span>
+        </div>
+      </div>
+    </article>
+  `).join("");
+
+  const observer = new MutationObserver(() => {
+    if (!container.querySelector(".mina-skeleton-card")) {
+      container.removeAttribute("aria-busy");
+      delete container.dataset.minaSkeleton;
+      observer.disconnect();
+      initMinaPremiumCards(container);
+    }
+  });
+  observer.observe(container, { childList: true });
+}
+
+function initMinaPremiumCards(root = document) {
+  if (!window.matchMedia("(hover:hover) and (pointer:fine)").matches) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const cards = root.querySelectorAll?.(
+    ".content-card, .home-skill-card, .wiki-card-v3, .social-card, .featured-link-card, .home-category-card"
+  ) || [];
+
+  cards.forEach(card => {
+    if (card.dataset.minaTiltReady === "true") return;
+    card.dataset.minaTiltReady = "true";
+
+    card.addEventListener("pointermove", event => {
+      const rect = card.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width - .5;
+      const y = (event.clientY - rect.top) / rect.height - .5;
+      card.style.setProperty("--mina-rotate-x", `${(-y * 2).toFixed(2)}deg`);
+      card.style.setProperty("--mina-rotate-y", `${(x * 2).toFixed(2)}deg`);
+      card.style.setProperty("--mina-glow-x", `${((x + .5) * 100).toFixed(1)}%`);
+      card.style.setProperty("--mina-glow-y", `${((y + .5) * 100).toFixed(1)}%`);
+    });
+
+    card.addEventListener("pointerleave", () => {
+      card.style.removeProperty("--mina-rotate-x");
+      card.style.removeProperty("--mina-rotate-y");
+      card.style.removeProperty("--mina-glow-x");
+      card.style.removeProperty("--mina-glow-y");
+    });
+  });
+}
+
+const minaDynamicCardObserver = new MutationObserver(mutations => {
+  for (const mutation of mutations) {
+    mutation.addedNodes.forEach(node => {
+      if (node.nodeType === 1) initMinaPremiumCards(node);
+    });
+  }
+});
+minaDynamicCardObserver.observe(document.body, { childList: true, subtree: true });
+initMinaPremiumCards();
 
 const navToggle = document.querySelector(".nav-toggle");
 const navLinks = document.querySelector(".links");
