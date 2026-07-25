@@ -1064,17 +1064,284 @@ async function wiki() {
   const search = document.querySelector("#q");
   const typeSelect = document.querySelector("#type");
 
+  if (!box || !search || !typeSelect) return;
+
+  const skillValue = (skill, keys, fallback = "") => value(skill, keys, fallback);
+  const skillIdentity = skill => String(skillValue(skill, ["id", "skillId", "code"], ""));
+  const skillName = skill => skillValue(skill, ["name", "title"], skillIdentity(skill) || "Skill Audition");
+  const skillImage = skill => skillValue(skill, ["imageUrl", "coverUrl", "thumbnailUrl", "image"], placeholder);
+  const skillVideo = skill => skillValue(skill, ["youtubeUrl", "videoUrl", "reviewUrl"], "");
+  const skillDescription = skill => skillValue(
+    skill,
+    ["description", "summary", "review"],
+    "Skill màu dùng để kiểm tra hệ thống Wiki Mina."
+  );
+  const skillRating = skill => {
+    const raw = Number(skillValue(skill, ["rating", "score", "reviewScore"], 0));
+    return Number.isFinite(raw) && raw > 0 ? Math.min(10, raw) : 0;
+  };
+  const skillRarity = skill => skillValue(skill, ["rarity", "rare", "grade", "rank"], "");
+
+  const buildTags = skill => {
+    const tags = Array.isArray(skill.tags) ? skill.tags : [];
+    const values = [
+      skillValue(skill, ["style"], ""),
+      skillValue(skill, ["level"], ""),
+      skillValue(skill, ["keyMode", "mode", "keys"], ""),
+      ...tags
+    ];
+    const seen = new Set();
+    return values.map(item => String(item || "").trim()).filter(item => {
+      const key = normalize(item);
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, 5);
+  };
+
+  let currentSkills = [];
+  let activeIndex = -1;
+  let lastFocusedElement = null;
+
+  const modal = document.createElement("div");
+  modal.className = "wiki-skill-modal";
+  modal.hidden = true;
+  modal.setAttribute("aria-hidden", "true");
+  modal.innerHTML = `
+    <div class="wiki-skill-modal__backdrop" data-skill-close></div>
+    <section class="wiki-skill-dialog" role="dialog" aria-modal="true"
+      aria-labelledby="wikiSkillModalTitle" tabindex="-1">
+      <button class="wiki-skill-close" type="button" data-skill-close aria-label="Đóng">×</button>
+      <div id="wikiSkillModalContent"></div>
+    </section>
+  `;
+  document.body.append(modal);
+
+  const dialog = modal.querySelector(".wiki-skill-dialog");
+  const modalContent = modal.querySelector("#wikiSkillModalContent");
+
+  const updateModalUrl = skill => {
+    const id = skillIdentity(skill);
+    if (!id) return;
+    const url = new URL(location.href);
+    url.searchParams.set("skill", id);
+    history.replaceState(null, "", url);
+  };
+
+  const clearModalUrl = () => {
+    const url = new URL(location.href);
+    url.searchParams.delete("skill");
+    history.replaceState(null, "", url);
+  };
+
+  const closeModal = () => {
+    if (modal.hidden) return;
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("wiki-modal-open");
+    clearModalUrl();
+    window.setTimeout(() => {
+      modal.hidden = true;
+      lastFocusedElement?.focus?.();
+    }, 180);
+  };
+
+  const renderModal = index => {
+    const skill = currentSkills[index];
+    if (!skill) return;
+
+    activeIndex = index;
+
+    const id = skillIdentity(skill);
+    const name = skillName(skill);
+    const image = skillImage(skill);
+    const video = skillVideo(skill);
+    const description = skillDescription(skill);
+    const rating = skillRating(skill);
+    const rarity = skillRarity(skill);
+    const type = skillValue(skill, ["type", "category"], "Skill");
+    const style = skillValue(skill, ["style"], "");
+    const bpm = skillValue(skill, ["bpm", "tempo"], "");
+    const level = skillValue(skill, ["level"], "");
+    const tags = buildTags(skill);
+    const likedKey = `mina-wiki-liked-${id || normalize(name)}`;
+    const liked = localStorage.getItem(likedKey) === "1";
+
+    modalContent.innerHTML = `
+      <div class="wiki-skill-dialog__grid">
+        <div class="wiki-skill-dialog__media">
+          <img src="${esc(image)}" alt="${esc(name)}" onerror="this.src='${placeholder}'">
+        </div>
+        <div class="wiki-skill-dialog__content">
+          <span class="wiki-skill-label">${esc(type || "Wikipedia D8 Audition")}</span>
+          <h2 id="wikiSkillModalTitle">${esc(name)}</h2>
+
+          <div class="wiki-skill-facts">
+            ${id ? `<span><b>ID:</b> ${esc(id)}</span>` : ""}
+            ${style ? `<span><b>Style:</b> ${esc(style)}</span>` : ""}
+            ${bpm ? `<span><b>BPM:</b> ${esc(bpm)}</span>` : ""}
+            ${rarity ? `<span><b>Độ hiếm:</b> ${esc(rarity)}</span>` : ""}
+            ${level ? `<span><b>Level:</b> ${esc(level)}</span>` : ""}
+          </div>
+
+          <div class="wiki-skill-rating">
+            <b>Rating:</b>
+            <span>⭐ ${rating ? `${rating}/10` : "Chưa đánh giá"}</span>
+          </div>
+
+          <p class="wiki-skill-description">${esc(description)}</p>
+
+          ${tags.length ? `
+            <div class="wiki-skill-tags">
+              ${tags.map(tag => `<span>${esc(tag)}</span>`).join("")}
+            </div>
+          ` : ""}
+
+          <div class="wiki-skill-primary-actions">
+            ${video ? `
+              <a href="${esc(video)}" target="_blank" rel="noopener">Xem video review</a>
+            ` : `<span class="wiki-skill-video-disabled">Video đang cập nhật</span>`}
+          </div>
+
+          <div class="wiki-skill-tools">
+            ${id ? `<button type="button" data-skill-copy-id>📋 Copy ID</button>` : ""}
+            <button type="button" data-skill-like class="${liked ? "is-liked" : ""}">
+              ${liked ? "♥ Đã thích" : "♡ Yêu thích"}
+            </button>
+            <button type="button" data-skill-share>↗ Chia sẻ</button>
+          </div>
+
+          <div class="wiki-skill-navigation">
+            <button type="button" data-skill-prev ${index <= 0 ? "disabled" : ""}>← Skill trước</button>
+            <span>${index + 1} / ${currentSkills.length}</span>
+            <button type="button" data-skill-next ${index >= currentSkills.length - 1 ? "disabled" : ""}>Skill sau →</button>
+          </div>
+        </div>
+      </div>
+    `;
+    updateModalUrl(skill);
+  };
+
+  const openModal = index => {
+    if (!currentSkills[index]) return;
+    lastFocusedElement = document.activeElement;
+    renderModal(index);
+    modal.hidden = false;
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("wiki-modal-open");
+    requestAnimationFrame(() => {
+      modal.classList.add("is-open");
+      dialog.focus();
+    });
+  };
+
+  modal.addEventListener("click", async event => {
+    if (event.target.closest("[data-skill-close]")) {
+      closeModal();
+      return;
+    }
+    if (event.target.closest("[data-skill-prev]")) {
+      renderModal(activeIndex - 1);
+      return;
+    }
+    if (event.target.closest("[data-skill-next]")) {
+      renderModal(activeIndex + 1);
+      return;
+    }
+
+    const skill = currentSkills[activeIndex];
+    if (!skill) return;
+
+    if (event.target.closest("[data-skill-copy-id]")) {
+      try {
+        await copyText(skillIdentity(skill));
+      } catch {
+        toast("Không thể copy ID Skill.");
+      }
+      return;
+    }
+
+    const likeButton = event.target.closest("[data-skill-like]");
+    if (likeButton) {
+      const id = skillIdentity(skill) || normalize(skillName(skill));
+      const key = `mina-wiki-liked-${id}`;
+      const willLike = localStorage.getItem(key) !== "1";
+      localStorage.setItem(key, willLike ? "1" : "0");
+      likeButton.classList.toggle("is-liked", willLike);
+      likeButton.textContent = willLike ? "♥ Đã thích" : "♡ Yêu thích";
+      toast(willLike ? "Đã thêm Skill vào mục yêu thích." : "Đã bỏ yêu thích Skill.");
+      return;
+    }
+
+    if (event.target.closest("[data-skill-share]")) {
+      const shareData = {
+        title: `${skillName(skill)} | Mina Audition`,
+        text: `Xem thông tin Skill ${skillName(skill)} trên Wikipedia D8 Mina.`,
+        url: location.href
+      };
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+        } else {
+          await copyText(location.href);
+          toast("Đã copy link Skill.");
+        }
+      } catch (error) {
+        if (error?.name !== "AbortError") toast("Không thể chia sẻ Skill.");
+      }
+    }
+  });
+
+  document.addEventListener("keydown", event => {
+    if (modal.hidden) return;
+    if (event.key === "Escape") {
+      closeModal();
+      return;
+    }
+    if (event.key === "ArrowLeft" && activeIndex > 0) {
+      renderModal(activeIndex - 1);
+      return;
+    }
+    if (event.key === "ArrowRight" && activeIndex < currentSkills.length - 1) {
+      renderModal(activeIndex + 1);
+      return;
+    }
+    if (event.key === "Tab") {
+      const focusable = [...dialog.querySelectorAll(
+        'a[href],button:not([disabled]),[tabindex]:not([tabindex="-1"])'
+      )];
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+  });
+
   try {
     const all = await listSkills();
     const urlParams = new URLSearchParams(location.search);
     const requestedQuery = urlParams.get("q") || "";
     const requestedType = urlParams.get("type") || "";
+    const requestedSkill = urlParams.get("skill") || "";
 
-    if (search && requestedQuery) search.value = requestedQuery;
+    if (requestedQuery) search.value = requestedQuery;
 
-    const types = [...new Set(all.map(item => item.type).filter(Boolean))].sort();
+    const types = [...new Set(
+      all.map(item => skillValue(item, ["type", "category"], "")).filter(Boolean)
+    )].sort((a, b) => String(a).localeCompare(String(b), "vi"));
+
     typeSelect.innerHTML = `<option value="">Tất cả loại</option>` +
-      types.map(type => `<option>${esc(type)}</option>`).join("");
+      types.map(type => `<option value="${esc(type)}">${esc(type)}</option>`).join("");
 
     if (requestedType && types.includes(requestedType)) {
       typeSelect.value = requestedType;
@@ -1083,31 +1350,68 @@ async function wiki() {
     const render = () => {
       const term = normalize(search.value);
       const selectedType = typeSelect.value;
-      const filtered = all.filter(skill =>
-        (!selectedType || skill.type === selectedType) &&
-        (!term || normalize(`${skill.id} ${skill.name} ${skill.style} ${skill.type} ${skill.bpm}`).includes(term))
-      );
 
-      box.innerHTML = filtered.length ? filtered.map(skill => `
-        <article class="wiki-card-v3">
-          <img loading="lazy" src="${esc(skill.imageUrl || placeholder)}" alt="${esc(skill.name || skill.id)}" onerror="this.src='${placeholder}'">
-          <div class="card-body">
-            <span class="eyebrow">${esc(skill.type || "Skill")}</span>
-            <h3>${esc(skill.name || skill.id)}</h3>
-            <div class="skill-meta">
-              ${skill.level ? `<span>${esc(skill.level)}</span>` : ""}
-              ${skill.style ? `<span>${esc(skill.style)}</span>` : ""}
-              ${skill.bpm ? `<span>${esc(skill.bpm)} BPM</span>` : ""}
+      currentSkills = all.filter(skill => {
+        const type = skillValue(skill, ["type", "category"], "");
+        return (!selectedType || type === selectedType) &&
+          (!term || getSkillSearchText(skill).includes(term));
+      });
+
+      box.innerHTML = currentSkills.length ? currentSkills.map((skill, index) => {
+        const id = skillIdentity(skill);
+        const name = skillName(skill);
+        const type = skillValue(skill, ["type", "category"], "Skill");
+        const style = skillValue(skill, ["style"], "");
+        const bpm = skillValue(skill, ["bpm", "tempo"], "");
+        const level = skillValue(skill, ["level"], "");
+
+        return `
+          <article class="wiki-card-v3" data-skill-index="${index}" tabindex="0"
+            role="button" aria-label="Xem chi tiết Skill ${esc(name)}">
+            <img loading="lazy" src="${esc(skillImage(skill))}" alt="${esc(name || id)}"
+              onerror="this.src='${placeholder}'">
+            <div class="card-body">
+              <span class="eyebrow">${esc(type)}</span>
+              <h3>${esc(name)}</h3>
+              <div class="skill-meta">
+                ${id ? `<span>ID ${esc(id)}</span>` : ""}
+                ${level ? `<span>${esc(level)}</span>` : ""}
+                ${style ? `<span>${esc(style)}</span>` : ""}
+                ${bpm ? `<span>${esc(bpm)} BPM</span>` : ""}
+              </div>
+              <p>${esc(skillDescription(skill))}</p>
+              <button class="wiki-card-detail-button" type="button" tabindex="-1">Xem chi tiết</button>
             </div>
-            <p>${esc(skill.description || "")}</p>
-            ${skill.youtubeUrl ? `<a class="btn btn-glass" target="_blank" rel="noopener" href="${esc(skill.youtubeUrl)}">Xem video</a>` : ""}
-          </div>
-        </article>`).join("") : `<div class="empty">Không tìm thấy Skill.</div>`;
+          </article>
+        `;
+      }).join("") : `<div class="empty">Không tìm thấy Skill.</div>`;
+
+      if (!modal.hidden) closeModal();
     };
+
+    box.addEventListener("click", event => {
+      const card = event.target.closest("[data-skill-index]");
+      if (!card) return;
+      openModal(Number(card.dataset.skillIndex));
+    });
+
+    box.addEventListener("keydown", event => {
+      const card = event.target.closest("[data-skill-index]");
+      if (!card || !["Enter", " "].includes(event.key)) return;
+      event.preventDefault();
+      openModal(Number(card.dataset.skillIndex));
+    });
 
     search.addEventListener("input", render);
     typeSelect.addEventListener("change", render);
     render();
+
+    if (requestedSkill) {
+      const index = currentSkills.findIndex(skill =>
+        normalize(skillIdentity(skill)) === normalize(requestedSkill)
+      );
+      if (index >= 0) openModal(index);
+    }
   } catch (error) {
     box.innerHTML = `<div class="empty">${esc(error.message)}</div>`;
   }
