@@ -469,6 +469,9 @@ async function savePost(event) {
       status,
       section: categoryNodes[0]?.name || "",
       sectionId: categoryNodes[0]?.id || "",
+      module: categoryNodes[0]?.module || categoryNodes[0]?.slug || categoryNodes[0]?.id || "",
+      moduleId: categoryNodes[0]?.id || "",
+      moduleName: categoryNodes[0]?.name || "",
       categoryId: categoryLeaf?.id || "",
       categoryName: categoryLeaf?.name || "",
       category: categoryLeaf?.name || "",
@@ -583,7 +586,7 @@ function renderCategoryPath() {
 }
 
 function renderCategoryRoot() {
-  fillCategorySelect($("#categoryLevel1"),state.categoryTree,"Chọn chuyên mục");
+  fillCategorySelect($("#categoryLevel1"),state.categoryTree,"Chọn module");
   fillCategorySelect($("#categoryLevel2"),[],"Chọn danh mục");
   fillCategorySelect($("#categoryLevel3"),[],"Chọn danh mục con");
   fillCategorySelect($("#categoryLevel4"),[],"Chọn loại"); renderCategoryPath();

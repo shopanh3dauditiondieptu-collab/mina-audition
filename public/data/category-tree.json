@@ -1,201 +1,21 @@
 [
   {
     "id": "mina-blog",
-    "name": "Mina Blog",
-    "slug": "mina-blog",
+    "name": "Blog Mina",
+    "slug": "blog",
+    "icon": "📚",
+    "type": "module",
+    "module": "blog",
+    "page": "/blog.html",
     "children": [
       {
-        "id": "shop-anh-2d-3d-audition",
-        "name": "Shop Ảnh 2D/3D Audition",
-        "slug": "shop-anh-2d-3d-audition",
-        "children": [
-          {
-            "id": "anh-don",
-            "name": "Ảnh Đơn",
-            "slug": "anh-don"
-          },
-          {
-            "id": "anh-doi",
-            "name": "Ảnh Đôi",
-            "slug": "anh-doi"
-          },
-          {
-            "id": "anh-nhom",
-            "name": "Ảnh Nhóm",
-            "slug": "anh-nhom"
-          },
-          {
-            "id": "anh-wedding",
-            "name": "Ảnh Wedding",
-            "slug": "anh-wedding"
-          },
-          {
-            "id": "background",
-            "name": "Background",
-            "slug": "background"
-          }
-        ]
-      },
-      {
-        "id": "prompt-lenh-ai-free-suu-tam",
-        "name": "Prompt Lệnh AI - Free Sưu Tầm",
-        "slug": "prompt-lenh-ai-free-suu-tam",
-        "children": [
-          {
-            "id": "girl-outfit",
-            "name": "Girl Outfit",
-            "slug": "girl-outfit"
-          },
-          {
-            "id": "boy-outfit",
-            "name": "Boy Outfit",
-            "slug": "boy-outfit"
-          },
-          {
-            "id": "couple",
-            "name": "Couple",
-            "slug": "couple"
-          },
-          {
-            "id": "couple-girl-x-girl",
-            "name": "Couple Girl x Girl",
-            "slug": "couple-girl-x-girl"
-          },
-          {
-            "id": "couple-boy-x-boy",
-            "name": "Couple Boy x Boy",
-            "slug": "couple-boy-x-boy"
-          },
-          {
-            "id": "wedding",
-            "name": "Wedding",
-            "slug": "wedding"
-          },
-          {
-            "id": "lenh-tao-anh-nhom",
-            "name": "Lệnh Tạo Ảnh Nhóm",
-            "slug": "lenh-tao-anh-nhom",
-            "children": [
-              {
-                "id": "nhom-3-nguoi",
-                "name": "Nhóm 3 người",
-                "slug": "nhom-3-nguoi"
-              },
-              {
-                "id": "nhom-4-nguoi",
-                "name": "Nhóm 4 người",
-                "slug": "nhom-4-nguoi"
-              },
-              {
-                "id": "nhom-5-nguoi",
-                "name": "Nhóm 5 người",
-                "slug": "nhom-5-nguoi"
-              },
-              {
-                "id": "nhom-6-nguoi",
-                "name": "Nhóm 6 người",
-                "slug": "nhom-6-nguoi"
-              }
-            ]
-          },
-          {
-            "id": "lenh-anh-tao-dang",
-            "name": "Lệnh Ảnh Tạo Dáng",
-            "slug": "lenh-anh-tao-dang"
-          }
-        ]
-      },
-      {
         "id": "kinh-nghiem-game",
-        "name": "Kinh Nghiệm Game",
+        "name": "Mẹo Game & PC",
         "slug": "kinh-nghiem-game"
       },
       {
-        "id": "mix-match-outfit-game",
-        "name": "Mix & Match Outfit Game",
-        "slug": "mix-match-outfit-game",
-        "children": [
-          {
-            "id": "style-girl",
-            "name": "Style Girl",
-            "slug": "style-girl",
-            "children": [
-              {
-                "id": "cute-girl",
-                "name": "Cute Girl",
-                "slug": "cute-girl"
-              },
-              {
-                "id": "sexy-girl",
-                "name": "Sexy Girl",
-                "slug": "sexy-girl"
-              },
-              {
-                "id": "cool-girl",
-                "name": "Cool Girl",
-                "slug": "cool-girl"
-              },
-              {
-                "id": "style-105-d8-girl",
-                "name": "Style 105 D8",
-                "slug": "style-105-d8-girl"
-              }
-            ]
-          },
-          {
-            "id": "style-boy",
-            "name": "Style Boy",
-            "slug": "style-boy",
-            "children": [
-              {
-                "id": "cute-boy",
-                "name": "Cute Boy",
-                "slug": "cute-boy"
-              },
-              {
-                "id": "sexy-boy",
-                "name": "Sexy Boy",
-                "slug": "sexy-boy"
-              },
-              {
-                "id": "cool-boy",
-                "name": "Cool Boy",
-                "slug": "cool-boy"
-              },
-              {
-                "id": "style-105-d8-boy",
-                "name": "Style 105 D8",
-                "slug": "style-105-d8-boy"
-              }
-            ]
-          },
-          {
-            "id": "couple-outfit",
-            "name": "Couple Outfit",
-            "slug": "couple-outfit",
-            "children": [
-              {
-                "id": "cute-style",
-                "name": "Cute Style",
-                "slug": "cute-style"
-              },
-              {
-                "id": "sexy-style",
-                "name": "Sexy Style",
-                "slug": "sexy-style"
-              },
-              {
-                "id": "cool-style",
-                "name": "Cool Style",
-                "slug": "cool-style"
-              }
-            ]
-          }
-        ]
-      },
-      {
         "id": "video-gameplay",
-        "name": "Video Gameplay",
+        "name": "Gameplay Audition",
         "slug": "video-gameplay",
         "children": [
           {
@@ -292,48 +112,277 @@
         "slug": "tam-su-chia-se"
       },
       {
-        "id": "game-gear",
-        "name": "Game Gear",
-        "slug": "game-gear",
+        "id": "tin-tuc-cap-nhat",
+        "name": "Tin Tức - Cập Nhật",
+        "slug": "tin-tuc-cap-nhat",
+        "icon": "📰"
+      }
+    ]
+  },
+  {
+    "id": "ai-prompt",
+    "name": "AI Prompt",
+    "slug": "ai-prompt",
+    "icon": "🤖",
+    "type": "module",
+    "module": "ai-prompt",
+    "page": "/ai-prompt.html",
+    "children": [
+      {
+        "id": "prompt-lenh-ai-free-suu-tam",
+        "name": "Prompt AI Sưu Tầm",
+        "slug": "prompt-lenh-ai-free-suu-tam",
         "children": [
           {
-            "id": "ban-phim",
-            "name": "Bàn Phím",
-            "slug": "ban-phim"
+            "id": "girl-outfit",
+            "name": "Girl Outfit",
+            "slug": "girl-outfit"
           },
           {
-            "id": "chuot",
-            "name": "Chuột",
-            "slug": "chuot"
+            "id": "boy-outfit",
+            "name": "Boy Outfit",
+            "slug": "boy-outfit"
           },
           {
-            "id": "tai-nghe",
-            "name": "Tai nghe",
-            "slug": "tai-nghe"
+            "id": "couple",
+            "name": "Couple",
+            "slug": "couple"
           },
           {
-            "id": "man-hinh",
-            "name": "Màn Hình",
-            "slug": "man-hinh"
+            "id": "couple-girl-x-girl",
+            "name": "Couple Girl x Girl",
+            "slug": "couple-girl-x-girl"
           },
           {
-            "id": "phu-kien-game",
-            "name": "Phụ Kiện Game",
-            "slug": "phu-kien-game"
+            "id": "couple-boy-x-boy",
+            "name": "Couple Boy x Boy",
+            "slug": "couple-boy-x-boy"
           },
           {
-            "id": "do-decor",
-            "name": "Đồ Decor",
-            "slug": "do-decor"
+            "id": "wedding",
+            "name": "Wedding",
+            "slug": "wedding"
+          },
+          {
+            "id": "lenh-tao-anh-nhom",
+            "name": "Lệnh Tạo Ảnh Nhóm",
+            "slug": "lenh-tao-anh-nhom",
+            "children": [
+              {
+                "id": "nhom-3-nguoi",
+                "name": "Nhóm 3 người",
+                "slug": "nhom-3-nguoi"
+              },
+              {
+                "id": "nhom-4-nguoi",
+                "name": "Nhóm 4 người",
+                "slug": "nhom-4-nguoi"
+              },
+              {
+                "id": "nhom-5-nguoi",
+                "name": "Nhóm 5 người",
+                "slug": "nhom-5-nguoi"
+              },
+              {
+                "id": "nhom-6-nguoi",
+                "name": "Nhóm 6 người",
+                "slug": "nhom-6-nguoi"
+              }
+            ]
+          },
+          {
+            "id": "lenh-anh-tao-dang",
+            "name": "Lệnh Ảnh Tạo Dáng",
+            "slug": "lenh-anh-tao-dang"
+          }
+        ]
+      },
+      {
+        "id": "shop-anh-2d-3d-audition",
+        "name": "Shop Ảnh 2D/3D Audition",
+        "slug": "shop-anh-2d-3d-audition",
+        "children": [
+          {
+            "id": "anh-don",
+            "name": "Ảnh Đơn",
+            "slug": "anh-don"
+          },
+          {
+            "id": "anh-doi",
+            "name": "Ảnh Đôi",
+            "slug": "anh-doi"
+          },
+          {
+            "id": "anh-nhom",
+            "name": "Ảnh Nhóm",
+            "slug": "anh-nhom"
+          },
+          {
+            "id": "anh-wedding",
+            "name": "Ảnh Wedding",
+            "slug": "anh-wedding"
+          },
+          {
+            "id": "background",
+            "name": "Background",
+            "slug": "background"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "mix-match-outfit-game",
+    "name": "Mix & Match",
+    "slug": "mix-match-outfit-game",
+    "children": [
+      {
+        "id": "style-girl",
+        "name": "Style Girl",
+        "slug": "style-girl",
+        "children": [
+          {
+            "id": "cute-girl",
+            "name": "Cute Girl",
+            "slug": "cute-girl"
+          },
+          {
+            "id": "sexy-girl",
+            "name": "Sexy Girl",
+            "slug": "sexy-girl"
+          },
+          {
+            "id": "cool-girl",
+            "name": "Cool Girl",
+            "slug": "cool-girl"
+          },
+          {
+            "id": "style-105-d8-girl",
+            "name": "Style 105 D8",
+            "slug": "style-105-d8-girl"
+          }
+        ]
+      },
+      {
+        "id": "style-boy",
+        "name": "Style Boy",
+        "slug": "style-boy",
+        "children": [
+          {
+            "id": "cute-boy",
+            "name": "Cute Boy",
+            "slug": "cute-boy"
+          },
+          {
+            "id": "sexy-boy",
+            "name": "Sexy Boy",
+            "slug": "sexy-boy"
+          },
+          {
+            "id": "cool-boy",
+            "name": "Cool Boy",
+            "slug": "cool-boy"
+          },
+          {
+            "id": "style-105-d8-boy",
+            "name": "Style 105 D8",
+            "slug": "style-105-d8-boy"
+          }
+        ]
+      },
+      {
+        "id": "couple-outfit",
+        "name": "Couple Outfit",
+        "slug": "couple-outfit",
+        "children": [
+          {
+            "id": "cute-style",
+            "name": "Cute Style",
+            "slug": "cute-style"
+          },
+          {
+            "id": "sexy-style",
+            "name": "Sexy Style",
+            "slug": "sexy-style"
+          },
+          {
+            "id": "cool-style",
+            "name": "Cool Style",
+            "slug": "cool-style"
           }
         ]
       }
     ],
-    "type": "blog"
+    "icon": "💜",
+    "type": "module",
+    "module": "mix-match",
+    "page": "/mix-match.html"
+  },
+  {
+    "id": "academy",
+    "name": "Academy",
+    "slug": "academy",
+    "icon": "🎓",
+    "type": "module",
+    "module": "academy",
+    "page": "/academy.html",
+    "children": [
+      {
+        "id": "huong-dan-audition",
+        "name": "Hướng Dẫn Audition",
+        "slug": "huong-dan-audition"
+      },
+      {
+        "id": "huong-dan-ai",
+        "name": "Hướng Dẫn AI",
+        "slug": "huong-dan-ai"
+      }
+    ]
+  },
+  {
+    "id": "game-gear",
+    "name": "Game Gear",
+    "slug": "game-gear",
+    "children": [
+      {
+        "id": "ban-phim",
+        "name": "Bàn Phím",
+        "slug": "ban-phim"
+      },
+      {
+        "id": "chuot",
+        "name": "Chuột",
+        "slug": "chuot"
+      },
+      {
+        "id": "tai-nghe",
+        "name": "Tai nghe",
+        "slug": "tai-nghe"
+      },
+      {
+        "id": "man-hinh",
+        "name": "Màn Hình",
+        "slug": "man-hinh"
+      },
+      {
+        "id": "phu-kien-game",
+        "name": "Phụ Kiện Game",
+        "slug": "phu-kien-game"
+      },
+      {
+        "id": "do-decor",
+        "name": "Đồ Decor",
+        "slug": "do-decor"
+      }
+    ],
+    "icon": "🎧",
+    "type": "module",
+    "module": "game-gear",
+    "page": "/game-gear.html"
   },
   {
     "id": "wikipedia-d8",
-    "name": "Wikipedia D8",
+    "name": "Wiki D8",
     "slug": "wikipedia-d8",
     "children": [
       {
@@ -680,6 +729,9 @@
         "slug": "top-skill-dep"
       }
     ],
-    "type": "wiki"
+    "type": "wiki",
+    "icon": "📖",
+    "module": "wiki",
+    "page": "/wiki.html"
   }
 ]

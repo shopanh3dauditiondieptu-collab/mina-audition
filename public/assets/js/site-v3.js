@@ -6,6 +6,33 @@ const AFFILIATE_SLUG = "taoanh3d";
 
 const CATEGORY_TREE_URL = "/data/category-tree.json";
 
+const activeModuleId = document.body.dataset.module || "";
+
+function findCategoryNode(nodes, target) {
+  const wanted = normalize(target || "");
+  for (const node of nodes || []) {
+    if ([node.id, node.slug, node.module, node.name].filter(Boolean).some(value => normalize(value) === wanted)) return node;
+    const child = findCategoryNode(node.children || [], target);
+    if (child) return child;
+  }
+  return null;
+}
+
+function moduleTree(tree) {
+  if (!activeModuleId) return tree;
+  const root = findCategoryNode(tree, activeModuleId);
+  return root ? [root] : [];
+}
+
+function postBelongsToModule(post, root) {
+  if (!root) return true;
+  const tokens = collectNodeTokens(root);
+  const haystack = categoryTokens(post);
+  const explicit = normalize(value(post, ["moduleId", "module", "sectionId", "section"], ""));
+  return tokens.some(token => token && haystack.includes(token)) ||
+    [root.id, root.slug, root.module, root.name].filter(Boolean).map(normalize).some(token => token && explicit.includes(token));
+}
+
 
 const CATEGORY_COLOR_RULES = [
   { color: "#ec4899", keywords: ["mina blog", "prompt", "ai prompt", "lenh ai", "lệnh ai"] },
@@ -750,8 +777,10 @@ async function blog() {
       loadSharedCategoryTree().catch(() => [])
     ]);
 
-    const all = allPosts.filter(post => post.status !== "draft");
-    renderCategorySelect(category, categoryTree, all);
+    const rootModule = activeModuleId ? findCategoryNode(categoryTree, activeModuleId) : null;
+    const visibleTree = moduleTree(categoryTree);
+    const all = allPosts.filter(post => post.status !== "draft" && postBelongsToModule(post, rootModule));
+    renderCategorySelect(category, visibleTree, all);
 
     const urlParams = new URLSearchParams(location.search);
     const requestedType = urlParams.get("type") || "";
@@ -905,7 +934,7 @@ async function blog() {
       if (scroll) scrollToResults();
     };
 
-    renderCategorySidebar(sidebar, categoryTree, all, (categoryValue, categoryName) => {
+    renderCategorySidebar(sidebar, visibleTree, all, (categoryValue, categoryName) => {
       activeCategory = categoryValue;
       activeCategoryName = categoryName;
       category.value = categoryValue;
@@ -2032,6 +2061,11 @@ if (contactNavLink) {
 }
 
 document.querySelector(`[data-nav="${page}"]`)?.classList.add("active");
+if (activeModuleId) {
+  document.querySelectorAll("[data-module-nav]").forEach(link => {
+    link.classList.toggle("active", normalize(link.dataset.moduleNav) === normalize(activeModuleId));
+  });
+}
 
 ({ home, blog, post: postPage, wiki }[page] || (() => {}))();
 
