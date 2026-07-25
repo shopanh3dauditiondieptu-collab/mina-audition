@@ -1290,7 +1290,7 @@ async function wiki() {
   const skillValue = (skill, keys, fallback = "") => value(skill, keys, fallback);
   const skillIdentity = skill => String(skillValue(skill, ["id", "skillId", "code"], ""));
   const skillName = skill => skillValue(skill, ["name", "title"], skillIdentity(skill) || "Skill Audition");
-  const skillImage = skill => skillValue(skill, ["imageUrl", "coverUrl", "thumbnailUrl", "image"], placeholder);
+  const skillImage = skill => skillValue(skill, ["imageUrl", "coverUrl", "thumbnailUrl", "image"], "");
   const skillVideo = skill => skillValue(skill, ["youtubeUrl", "videoUrl", "reviewUrl"], "");
   const skillDescription = skill => skillValue(
     skill,
@@ -1375,7 +1375,7 @@ async function wiki() {
 
     const id = skillIdentity(skill);
     const name = skillName(skill);
-    const image = skillImage(skill);
+    const image = skillImage(skill) || placeholder;
     const video = skillVideo(skill);
     const description = skillDescription(skill);
     const rating = skillRating(skill);
@@ -1578,6 +1578,11 @@ async function wiki() {
           (!term || getSkillSearchText(skill).includes(term));
       });
 
+      const totalCounter = document.querySelector("#wikiTotalCount");
+      const resultCounter = document.querySelector("#wikiResultCount");
+      if (totalCounter) totalCounter.textContent = String(all.length);
+      if (resultCounter) resultCounter.textContent = `${currentSkills.length} Skill phù hợp`;
+
       box.innerHTML = currentSkills.length ? currentSkills.map((skill, index) => {
         const id = skillIdentity(skill);
         const name = skillName(skill);
@@ -1586,13 +1591,25 @@ async function wiki() {
         const bpm = skillValue(skill, ["bpm", "tempo"], "");
         const level = skillValue(skill, ["level"], "");
 
+        const image = skillImage(skill);
+        const media = image
+          ? `<img loading="lazy" src="${esc(image)}" alt="${esc(name || id)}"
+               onerror="this.remove();this.closest('.wiki-card-media')?.classList.add('has-error')">`
+          : `<div class="wiki-card-placeholder">
+               <small>MINA WIKI D8</small>
+               <strong>${esc(name)}</strong>
+               <span>${id ? `ID ${esc(id)}` : "AUDITION VTC"}</span>
+             </div>`;
+
         return `
           <article class="wiki-card-v3" data-skill-index="${index}" tabindex="0"
             role="button" aria-label="Xem chi tiết Skill ${esc(name)}">
-            <img loading="lazy" src="${esc(skillImage(skill))}" alt="${esc(name || id)}"
-              onerror="this.src='${placeholder}'">
+            <div class="wiki-card-media">
+              ${media}
+              <span class="wiki-card-media__type">${esc(type)}</span>
+            </div>
             <div class="card-body">
-              <span class="eyebrow">${esc(type)}</span>
+              <span class="eyebrow">WIKIPEDIA D8</span>
               <h3>${esc(name)}</h3>
               <div class="skill-meta">
                 ${id ? `<span>ID ${esc(id)}</span>` : ""}
