@@ -1282,16 +1282,21 @@ async function wiki() {
   const box = document.querySelector("#skills");
   const search = document.querySelector("#q");
   const levelSelect = document.querySelector("#level");
-  const modeSelect = document.querySelector("#mode");
+  const keyModeSelect = document.querySelector("#keyMode");
+  const styleSelect = document.querySelector("#style");
+  const bpmSelect = document.querySelector("#bpm");
+  const resetButton = document.querySelector("#resetWikiFilters");
+  const resultCount = document.querySelector("#wikiResultCount");
+  const activeFilters = document.querySelector("#wikiActiveFilters");
 
-  if (!box || !search || !levelSelect || !modeSelect) return;
+  if (!box || !search || !levelSelect || !keyModeSelect || !styleSelect || !bpmSelect) return;
 
   renderMinaSkeleton(box, 8, "wiki");
 
   const skillValue = (skill, keys, fallback = "") => value(skill, keys, fallback);
   const skillIdentity = skill => String(skillValue(skill, ["id", "skillId", "code"], ""));
   const skillName = skill => skillValue(skill, ["name", "title"], skillIdentity(skill) || "Skill Audition");
-  const skillImage = skill => skillValue(skill, ["imageUrl", "coverUrl", "thumbnailUrl", "image"], "");
+  const skillImage = skill => skillValue(skill, ["imageUrl", "coverUrl", "thumbnailUrl", "image"], placeholder);
   const skillVideo = skill => skillValue(skill, ["youtubeUrl", "videoUrl", "reviewUrl"], "");
   const skillDescription = skill => skillValue(
     skill,
@@ -1376,7 +1381,7 @@ async function wiki() {
 
     const id = skillIdentity(skill);
     const name = skillName(skill);
-    const image = skillImage(skill) || placeholder;
+    const image = skillImage(skill);
     const video = skillVideo(skill);
     const description = skillDescription(skill);
     const rating = skillRating(skill);
@@ -1554,91 +1559,123 @@ async function wiki() {
     const urlParams = new URLSearchParams(location.search);
     const requestedQuery = urlParams.get("q") || "";
     const requestedLevel = urlParams.get("level") || "";
-    const requestedMode = (urlParams.get("mode") || "").toUpperCase();
+    const requestedKeyMode = urlParams.get("keyMode") || "";
+    const requestedStyle = urlParams.get("style") || "";
+    const requestedBpm = urlParams.get("bpm") || "";
     const requestedSkill = urlParams.get("skill") || "";
 
-    if (requestedQuery) search.value = requestedQuery;
-
-    const normalizedLevel = skill => {
-      const raw = String(skillValue(skill, ["level", "lv"], "")).trim();
-      const match = raw.match(/\d+/);
-      return match ? match[0] : raw;
+    const canonicalLevel = skill => {
+      const raw = String(skillValue(skill, ["level", "lv", "skillLevel"], "")).trim();
+      const matched = raw.match(/(?:lv\.?|level|cap|cấp)?\s*(6|7|8|9|10|11)(?!\d)/i);
+      return matched ? matched[1] : "";
     };
 
-    const normalizedMode = skill => {
+    const canonicalKeyMode = skill => {
       const raw = normalize([
-        skillValue(skill, ["keyMode", "mode", "keys"], ""),
-        ...(Array.isArray(skill?.tags) ? skill.tags : [])
+        skillValue(skill, ["keyMode", "mode", "keys", "keyType"], ""),
+        ...(Array.isArray(skill?.tags) ? skill.tags : []),
+        skillIdentity(skill)
       ].join(" "));
       if (/(^| )8k( |$)|8 key|8 phim/.test(raw)) return "8K";
       if (/(^| )4k( |$)|4 key|4 phim/.test(raw)) return "4K";
       return "";
     };
 
-    const levels = [...new Set(all.map(normalizedLevel).filter(Boolean))]
-      .sort((a, b) => (Number(a) || 999) - (Number(b) || 999) || String(a).localeCompare(String(b), "vi"));
+    const canonicalStyle = skill => String(
+      skillValue(skill, ["style", "danceStyle", "genre"], "")
+    ).trim();
 
-    levelSelect.innerHTML = `<option value="">Tất cả level</option>` +
-      levels.map(level => `<option value="${esc(level)}">Cấp ${esc(level)}</option>`).join("");
+    const canonicalBpm = skill => {
+      const raw = String(skillValue(skill, ["bpm", "tempo"], "")).trim();
+      const matched = raw.match(/\d{2,3}/);
+      return matched ? matched[0] : "";
+    };
 
-    modeSelect.innerHTML = `
-      <option value="">Tất cả 4K / 8K</option>
-      <option value="4K">4K</option>
-      <option value="8K">8K</option>
-    `;
+    const styles = [...new Set(all.map(canonicalStyle).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, "vi", { numeric: true }));
+    const bpms = [...new Set(all.map(canonicalBpm).filter(Boolean))]
+      .sort((a, b) => Number(a) - Number(b));
 
-    if (requestedLevel && levels.includes(requestedLevel)) levelSelect.value = requestedLevel;
-    if (["4K", "8K"].includes(requestedMode)) modeSelect.value = requestedMode;
+    styleSelect.innerHTML = `<option value="">Tất cả style</option>` +
+      styles.map(item => `<option value="${esc(item)}">${esc(item)}</option>`).join("");
+    bpmSelect.innerHTML = `<option value="">Tất cả BPM</option>` +
+      bpms.map(item => `<option value="${esc(item)}">${esc(item)} BPM</option>`).join("");
+
+    if (requestedQuery) search.value = requestedQuery;
+    if (["6", "7", "8", "9", "10", "11"].includes(requestedLevel)) levelSelect.value = requestedLevel;
+    if (["4K", "8K"].includes(requestedKeyMode)) keyModeSelect.value = requestedKeyMode;
+    if (styles.includes(requestedStyle)) styleSelect.value = requestedStyle;
+    if (bpms.includes(requestedBpm)) bpmSelect.value = requestedBpm;
+
+    const syncFilterUrl = () => {
+      const url = new URL(location.href);
+      const values = {
+        q: search.value.trim(),
+        level: levelSelect.value,
+        keyMode: keyModeSelect.value,
+        style: styleSelect.value,
+        bpm: bpmSelect.value
+      };
+      Object.entries(values).forEach(([key, val]) => {
+        if (val) url.searchParams.set(key, val);
+        else url.searchParams.delete(key);
+      });
+      history.replaceState(null, "", url);
+    };
 
     const render = () => {
       const term = normalize(search.value);
       const selectedLevel = levelSelect.value;
-      const selectedMode = modeSelect.value;
+      const selectedKeyMode = keyModeSelect.value;
+      const selectedStyle = styleSelect.value;
+      const selectedBpm = bpmSelect.value;
 
       currentSkills = all.filter(skill => {
-        const level = normalizedLevel(skill);
-        const mode = normalizedMode(skill);
-        return (!selectedLevel || level === selectedLevel) &&
-          (!selectedMode || mode === selectedMode) &&
-          (!term || getSkillSearchText(skill).includes(term));
+        const levelOk = !selectedLevel || canonicalLevel(skill) === selectedLevel;
+        const keyModeOk = !selectedKeyMode || canonicalKeyMode(skill) === selectedKeyMode;
+        const styleOk = !selectedStyle || canonicalStyle(skill) === selectedStyle;
+        const bpmOk = !selectedBpm || canonicalBpm(skill) === selectedBpm;
+        const searchOk = !term || getSkillSearchText(skill).includes(term);
+        return levelOk && keyModeOk && styleOk && bpmOk && searchOk;
       });
 
-      const totalCounter = document.querySelector("#wikiTotalCount");
-      const resultCounter = document.querySelector("#wikiResultCount");
-      if (totalCounter) totalCounter.textContent = String(all.length);
-      if (resultCounter) resultCounter.textContent = `${currentSkills.length} Skill phù hợp`;
+      const selectedLabels = [
+        search.value.trim() ? `Từ khóa: ${search.value.trim()}` : "",
+        selectedLevel ? `Cấp ${selectedLevel}` : "",
+        selectedKeyMode,
+        selectedStyle,
+        selectedBpm ? `${selectedBpm} BPM` : ""
+      ].filter(Boolean);
+
+      if (resultCount) resultCount.textContent = `${currentSkills.length} Skill phù hợp`;
+      if (activeFilters) {
+        activeFilters.textContent = selectedLabels.length
+          ? selectedLabels.join(" • ")
+          : "Có thể kết hợp Level, 4K/8K, Style và BPM";
+      }
+      resetButton?.classList.toggle("is-visible", selectedLabels.length > 0);
 
       box.innerHTML = currentSkills.length ? currentSkills.map((skill, index) => {
         const id = skillIdentity(skill);
         const name = skillName(skill);
         const type = skillValue(skill, ["type", "category"], "Skill");
-        const style = skillValue(skill, ["style"], "");
-        const bpm = skillValue(skill, ["bpm", "tempo"], "");
-        const level = skillValue(skill, ["level"], "");
-
-        const image = skillImage(skill);
-        const media = image
-          ? `<img loading="lazy" src="${esc(image)}" alt="${esc(name || id)}"
-               onerror="this.remove();this.closest('.wiki-card-media')?.classList.add('has-error')">`
-          : `<div class="wiki-card-placeholder">
-               <small>MINA WIKI D8</small>
-               <strong>${esc(name)}</strong>
-               <span>${id ? `ID ${esc(id)}` : "AUDITION VTC"}</span>
-             </div>`;
+        const style = canonicalStyle(skill);
+        const bpm = canonicalBpm(skill);
+        const level = canonicalLevel(skill);
+        const keyMode = canonicalKeyMode(skill);
 
         return `
           <article class="wiki-card-v3" data-skill-index="${index}" tabindex="0"
             role="button" aria-label="Xem chi tiết Skill ${esc(name)}">
-            <div class="wiki-card-media">
-              ${media}
-              <span class="wiki-card-media__type">${esc(type)}</span>
-            </div>
+            <img loading="lazy" src="${esc(skillImage(skill))}" alt="${esc(name || id)}"
+              onerror="this.src='${placeholder}'">
             <div class="card-body">
-              <span class="eyebrow">WIKIPEDIA D8</span>
+              <span class="eyebrow">${esc(type)}</span>
               <h3>${esc(name)}</h3>
               <div class="skill-meta">
                 ${id ? `<span>ID ${esc(id)}</span>` : ""}
-                ${level ? `<span>${esc(level)}</span>` : ""}
+                ${level ? `<span>Cấp ${esc(level)}</span>` : ""}
+                ${keyMode ? `<span>${esc(keyMode)}</span>` : ""}
                 ${style ? `<span>${esc(style)}</span>` : ""}
                 ${bpm ? `<span>${esc(bpm)} BPM</span>` : ""}
               </div>
@@ -1647,8 +1684,9 @@ async function wiki() {
             </div>
           </article>
         `;
-      }).join("") : `<div class="empty">Không tìm thấy Skill.</div>`;
+      }).join("") : `<div class="empty">Không tìm thấy Skill phù hợp với bộ lọc hiện tại.</div>`;
 
+      syncFilterUrl();
       if (!modal.hidden) closeModal();
     };
 
@@ -1666,8 +1704,19 @@ async function wiki() {
     });
 
     search.addEventListener("input", render);
-    levelSelect.addEventListener("change", render);
-    modeSelect.addEventListener("change", render);
+    [levelSelect, keyModeSelect, styleSelect, bpmSelect].forEach(select => {
+      select.addEventListener("change", render);
+    });
+    resetButton?.addEventListener("click", () => {
+      search.value = "";
+      levelSelect.value = "";
+      keyModeSelect.value = "";
+      styleSelect.value = "";
+      bpmSelect.value = "";
+      render();
+      search.focus();
+    });
+
     render();
 
     if (requestedSkill) {

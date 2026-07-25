@@ -1,18 +1,21 @@
 <!doctype html>
 <html lang="vi">
 <head>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#080615">
-<meta name="description" content="Wikipedia D8 Mina Audition — tra cứu Skill, level, style và BPM Audition VTC.">
+<meta name="description" content="Mina Audition — AI Prompt, Mix & Match Outfit, Academy và Wikipedia Skill Audition VTC.">
 <link rel="icon" href="/assets/images/logo-mina.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/app-v3.css?v=7.4.0-wiki-filter">
+<link rel="stylesheet" href="/assets/css/app-v3.css?v=7.5.0-wiki-advanced-filter">
+
 <title>Wikipedia D8 | Mina Audition</title>
 </head>
 <body data-page="wiki">
+
 <header class="site-header">
   <div class="wrap nav">
     <a class="brand" href="/" aria-label="Mina Audition">
@@ -22,106 +25,91 @@
     <button class="nav-toggle" type="button" aria-label="Mở menu" aria-expanded="false">☰</button>
     <nav class="links" aria-label="Điều hướng chính">
       <a data-nav="home" href="/">Trang chủ</a>
-      <a data-nav="blog" href="/blog.html">Blog Mina</a>
-      <a data-nav="wiki" href="/wiki.html">Wiki D8</a>
+      <a data-nav="blog" href="/blog.html">Nội dung</a>
       <a href="/blog.html?type=prompt">AI Prompt</a>
       <a href="/blog.html?type=outfit">Mix & Match</a>
       <a href="/blog.html?type=academy">Academy</a>
-      <a class="nav-contact-link" href="#lien-he">Liên hệ</a>
+      <a data-nav="wiki" href="/wiki.html">Wiki D8</a>
     </nav>
-    <a class="header-cta" href="/go/taoanh3d?source=website-header&campaign=weekend-launch">Tạo ảnh 3D <span>↗</span></a>
+    <a class="header-cta" href="/go/taoanh3d?source=website-header&campaign=weekend-launch">
+      Tạo ảnh 3D <span>↗</span>
+    </a>
   </div>
 </header>
 
 <main>
-  <section class="wiki-enterprise-hero">
-    <div class="wrap wiki-enterprise-hero__grid">
-      <div class="wiki-enterprise-hero__copy">
-        <span class="eyebrow">WIKIPEDIA D8</span>
-        <h1>Tìm Skill nhanh.<br><em>Chơi đúng chất.</em></h1>
-        <p>Tra cứu tên Skill, ID, level, style và BPM trong vài giây. Bấm vào từng card để xem đầy đủ thông tin và video review.</p>
-        <div class="wiki-hero-chips" aria-label="Thông tin Wiki">
-          <span><b id="wikiTotalCount">—</b> Skill</span>
-          <span><b>4K / 8K</b> tra cứu</span>
-          <span><b>Review</b> trực quan</span>
-        </div>
-      </div>
-      <div class="wiki-enterprise-hero__visual" aria-hidden="true">
-        <div class="wiki-visual-ring wiki-visual-ring--one"></div>
-        <div class="wiki-visual-ring wiki-visual-ring--two"></div>
-        <div class="wiki-visual-card">
-          <small>MINA WIKI</small>
-          <strong>D8</strong>
-          <span>SKILL LIBRARY</span>
-        </div>
-      </div>
+  <section class="page-hero-v3 wiki-page-hero">
+    <div class="wrap">
+      <span class="eyebrow">WIKIPEDIA D8</span>
+      <h1>Tìm Skill nhanh.<br><em>Chơi đúng chất.</em></h1>
+      <p>Tra cứu tên Skill, level, style và BPM trong vài giây.</p>
     </div>
   </section>
-
-  <section class="wiki-enterprise-section">
+  <section class="section">
     <div class="wrap">
-      <div class="wiki-toolbar wiki-toolbar--enterprise">
-        <div class="search-field">
+      <div class="wiki-toolbar wiki-toolbar-advanced" aria-label="Bộ lọc Wikipedia D8">
+        <div class="search-field wiki-search-main">
           <span>⌕</span>
-          <input id="q" type="search" placeholder="Tìm tên Skill, ID, level, style, BPM..." autocomplete="off">
+          <input id="q" type="search" autocomplete="off" placeholder="Tìm tên Skill, ID, level, style, BPM...">
         </div>
-        <select id="level" aria-label="Lọc theo level"><option value="">Tất cả level</option></select>
-        <select id="mode" aria-label="Lọc theo loại phím"><option value="">Tất cả 4K / 8K</option></select>
+
+        <select id="level" aria-label="Lọc theo level">
+          <option value="">Tất cả level</option>
+          <option value="6">Cấp 6</option>
+          <option value="7">Cấp 7</option>
+          <option value="8">Cấp 8</option>
+          <option value="9">Cấp 9</option>
+          <option value="10">Cấp 10</option>
+          <option value="11">Cấp 11</option>
+        </select>
+
+        <select id="keyMode" aria-label="Lọc theo loại phím">
+          <option value="">Tất cả 4K / 8K</option>
+          <option value="4K">4K</option>
+          <option value="8K">8K</option>
+        </select>
+
+        <select id="style" aria-label="Lọc theo style">
+          <option value="">Tất cả style</option>
+        </select>
+
+        <select id="bpm" aria-label="Lọc theo BPM">
+          <option value="">Tất cả BPM</option>
+        </select>
+
+        <button id="resetWikiFilters" class="wiki-filter-reset" type="button">Đặt lại</button>
       </div>
 
-      <div class="wiki-result-bar">
-        <div><span class="wiki-result-dot"></span><strong id="wikiResultCount">Đang tải kho Skill…</strong></div>
-        <span>Bấm vào card để xem chi tiết</span>
+      <div class="wiki-filter-summary">
+        <strong id="wikiResultCount">Đang tải Skill…</strong>
+        <span id="wikiActiveFilters">Có thể kết hợp nhiều bộ lọc cùng lúc</span>
       </div>
 
-      <div id="skills" class="wiki-grid-v3 wiki-grid-enterprise"><div class="status">Đang tải kho Skill…</div></div>
+      <div id="skills" class="wiki-grid-v3"><div class="status">Đang tải kho Skill…</div></div>
     </div>
   </section>
 </main>
 
-<footer class="footer" id="lien-he">
+<footer class="footer">
   <div class="wrap footer-grid">
     <div>
       <a class="brand footer-brand" href="/">
         <img src="/assets/images/logo-mina.png" alt="Mina Audition">
         <span>Mina Audition</span>
       </a>
-      <p class="footer-intro">Nơi chia sẻ AI Prompt, Mix & Match Outfit, Skill D8 và nội dung hữu ích dành cho cộng đồng Audition VTC.</p>
+      <p>AI Prompt • Mix & Match • Audition VTC</p>
     </div>
-
-    <div>
-      <h3 class="footer-title">LIÊN KẾT NHANH</h3>
-      <nav class="footer-list" aria-label="Liên kết nhanh">
-        <a href="/"><span class="footer-icon">⌂</span><span>Trang chủ</span></a>
-        <a href="/blog.html"><span class="footer-icon">▤</span><span>Blog Mina</span></a>
-        <a href="/wiki.html"><span class="footer-icon">◆</span><span>Wiki D8</span></a>
-        <a href="/go/taoanh3d"><span class="footer-icon">✦</span><span>Tạo ảnh 3D</span></a>
-      </nav>
-    </div>
-
-    <div>
-      <h3 class="footer-title">KẾT NỐI</h3>
-      <nav class="footer-list" aria-label="Mạng xã hội Mina Audition">
-        <a href="https://www.youtube.com/@mina.audition" target="_blank" rel="noopener noreferrer"><span class="footer-icon">▶</span><span>YouTube</span></a>
-        <a href="https://www.facebook.com/mina.audition/" target="_blank" rel="noopener noreferrer"><span class="footer-icon">f</span><span>Facebook</span></a>
-        <a href="https://www.tiktok.com/@mina.audition" target="_blank" rel="noopener noreferrer"><span class="footer-icon">♪</span><span>TikTok</span></a>
-        <a href="https://www.instagram.com/mina.audition/" target="_blank" rel="noopener noreferrer"><span class="footer-icon">◎</span><span>Instagram</span></a>
-      </nav>
-    </div>
-
-    <div>
-      <h3 class="footer-title">LIÊN HỆ</h3>
-      <div class="footer-list">
-        <div class="footer-contact-item"><span class="footer-icon">✉</span><div><strong>Email</strong><br><a href="mailto:mina.auditionvtc@gmail.com">mina.auditionvtc@gmail.com</a></div></div>
-        <div class="footer-contact-item"><span class="footer-icon">⌁</span><div><strong>Website</strong><br><a href="https://www.minaaudition.vn/">www.minaaudition.vn</a></div></div>
-        <div class="footer-contact-item"><span class="footer-icon">⌖</span><div><strong>Việt Nam</strong></div></div>
-        <div class="footer-contact-item"><span class="footer-icon">♥</span><div><strong>Mina Audition Studio</strong></div></div>
-      </div>
+    <div class="footer-links">
+      <a href="/blog.html?type=prompt">AI Prompt</a>
+      <a href="/blog.html?type=outfit">Outfit</a>
+      <a href="/wiki.html">Wiki D8</a>
+      <a href="https://www.facebook.com/mina.audition/" target="_blank" rel="noopener">Facebook</a>
+      <a href="https://www.tiktok.com/@mina.audition" target="_blank" rel="noopener">TikTok</a>
     </div>
   </div>
-  <div class="wrap copyright">© 2026 Mina Audition. Nội dung dành cho cộng đồng Audition VTC.</div>
+  <div class="wrap copyright">© 2026 Mina Audition. Nội dung dành cho cộng đồng Audition.</div>
 </footer>
 
-<script type="module" src="/assets/js/site-v3.js?v=7.4.0-wiki-filter"></script>
+<script type="module" src="/assets/js/site-v3.js?v=7.5.0-wiki-advanced-filter"></script>
 </body>
 </html>
