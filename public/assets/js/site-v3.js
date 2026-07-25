@@ -505,11 +505,14 @@ function homeSkillCard(skill) {
   const rarity = value(skill, ["rank", "grade", "rarity"], "");
   const ratingRaw = Number(value(skill, ["rating", "score", "reviewScore"], 0));
   const rating = Number.isFinite(ratingRaw) && ratingRaw > 0 ? Math.min(10, ratingRaw) : 0;
-  const isHot = skill?.hot === true || normalize([
+
+  const statusText = normalize([
     value(skill, ["status", "badge"], ""),
     ...(Array.isArray(skill?.tags) ? skill.tags : [])
-  ].join(" ")).includes("hot");
-  const isNew = skill?.isNew === true || normalize(value(skill, ["status", "badge"], "")).includes("new");
+  ].join(" "));
+
+  const isHot = skill?.hot === true || statusText.includes("hot");
+  const isNew = skill?.isNew === true || statusText.includes("new");
 
   const displayName = (() => {
     if (rawName && normalize(rawName) !== normalize(id)) return rawName;
@@ -520,7 +523,7 @@ function homeSkillCard(skill) {
   const description = value(
     skill,
     ["description", "summary", "review"],
-    "Khám phá thông tin, phong cách chuyển động và video review của Skill Audition này."
+    "Khám phá thông tin và video review của Skill Audition này."
   );
 
   const image = value(
@@ -562,6 +565,7 @@ function homeSkillCard(skill) {
           <span class="home-skill-card__visual-note">MINA WIKI</span>
           <strong>${esc(displayName)}</strong>
           <small>${id ? `ID ${esc(id)}` : "AUDITION VTC"}</small>
+          <i>SKILL REVIEW</i>
         </div>
 
         <span class="home-skill-card__type">${esc(style)}</span>
@@ -570,27 +574,24 @@ function homeSkillCard(skill) {
 
       <div class="home-skill-card__body">
         <div class="home-skill-card__heading">
-          <div>
+          <div class="home-skill-card__title-block">
             <span class="home-skill-card__kicker">WIKIPEDIA D8</span>
             <h3><a href="${detailUrl}">${esc(displayName)}</a></h3>
             ${id ? `<span class="home-skill-card__code">ID ${esc(id)}</span>` : ""}
           </div>
-          <span class="home-skill-card__arrow" aria-hidden="true">↗</span>
+
+          <div class="home-skill-card__score">
+            <span>★</span>
+            <b>${rating ? rating.toFixed(rating % 1 ? 1 : 0) : "—"}</b>
+          </div>
         </div>
 
         <p class="home-skill-description">${esc(description)}</p>
 
-        <div class="home-skill-card__meta-row">
-          <div class="home-skill-tags">
-            ${compactTags.length
-              ? compactTags.map(tag => `<span>${esc(tag)}</span>`).join("")
-              : `<span>Audition</span><span>Skill Dance</span>`}
-          </div>
-
-          <div class="home-skill-card__rating">
-            <span>⭐</span>
-            <b>${rating ? rating.toFixed(rating % 1 ? 1 : 0) : "—"}</b>
-          </div>
+        <div class="home-skill-tags">
+          ${compactTags.length
+            ? compactTags.map(tag => `<span>${esc(tag)}</span>`).join("")
+            : `<span>Audition</span><span>Skill Dance</span>`}
         </div>
 
         <div class="home-skill-actions">
