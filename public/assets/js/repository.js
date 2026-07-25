@@ -17,7 +17,7 @@ import {
   slugify
 } from "./utils.js";
 
-export async function listPosts(max = 200) {
+export async function listPosts(max = 2000) {
   const snapshot = await getDocs(
     query(
       collection(db, "posts"),
