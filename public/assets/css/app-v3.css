@@ -1323,3 +1323,145 @@ body.wiki-modal-open{overflow:hidden}
   .wiki-skill-navigation span{grid-column:1/-1;grid-row:1;text-align:center}
 }
 
+/* =========================================================
+   MINA HOME — VIDEO MỚI NHẤT
+   Chèn sau khu vực Wikipedia Skill Dance trên trang chủ.
+========================================================= */
+.mina-latest-video-section{
+  position:relative;
+  overflow:hidden;
+  padding:76px 0 88px;
+  border-top:1px solid rgba(98,232,255,.1);
+  background:
+    radial-gradient(circle at 50% 34%,rgba(139,92,255,.15),transparent 34%),
+    radial-gradient(circle at 18% 75%,rgba(255,79,200,.08),transparent 28%),
+    linear-gradient(180deg,#050411 0%,#080719 58%,#05040d 100%);
+}
+.mina-latest-video-section::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:linear-gradient(to bottom,transparent,#000 22%,#000 78%,transparent);
+}
+.mina-latest-video-inner{position:relative;z-index:1}
+.mina-latest-video-heading{
+  max-width:790px;
+  margin:0 auto 30px;
+  text-align:center;
+}
+.mina-latest-video-diamonds{
+  display:flex;
+  justify-content:center;
+  gap:27px;
+  margin-bottom:14px;
+}
+.mina-latest-video-diamonds span{
+  width:9px;
+  height:9px;
+  display:block;
+  transform:rotate(45deg);
+  border-radius:2px;
+  background:#56f1ff;
+  box-shadow:0 0 8px rgba(86,241,255,.95),0 0 20px rgba(86,241,255,.48);
+}
+.mina-latest-video-heading h2{
+  margin:0;
+  color:#fff;
+  font-size:clamp(30px,3.6vw,46px);
+  line-height:1.1;
+  font-weight:900;
+  letter-spacing:-.045em;
+  text-shadow:0 4px 24px rgba(139,92,255,.24);
+}
+.mina-latest-video-heading p{
+  margin:12px auto 0;
+  color:rgba(255,255,255,.72);
+  font-size:14px;
+  line-height:1.7;
+  font-weight:600;
+}
+.mina-latest-video-card{
+  width:min(860px,100%);
+  margin:0 auto;
+  padding:1px;
+  overflow:hidden;
+  border-radius:25px;
+  background:linear-gradient(120deg,#52e9ff 0%,#9b66ff 48%,#ff54cf 100%);
+  box-shadow:
+    0 26px 70px rgba(0,0,0,.5),
+    0 0 42px rgba(126,90,255,.2),
+    0 0 24px rgba(255,79,200,.13);
+}
+.mina-latest-video-frame{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/9;
+  overflow:hidden;
+  border-radius:24px 24px 0 0;
+  background:#05040c;
+}
+.mina-latest-video-frame iframe{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+}
+.mina-latest-video-actions{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  min-height:66px;
+  padding:13px 18px;
+  border-radius:0 0 24px 24px;
+  background:linear-gradient(180deg,rgba(21,18,39,.99),rgba(12,10,25,.99));
+}
+.mina-latest-video-actions span{
+  color:rgba(255,255,255,.56);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.15em;
+}
+.mina-latest-video-actions a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:40px;
+  padding:10px 16px;
+  border:1px solid rgba(98,232,255,.32);
+  border-radius:999px;
+  background:linear-gradient(100deg,rgba(255,79,200,.18),rgba(98,232,255,.15));
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+  white-space:nowrap;
+  transition:transform .2s ease,filter .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+.mina-latest-video-actions a:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.12);
+  border-color:rgba(98,232,255,.7);
+  box-shadow:0 8px 22px rgba(98,232,255,.12);
+}
+@media(max-width:700px){
+  .mina-latest-video-section{padding:58px 0 66px}
+  .mina-latest-video-heading{margin-bottom:24px}
+  .mina-latest-video-heading p br{display:none}
+  .mina-latest-video-card{border-radius:20px}
+  .mina-latest-video-frame{border-radius:19px 19px 0 0}
+  .mina-latest-video-actions{
+    align-items:stretch;
+    flex-direction:column;
+    padding:14px;
+    border-radius:0 0 19px 19px;
+    text-align:center;
+  }
+  .mina-latest-video-actions a{width:100%}
+}
+
