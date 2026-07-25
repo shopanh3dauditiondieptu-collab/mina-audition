@@ -2214,3 +2214,50 @@ body[data-page="wiki"] .links .nav-contact-link{color:#8ff2ff}
   body[data-page="wiki"] .footer .footer-grid{grid-template-columns:1fr;gap:28px;padding-top:38px;padding-bottom:30px}
 }
 @media(prefers-reduced-motion:reduce){.wiki-visual-ring{animation:none}}
+
+
+/* =========================================================
+   MINA WIKI v7.4 — FILTER LEVEL + 4K/8K
+   Chỉ áp dụng cho toolbar Wiki, không ảnh hưởng Blog/Post.
+========================================================= */
+body[data-page="wiki"] .wiki-toolbar--enterprise{
+  grid-template-columns:minmax(320px,1fr) 190px 190px;
+  gap:10px;
+}
+body[data-page="wiki"] .wiki-toolbar--enterprise select{
+  min-width:0;
+  height:52px;
+  padding:0 38px 0 15px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  background:#090817;
+  color:#fff;
+  font-weight:800;
+  outline:none;
+  cursor:pointer;
+  transition:border-color .2s ease,box-shadow .2s ease,background .2s ease;
+}
+body[data-page="wiki"] .wiki-toolbar--enterprise select:hover{
+  border-color:rgba(98,232,255,.38);
+  background:#0d0b1c;
+}
+body[data-page="wiki"] .wiki-toolbar--enterprise select:focus{
+  border-color:var(--cyan);
+  box-shadow:0 0 0 4px rgba(98,232,255,.09),0 0 20px rgba(98,232,255,.09);
+}
+@media(max-width:920px){
+  body[data-page="wiki"] .wiki-toolbar--enterprise{
+    grid-template-columns:1fr 1fr;
+  }
+  body[data-page="wiki"] .wiki-toolbar--enterprise .search-field{
+    grid-column:1/-1;
+  }
+}
+@media(max-width:560px){
+  body[data-page="wiki"] .wiki-toolbar--enterprise{
+    grid-template-columns:1fr;
+  }
+  body[data-page="wiki"] .wiki-toolbar--enterprise .search-field{
+    grid-column:auto;
+  }
+}

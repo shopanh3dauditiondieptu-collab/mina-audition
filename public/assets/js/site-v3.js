@@ -1281,9 +1281,10 @@ async function postPage() {
 async function wiki() {
   const box = document.querySelector("#skills");
   const search = document.querySelector("#q");
-  const typeSelect = document.querySelector("#type");
+  const levelSelect = document.querySelector("#level");
+  const modeSelect = document.querySelector("#mode");
 
-  if (!box || !search || !typeSelect) return;
+  if (!box || !search || !levelSelect || !modeSelect) return;
 
   renderMinaSkeleton(box, 8, "wiki");
 
@@ -1552,29 +1553,53 @@ async function wiki() {
     const all = await listSkills();
     const urlParams = new URLSearchParams(location.search);
     const requestedQuery = urlParams.get("q") || "";
-    const requestedType = urlParams.get("type") || "";
+    const requestedLevel = urlParams.get("level") || "";
+    const requestedMode = (urlParams.get("mode") || "").toUpperCase();
     const requestedSkill = urlParams.get("skill") || "";
 
     if (requestedQuery) search.value = requestedQuery;
 
-    const types = [...new Set(
-      all.map(item => skillValue(item, ["type", "category"], "")).filter(Boolean)
-    )].sort((a, b) => String(a).localeCompare(String(b), "vi"));
+    const normalizedLevel = skill => {
+      const raw = String(skillValue(skill, ["level", "lv"], "")).trim();
+      const match = raw.match(/\d+/);
+      return match ? match[0] : raw;
+    };
 
-    typeSelect.innerHTML = `<option value="">Tất cả loại</option>` +
-      types.map(type => `<option value="${esc(type)}">${esc(type)}</option>`).join("");
+    const normalizedMode = skill => {
+      const raw = normalize([
+        skillValue(skill, ["keyMode", "mode", "keys"], ""),
+        ...(Array.isArray(skill?.tags) ? skill.tags : [])
+      ].join(" "));
+      if (/(^| )8k( |$)|8 key|8 phim/.test(raw)) return "8K";
+      if (/(^| )4k( |$)|4 key|4 phim/.test(raw)) return "4K";
+      return "";
+    };
 
-    if (requestedType && types.includes(requestedType)) {
-      typeSelect.value = requestedType;
-    }
+    const levels = [...new Set(all.map(normalizedLevel).filter(Boolean))]
+      .sort((a, b) => (Number(a) || 999) - (Number(b) || 999) || String(a).localeCompare(String(b), "vi"));
+
+    levelSelect.innerHTML = `<option value="">Tất cả level</option>` +
+      levels.map(level => `<option value="${esc(level)}">Cấp ${esc(level)}</option>`).join("");
+
+    modeSelect.innerHTML = `
+      <option value="">Tất cả 4K / 8K</option>
+      <option value="4K">4K</option>
+      <option value="8K">8K</option>
+    `;
+
+    if (requestedLevel && levels.includes(requestedLevel)) levelSelect.value = requestedLevel;
+    if (["4K", "8K"].includes(requestedMode)) modeSelect.value = requestedMode;
 
     const render = () => {
       const term = normalize(search.value);
-      const selectedType = typeSelect.value;
+      const selectedLevel = levelSelect.value;
+      const selectedMode = modeSelect.value;
 
       currentSkills = all.filter(skill => {
-        const type = skillValue(skill, ["type", "category"], "");
-        return (!selectedType || type === selectedType) &&
+        const level = normalizedLevel(skill);
+        const mode = normalizedMode(skill);
+        return (!selectedLevel || level === selectedLevel) &&
+          (!selectedMode || mode === selectedMode) &&
           (!term || getSkillSearchText(skill).includes(term));
       });
 
@@ -1641,7 +1666,8 @@ async function wiki() {
     });
 
     search.addEventListener("input", render);
-    typeSelect.addEventListener("change", render);
+    levelSelect.addEventListener("change", render);
+    modeSelect.addEventListener("change", render);
     render();
 
     if (requestedSkill) {
