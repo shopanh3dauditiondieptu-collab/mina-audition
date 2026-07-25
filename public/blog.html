@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/app-v3.css?v=7.2.0-blog-footer">
-<link rel="stylesheet" href="/assets/css/blog-category-sidebar.css?v=1.0.0">
+<link rel="stylesheet" href="/assets/css/blog-category-sidebar.css?v=2.0.0-enterprise">
 
 <title>Kho nội dung | Mina Audition</title>
 </head>
@@ -66,8 +66,35 @@
             <button type="button" data-type="video">Video</button>
           </div>
         </div>
-        <div id="resultCount" class="result-count">Đang tải…</div>
+        <div class="blog-results-head">
+          <div id="resultCount" class="result-count">Đang tải…</div>
+
+          <label class="blog-page-size">
+            <span>Hiển thị</span>
+            <select id="blogPageSize" aria-label="Số bài mỗi trang">
+              <option value="12">12 bài</option>
+              <option value="24" selected>24 bài</option>
+              <option value="36">36 bài</option>
+              <option value="48">48 bài</option>
+            </select>
+          </label>
+        </div>
+
         <div id="posts" class="content-grid"><div class="status">Đang tải bài viết…</div></div>
+
+        <nav id="blogPagination" class="blog-pagination" aria-label="Phân trang Mina Blog" hidden>
+          <div id="blogPaginationButtons" class="blog-pagination__buttons"></div>
+
+          <div class="blog-pagination__footer">
+            <span id="blogPageSummary">Trang 1 / 1</span>
+
+            <form id="blogJumpForm" class="blog-jump-form">
+              <label for="blogJumpPage">Đi tới trang</label>
+              <input id="blogJumpPage" type="number" min="1" value="1" inputmode="numeric">
+              <button type="submit">Đi</button>
+            </form>
+          </div>
+        </nav>
       </div>
     </div>
   </section>
@@ -152,6 +179,6 @@
   </div>
 </footer>
 
-<script type="module" src="/assets/js/site-v3.js?v=7.2.0-blog-footer"></script>
+<script type="module" src="/assets/js/site-v3.js?v=8.0.0-blog-enterprise"></script>
 </body>
 </html>
