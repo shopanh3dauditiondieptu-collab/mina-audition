@@ -1855,3 +1855,219 @@ body.post-lightbox-open{overflow:hidden}
   .skeleton-line:after,.skeleton-cover:after{animation:none}
   .post-cover-frame,.post-related-card,.post-main-actions a,.post-main-actions button,.post-discover-box a,.post-share-box button,.post-v6-content img{transition:none!important}
 }
+
+/* =========================================================
+   MINA UI FIX V7.1 — BLOG COMPACT + CARD BUTTONS + POST FOOTER
+   Chỉ tinh chỉnh giao diện, không thay đổi CMS/Firestore/JS.
+========================================================= */
+
+/* 1) Thu gọn phần giới thiệu đầu trang Blog */
+body[data-page="blog"] .page-hero-v3,
+.blog-page-hero{
+  padding:64px 0 52px;
+  min-height:0;
+}
+body[data-page="blog"] .page-hero-v3 h1,
+.blog-page-hero h1{
+  max-width:720px;
+  margin:12px 0 14px;
+  font-size:clamp(42px,5.2vw,62px);
+  line-height:1.02;
+  letter-spacing:-.055em;
+}
+body[data-page="blog"] .page-hero-v3 p,
+.blog-page-hero p{
+  max-width:760px;
+  margin:0;
+  font-size:16px;
+  line-height:1.7;
+}
+body[data-page="blog"] .page-hero-v3 .eyebrow,
+.blog-page-hero .eyebrow{
+  font-size:11px;
+  letter-spacing:.14em;
+}
+
+/* Khung tìm kiếm gọn và cân đối hơn */
+body[data-page="blog"] .library-toolbar{
+  top:88px;
+  gap:10px;
+  margin-bottom:12px;
+  padding:10px;
+  border-radius:17px;
+  box-shadow:0 16px 42px rgba(0,0,0,.22);
+}
+body[data-page="blog"] .search-field input,
+body[data-page="blog"] .library-toolbar select{
+  height:46px;
+  border-radius:12px;
+}
+body[data-page="blog"] .type-chips{
+  gap:7px;
+}
+body[data-page="blog"] .type-chips button{
+  min-height:34px;
+  padding:7px 12px;
+  font-size:10px;
+}
+body[data-page="blog"] .result-count{
+  margin:10px 0 17px;
+}
+
+/* 2) Màu nút card rõ chức năng, không còn đồng màu tối */
+.card-actions{
+  gap:8px;
+}
+.card-actions a,
+.card-actions button{
+  border-color:rgba(255,255,255,.13);
+  transition:transform .2s ease,filter .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+.card-actions a:hover,
+.card-actions button:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.08);
+}
+.card-actions .primary-action{
+  border:0;
+  color:#fff;
+  background:linear-gradient(105deg,#ff43c6 0%,#8758ff 100%);
+  box-shadow:0 9px 22px rgba(209,65,224,.22);
+}
+.card-actions button[data-copy-post]{
+  color:#dffbff;
+  border-color:rgba(98,232,255,.34);
+  background:linear-gradient(135deg,rgba(25,121,158,.34),rgba(31,65,118,.38));
+}
+.card-actions .create-image-action{
+  color:#16091c;
+  border:0;
+  background:linear-gradient(105deg,#65eaff 0%,#a78bfa 52%,#ff79d5 100%);
+  box-shadow:0 9px 22px rgba(98,232,255,.16);
+}
+
+/* Card chỉ có 2 nút vẫn chia đều, card 3 nút không bị lệch */
+.card-actions > *{
+  min-width:0;
+}
+
+/* 3) Footer trang Post đồng bộ kiểu liên hệ trang chủ */
+body[data-page="post"] .footer{
+  padding:0;
+  border-top:1px solid rgba(255,255,255,.08);
+  background:
+    radial-gradient(circle at 12% 20%,rgba(255,79,200,.08),transparent 27%),
+    linear-gradient(180deg,#070611 0%,#05040c 100%);
+}
+body[data-page="post"] .post-footer-grid{
+  display:grid;
+  grid-template-columns:minmax(250px,1.35fr) repeat(3,minmax(150px,.75fr));
+  gap:38px;
+  padding:54px 0 38px;
+}
+body[data-page="post"] .post-footer-brand h2{
+  margin:0;
+  font-size:29px;
+  line-height:1.1;
+  letter-spacing:-.04em;
+  background:linear-gradient(90deg,#fff,#ffafe8 55%,#68e8ff);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+body[data-page="post"] .post-footer-slogan{
+  margin:12px 0 8px;
+  color:#fff;
+  font-size:13px;
+  font-weight:800;
+}
+body[data-page="post"] .post-footer-desc{
+  max-width:410px;
+  margin:0;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.75;
+}
+body[data-page="post"] .post-footer-column{
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:10px;
+}
+body[data-page="post"] .post-footer-column h3{
+  margin:0 0 5px;
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.09em;
+}
+body[data-page="post"] .post-footer-column a,
+body[data-page="post"] .post-footer-contact-row{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  max-width:100%;
+  color:#c8c3d4;
+  font-size:12px;
+  line-height:1.55;
+  transition:color .2s ease,transform .2s ease;
+}
+body[data-page="post"] .post-footer-column a:hover{
+  color:#fff;
+  transform:translateX(3px);
+}
+body[data-page="post"] .post-footer-contact-row a{
+  overflow-wrap:anywhere;
+}
+body[data-page="post"] .copyright{
+  margin-top:0;
+  padding:20px 0 24px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+
+@media(max-width:900px){
+  body[data-page="post"] .post-footer-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:30px;
+  }
+  body[data-page="post"] .post-footer-brand{
+    grid-column:1/-1;
+  }
+}
+
+@media(max-width:720px){
+  body[data-page="blog"] .page-hero-v3,
+  .blog-page-hero{
+    padding:48px 0 38px;
+  }
+  body[data-page="blog"] .page-hero-v3 h1,
+  .blog-page-hero h1{
+    font-size:clamp(36px,11vw,49px);
+  }
+  body[data-page="blog"] .page-hero-v3 p,
+  .blog-page-hero p{
+    font-size:14px;
+  }
+  body[data-page="blog"] .library-toolbar{
+    top:76px;
+    padding:8px;
+  }
+  .card-actions{
+    gap:6px;
+  }
+  .card-actions a,
+  .card-actions button{
+    min-height:42px;
+    padding:0 7px;
+    font-size:11px;
+  }
+  body[data-page="post"] .post-footer-grid{
+    grid-template-columns:1fr;
+    gap:27px;
+    padding:40px 0 30px;
+  }
+  body[data-page="post"] .post-footer-brand{
+    grid-column:auto;
+  }
+}
