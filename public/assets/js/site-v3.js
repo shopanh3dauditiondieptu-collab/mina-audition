@@ -702,15 +702,54 @@ async function blog() {
   const category = document.querySelector("#cat");
   const sidebar = document.querySelector("#categorySidebar");
   const count = document.querySelector("#resultCount");
+  const pagination = document.querySelector("#blogPagination");
+  const paginationButtons = document.querySelector("#blogPaginationButtons");
+  const pageSummary = document.querySelector("#blogPageSummary");
+  const pageSizeSelect = document.querySelector("#blogPageSize");
+  const jumpForm = document.querySelector("#blogJumpForm");
+  const jumpInput = document.querySelector("#blogJumpPage");
   const chips = [...document.querySelectorAll("[data-type]")];
 
-  if (box) renderMinaSkeleton(box, 6, "post");
+  if (!box || !search || !category || !count) return;
+
+  renderMinaSkeleton(box, 6, "post");
+
+  const PAGE_SIZE_OPTIONS = [12, 24, 36, 48];
+
+  const positiveInteger = (value, fallback = 1) => {
+    const parsed = Number.parseInt(value, 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+  };
+
+  const getVisiblePageNumbers = (current, total) => {
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, index) => index + 1);
+    }
+
+    const values = new Set([1, total, current - 1, current, current + 1]);
+    if (current <= 4) [2, 3, 4, 5].forEach(value => values.add(value));
+    if (current >= total - 3) {
+      [total - 4, total - 3, total - 2, total - 1].forEach(value => values.add(value));
+    }
+
+    const numbers = [...values]
+      .filter(value => value >= 1 && value <= total)
+      .sort((a, b) => a - b);
+
+    const output = [];
+    numbers.forEach((value, index) => {
+      if (index && value - numbers[index - 1] > 1) output.push("…");
+      output.push(value);
+    });
+    return output;
+  };
 
   try {
     const [allPosts, categoryTree] = await Promise.all([
       listPosts(),
       loadSharedCategoryTree().catch(() => [])
     ]);
+
     const all = allPosts.filter(post => post.status !== "draft");
     renderCategorySelect(category, categoryTree, all);
 
@@ -718,9 +757,85 @@ async function blog() {
     const requestedType = urlParams.get("type") || "";
     const requestedCategory = urlParams.get("category") || "";
     const requestedCategoryName = urlParams.get("categoryName") || "";
+    const requestedSearch = urlParams.get("q") || "";
+    const requestedPageSize = positiveInteger(urlParams.get("perPage"), 24);
+
     let activeType = requestedType;
     let activeCategory = requestedCategory;
     let activeCategoryName = requestedCategoryName;
+    let currentPage = positiveInteger(urlParams.get("page"), 1);
+    let pageSize = PAGE_SIZE_OPTIONS.includes(requestedPageSize) ? requestedPageSize : 24;
+    let lastFiltered = [];
+
+    search.value = requestedSearch;
+    if (pageSizeSelect) pageSizeSelect.value = String(pageSize);
+
+    const updateUrl = ({ replace = true } = {}) => {
+      const params = new URLSearchParams(location.search);
+
+      const setOrDelete = (key, value) => {
+        if (value) params.set(key, String(value));
+        else params.delete(key);
+      };
+
+      setOrDelete("type", activeType);
+      setOrDelete("category", activeCategory);
+      setOrDelete("categoryName", activeCategoryName);
+      setOrDelete("q", search.value.trim());
+      setOrDelete("page", currentPage > 1 ? currentPage : "");
+      setOrDelete("perPage", pageSize !== 24 ? pageSize : "");
+
+      const nextUrl = `${location.pathname}${params.toString() ? `?${params}` : ""}${location.hash}`;
+      history[replace ? "replaceState" : "pushState"](null, "", nextUrl);
+    };
+
+    const scrollToResults = () => {
+      const target = document.querySelector(".library-toolbar") || box;
+      const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - 105);
+      window.scrollTo({ top, behavior: "smooth" });
+    };
+
+    const renderPagination = (totalItems, totalPages) => {
+      if (!pagination || !paginationButtons || !pageSummary || !jumpInput) return;
+
+      if (!totalItems) {
+        pagination.hidden = true;
+        return;
+      }
+
+      pagination.hidden = false;
+      const startItem = (currentPage - 1) * pageSize + 1;
+      const endItem = Math.min(totalItems, currentPage * pageSize);
+
+      pageSummary.textContent =
+        `Trang ${currentPage} / ${totalPages} • Hiển thị ${startItem}–${endItem} trên ${totalItems} bài`;
+
+      jumpInput.max = String(totalPages);
+      jumpInput.value = String(currentPage);
+
+      const pageItems = getVisiblePageNumbers(currentPage, totalPages);
+
+      paginationButtons.innerHTML = `
+        <button type="button"
+          class="blog-page-button is-nav"
+          data-blog-page="${currentPage - 1}"
+          ${currentPage <= 1 ? "disabled" : ""}>← Trước</button>
+
+        ${pageItems.map(item =>
+          item === "…"
+            ? `<span class="blog-page-ellipsis" aria-hidden="true">…</span>`
+            : `<button type="button"
+                class="blog-page-button ${item === currentPage ? "is-active" : ""}"
+                data-blog-page="${item}"
+                ${item === currentPage ? 'aria-current="page"' : ""}>${item}</button>`
+        ).join("")}
+
+        <button type="button"
+          class="blog-page-button is-nav"
+          data-blog-page="${currentPage + 1}"
+          ${currentPage >= totalPages ? "disabled" : ""}>Sau →</button>
+      `;
+    };
 
     if (activeCategory || activeCategoryName) {
       const candidates = [activeCategory, activeCategoryName].filter(Boolean).map(normalize);
@@ -728,6 +843,7 @@ async function blog() {
         candidates.includes(normalize(option.value)) ||
         candidates.includes(normalize(option.dataset.name || option.textContent))
       );
+
       if (matched) {
         category.value = matched.value;
         activeCategory = matched.value;
@@ -735,64 +851,142 @@ async function blog() {
       }
     }
 
-    chips.forEach(chip => chip.classList.toggle("active", chip.dataset.type === activeType));
+    chips.forEach(chip => {
+      chip.classList.toggle("active", chip.dataset.type === activeType);
+    });
 
-    const render = () => {
+    const render = ({ resetPage = false, updateHistory = true } = {}) => {
+      if (resetPage) currentPage = 1;
+
       const term = normalize(search.value);
-      const selectedTokens = [activeCategory, activeCategoryName].filter(Boolean).map(normalize);
-      const filtered = all.filter(post => {
+      const selectedTokens = [activeCategory, activeCategoryName]
+        .filter(Boolean)
+        .map(normalize);
+
+      lastFiltered = all.filter(post => {
         const typeOk = !activeType || classify(post) === activeType;
         const tokens = categoryTokens(post);
-        const categoryOk = !selectedTokens.length || selectedTokens.some(token => token && tokens.includes(token));
-        const searchOk = !term || normalize([
-          post.title,
-          getExcerpt(post),
-          getCategory(post),
-          getInternalId(post)
-        ].join(" ")).includes(term);
+        const categoryOk =
+          !selectedTokens.length ||
+          selectedTokens.some(token => token && tokens.includes(token));
+        const searchOk =
+          !term ||
+          normalize([
+            post.title,
+            getExcerpt(post),
+            getCategory(post),
+            getInternalId(post)
+          ].join(" ")).includes(term);
+
         return typeOk && categoryOk && searchOk;
       });
 
-      count.textContent = `${filtered.length} nội dung phù hợp`;
-      renderCards(box, filtered, "Không có nội dung phù hợp.");
+      const totalPages = Math.max(1, Math.ceil(lastFiltered.length / pageSize));
+      currentPage = Math.min(Math.max(1, currentPage), totalPages);
+
+      const startIndex = (currentPage - 1) * pageSize;
+      const visiblePosts = lastFiltered.slice(startIndex, startIndex + pageSize);
+
+      count.textContent = lastFiltered.length
+        ? `${lastFiltered.length} nội dung phù hợp • Trang ${currentPage}/${totalPages}`
+        : "0 nội dung phù hợp";
+
+      renderCards(box, visiblePosts, "Không có nội dung phù hợp.");
+      renderPagination(lastFiltered.length, totalPages);
+
+      if (updateHistory) updateUrl();
+    };
+
+    const goToPage = (requestedPage, { scroll = true, push = true } = {}) => {
+      const totalPages = Math.max(1, Math.ceil(lastFiltered.length / pageSize));
+      currentPage = Math.min(Math.max(1, positiveInteger(requestedPage, 1)), totalPages);
+      render({ updateHistory: false });
+      updateUrl({ replace: !push });
+      if (scroll) scrollToResults();
     };
 
     renderCategorySidebar(sidebar, categoryTree, all, (categoryValue, categoryName) => {
       activeCategory = categoryValue;
       activeCategoryName = categoryName;
       category.value = categoryValue;
-      render();
+      render({ resetPage: true });
     });
 
     if (activeCategory || activeCategoryName) {
       const activeButton = [...sidebar.querySelectorAll("[data-category-value]")].find(button => {
-        const candidates = [button.dataset.categoryValue, button.dataset.categoryName].filter(Boolean).map(normalize);
-        return candidates.includes(normalize(activeCategory)) || candidates.includes(normalize(activeCategoryName));
+        const candidates = [
+          button.dataset.categoryValue,
+          button.dataset.categoryName
+        ].filter(Boolean).map(normalize);
+
+        return candidates.includes(normalize(activeCategory)) ||
+          candidates.includes(normalize(activeCategoryName));
       });
+
       if (activeButton) {
-        sidebar.querySelectorAll("[data-category-value]").forEach(item => item.classList.toggle("is-active", item === activeButton));
+        sidebar.querySelectorAll("[data-category-value]").forEach(item => {
+          item.classList.toggle("is-active", item === activeButton);
+        });
+
         let parent = activeButton.closest(".blog-category-children");
         while (parent) {
           parent.hidden = false;
           const toggle = sidebar.querySelector(`[aria-controls="${parent.id}"]`);
-          if (toggle) { toggle.textContent = "−"; toggle.setAttribute("aria-expanded", "true"); }
+          if (toggle) {
+            toggle.textContent = "−";
+            toggle.setAttribute("aria-expanded", "true");
+          }
           parent = parent.parentElement?.closest(".blog-category-children");
         }
       }
     }
 
-    search.addEventListener("input", render);
-    chips.forEach(chip => chip.addEventListener("click", () => {
-      activeType = chip.dataset.type;
-      chips.forEach(item => item.classList.toggle("active", item === chip));
-      render();
-    }));
+    let searchTimer = null;
+    search.addEventListener("input", () => {
+      window.clearTimeout(searchTimer);
+      searchTimer = window.setTimeout(() => {
+        render({ resetPage: true });
+      }, 180);
+    });
+
+    chips.forEach(chip => {
+      chip.addEventListener("click", () => {
+        activeType = chip.dataset.type;
+        chips.forEach(item => item.classList.toggle("active", item === chip));
+        render({ resetPage: true });
+      });
+    });
+
+    pageSizeSelect?.addEventListener("change", () => {
+      const selected = positiveInteger(pageSizeSelect.value, 24);
+      pageSize = PAGE_SIZE_OPTIONS.includes(selected) ? selected : 24;
+      render({ resetPage: true });
+      scrollToResults();
+    });
+
+    paginationButtons?.addEventListener("click", event => {
+      const button = event.target.closest("[data-blog-page]");
+      if (!button || button.disabled) return;
+      goToPage(button.dataset.blogPage);
+    });
+
+    jumpForm?.addEventListener("submit", event => {
+      event.preventDefault();
+      goToPage(jumpInput?.value);
+    });
+
+    window.addEventListener("popstate", () => {
+      const params = new URLSearchParams(location.search);
+      currentPage = positiveInteger(params.get("page"), 1);
+      render({ updateHistory: false });
+    });
 
     bindCardActions(all);
     render();
   } catch (error) {
     box.innerHTML = `<div class="empty">${esc(error.message)}</div>`;
     if (sidebar) sidebar.innerHTML = `<div class="empty">Không tải được danh mục.</div>`;
+    if (pagination) pagination.hidden = true;
   }
 }
 
