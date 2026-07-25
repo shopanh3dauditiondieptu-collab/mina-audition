@@ -1511,6 +1511,13 @@ async function wiki() {
   const resetButton = document.querySelector("#resetWikiFilters");
   const resultCount = document.querySelector("#wikiResultCount");
   const activeFilters = document.querySelector("#wikiActiveFilters");
+  const pageSizeSelect = document.querySelector("#wikiPageSize");
+  const pagination = document.querySelector("#wikiPagination");
+  const prevPageButton = document.querySelector("#wikiPrevPage");
+  const nextPageButton = document.querySelector("#wikiNextPage");
+  const pageNumbers = document.querySelector("#wikiPageNumbers");
+  const goToPageForm = document.querySelector("#wikiGoToPage");
+  const pageInput = document.querySelector("#wikiPageInput");
 
   if (!box || !search || !levelSelect || !keyModeSelect || !styleSelect || !bpmSelect) return;
 
@@ -1779,13 +1786,7 @@ async function wiki() {
 
   try {
     const all = await listSkills();
-    const urlParams = new URLSearchParams(location.search);
-    const requestedQuery = urlParams.get("q") || "";
-    const requestedLevel = urlParams.get("level") || "";
-    const requestedKeyMode = urlParams.get("keyMode") || "";
-    const requestedStyle = urlParams.get("style") || "";
-    const requestedBpm = urlParams.get("bpm") || "";
-    const requestedSkill = urlParams.get("skill") || "";
+    const allowedPageSizes = [12, 24, 36, 48];
 
     const canonicalLevel = skill => {
       const raw = String(skillValue(skill, ["level", "lv", "skillLevel"], "")).trim();
@@ -1824,13 +1825,30 @@ async function wiki() {
     bpmSelect.innerHTML = `<option value="">Tất cả BPM</option>` +
       bpms.map(item => `<option value="${esc(item)}">${esc(item)} BPM</option>`).join("");
 
-    if (requestedQuery) search.value = requestedQuery;
-    if (["6", "7", "8", "9", "10", "11"].includes(requestedLevel)) levelSelect.value = requestedLevel;
-    if (["4K", "8K"].includes(requestedKeyMode)) keyModeSelect.value = requestedKeyMode;
-    if (styles.includes(requestedStyle)) styleSelect.value = requestedStyle;
-    if (bpms.includes(requestedBpm)) bpmSelect.value = requestedBpm;
+    let currentPage = 1;
+    let pageSize = 24;
+    let filteredSkills = [];
 
-    const syncFilterUrl = () => {
+    const readStateFromUrl = () => {
+      const params = new URLSearchParams(location.search);
+      search.value = params.get("q") || "";
+      levelSelect.value = ["6", "7", "8", "9", "10", "11"].includes(params.get("level"))
+        ? params.get("level") : "";
+      keyModeSelect.value = ["4K", "8K"].includes(params.get("keyMode"))
+        ? params.get("keyMode") : "";
+      styleSelect.value = styles.includes(params.get("style")) ? params.get("style") : "";
+      bpmSelect.value = bpms.includes(params.get("bpm")) ? params.get("bpm") : "";
+
+      const requestedSize = Number(params.get("pageSize"));
+      pageSize = allowedPageSizes.includes(requestedSize) ? requestedSize : 24;
+      if (pageSizeSelect) pageSizeSelect.value = String(pageSize);
+
+      const requestedPage = Number.parseInt(params.get("page") || "1", 10);
+      currentPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+      return params.get("skill") || "";
+    };
+
+    const syncUrl = (mode = "replace") => {
       const url = new URL(location.href);
       const values = {
         q: search.value.trim(),
@@ -1843,17 +1861,50 @@ async function wiki() {
         if (val) url.searchParams.set(key, val);
         else url.searchParams.delete(key);
       });
-      history.replaceState(null, "", url);
+      if (currentPage > 1) url.searchParams.set("page", String(currentPage));
+      else url.searchParams.delete("page");
+      if (pageSize !== 24) url.searchParams.set("pageSize", String(pageSize));
+      else url.searchParams.delete("pageSize");
+      url.searchParams.delete("skill");
+      history[mode === "push" ? "pushState" : "replaceState"](null, "", url);
     };
 
-    const render = () => {
+    const buildPageList = (page, totalPages) => {
+      if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+      const pages = new Set([1, totalPages, page - 1, page, page + 1]);
+      const sorted = [...pages].filter(item => item >= 1 && item <= totalPages).sort((a, b) => a - b);
+      const result = [];
+      sorted.forEach((item, index) => {
+        if (index && item - sorted[index - 1] > 1) result.push("…");
+        result.push(item);
+      });
+      return result;
+    };
+
+    const renderPagination = totalPages => {
+      if (!pagination || !pageNumbers || !prevPageButton || !nextPageButton) return;
+      pagination.hidden = totalPages <= 1;
+      prevPageButton.disabled = currentPage <= 1;
+      nextPageButton.disabled = currentPage >= totalPages;
+      if (pageInput) {
+        pageInput.max = String(Math.max(1, totalPages));
+        pageInput.value = String(currentPage);
+      }
+      pageNumbers.innerHTML = buildPageList(currentPage, totalPages).map(item =>
+        item === "…"
+          ? `<span class="wiki-page-gap" aria-hidden="true">…</span>`
+          : `<button type="button" data-wiki-page="${item}" class="${item === currentPage ? "is-active" : ""}" ${item === currentPage ? 'aria-current="page"' : ""}>${item}</button>`
+      ).join("");
+    };
+
+    const render = ({ historyMode = "replace", scroll = false } = {}) => {
       const term = normalize(search.value);
       const selectedLevel = levelSelect.value;
       const selectedKeyMode = keyModeSelect.value;
       const selectedStyle = styleSelect.value;
       const selectedBpm = bpmSelect.value;
 
-      currentSkills = all.filter(skill => {
+      filteredSkills = all.filter(skill => {
         const levelOk = !selectedLevel || canonicalLevel(skill) === selectedLevel;
         const keyModeOk = !selectedKeyMode || canonicalKeyMode(skill) === selectedKeyMode;
         const styleOk = !selectedStyle || canonicalStyle(skill) === selectedStyle;
@@ -1861,6 +1912,11 @@ async function wiki() {
         const searchOk = !term || getSkillSearchText(skill).includes(term);
         return levelOk && keyModeOk && styleOk && bpmOk && searchOk;
       });
+
+      const totalPages = Math.max(1, Math.ceil(filteredSkills.length / pageSize));
+      currentPage = Math.min(Math.max(1, currentPage), totalPages);
+      const startIndex = (currentPage - 1) * pageSize;
+      currentSkills = filteredSkills.slice(startIndex, startIndex + pageSize);
 
       const selectedLabels = [
         search.value.trim() ? `Từ khóa: ${search.value.trim()}` : "",
@@ -1870,11 +1926,17 @@ async function wiki() {
         selectedBpm ? `${selectedBpm} BPM` : ""
       ].filter(Boolean);
 
-      if (resultCount) resultCount.textContent = `${currentSkills.length} Skill phù hợp`;
+      if (resultCount) {
+        const rangeStart = filteredSkills.length ? startIndex + 1 : 0;
+        const rangeEnd = Math.min(startIndex + pageSize, filteredSkills.length);
+        resultCount.textContent = filteredSkills.length
+          ? `${filteredSkills.length} Skill phù hợp • Hiển thị ${rangeStart}–${rangeEnd}`
+          : "0 Skill phù hợp";
+      }
       if (activeFilters) {
         activeFilters.textContent = selectedLabels.length
-          ? selectedLabels.join(" • ")
-          : "Có thể kết hợp Level, 4K/8K, Style và BPM";
+          ? `${selectedLabels.join(" • ")} • Trang ${currentPage}/${totalPages}`
+          : `Có thể kết hợp Level, 4K/8K, Style và BPM • Trang ${currentPage}/${totalPages}`;
       }
       resetButton?.classList.toggle("is-visible", selectedLabels.length > 0);
 
@@ -1909,8 +1971,17 @@ async function wiki() {
         `;
       }).join("") : `<div class="empty">Không tìm thấy Skill phù hợp với bộ lọc hiện tại.</div>`;
 
-      syncFilterUrl();
+      renderPagination(totalPages);
+      syncUrl(historyMode);
       if (!modal.hidden) closeModal();
+      if (scroll) {
+        document.querySelector(".wiki-toolbar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    };
+
+    const resetToFirstPageAndRender = () => {
+      currentPage = 1;
+      render({ historyMode: "replace" });
     };
 
     box.addEventListener("click", event => {
@@ -1926,28 +1997,71 @@ async function wiki() {
       openModal(Number(card.dataset.skillIndex));
     });
 
-    search.addEventListener("input", render);
+    search.addEventListener("input", resetToFirstPageAndRender);
     [levelSelect, keyModeSelect, styleSelect, bpmSelect].forEach(select => {
-      select.addEventListener("change", render);
+      select.addEventListener("change", resetToFirstPageAndRender);
     });
+    pageSizeSelect?.addEventListener("change", () => {
+      const nextSize = Number(pageSizeSelect.value);
+      pageSize = allowedPageSizes.includes(nextSize) ? nextSize : 24;
+      currentPage = 1;
+      render({ historyMode: "replace", scroll: true });
+    });
+
+    prevPageButton?.addEventListener("click", () => {
+      if (currentPage <= 1) return;
+      currentPage -= 1;
+      render({ historyMode: "push", scroll: true });
+    });
+    nextPageButton?.addEventListener("click", () => {
+      const totalPages = Math.max(1, Math.ceil(filteredSkills.length / pageSize));
+      if (currentPage >= totalPages) return;
+      currentPage += 1;
+      render({ historyMode: "push", scroll: true });
+    });
+    pageNumbers?.addEventListener("click", event => {
+      const button = event.target.closest("[data-wiki-page]");
+      if (!button) return;
+      currentPage = Number(button.dataset.wikiPage) || 1;
+      render({ historyMode: "push", scroll: true });
+    });
+    goToPageForm?.addEventListener("submit", event => {
+      event.preventDefault();
+      const totalPages = Math.max(1, Math.ceil(filteredSkills.length / pageSize));
+      const requested = Number.parseInt(pageInput?.value || "1", 10);
+      currentPage = Math.min(Math.max(1, Number.isFinite(requested) ? requested : 1), totalPages);
+      render({ historyMode: "push", scroll: true });
+    });
+
     resetButton?.addEventListener("click", () => {
       search.value = "";
       levelSelect.value = "";
       keyModeSelect.value = "";
       styleSelect.value = "";
       bpmSelect.value = "";
-      render();
+      currentPage = 1;
+      render({ historyMode: "replace" });
       search.focus();
     });
 
-    render();
+    const requestedSkill = readStateFromUrl();
+    render({ historyMode: "replace" });
 
     if (requestedSkill) {
-      const index = currentSkills.findIndex(skill =>
+      const fullIndex = filteredSkills.findIndex(skill =>
         normalize(skillIdentity(skill)) === normalize(requestedSkill)
       );
-      if (index >= 0) openModal(index);
+      if (fullIndex >= 0) {
+        currentPage = Math.floor(fullIndex / pageSize) + 1;
+        render({ historyMode: "replace" });
+        openModal(fullIndex % pageSize);
+      }
     }
+
+    window.addEventListener("popstate", () => {
+      readStateFromUrl();
+      render({ historyMode: "replace" });
+    });
   } catch (error) {
     box.innerHTML = `<div class="empty">${esc(error.message)}</div>`;
   }

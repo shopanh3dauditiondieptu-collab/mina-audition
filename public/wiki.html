@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/app-v3.css?v=7.6.0-wiki-contact">
+<link rel="stylesheet" href="/assets/css/app-v3.css?v=8.2.0-wiki-enterprise">
 
 <title>Wikipedia D8 | Mina Audition</title>
 </head>
@@ -30,6 +30,7 @@
   <a data-module-nav="mix-match-outfit-game" href="/mix-match.html">Mix & Match</a>
   <a data-nav="wiki" href="/wiki.html">Wiki D8</a>
   <a data-module-nav="academy" href="/academy.html">Academy</a>
+  <a data-module-nav="game-gear" href="/game-gear.html">Game Gear</a>
   <a class="nav-contact-link" href="#lien-he">Liên hệ</a>
 </nav>
     <a class="header-cta" href="/go/taoanh3d?source=website-header&campaign=weekend-launch">
@@ -83,10 +84,30 @@
 
       <div class="wiki-filter-summary">
         <strong id="wikiResultCount">Đang tải Skill…</strong>
+        <div class="wiki-page-size">
+          <label for="wikiPageSize">Hiển thị</label>
+          <select id="wikiPageSize" aria-label="Số Skill mỗi trang">
+            <option value="12">12 Skill</option>
+            <option value="24" selected>24 Skill</option>
+            <option value="36">36 Skill</option>
+            <option value="48">48 Skill</option>
+          </select>
+        </div>
         <span id="wikiActiveFilters">Có thể kết hợp nhiều bộ lọc cùng lúc</span>
       </div>
 
       <div id="skills" class="wiki-grid-v3"><div class="status">Đang tải kho Skill…</div></div>
+
+      <nav id="wikiPagination" class="wiki-pagination" aria-label="Phân trang Skill" hidden>
+        <button id="wikiPrevPage" type="button">← Trước</button>
+        <div id="wikiPageNumbers" class="wiki-page-numbers" aria-label="Danh sách trang"></div>
+        <button id="wikiNextPage" type="button">Sau →</button>
+        <form id="wikiGoToPage" class="wiki-go-page">
+          <label for="wikiPageInput">Đi tới trang</label>
+          <input id="wikiPageInput" type="number" min="1" inputmode="numeric" aria-label="Nhập số trang">
+          <button type="submit">Đi</button>
+        </form>
+      </nav>
     </div>
   </section>
 </main>
@@ -110,8 +131,10 @@
         <a href="/"><span class="footer-icon">⌂</span><span>Trang chủ</span></a>
         <a href="/blog.html"><span class="footer-icon">▤</span><span>Blog Mina</span></a>
         <a href="/wiki.html"><span class="footer-icon">▣</span><span>Wiki Audition</span></a>
-        <a href="/blog.html?type=prompt"><span class="footer-icon">✦</span><span>AI Prompt</span></a>
-        <a href="/blog.html?type=outfit"><span class="footer-icon">♡</span><span>Mix &amp; Match</span></a>
+        <a href="/ai-prompt.html"><span class="footer-icon">✦</span><span>AI Prompt</span></a>
+        <a href="/mix-match.html"><span class="footer-icon">♡</span><span>Mix &amp; Match</span></a>
+        <a href="/academy.html"><span class="footer-icon">▴</span><span>Academy</span></a>
+        <a href="/game-gear.html"><span class="footer-icon">⌨</span><span>Game Gear</span></a>
       </nav>
     </div>
 
@@ -170,6 +193,6 @@
   </div>
 </footer>
 
-<script type="module" src="/assets/js/site-v3.js?v=7.6.0-wiki-contact"></script>
+<script type="module" src="/assets/js/site-v3.js?v=8.2.0-wiki-enterprise"></script>
 </body>
 </html>
