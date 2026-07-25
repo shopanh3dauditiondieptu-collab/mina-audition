@@ -806,32 +806,132 @@ function renderContentBlocks(post) {
       : `<p>Nội dung đang được cập nhật.</p>`;
   }
 
-  return blocks.map(block => {
+  return blocks.map((block, index) => {
     const type = block?.type;
+    const text = block?.text || block?.content || block?.value || "";
+
     if (type === "paragraph" || type === "text") {
-      return `<p>${esc(block.text || block.content || "").replace(/\n/g, "<br>")}</p>`;
+      return `<p>${esc(text).replace(/\n/g, "<br>")}</p>`;
+    }
+    if (["heading", "heading2", "h2", "title"].includes(type)) {
+      return `<h2 id="post-section-${index}">${esc(text)}</h2>`;
+    }
+    if (["heading3", "h3", "subtitle"].includes(type)) {
+      return `<h3 id="post-section-${index}">${esc(text)}</h3>`;
     }
     if (type === "quote") {
-      return `<blockquote>${esc(block.text || block.content || "")}</blockquote>`;
+      return `<blockquote>${esc(text)}</blockquote>`;
+    }
+    if (type === "list") {
+      const items = Array.isArray(block.items) ? block.items : String(text).split("\n");
+      const tag = block.ordered === true ? "ol" : "ul";
+      return `<${tag}>${items.filter(Boolean).map(item => `<li>${esc(typeof item === "string" ? item : item.text || item.value || "")}</li>`).join("")}</${tag}>`;
     }
     if (type === "image") {
       const src = block.url || block.imageUrl || block.src;
-      return src ? `<img loading="lazy" src="${esc(src)}" alt="${esc(block.alt || post.title || "")}">` : "";
+      return src ? `<figure class="post-image-figure"><img class="post-zoomable-image" loading="lazy" src="${esc(src)}" alt="${esc(block.alt || post.title || "")}">${block.caption ? `<figcaption>${esc(block.caption)}</figcaption>` : ""}</figure>` : "";
     }
     if (type === "gallery") {
       const images = block.images || block.urls || [];
       return `<div class="gallery">${images.map(image => {
         const src = typeof image === "string" ? image : image.url || image.src;
-        return src ? `<img loading="lazy" src="${esc(src)}" alt="">` : "";
+        const alt = typeof image === "string" ? "" : image.alt || "";
+        return src ? `<img class="post-zoomable-image" loading="lazy" src="${esc(src)}" alt="${esc(alt)}">` : "";
       }).join("")}</div>`;
     }
     if (type === "youtube") {
       const url = block.url || block.youtubeUrl || "";
       const id = url.match(/(?:youtu\.be\/|v=|embed\/)([\w-]{6,})/)?.[1];
-      return id ? `<iframe loading="lazy" src="https://www.youtube.com/embed/${esc(id)}" allowfullscreen></iframe>` : "";
+      return id ? `<div class="post-video-frame"><iframe loading="lazy" src="https://www.youtube.com/embed/${esc(id)}" title="Video trong bài viết" allowfullscreen></iframe></div>` : "";
     }
     return "";
   }).join("");
+}
+
+function estimateReadingTime(post) {
+  const text = [
+    post?.title,
+    getExcerpt(post),
+    extractPrompt(post),
+    ...(Array.isArray(post?.contentBlocks)
+      ? post.contentBlocks.flatMap(block => [block?.text, block?.content, ...(Array.isArray(block?.items) ? block.items : [])])
+      : [])
+  ].filter(Boolean).join(" ");
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.ceil(words / 220));
+}
+
+function setupPostReadingProgress() {
+  const bar = document.querySelector("#postReadingProgressBar");
+  if (!bar) return;
+
+  const update = () => {
+    const article = document.querySelector("#article");
+    if (!article) return;
+    const start = article.offsetTop;
+    const distance = Math.max(1, article.offsetHeight - window.innerHeight);
+    const progress = Math.min(1, Math.max(0, (window.scrollY - start) / distance));
+    bar.style.transform = `scaleX(${progress})`;
+  };
+
+  update();
+  window.addEventListener("scroll", update, { passive: true });
+  window.addEventListener("resize", update);
+}
+
+function setupPostLightbox() {
+  const lightbox = document.querySelector("#postLightbox");
+  const lightboxImage = lightbox?.querySelector("img");
+  if (!lightbox || !lightboxImage) return;
+
+  const close = () => {
+    lightbox.hidden = true;
+    lightbox.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("post-lightbox-open");
+    lightboxImage.removeAttribute("src");
+  };
+
+  document.querySelectorAll(".post-v6-content .post-zoomable-image, .post-v6-cover").forEach(image => {
+    image.classList.add("is-lightbox-ready");
+    image.addEventListener("click", () => {
+      lightboxImage.src = image.currentSrc || image.src;
+      lightboxImage.alt = image.alt || "Ảnh bài viết";
+      lightbox.hidden = false;
+      lightbox.setAttribute("aria-hidden", "false");
+      document.body.classList.add("post-lightbox-open");
+    });
+  });
+
+  lightbox.querySelector(".post-lightbox__close")?.addEventListener("click", close);
+  lightbox.addEventListener("click", event => {
+    if (event.target === lightbox) close();
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && !lightbox.hidden) close();
+  });
+}
+
+function setupPostTableOfContents() {
+  const content = document.querySelector(".post-v6-content");
+  const tocList = document.querySelector("#postTocList");
+  const tocCard = document.querySelector("#postTocCard");
+  if (!content || !tocList || !tocCard) return;
+
+  const headings = [...content.querySelectorAll(":scope > h2, :scope > h3")];
+  if (headings.length < 2) {
+    tocCard.hidden = true;
+    return;
+  }
+
+  headings.forEach((heading, index) => {
+    if (!heading.id) heading.id = `post-heading-${index + 1}`;
+  });
+
+  tocList.innerHTML = headings.map(heading => `
+    <a class="${heading.tagName === "H3" ? "is-sub" : ""}" href="#${esc(heading.id)}">
+      ${esc(heading.textContent.trim())}
+    </a>
+  `).join("");
 }
 
 
@@ -911,6 +1011,7 @@ async function postPage() {
       .slice(0, 4);
 
     const createdDate = formatDate(post.updatedAt || post.createdAt);
+    const readingTime = estimateReadingTime(post);
     const postKey = `mina-post-${post.id}`;
     const likeKey = `${postKey}-likes`;
     const commentKey = `${postKey}-comments`;
@@ -942,8 +1043,9 @@ async function postPage() {
             <h1>${esc(post.title || "Chưa có tiêu đề")}</h1>
 
             <div class="post-v6-meta">
-              <span>Ngày đăng: ${createdDate}</span>
-              <span>${typeLabel(type)}</span>
+              <span>📅 ${createdDate}</span>
+              <span>⏱ ${readingTime} phút đọc</span>
+              <span>✦ ${typeLabel(type)}</span>
             </div>
 
             ${getExcerpt(post)
@@ -953,6 +1055,13 @@ async function postPage() {
         </section>
 
         <section class="post-v6-content">
+          <aside id="postTocCard" class="post-toc-card">
+            <button class="post-toc-title" type="button" aria-expanded="true">
+              <span>☰ Mục lục bài viết</span><b>−</b>
+            </button>
+            <nav id="postTocList" class="post-toc-list" aria-label="Mục lục bài viết"></nav>
+          </aside>
+
           ${renderContentBlocks(post)}
 
           ${prompt ? `
@@ -1066,6 +1175,20 @@ async function postPage() {
         </section>
       </div>
     `;
+
+    setupPostTableOfContents();
+    setupPostLightbox();
+    setupPostReadingProgress();
+
+    document.querySelector(".post-toc-title")?.addEventListener("click", event => {
+      const button = event.currentTarget;
+      const list = document.querySelector("#postTocList");
+      if (!list) return;
+      const willOpen = list.hidden;
+      list.hidden = !willOpen;
+      button.setAttribute("aria-expanded", String(willOpen));
+      button.querySelector("b").textContent = willOpen ? "−" : "+";
+    });
 
     // View count per browser
     const viewKey = `${postKey}-views`;
