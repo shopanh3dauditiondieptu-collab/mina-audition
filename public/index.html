@@ -515,7 +515,7 @@ box-shadow:0 0 10px rgba(77,179,255,.9),0 0 22px rgba(183,0,255,.6)!important;
           alt="Mina Audition - Banner nổi bật số 2"
           width="1920"
           height="1080"
-          loading="eager"
+          loading="lazy"
           decoding="async"
         >
       </article>
@@ -837,9 +837,10 @@ rel="noopener">
 
       <div class="mina-latest-video-card">
         <div class="mina-latest-video-frame">
+          <span class="mina-latest-video-badge">VIDEO MỚI</span>
           <iframe
-            src="https://www.youtube-nocookie.com/embed/YUBCeSo5QcM?autoplay=1&mute=1&playsinline=1&rel=0"
-            title="Video mới nhất từ Mina Audition"
+            src="https://www.youtube-nocookie.com/embed/YUBCeSo5QcM?rel=0"
+            title="Múa Quạt Cổ Trang | Audition VTC D8 | Mina & Meow"
             loading="lazy"
             referrerpolicy="strict-origin-when-cross-origin"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -848,12 +849,16 @@ rel="noopener">
         </div>
 
         <div class="mina-latest-video-actions">
-          <span>MINA AUDITION • VIDEO</span>
+          <div class="mina-latest-video-info">
+            <span>MINA AUDITION • DANCE PERFORMANCE</span>
+            <strong>Xem trọn vẹn video trên kênh YouTube Mina</strong>
+          </div>
           <a
             href="https://www.youtube.com/watch?v=YUBCeSo5QcM"
             target="_blank"
             rel="noopener noreferrer"
-          >Xem trên YouTube →</a>
+            aria-label="Mở video Múa Quạt Cổ Trang trên YouTube"
+          ><b aria-hidden="true">▶</b> Xem ngay trên YouTube <i aria-hidden="true">↗</i></a>
         </div>
       </div>
     </div>
@@ -880,7 +885,7 @@ rel="noopener">
   <div class="wrap copyright">© 2026 Mina Audition. Nội dung dành cho cộng đồng Audition.</div>
 </footer>
 
-<script type="module" src="/assets/js/site-v3.js?v=6.0.12-home-video-latest"></script>
+<script type="module" src="/assets/js/site-v3.js?v=6.0.13-video-safe-cta"></script>
 
 <script>
 (() => {

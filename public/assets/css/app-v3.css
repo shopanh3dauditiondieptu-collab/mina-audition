@@ -1408,46 +1408,92 @@ body.wiki-modal-open{overflow:hidden}
 .mina-latest-video-frame iframe{
   position:absolute;
   inset:0;
+  z-index:1;
   width:100%;
   height:100%;
   border:0;
+}
+.mina-latest-video-badge{
+  position:absolute;
+  top:14px;
+  right:14px;
+  z-index:2;
+  display:inline-flex;
+  align-items:center;
+  min-height:30px;
+  padding:6px 11px;
+  border:1px solid rgba(255,255,255,.3);
+  border-radius:999px;
+  background:linear-gradient(100deg,#ff4fc8,#8b5cff);
+  color:#fff;
+  font-size:10px;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:.08em;
+  box-shadow:0 8px 24px rgba(255,79,200,.35);
+  pointer-events:none;
 }
 .mina-latest-video-actions{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:18px;
-  min-height:66px;
-  padding:13px 18px;
+  gap:22px;
+  min-height:78px;
+  padding:14px 18px;
   border-radius:0 0 24px 24px;
   background:linear-gradient(180deg,rgba(21,18,39,.99),rgba(12,10,25,.99));
 }
-.mina-latest-video-actions span{
-  color:rgba(255,255,255,.56);
-  font-size:10px;
+.mina-latest-video-info{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.mina-latest-video-info span{
+  color:#91eef9;
+  font-size:9px;
   font-weight:900;
-  letter-spacing:.15em;
+  letter-spacing:.14em;
+}
+.mina-latest-video-info strong{
+  color:rgba(255,255,255,.86);
+  font-size:12px;
+  line-height:1.45;
+  font-weight:700;
 }
 .mina-latest-video-actions a{
+  flex:0 0 auto;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  min-height:40px;
-  padding:10px 16px;
-  border:1px solid rgba(98,232,255,.32);
+  gap:8px;
+  min-height:46px;
+  padding:11px 18px;
+  border:1px solid rgba(255,255,255,.24);
   border-radius:999px;
-  background:linear-gradient(100deg,rgba(255,79,200,.18),rgba(98,232,255,.15));
+  background:linear-gradient(100deg,#ff43c8 0%,#a45cff 54%,#55dff4 100%);
   color:#fff;
   font-size:12px;
   font-weight:900;
   white-space:nowrap;
-  transition:transform .2s ease,filter .2s ease,border-color .2s ease,box-shadow .2s ease;
+  box-shadow:0 10px 28px rgba(174,70,220,.28);
+  transition:transform .2s ease,filter .2s ease,box-shadow .2s ease;
 }
+.mina-latest-video-actions a b{
+  display:grid;
+  place-items:center;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  background:rgba(255,255,255,.92);
+  color:#f0003c;
+  font-size:10px;
+}
+.mina-latest-video-actions a i{font-style:normal}
 .mina-latest-video-actions a:hover{
   transform:translateY(-2px);
-  filter:brightness(1.12);
-  border-color:rgba(98,232,255,.7);
-  box-shadow:0 8px 22px rgba(98,232,255,.12);
+  filter:brightness(1.1);
+  box-shadow:0 14px 34px rgba(174,70,220,.4);
 }
 @media(max-width:700px){
   .mina-latest-video-section{padding:58px 0 66px}
@@ -1458,10 +1504,13 @@ body.wiki-modal-open{overflow:hidden}
   .mina-latest-video-actions{
     align-items:stretch;
     flex-direction:column;
+    gap:12px;
     padding:14px;
     border-radius:0 0 19px 19px;
     text-align:center;
   }
+  .mina-latest-video-info{align-items:center}
   .mina-latest-video-actions a{width:100%}
+  .mina-latest-video-badge{top:10px;right:10px}
 }
 
