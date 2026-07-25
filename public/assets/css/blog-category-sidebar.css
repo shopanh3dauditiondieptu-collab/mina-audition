@@ -245,3 +245,48 @@
     grid-column:auto !important;
   }
 }
+
+
+/* =========================================================
+   MINA BLOG — SIDEBAR SCROLL FIX v1.0
+   Cho phép cuộn riêng cột danh mục trên desktop khi mở nhiều
+   thư mục con. Mobile vẫn cuộn tự nhiên theo toàn trang.
+========================================================= */
+
+.blog-category-sidebar{
+  max-height:calc(100vh - 120px);
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable;
+  scrollbar-width:thin;
+  scrollbar-color:#63eaff rgba(255,255,255,.05);
+}
+
+/* Thanh cuộn cho Chrome / Edge / Safari */
+.blog-category-sidebar::-webkit-scrollbar{
+  width:8px;
+}
+
+.blog-category-sidebar::-webkit-scrollbar-track{
+  background:rgba(255,255,255,.05);
+  border-radius:999px;
+}
+
+.blog-category-sidebar::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,#63eaff,#ea4dca);
+  border-radius:999px;
+}
+
+.blog-category-sidebar::-webkit-scrollbar-thumb:hover{
+  background:linear-gradient(180deg,#7ff2ff,#ff73df);
+}
+
+/* Mobile: không tạo vùng cuộn riêng để tránh khó thao tác */
+@media(max-width:900px){
+  .blog-category-sidebar{
+    max-height:none;
+    overflow:visible;
+    scrollbar-gutter:auto;
+  }
+}
