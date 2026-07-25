@@ -1516,6 +1516,23 @@ if (navToggle && navLinks) {
   });
 }
 
+const contactNavLink = document.querySelector('a[href="#lien-he"]');
+if (contactNavLink) {
+  contactNavLink.addEventListener("click", event => {
+    const contactSection = document.querySelector("#lien-he");
+    if (!contactSection) return;
+
+    event.preventDefault();
+    contactSection.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    if (navLinks?.classList.contains("open")) {
+      navLinks.classList.remove("open");
+      navToggle?.setAttribute("aria-expanded", "false");
+      if (navToggle) navToggle.textContent = "☰";
+    }
+  });
+}
+
 document.querySelector(`[data-nav="${page}"]`)?.classList.add("active");
 
 ({ home, blog, post: postPage, wiki }[page] || (() => {}))();
