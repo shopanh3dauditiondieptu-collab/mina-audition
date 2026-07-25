@@ -497,32 +497,97 @@ function getSkillTags(skill) {
 
 function homeSkillCard(skill) {
   const id = value(skill, ["id", "skillId", "code"], "");
+  const name = value(skill, ["name", "title"], "") || "Skill Audition";
+  const style = value(skill, ["style", "type", "category"], "Skill Dance");
+  const bpm = value(skill, ["bpm", "tempo"], "");
+  const level = value(skill, ["level"], "");
+  const keyMode = value(skill, ["keyMode", "mode", "keys"], "");
+  const rarity = value(skill, ["rank", "grade", "rarity"], "");
   const description = value(
     skill,
     ["description", "summary", "review"],
     "Khám phá thông tin, phong cách chuyển động và video review của Skill Audition này."
   );
-  const tags = getSkillTags(skill);
-  const query = id || value(skill, ["name", "title"], "");
+  const image = value(
+    skill,
+    ["thumbnailUrl", "coverUrl", "imageUrl", "image"],
+    ""
+  );
+  const video = value(skill, ["youtubeUrl", "videoUrl", "reviewUrl"], "");
+  const query = id || name;
+  const detailUrl = `/wiki.html?skill=${encodeURIComponent(query)}`;
+
+  const compactTags = [
+    level ? `Lv.${level}` : "",
+    bpm ? `${bpm} BPM` : "",
+    keyMode,
+    rarity
+  ].filter(Boolean).slice(0, 4);
 
   return `
     <article class="home-skill-card">
-      <h3>${esc(getSkillTitle(skill))}</h3>
-      <p class="home-skill-subtitle">${esc(getSkillSubtitle(skill))}</p>
-      <p class="home-skill-description">${esc(description)}</p>
+      <a
+        class="home-skill-card__media ${image ? "has-image" : "no-image"}"
+        href="${detailUrl}"
+        aria-label="Xem chi tiết ${esc(name)}"
+      >
+        ${image ? `
+          <img
+            loading="lazy"
+            src="${esc(image)}"
+            alt="${esc(name)}"
+            onerror="this.closest('.home-skill-card__media').classList.add('no-image');this.remove();"
+          >
+        ` : ""}
 
-      ${tags.length ? `
-        <div class="home-skill-tags">
-          ${tags.map(tag => `<span>${esc(tag)}</span>`).join("")}
+        <div class="home-skill-card__visual">
+          <span class="home-skill-card__visual-note">MINA WIKI</span>
+          <strong>${esc(style)}</strong>
+          <small>${bpm ? `${esc(bpm)} BPM` : "AUDITION VTC"}</small>
         </div>
-      ` : `<div class="home-skill-tags"><span>Skill Audition</span></div>`}
 
-      <div class="home-skill-actions">
-        <a
-          class="home-skill-detail"
-          href="/wiki.html?q=${encodeURIComponent(query)}"
-          aria-label="Xem chi tiết ${esc(getSkillTitle(skill))}"
-        >Chi tiết skill</a>
+        <span class="home-skill-card__type">${esc(style)}</span>
+        ${id ? `<span class="home-skill-card__id">ID ${esc(id)}</span>` : ""}
+      </a>
+
+      <div class="home-skill-card__body">
+        <div class="home-skill-card__heading">
+          <div>
+            <span class="home-skill-card__kicker">SKILL DANCE</span>
+            <h3><a href="${detailUrl}">${esc(name)}</a></h3>
+          </div>
+          <span class="home-skill-card__arrow" aria-hidden="true">↗</span>
+        </div>
+
+        <p class="home-skill-description">${esc(description)}</p>
+
+        <div class="home-skill-tags">
+          ${compactTags.length
+            ? compactTags.map(tag => `<span>${esc(tag)}</span>`).join("")
+            : `<span>Audition</span><span>Skill Dance</span>`}
+        </div>
+
+        <div class="home-skill-actions">
+          <a
+            class="home-skill-detail"
+            href="${detailUrl}"
+            aria-label="Xem chi tiết ${esc(name)}"
+          >Xem chi tiết</a>
+
+          ${video ? `
+            <a
+              class="home-skill-review"
+              href="${esc(video)}"
+              target="_blank"
+              rel="noopener"
+            >▶ Review</a>
+          ` : `
+            <a
+              class="home-skill-review"
+              href="${detailUrl}"
+            >Mở Wiki</a>
+          `}
+        </div>
       </div>
     </article>
   `;

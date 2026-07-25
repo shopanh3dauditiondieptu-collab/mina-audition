@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/app-v3.css?v=6.0.8-home-wiki-skill">
+<link rel="stylesheet" href="/assets/css/app-v3.css?v=6.0.9-home-wiki-card">
 
 <title>Mina Audition | AI Prompt • Outfit • Audition VTC</title>
 
@@ -243,10 +243,7 @@ box-shadow:0 0 10px rgba(77,179,255,.9),0 0 22px rgba(183,0,255,.6)!important;
     linear-gradient(90deg,transparent,rgba(255,255,255,.015),transparent);
 }
 
-.home-wiki-inner{
-  position:relative;
-  z-index:1;
-}
+.home-wiki-inner{position:relative;z-index:1}
 
 .home-wiki-heading{
   max-width:860px;
@@ -268,9 +265,7 @@ box-shadow:0 0 10px rgba(77,179,255,.9),0 0 22px rgba(183,0,255,.6)!important;
   transform:rotate(45deg);
   border-radius:2px;
   background:#55f2ff;
-  box-shadow:
-    0 0 8px rgba(85,242,255,.95),
-    0 0 18px rgba(85,242,255,.5);
+  box-shadow:0 0 8px rgba(85,242,255,.95),0 0 18px rgba(85,242,255,.5);
 }
 
 .home-wiki-heading h2{
@@ -280,9 +275,6 @@ box-shadow:0 0 10px rgba(77,179,255,.9),0 0 22px rgba(183,0,255,.6)!important;
   line-height:1.15;
   font-weight:900;
   letter-spacing:-.04em;
-  text-shadow:
-    2px 2px 0 rgba(236,72,153,.22),
-    0 0 18px rgba(111,216,255,.12);
 }
 
 .home-wiki-heading p{
@@ -294,17 +286,8 @@ box-shadow:0 0 10px rgba(77,179,255,.9),0 0 22px rgba(183,0,255,.6)!important;
   font-weight:600;
 }
 
-.home-wiki-search-wrap{
-  max-width:760px;
-  margin:0 auto 32px;
-}
-
-.home-wiki-search{
-  position:relative;
-  display:flex;
-  align-items:center;
-}
-
+.home-wiki-search-wrap{max-width:760px;margin:0 auto 34px}
+.home-wiki-search{position:relative;display:flex;align-items:center}
 .home-wiki-search-icon{
   position:absolute;
   left:24px;
@@ -316,33 +299,23 @@ box-shadow:0 0 10px rgba(77,179,255,.9),0 0 22px rgba(183,0,255,.6)!important;
 
 .home-wiki-search input{
   width:100%;
-  min-height:70px;
+  min-height:66px;
   padding:0 72px 0 62px;
-  border:1px solid rgba(74,223,255,.62);
+  border:1px solid rgba(74,223,255,.56);
   border-radius:999px;
   outline:none;
-  background:
-    linear-gradient(180deg,rgba(30,31,51,.97),rgba(22,21,39,.97));
+  background:linear-gradient(180deg,rgba(30,31,51,.97),rgba(22,21,39,.97));
   color:#fff;
-  font:700 17px/1.4 "Be Vietnam Pro",sans-serif;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.04),
-    0 0 0 1px rgba(77,179,255,.03),
-    0 16px 38px rgba(0,0,0,.25);
+  font:700 16px/1.4 "Be Vietnam Pro",sans-serif;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 16px 38px rgba(0,0,0,.25);
   transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease;
 }
 
-.home-wiki-search input::placeholder{
-  color:rgba(255,255,255,.78);
-}
-
+.home-wiki-search input::placeholder{color:rgba(255,255,255,.7)}
 .home-wiki-search input:focus{
   transform:translateY(-1px);
   border-color:#63f1ff;
-  box-shadow:
-    0 0 0 4px rgba(85,242,255,.1),
-    0 0 28px rgba(56,219,255,.14),
-    0 18px 42px rgba(0,0,0,.3);
+  box-shadow:0 0 0 4px rgba(85,242,255,.1),0 0 28px rgba(56,219,255,.14),0 18px 42px rgba(0,0,0,.3);
 }
 
 .home-wiki-clear{
@@ -360,150 +333,279 @@ box-shadow:0 0 10px rgba(77,179,255,.9),0 0 22px rgba(183,0,255,.6)!important;
   font-size:18px;
   cursor:pointer;
 }
-
-.home-wiki-clear.is-visible{
-  display:flex;
-}
+.home-wiki-clear.is-visible{display:flex}
 
 .home-skill-grid{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:26px;
+  gap:22px;
 }
 
 .home-skill-card{
-  min-height:365px;
+  position:relative;
   display:flex;
+  min-width:0;
   flex-direction:column;
-  padding:32px 30px 28px;
-  border:1px solid rgba(55,208,238,.52);
+  overflow:hidden;
+  border:1px solid rgba(110,224,255,.28);
   border-radius:24px;
-  background:
-    radial-gradient(circle at 50% 0%,rgba(94,104,176,.09),transparent 42%),
-    linear-gradient(180deg,rgba(28,29,47,.98),rgba(20,19,35,.98));
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.035),
-    0 18px 44px rgba(0,0,0,.24);
-  transition:
-    transform .25s ease,
-    border-color .25s ease,
-    box-shadow .25s ease;
+  background:linear-gradient(180deg,rgba(25,23,45,.98),rgba(13,12,27,.99));
+  box-shadow:0 18px 42px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.035);
+  transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;
 }
 
-.home-skill-card:first-child{
-  border-color:rgba(238,71,207,.72);
+.home-skill-card::after{
+  content:"";
+  position:absolute;
+  right:-80px;
+  bottom:-100px;
+  width:190px;
+  height:190px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,79,200,.14),transparent 68%);
+  pointer-events:none;
 }
 
 .home-skill-card:hover{
-  transform:translateY(-6px);
-  border-color:rgba(102,231,255,.92);
-  box-shadow:
-    0 22px 50px rgba(0,0,0,.34),
-    0 0 28px rgba(68,213,255,.1);
+  transform:translateY(-7px);
+  border-color:rgba(102,231,255,.72);
+  box-shadow:0 26px 58px rgba(0,0,0,.42),0 0 28px rgba(68,213,255,.1);
+}
+
+.home-skill-card__media{
+  position:relative;
+  display:block;
+  aspect-ratio:16/9;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 78% 24%,rgba(98,232,255,.28),transparent 25%),
+    radial-gradient(circle at 20% 86%,rgba(255,79,200,.28),transparent 29%),
+    linear-gradient(135deg,#241536,#111b36 55%,#0b2630);
+}
+
+.home-skill-card__media::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,transparent 38%,rgba(7,6,17,.78));
+  pointer-events:none;
+}
+
+.home-skill-card__media img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  transition:transform .4s ease,filter .4s ease;
+}
+
+.home-skill-card:hover .home-skill-card__media img{
+  transform:scale(1.045);
+  filter:brightness(1.05);
+}
+
+.home-skill-card__visual{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:30px;
+  text-align:center;
+}
+
+.home-skill-card__media.has-image .home-skill-card__visual{display:none}
+
+.home-skill-card__visual-note{
+  margin-bottom:8px;
+  color:#ff9de1;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.18em;
+}
+
+.home-skill-card__visual strong{
+  max-width:100%;
+  color:#fff;
+  font-size:clamp(24px,2.2vw,34px);
+  line-height:1.08;
+  font-weight:1000;
+  letter-spacing:-.045em;
+  text-shadow:0 7px 26px rgba(0,0,0,.44);
+}
+
+.home-skill-card__visual small{
+  margin-top:9px;
+  color:#9ff3ff;
+  font-size:12px;
+  font-weight:900;
+}
+
+.home-skill-card__type,
+.home-skill-card__id{
+  position:absolute;
+  z-index:2;
+  top:14px;
+  display:inline-flex;
+  min-height:28px;
+  align-items:center;
+  padding:5px 9px;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:999px;
+  background:rgba(8,7,20,.72);
+  backdrop-filter:blur(12px);
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+}
+
+.home-skill-card__type{left:14px;color:#aef7ff}
+.home-skill-card__id{right:14px;color:#ffc1eb}
+
+.home-skill-card__body{
+  position:relative;
+  z-index:1;
+  display:flex;
+  flex:1;
+  flex-direction:column;
+  padding:20px;
+}
+
+.home-skill-card__heading{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+}
+
+.home-skill-card__kicker{
+  display:block;
+  margin-bottom:5px;
+  color:#8cefff;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.14em;
 }
 
 .home-skill-card h3{
   margin:0;
-  color:#fff;
-  font-size:clamp(23px,2vw,31px);
-  line-height:1.22;
-  text-align:center;
+  font-size:clamp(20px,1.65vw,25px);
+  line-height:1.24;
   font-weight:900;
   letter-spacing:-.03em;
 }
 
-.home-skill-subtitle{
-  min-height:28px;
-  margin:12px 0 0;
+.home-skill-card h3 a{
+  display:-webkit-box;
+  overflow:hidden;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
+}
+
+.home-skill-card__arrow{
+  display:grid;
+  width:36px;
+  height:36px;
+  flex:0 0 36px;
+  place-items:center;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:50%;
+  background:rgba(255,255,255,.055);
   color:#fff;
-  text-align:center;
-  font-size:16px;
-  line-height:1.45;
-  font-weight:800;
+  transition:transform .2s ease,background .2s ease;
+}
+
+.home-skill-card:hover .home-skill-card__arrow{
+  transform:translate(2px,-2px);
+  background:rgba(98,232,255,.14);
 }
 
 .home-skill-description{
-  margin:23px 0 19px;
-  color:rgba(255,255,255,.88);
-  text-align:center;
-  font-size:15px;
+  display:-webkit-box;
+  min-height:48px;
+  margin:14px 0 16px;
+  overflow:hidden;
+  color:rgba(255,255,255,.7);
+  font-size:13px;
   line-height:1.65;
-  font-weight:600;
+  font-weight:500;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:2;
 }
 
 .home-skill-tags{
   display:flex;
   flex-wrap:wrap;
-  gap:10px;
+  gap:7px;
   margin-top:auto;
 }
 
 .home-skill-tags span{
-  min-height:36px;
   display:inline-flex;
+  min-height:30px;
   align-items:center;
   justify-content:center;
-  padding:7px 14px;
-  border:1px solid rgba(68,218,248,.5);
+  padding:6px 10px;
+  border:1px solid rgba(68,218,248,.28);
   border-radius:999px;
-  background:rgba(31,83,99,.43);
+  background:rgba(31,83,99,.26);
   color:#aef7ff;
-  font-size:12px;
+  font-size:10px;
   line-height:1;
   font-weight:900;
   white-space:nowrap;
 }
 
 .home-skill-actions{
-  display:flex;
-  justify-content:center;
-  margin-top:28px;
+  display:grid;
+  grid-template-columns:1.2fr .8fr;
+  gap:9px;
+  margin-top:18px;
 }
 
-.home-skill-detail{
-  min-height:47px;
-  display:inline-flex;
+.home-skill-detail,
+.home-skill-review{
+  min-height:43px;
+  display:flex;
   align-items:center;
   justify-content:center;
-  padding:11px 22px;
-  border:0;
-  border-radius:999px;
-  background:linear-gradient(100deg,#e557e9 0%,#c85bea 46%,#55dff4 100%);
-  color:#fff;
-  font-size:14px;
+  padding:10px 12px;
+  border-radius:12px;
+  font-size:12px;
   line-height:1;
   font-weight:900;
   text-decoration:none;
-  box-shadow:0 10px 24px rgba(210,79,225,.24);
-  transition:transform .2s ease,filter .2s ease,box-shadow .2s ease;
+  transition:transform .2s ease,filter .2s ease,border-color .2s ease;
 }
 
-.home-skill-detail:hover{
-  transform:translateY(-2px);
-  filter:brightness(1.08);
-  box-shadow:0 13px 29px rgba(210,79,225,.33);
+.home-skill-detail{
+  border:0;
+  background:linear-gradient(100deg,#e557e9 0%,#b85de9 50%,#55dff4 100%);
+  color:#fff;
+  box-shadow:0 10px 24px rgba(210,79,225,.22);
 }
 
-.home-wiki-footer{
-  display:flex;
-  justify-content:center;
-  margin-top:31px;
-}
-
-.home-wiki-all{
-  color:#9eeefa;
-  font-size:14px;
-  font-weight:800;
-  text-decoration:none;
-}
-
-.home-wiki-all:hover{
+.home-skill-review{
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.055);
   color:#fff;
 }
 
+.home-skill-detail:hover,
+.home-skill-review:hover{
+  transform:translateY(-2px);
+  filter:brightness(1.08);
+  border-color:rgba(98,232,255,.42);
+}
+
+.home-wiki-footer{display:flex;justify-content:center;margin-top:31px}
+.home-wiki-all{color:#9eeefa;font-size:14px;font-weight:800;text-decoration:none}
+.home-wiki-all:hover{color:#fff}
+
 .home-skill-grid > .empty,
 .home-skill-grid > .status{
-  grid-column:1 / -1;
+  grid-column:1/-1;
   padding:34px;
   border:1px dashed rgba(93,222,247,.3);
   border-radius:20px;
@@ -511,60 +613,33 @@ box-shadow:0 0 10px rgba(77,179,255,.9),0 0 22px rgba(183,0,255,.6)!important;
   text-align:center;
 }
 
-@media (max-width:1040px){
-  .home-skill-grid{
-    grid-template-columns:repeat(2,minmax(0,1fr));
-  }
-
+@media(max-width:1040px){
+  .home-skill-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .home-skill-card:nth-child(3){
-    grid-column:1 / -1;
-    max-width:620px;
-    width:100%;
+    grid-column:1/-1;
+    width:min(100%,620px);
     justify-self:center;
   }
 }
 
-@media (max-width:700px){
-  .home-wiki-section{
-    padding:58px 0 62px;
-  }
-
-  .home-wiki-heading{
-    margin-bottom:25px;
-  }
-
+@media(max-width:700px){
+  .home-wiki-section{padding:58px 0 62px}
+  .home-wiki-heading{margin-bottom:25px}
   .home-wiki-search input{
     min-height:60px;
     padding-left:54px;
     padding-right:58px;
     font-size:14px;
   }
-
-  .home-wiki-search-icon{
-    left:19px;
-    font-size:19px;
-  }
-
-  .home-skill-grid{
-    grid-template-columns:1fr;
-    gap:18px;
-  }
-
-  .home-skill-card,
-  .home-skill-card:nth-child(3){
+  .home-wiki-search-icon{left:19px;font-size:19px}
+  .home-skill-grid{grid-template-columns:1fr;gap:18px}
+  .home-skill-card,.home-skill-card:nth-child(3){
     grid-column:auto;
+    width:100%;
     max-width:none;
-    min-height:0;
-    padding:26px 22px 24px;
   }
-
-  .home-skill-card h3{
-    font-size:24px;
-  }
-
-  .home-skill-description{
-    margin-top:18px;
-  }
+  .home-skill-card__body{padding:18px}
+  .home-skill-card h3{font-size:21px}
 }
 
 </style>
@@ -947,7 +1022,7 @@ rel="noopener">
   <div class="wrap copyright">© 2026 Mina Audition. Nội dung dành cho cộng đồng Audition.</div>
 </footer>
 
-<script type="module" src="/assets/js/site-v3.js?v=6.0.8-home-wiki-skill"></script>
+<script type="module" src="/assets/js/site-v3.js?v=6.0.9-home-wiki-card"></script>
 
 <script>
 (() => {
