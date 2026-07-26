@@ -9,6 +9,13 @@ const chartState = {
   data: null
 };
 
+const dashboardRequestState = {
+  loading: false,
+  lastKey: "",
+  lastLoadedAt: 0,
+  minimumRepeatMs: 60 * 1000
+};
+
 function $(selector) {
   return document.querySelector(selector);
 }
@@ -52,7 +59,7 @@ function authHeaders() {
 
 function queryParams() {
   const params = new URLSearchParams();
-  params.set("days", $("#smartAnalyticsRange")?.value || "30");
+  params.set("days", $("#smartAnalyticsRange")?.value || "7");
   params.set("tzOffset", "420");
 
   const linkId = $("#smartAnalyticsLink")?.value || "";
@@ -611,7 +618,7 @@ function setLoading(loading) {
   }
 }
 
-export async function loadSmartLinkAnalytics() {
+export async function loadSmartLinkAnalytics(options = {}) {
   const status = $("#smartAnalyticsStatus");
   const apiKey = getApiKey();
 
@@ -624,47 +631,68 @@ export async function loadSmartLinkAnalytics() {
     return;
   }
 
+  if (dashboardRequestState.loading) {
+    if (status) {
+      status.textContent = "Dashboard đang tải. Vui lòng chờ hoàn tất.";
+      status.className = "analytics-status";
+    }
+    return;
+  }
+
+  const params = queryParams();
+  const requestKey = params.toString();
+  const now = Date.now();
+
+  if (
+    !options.force &&
+    dashboardRequestState.lastKey === requestKey &&
+    now - dashboardRequestState.lastLoadedAt <
+      dashboardRequestState.minimumRepeatMs
+  ) {
+    if (status) {
+      status.textContent =
+        "Dữ liệu vừa được tải. Hãy chờ khoảng 1 phút trước khi tải lại cùng bộ lọc.";
+      status.className = "analytics-status";
+    }
+    return;
+  }
+
+  dashboardRequestState.loading = true;
   setLoading(true);
 
   try {
-    const mainPromise = fetch(
-      `/api/admin/smartlinks/dashboard?${queryParams()}`,
+    const response = await fetch(
+      `/api/admin/smartlinks/dashboard?${params}`,
       {
         cache: "no-store",
         headers: authHeaders()
       }
-    ).then(async response => {
-      const result = await response.json();
+    );
 
-      if (!response.ok || !result.success) {
-        throw new Error(
-          result.message || "Không tải được Smart Link Dashboard."
-        );
-      }
+    const result = await response.json();
 
-      return result;
-    });
+    if (!response.ok || !result.success) {
+      throw new Error(
+        result.message || "Không tải được Smart Link Dashboard."
+      );
+    }
 
-    // Hai truy vấn so sánh chạy độc lập. Nếu một truy vấn lỗi,
-    // Dashboard chính vẫn hiển thị bình thường.
-    const [mainResult, comparison14, comparison60] =
-      await Promise.all([
-        mainPromise,
-        fetchAnalyticsForDays(14).catch(error => {
-          console.warn("Không tải được so sánh 14 ngày:", error);
-          return null;
-        }),
-        fetchAnalyticsForDays(60).catch(error => {
-          console.warn("Không tải được so sánh 60 ngày:", error);
-          return null;
-        })
-      ]);
+    renderDashboard(result);
 
-    renderDashboard(mainResult);
-    renderTrends(mainResult, comparison14, comparison60);
+    // Dashboard Lite không tạo thêm request 14 ngày và 60 ngày.
+    // Các số 7 ngày/30 ngày vẫn lấy từ cùng một response chính.
+    document
+      .querySelectorAll(".smart-stat-trend")
+      .forEach(element => element.remove());
+
+    dashboardRequestState.lastKey = requestKey;
+    dashboardRequestState.lastLoadedAt = Date.now();
 
     if (status) {
-      status.textContent = "Dữ liệu đã được cập nhật.";
+      const scanned = Number(result.summary?.scannedDocuments || 0);
+      const cached = result.cache?.hit ? " • cache" : "";
+      status.textContent =
+        `Dữ liệu đã cập nhật • quét ${number(scanned)} click${cached}.`;
       status.className = "analytics-status success";
     }
   } catch (error) {
@@ -675,6 +703,7 @@ export async function loadSmartLinkAnalytics() {
       status.className = "analytics-status error";
     }
   } finally {
+    dashboardRequestState.loading = false;
     setLoading(false);
   }
 }
@@ -698,16 +727,30 @@ function exportCsv() {
 
 export function bindSmartLinkAnalytics() {
   $("#refreshSmartAnalyticsButton")
-    ?.addEventListener("click", loadSmartLinkAnalytics);
+    ?.addEventListener("click", () =>
+      loadSmartLinkAnalytics({ force: false })
+    );
 
   $("#exportSmartAnalyticsButton")
     ?.addEventListener("click", exportCsv);
 
+  // Đổi bộ lọc không tự đọc Firestore.
+  // Người quản trị chọn xong rồi bấm "Tải thống kê".
   [
     "#smartAnalyticsRange",
-    "#smartAnalyticsLink"
+    "#smartAnalyticsLink",
+    "#smartAnalyticsSource",
+    "#smartAnalyticsPost",
+    "#smartAnalyticsCampaign"
   ].forEach(selector => {
-    $(selector)?.addEventListener("change", loadSmartLinkAnalytics);
+    $(selector)?.addEventListener("change", () => {
+      const status = $("#smartAnalyticsStatus");
+      if (status) {
+        status.textContent =
+          "Bộ lọc đã thay đổi. Bấm “Tải thống kê” để cập nhật.";
+        status.className = "analytics-status";
+      }
+    });
   });
 
   [
@@ -718,10 +761,16 @@ export function bindSmartLinkAnalytics() {
     $(selector)?.addEventListener("keydown", event => {
       if (event.key === "Enter") {
         event.preventDefault();
-        loadSmartLinkAnalytics();
+        loadSmartLinkAnalytics({ force: false });
       }
     });
   });
+
+  const status = $("#smartAnalyticsStatus");
+  if (status && !status.textContent.trim()) {
+    status.textContent =
+      "Dashboard Lite: chọn bộ lọc rồi bấm “Tải thống kê”.";
+  }
 }
 
 
