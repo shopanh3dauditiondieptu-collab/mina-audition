@@ -21,18 +21,84 @@ function findCategoryNode(nodes, target) {
 function moduleTree(tree) {
   if (!activeModuleId) return tree;
   const root = findCategoryNode(tree, activeModuleId);
-  return root ? [root] : [];
+  if (!root) return [];
+
+  // Mỗi trang module đã là một khu vực độc lập, vì vậy sidebar chỉ hiển thị
+  // danh mục trực thuộc module. Không lặp lại thêm một “thư mục lớn” bên trong.
+  return Array.isArray(root.children) && root.children.length
+    ? root.children
+    : [root];
 }
 
-function postBelongsToModule(post, root) {
-  if (!root) return true;
-  const tokens = collectNodeTokens(root);
+function moduleAliases(root) {
+  return [root?.id, root?.slug, root?.module, root?.name]
+    .filter(Boolean)
+    .map(normalize)
+    .filter(Boolean);
+}
+
+function moduleChildTokens(root) {
+  return (root?.children || [])
+    .flatMap(collectNodeTokens)
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length);
+}
+
+function inferModuleRoot(post, categoryTree) {
+  const roots = (categoryTree || []).filter(node => Array.isArray(node.children));
   const haystack = categoryTokens(post);
-  const explicit = normalize(value(post, ["moduleId", "module", "sectionId", "section"], ""));
-  return tokens.some(token => token && haystack.includes(token)) ||
-    [root.id, root.slug, root.module, root.name].filter(Boolean).map(normalize).some(token => token && explicit.includes(token));
+  let winner = null;
+  let winnerScore = 0;
+
+  for (const root of roots) {
+    const matched = moduleChildTokens(root).find(token => token && haystack.includes(token));
+    const score = matched ? matched.length : 0;
+    if (score > winnerScore) {
+      winner = root;
+      winnerScore = score;
+    }
+  }
+
+  return winner;
 }
 
+function postBelongsToModule(post, root, categoryTree = []) {
+  if (!root) return true;
+
+  // Ưu tiên danh mục con cụ thể. Đây là nguồn dữ liệu đáng tin cậy nhất cho
+  // bài cũ vì nhiều bài trước đây cùng mang module cha "Mina Blog".
+  const inferredRoot = inferModuleRoot(post, categoryTree);
+  if (inferredRoot) {
+    const currentAliases = moduleAliases(root);
+    const inferredAliases = moduleAliases(inferredRoot);
+    return currentAliases.some(alias => inferredAliases.includes(alias));
+  }
+
+  // Chỉ dùng module được lưu trực tiếp khi bài không có danh mục con đủ rõ.
+  // Nhờ vậy module cha cũ không còn kéo nhầm toàn bộ bài sang Blog Mina.
+  const explicit = normalize(value(post, ["moduleId", "module", "sectionId", "section"], ""));
+  if (explicit) {
+    return moduleAliases(root).includes(explicit);
+  }
+
+  // Fallback cho dữ liệu rất cũ chỉ lưu đúng tên/slug module, không có cấp con.
+  // Không áp dụng cho Blog Mina vì token cha này từng được gắn vào gần như mọi bài.
+  if (normalize(root.module) !== "blog") {
+    const haystack = categoryTokens(post);
+    return moduleAliases(root).some(alias => alias && haystack.includes(alias));
+  }
+
+  return false;
+}
+
+function moduleAllLabel() {
+  const key = normalize(activeModuleId);
+  if (key.includes("mix-match")) return "🔥 Tất cả bộ phối";
+  if (key.includes("academy")) return "🔥 Tất cả bài học";
+  if (key.includes("ai-prompt")) return "🔥 Tất cả nội dung";
+  if (key.includes("game-gear")) return "🔥 Tất cả nội dung";
+  return "🔥 Tất cả bài viết";
+}
 
 const CATEGORY_COLOR_RULES = [
   { color: "#ec4899", keywords: ["mina blog", "prompt", "ai prompt", "lenh ai", "lệnh ai"] },
@@ -186,7 +252,7 @@ function renderCategorySidebar(container, tree, posts, onSelect) {
       type="button"
       class="blog-category-all is-active"
       data-category-value="">
-      <span>🔥 Tất cả bài viết</span>
+      <span>${esc(moduleAllLabel())}</span>
       <span class="blog-category-count">${posts.length}</span>
     </button>
     ${renderNodes(tree)}
@@ -737,6 +803,10 @@ async function blog() {
   const jumpInput = document.querySelector("#blogJumpPage");
   const chips = [...document.querySelectorAll("[data-type]")];
 
+  // Các trang đã tách module độc lập nên bộ lọc chéo AI Prompt / Outfit /
+  // Academy / Video không còn phù hợp. Xóa cả các nút cũ còn sót do cache HTML.
+  chips.forEach(chip => chip.remove());
+
   if (!box || !search || !category || !count) return;
 
   renderMinaSkeleton(box, 6, "post");
@@ -779,11 +849,11 @@ async function blog() {
 
     const rootModule = activeModuleId ? findCategoryNode(categoryTree, activeModuleId) : null;
     const visibleTree = moduleTree(categoryTree);
-    const all = allPosts.filter(post => post.status !== "draft" && postBelongsToModule(post, rootModule));
+    const all = allPosts.filter(post => post.status !== "draft" && postBelongsToModule(post, rootModule, categoryTree));
     renderCategorySelect(category, visibleTree, all);
 
     const urlParams = new URLSearchParams(location.search);
-    const requestedType = urlParams.get("type") || "";
+    const requestedType = "";
     const requestedCategory = urlParams.get("category") || "";
     const requestedCategoryName = urlParams.get("categoryName") || "";
     const requestedSearch = urlParams.get("q") || "";
@@ -807,7 +877,7 @@ async function blog() {
         else params.delete(key);
       };
 
-      setOrDelete("type", activeType);
+      params.delete("type");
       setOrDelete("category", activeCategory);
       setOrDelete("categoryName", activeCategoryName);
       setOrDelete("q", search.value.trim());
@@ -976,14 +1046,6 @@ async function blog() {
       searchTimer = window.setTimeout(() => {
         render({ resetPage: true });
       }, 180);
-    });
-
-    chips.forEach(chip => {
-      chip.addEventListener("click", () => {
-        activeType = chip.dataset.type;
-        chips.forEach(item => item.classList.toggle("active", item === chip));
-        render({ resetPage: true });
-      });
     });
 
     pageSizeSelect?.addEventListener("change", () => {
