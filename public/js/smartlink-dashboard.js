@@ -208,10 +208,323 @@ function renderRecentClicks(rows = []) {
   }).join("");
 }
 
+
+function getRows(data, ...paths) {
+  for (const path of paths) {
+    const value = path.split(".").reduce(
+      (current, key) => current?.[key],
+      data
+    );
+
+    if (Array.isArray(value)) return value;
+  }
+
+  return [];
+}
+
+function normalizeBreakdownRows(rows = []) {
+  return rows.map(row => ({
+    label:
+      row.label ??
+      row.name ??
+      row.key ??
+      row.browser ??
+      row.country ??
+      row.code ??
+      "Không xác định",
+    value:
+      row.value ??
+      row.clicks ??
+      row.count ??
+      row.total ??
+      0
+  }));
+}
+
+function renderHourlyHeatmap(data) {
+  const container = $("#smartHourlyHeatmap");
+  if (!container) return;
+
+  const rawRows = getRows(
+    data,
+    "hourly",
+    "hourlyHeatmap",
+    "breakdowns.hours",
+    "breakdowns.hourly"
+  );
+
+  const hourMap = new Map();
+
+  rawRows.forEach(row => {
+    const rawHour =
+      row.hour ??
+      row.label ??
+      row.key ??
+      row.name;
+
+    const hour = Number(
+      String(rawHour ?? "")
+        .replace("h", "")
+        .replace(":00", "")
+        .trim()
+    );
+
+    if (Number.isInteger(hour) && hour >= 0 && hour <= 23) {
+      hourMap.set(
+        hour,
+        Number(
+          row.clicks ??
+          row.value ??
+          row.count ??
+          row.total ??
+          0
+        )
+      );
+    }
+  });
+
+  // Fallback nhẹ từ click gần nhất nếu API cũ chưa trả hourly.
+  if (!hourMap.size) {
+    (data.recentClicks || []).forEach(row => {
+      if (!row.clickedAt) return;
+      const date = new Date(row.clickedAt);
+      if (Number.isNaN(date.getTime())) return;
+
+      const hour = Number(
+        new Intl.DateTimeFormat("en-US", {
+          timeZone: "Asia/Ho_Chi_Minh",
+          hour: "2-digit",
+          hour12: false
+        }).format(date)
+      );
+
+      hourMap.set(hour, (hourMap.get(hour) || 0) + 1);
+    });
+  }
+
+  const hours = Array.from({ length: 24 }, (_, hour) => ({
+    hour,
+    clicks: hourMap.get(hour) || 0
+  }));
+
+  const max = Math.max(...hours.map(item => item.clicks), 1);
+
+  container.innerHTML = hours.map(item => {
+    const ratio = item.clicks / max;
+    const level =
+      item.clicks === 0 ? 0 :
+      ratio <= .2 ? 1 :
+      ratio <= .4 ? 2 :
+      ratio <= .6 ? 3 :
+      ratio <= .8 ? 4 : 5;
+
+    return `
+      <div
+        class="hourly-cell heat-level-${level}"
+        title="${String(item.hour).padStart(2, "0")}:00 — ${number(item.clicks)} click"
+      >
+        <span>${String(item.hour).padStart(2, "0")}h</span>
+        <strong>${number(item.clicks)}</strong>
+      </div>`;
+  }).join("");
+}
+
+function renderPostPerformance(data) {
+  const container = $("#smartPostPerformance");
+  if (!container) return;
+
+  const rows = getRows(
+    data,
+    "postPerformance",
+    "breakdowns.postPerformance",
+    "performance.posts"
+  );
+
+  if (!rows.length) {
+    container.innerHTML = `
+      <div class="analytics-empty">
+        Chưa có dữ liệu lượt xem bài để tính CTR. Click Smart Link vẫn được thống kê bình thường.
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="post-performance-head">
+      <span>Bài viết</span>
+      <span>Lượt xem</span>
+      <span>Smart Click</span>
+      <span>CTR</span>
+    </div>
+    ${rows.slice(0, 20).map(row => {
+      const views = Number(
+        row.views ??
+        row.postViews ??
+        row.viewCount ??
+        0
+      );
+      const clicks = Number(
+        row.clicks ??
+        row.smartClicks ??
+        row.value ??
+        0
+      );
+      const ctr = views > 0
+        ? (clicks / views) * 100
+        : null;
+
+      return `
+        <div class="post-performance-row">
+          <span>
+            <strong>${escapeHtml(
+              row.title ??
+              row.postTitle ??
+              row.postCode ??
+              row.label ??
+              "Không xác định"
+            )}</strong>
+            <small>${escapeHtml(row.postCode || row.id || "")}</small>
+          </span>
+          <span>${number(views)}</span>
+          <span>${number(clicks)}</span>
+          <span>${ctr === null ? "Chờ dữ liệu view" : `${ctr.toFixed(2)}%`}</span>
+        </div>`;
+    }).join("")}`;
+}
+
+function changePercent(current, previous) {
+  current = Number(current || 0);
+  previous = Number(previous || 0);
+
+  if (previous === 0) {
+    return current === 0
+      ? { value: 0, label: "0%" }
+      : { value: null, label: "Mới phát sinh" };
+  }
+
+  const value = ((current - previous) / previous) * 100;
+
+  return {
+    value,
+    label: `${value > 0 ? "+" : ""}${value.toFixed(1)}%`
+  };
+}
+
+function addTrendToStat(statId, trend, comparisonLabel) {
+  const valueElement = document.getElementById(statId);
+  const card = valueElement?.closest(".smart-analytics-stat");
+  if (!card) return;
+
+  let trendElement = card.querySelector(".smart-stat-trend");
+
+  if (!trendElement) {
+    trendElement = document.createElement("small");
+    trendElement.className = "smart-stat-trend";
+    card.appendChild(trendElement);
+  }
+
+  trendElement.className =
+    "smart-stat-trend " +
+    (
+      trend.value === null || trend.value > 0
+        ? "trend-up"
+        : trend.value < 0
+          ? "trend-down"
+          : "trend-flat"
+    );
+
+  trendElement.textContent =
+    `${trend.label} so với ${comparisonLabel}`;
+}
+
+function countDailyBetween(daily = [], startDate, endDate) {
+  return daily.reduce((total, item) => {
+    const date = new Date(`${item.date}T00:00:00+07:00`);
+    if (
+      !Number.isNaN(date.getTime()) &&
+      date >= startDate &&
+      date < endDate
+    ) {
+      return total + Number(item.clicks || 0);
+    }
+
+    return total;
+  }, 0);
+}
+
+function renderTrends(mainData, comparison14, comparison60) {
+  const now = new Date();
+
+  const current7Start = new Date(now.getTime() - 7 * 86400000);
+  const previous7Start = new Date(now.getTime() - 14 * 86400000);
+  const current30Start = new Date(now.getTime() - 30 * 86400000);
+  const previous30Start = new Date(now.getTime() - 60 * 86400000);
+
+  const daily14 = comparison14?.daily || [];
+  const daily60 = comparison60?.daily || [];
+
+  const current7 =
+    Number(mainData.summary?.sevenDayClicks) ||
+    countDailyBetween(daily14, current7Start, now);
+
+  const previous7 = countDailyBetween(
+    daily14,
+    previous7Start,
+    current7Start
+  );
+
+  const current30 =
+    Number(mainData.summary?.thirtyDayClicks) ||
+    countDailyBetween(daily60, current30Start, now);
+
+  const previous30 = countDailyBetween(
+    daily60,
+    previous30Start,
+    current30Start
+  );
+
+  addTrendToStat(
+    "smartStat7Days",
+    changePercent(current7, previous7),
+    "7 ngày trước"
+  );
+
+  addTrendToStat(
+    "smartStat30Days",
+    changePercent(current30, previous30),
+    "30 ngày trước"
+  );
+}
+
+async function fetchAnalyticsForDays(days) {
+  const params = queryParams();
+  params.set("days", String(days));
+
+  const response = await fetch(
+    `/api/admin/smartlinks/dashboard?${params}`,
+    {
+      cache: "no-store",
+      headers: authHeaders()
+    }
+  );
+
+  const result = await response.json();
+
+  if (!response.ok || !result.success) {
+    throw new Error(
+      result.message ||
+      `Không tải được dữ liệu so sánh ${days} ngày.`
+    );
+  }
+
+  return result;
+}
+
+
 function renderDashboard(data) {
   chartState.data = data;
   renderSummary(data);
   renderDailyChart(data.daily || []);
+
   renderBars(
     "#smartSourceBreakdown",
     data.breakdowns?.sources || [],
@@ -242,6 +555,35 @@ function renderDashboard(data) {
     data.breakdowns?.referrers || [],
     "Chưa có dữ liệu referrer."
   );
+
+  renderBars(
+    "#smartBrowserBreakdown",
+    normalizeBreakdownRows(
+      getRows(
+        data,
+        "breakdowns.browsers",
+        "breakdowns.browser",
+        "browsers"
+      )
+    ),
+    "Các lượt click cũ chưa lưu thông tin trình duyệt."
+  );
+
+  renderBars(
+    "#smartCountryBreakdown",
+    normalizeBreakdownRows(
+      getRows(
+        data,
+        "breakdowns.countries",
+        "breakdowns.country",
+        "countries"
+      )
+    ),
+    "Các lượt click cũ chưa lưu thông tin quốc gia."
+  );
+
+  renderHourlyHeatmap(data);
+  renderPostPerformance(data);
   populateLinkFilter(data.links || []);
   renderRecentClicks(data.recentClicks || []);
 
@@ -285,23 +627,41 @@ export async function loadSmartLinkAnalytics() {
   setLoading(true);
 
   try {
-    const response = await fetch(
+    const mainPromise = fetch(
       `/api/admin/smartlinks/dashboard?${queryParams()}`,
       {
         cache: "no-store",
         headers: authHeaders()
       }
-    );
+    ).then(async response => {
+      const result = await response.json();
 
-    const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message || "Không tải được Smart Link Dashboard."
+        );
+      }
 
-    if (!response.ok || !result.success) {
-      throw new Error(
-        result.message || "Không tải được Smart Link Dashboard."
-      );
-    }
+      return result;
+    });
 
-    renderDashboard(result);
+    // Hai truy vấn so sánh chạy độc lập. Nếu một truy vấn lỗi,
+    // Dashboard chính vẫn hiển thị bình thường.
+    const [mainResult, comparison14, comparison60] =
+      await Promise.all([
+        mainPromise,
+        fetchAnalyticsForDays(14).catch(error => {
+          console.warn("Không tải được so sánh 14 ngày:", error);
+          return null;
+        }),
+        fetchAnalyticsForDays(60).catch(error => {
+          console.warn("Không tải được so sánh 60 ngày:", error);
+          return null;
+        })
+      ]);
+
+    renderDashboard(mainResult);
+    renderTrends(mainResult, comparison14, comparison60);
 
     if (status) {
       status.textContent = "Dữ liệu đã được cập nhật.";
@@ -363,5 +723,108 @@ export function bindSmartLinkAnalytics() {
     });
   });
 }
+
+
+function ensureAnalyticsEnhancementStyles() {
+  if (document.getElementById("minaSmartAnalyticsEnhancementStyles")) {
+    return;
+  }
+
+  const style = document.createElement("style");
+  style.id = "minaSmartAnalyticsEnhancementStyles";
+  style.textContent = `
+    .smart-stat-trend {
+      display: block;
+      margin-top: 6px;
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .smart-stat-trend.trend-up { color: #70f3c2; }
+    .smart-stat-trend.trend-down { color: #ff7b9f; }
+    .smart-stat-trend.trend-flat { color: #aeb6d8; }
+
+    .hourly-heatmap {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(54px, 1fr));
+      gap: 8px;
+    }
+    .hourly-cell {
+      min-height: 58px;
+      padding: 8px 5px;
+      border: 1px solid rgba(103, 224, 255, .18);
+      border-radius: 10px;
+      background: rgba(103, 224, 255, .04);
+      text-align: center;
+    }
+    .hourly-cell span,
+    .hourly-cell strong {
+      display: block;
+    }
+    .hourly-cell span {
+      color: #aeb6d8;
+      font-size: 11px;
+    }
+    .hourly-cell strong {
+      margin-top: 5px;
+      color: #fff;
+      font-size: 14px;
+    }
+    .hourly-cell.heat-level-1 { background: rgba(103, 224, 255, .10); }
+    .hourly-cell.heat-level-2 { background: rgba(103, 224, 255, .18); }
+    .hourly-cell.heat-level-3 { background: linear-gradient(135deg, rgba(103, 224, 255, .24), rgba(234, 77, 202, .18)); }
+    .hourly-cell.heat-level-4 { background: linear-gradient(135deg, rgba(103, 224, 255, .34), rgba(234, 77, 202, .30)); }
+    .hourly-cell.heat-level-5 { background: linear-gradient(135deg, rgba(103, 224, 255, .52), rgba(234, 77, 202, .52)); }
+
+    .post-performance-head,
+    .post-performance-row {
+      display: grid;
+      grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(90px, .65fr));
+      gap: 12px;
+      align-items: center;
+    }
+    .post-performance-head {
+      padding: 10px 12px;
+      color: #aeb6d8;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .post-performance-row {
+      padding: 12px;
+      border-top: 1px solid rgba(103, 224, 255, .14);
+    }
+    .post-performance-row span:not(:first-child) {
+      text-align: right;
+    }
+    .post-performance-row small {
+      display: block;
+      margin-top: 4px;
+      color: #aeb6d8;
+    }
+
+    @media (max-width: 900px) {
+      .hourly-heatmap {
+        grid-template-columns: repeat(6, minmax(48px, 1fr));
+      }
+    }
+    @media (max-width: 620px) {
+      .hourly-heatmap {
+        grid-template-columns: repeat(4, minmax(48px, 1fr));
+      }
+      .post-performance-head {
+        display: none;
+      }
+      .post-performance-row {
+        grid-template-columns: 1fr 1fr;
+      }
+      .post-performance-row span:not(:first-child) {
+        text-align: left;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+}
+
+ensureAnalyticsEnhancementStyles();
 
 bindSmartLinkAnalytics();
