@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/admin-v5.css?v=1.8.0">
+  <link rel="stylesheet" href="/css/admin-v5.css?v=1.9.0">
   <link rel="stylesheet" href="/css/smartlink-dashboard.css?v=1.1.0">
 
   <style>
@@ -269,27 +269,44 @@
             </label>
           </div>
 
-          <section class="homepage-display-settings" aria-labelledby="homepageDisplayHeading">
+          <section class="homepage-display-settings featured-location-settings" aria-labelledby="homepageDisplayHeading">
             <div>
-              <h3 id="homepageDisplayHeading">📌 Hiển thị trên trang chủ</h3>
-              <p>Kiểm soát bài nào được xuất hiện và thứ tự bài ghim trên trang chủ.</p>
+              <h3 id="homepageDisplayHeading">📌 Vị trí bài nổi bật</h3>
+              <p>Một bài có thể nổi bật ở trang chủ, trong module hiện tại hoặc đồng thời ở cả hai vị trí.</p>
             </div>
 
-            <label class="checkbox-row">
-              <input id="showOnHome" type="checkbox" checked>
-              <span>Cho phép hiển thị bài này trên trang chủ</span>
-            </label>
+            <div class="featured-location-grid">
+              <article class="featured-location-card home-location-card">
+                <div class="featured-location-title">🏠 Trang chủ</div>
+                <label class="checkbox-row">
+                  <input id="showOnHome" type="checkbox" checked>
+                  <span>Cho phép hiển thị bài này trên trang chủ</span>
+                </label>
+                <label class="checkbox-row">
+                  <input id="featured" type="checkbox">
+                  <span>Nổi bật ở trang chủ</span>
+                </label>
+                <label>
+                  <span>Ưu tiên trang chủ</span>
+                  <input id="featuredPriority" type="number" min="1" max="999" step="1" value="100" placeholder="Ví dụ: 1">
+                  <small class="priority-help">Số nhỏ hơn sẽ đứng trước trong nhóm nổi bật trang chủ.</small>
+                </label>
+              </article>
 
-            <label class="checkbox-row">
-              <input id="featured" type="checkbox">
-              <span>Ghim bài này lên đầu danh sách trang chủ</span>
-            </label>
-
-            <label>
-              <span>Thứ tự ưu tiên bài ghim</span>
-              <input id="featuredPriority" type="number" min="1" max="999" step="1" value="100" placeholder="Ví dụ: 1">
-              <small class="priority-help">Số nhỏ hơn hiển thị trước. Ví dụ: ưu tiên 1 đứng trước ưu tiên 2.</small>
-            </label>
+              <article class="featured-location-card module-location-card">
+                <div class="featured-location-title">📂 Module hiện tại</div>
+                <p id="featuredModuleHint" class="featured-module-hint">Chọn Module ở phía trên để xác định nơi hiển thị.</p>
+                <label class="checkbox-row">
+                  <input id="featuredModule" type="checkbox">
+                  <span>Nổi bật trong module đã chọn</span>
+                </label>
+                <label>
+                  <span>Ưu tiên trong module</span>
+                  <input id="featuredModulePriority" type="number" min="1" max="999" step="1" value="100" placeholder="Ví dụ: 1">
+                  <small class="priority-help">Mỗi module có thứ tự nổi bật riêng, không ảnh hưởng thứ tự trang chủ.</small>
+                </label>
+              </article>
+            </div>
           </section>
 
           <details class="seo-box">
@@ -395,6 +412,11 @@
           </div>
         </div>
 
+        <div class="featured-scope-tabs" role="tablist" aria-label="Vị trí nổi bật">
+          <button class="featured-scope-tab active" type="button" data-featured-scope="home">🏠 Trang chủ</button>
+          <button class="featured-scope-tab" type="button" data-featured-scope="module">📂 Theo module</button>
+        </div>
+
         <div class="featured-toolbar">
           <input id="featuredSearch" type="search" placeholder="Tìm tiêu đề, AI ID, module hoặc danh mục...">
           <select id="featuredModuleFilter">
@@ -411,7 +433,7 @@
         </div>
 
         <div class="featured-summary">
-          <article><strong id="featuredTotalCount">0</strong><span>Tổng bài nổi bật</span></article>
+          <article><strong id="featuredTotalCount">0</strong><span id="featuredTotalLabel">Nổi bật trang chủ</span></article>
           <article><strong id="featuredVisibleCount">0</strong><span>Đang hiển thị</span></article>
           <article><strong id="featuredSelectedCount">0</strong><span>Đã chọn</span></article>
           <article><strong id="featuredTopPriority">—</strong><span>Ưu tiên đầu</span></article>
@@ -421,7 +443,7 @@
           <span>Chọn</span><span>Thứ tự</span><span>Ảnh</span><span>Bài viết</span><span>Module / Danh mục</span><span>Thao tác</span>
         </div>
         <div id="featuredPostsList" class="featured-posts-list"></div>
-        <div class="featured-help">Kéo biểu tượng <b>⋮⋮</b> để đổi thứ tự, sau đó bấm <b>Lưu thứ tự</b>. Số ưu tiên nhỏ hơn sẽ hiển thị trước.</div>
+        <div class="featured-help">Chọn <b>Trang chủ</b> hoặc <b>Theo module</b>, kéo biểu tượng <b>⋮⋮</b> để đổi thứ tự rồi bấm <b>Lưu thứ tự</b>.</div>
       </section>
     </section>
 

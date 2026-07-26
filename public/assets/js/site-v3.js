@@ -461,6 +461,39 @@ function getHomePostTime(post) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function isHomeFeatured(post) {
+  if (post?.featuredHome === true) return true;
+  if (post?.featuredHome === false) return false;
+  return post?.featured === true;
+}
+
+function getHomeFeaturedPriority(post) {
+  const value = Number.parseInt(post?.featuredHomePriority ?? post?.featuredPriority, 10);
+  return Number.isFinite(value) && value > 0 ? value : 100;
+}
+
+function isModuleFeatured(post) {
+  return post?.featuredModule === true;
+}
+
+function getModuleFeaturedPriority(post) {
+  const value = Number.parseInt(post?.featuredModulePriority, 10);
+  return Number.isFinite(value) && value > 0 ? value : 100;
+}
+
+function sortModulePosts(posts = []) {
+  return [...posts].sort((a, b) => {
+    const aFeatured = isModuleFeatured(a);
+    const bFeatured = isModuleFeatured(b);
+    if (aFeatured !== bFeatured) return aFeatured ? -1 : 1;
+    if (aFeatured && bFeatured) {
+      const priorityDiff = getModuleFeaturedPriority(a) - getModuleFeaturedPriority(b);
+      if (priorityDiff) return priorityDiff;
+    }
+    return getHomePostTime(b) - getHomePostTime(a);
+  });
+}
+
 function canShowPostOnHome(post) {
   if (!post) return false;
   const isPublished = !post.status || post.status === "published";
@@ -469,13 +502,13 @@ function canShowPostOnHome(post) {
 
 function sortHomePosts(posts = []) {
   return [...posts].sort((a, b) => {
-    const aFeatured = a?.featured === true;
-    const bFeatured = b?.featured === true;
+    const aFeatured = isHomeFeatured(a);
+    const bFeatured = isHomeFeatured(b);
     if (aFeatured !== bFeatured) return aFeatured ? -1 : 1;
 
     if (aFeatured && bFeatured) {
-      const aPriority = Number.parseInt(a.featuredPriority, 10) || 100;
-      const bPriority = Number.parseInt(b.featuredPriority, 10) || 100;
+      const aPriority = getHomeFeaturedPriority(a);
+      const bPriority = getHomeFeaturedPriority(b);
       if (aPriority !== bPriority) return aPriority - bPriority;
     }
 
@@ -486,10 +519,14 @@ function sortHomePosts(posts = []) {
 function cardPost(post) {
   const type = classify(post);
   const id = getInternalId(post);
+  const featuredHere = page === "home"
+    ? isHomeFeatured(post)
+    : Boolean(activeModuleId) && isModuleFeatured(post);
+  const featuredLabel = page === "home" ? "🏠 Nổi bật" : "📌 Nổi bật module";
 
   return `
-    <article class="content-card ${post.featured === true ? "is-featured" : ""}" data-type="${type}">
-      ${post.featured === true ? `<span class="home-featured-badge">📌 Bài nổi bật</span>` : ""}
+    <article class="content-card ${featuredHere ? "is-featured" : ""}" data-type="${type}">
+      ${featuredHere ? `<span class="home-featured-badge">${featuredLabel}</span>` : ""}
       <a class="card-media" href="${postUrl(post)}">
         <img loading="lazy" src="${esc(getImage(post))}" alt="${esc(post.title || "Mina Audition")}" onerror="this.src='${placeholder}'">
         ${id ? `<span class="card-id">${esc(id)}</span>` : ""}
@@ -849,7 +886,9 @@ async function blog() {
 
     const rootModule = activeModuleId ? findCategoryNode(categoryTree, activeModuleId) : null;
     const visibleTree = moduleTree(categoryTree);
-    const all = allPosts.filter(post => post.status !== "draft" && postBelongsToModule(post, rootModule, categoryTree));
+    const all = sortModulePosts(
+      allPosts.filter(post => post.status !== "draft" && postBelongsToModule(post, rootModule, categoryTree))
+    );
     renderCategorySelect(category, visibleTree, all);
 
     const urlParams = new URLSearchParams(location.search);

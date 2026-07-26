@@ -34,7 +34,8 @@ const state = {
   smartLinksLoading: false,
   featuredOrder: [],
   featuredSelectedIds: new Set(),
-  featuredDragId: ""
+  featuredDragId: "",
+  featuredScope: "home"
 };
 
 const $ = selector => document.querySelector(selector);
@@ -348,13 +349,52 @@ function legacyBlocks(post) {
 
 function updateHomepageDisplayControls() {
   const showOnHome = $("#showOnHome");
-  const featured = $("#featured");
-  const priority = $("#featuredPriority");
-  if (!showOnHome || !featured || !priority) return;
+  const featuredHome = $("#featured");
+  const homePriority = $("#featuredPriority");
+  const featuredModule = $("#featuredModule");
+  const modulePriority = $("#featuredModulePriority");
+  const moduleSelect = $("#categoryLevel1");
+  const moduleHint = $("#featuredModuleHint");
 
-  if (!showOnHome.checked) featured.checked = false;
-  featured.disabled = !showOnHome.checked;
-  priority.disabled = !showOnHome.checked || !featured.checked;
+  if (showOnHome && featuredHome && homePriority) {
+    if (!showOnHome.checked) featuredHome.checked = false;
+    featuredHome.disabled = !showOnHome.checked;
+    homePriority.disabled = !showOnHome.checked || !featuredHome.checked;
+  }
+
+  const hasModule = Boolean(moduleSelect?.value);
+  if (featuredModule && modulePriority) {
+    if (!hasModule) featuredModule.checked = false;
+    featuredModule.disabled = !hasModule;
+    modulePriority.disabled = !hasModule || !featuredModule.checked;
+  }
+
+  if (moduleHint) {
+    const selected = selectedCategoryNodes()[0];
+    moduleHint.textContent = selected
+      ? `Bài sẽ nổi bật trong module: ${selected.name}`
+      : "Chọn Module ở phía trên để xác định nơi hiển thị.";
+  }
+}
+
+function isHomeFeatured(post) {
+  if (post?.featuredHome === true) return true;
+  if (post?.featuredHome === false) return false;
+  return post?.featured === true;
+}
+
+function getHomeFeaturedPriority(post) {
+  const value = Number(post?.featuredHomePriority ?? post?.featuredPriority);
+  return Number.isFinite(value) && value > 0 ? value : 9999;
+}
+
+function isModuleFeatured(post) {
+  return post?.featuredModule === true;
+}
+
+function getModuleFeaturedPriority(post) {
+  const value = Number(post?.featuredModulePriority);
+  return Number.isFinite(value) && value > 0 ? value : 9999;
 }
 
 function resetForm() {
@@ -363,6 +403,8 @@ function resetForm() {
   $("#showOnHome").checked = true;
   $("#featured").checked = false;
   $("#featuredPriority").value = "100";
+  $("#featuredModule").checked = false;
+  $("#featuredModulePriority").value = "100";
   updateHomepageDisplayControls();
   state.coverFile = null;
   state.coverUrl = "";
@@ -392,11 +434,13 @@ function fillForm(post) {
   );
   $("#status").value = post.status || "draft";
   $("#showOnHome").checked = post.showOnHome !== false;
-  $("#featured").checked = post.featured === true;
+  $("#featured").checked = isHomeFeatured(post);
   $("#featuredPriority").value = String(
-    Number.isFinite(Number(post.featuredPriority))
-      ? Math.max(1, Number(post.featuredPriority))
-      : 100
+    getHomeFeaturedPriority(post) < 9999 ? getHomeFeaturedPriority(post) : 100
+  );
+  $("#featuredModule").checked = isModuleFeatured(post);
+  $("#featuredModulePriority").value = String(
+    getModuleFeaturedPriority(post) < 9999 ? getModuleFeaturedPriority(post) : 100
   );
   updateHomepageDisplayControls();
   $("#seoTitle").value = post.seoTitle || "";
@@ -483,8 +527,13 @@ async function savePost(event) {
       categorySlugs: categoryNodes.map(node => node.slug),
       categoryUrl: "/" + categoryNodes.map(node => node.slug).filter(Boolean).join("/") + "/",
       showOnHome: $("#showOnHome").checked,
+      // Giữ featured/featuredPriority để bài cũ và frontend cũ vẫn hoạt động.
       featured: $("#showOnHome").checked && $("#featured").checked,
       featuredPriority: Math.max(1, Number.parseInt($("#featuredPriority").value, 10) || 100),
+      featuredHome: $("#showOnHome").checked && $("#featured").checked,
+      featuredHomePriority: Math.max(1, Number.parseInt($("#featuredPriority").value, 10) || 100),
+      featuredModule: Boolean(categoryNodes[0]) && $("#featuredModule").checked,
+      featuredModulePriority: Math.max(1, Number.parseInt($("#featuredModulePriority").value, 10) || 100),
       coverImage,
       image: coverImage,
       thumbnail: coverImage,
@@ -531,6 +580,8 @@ function serializeDraft() {
     showOnHome: $("#showOnHome").checked,
     featured: $("#featured").checked,
     featuredPriority: Math.max(1, Number.parseInt($("#featuredPriority").value, 10) || 100),
+    featuredModule: $("#featuredModule").checked,
+    featuredModulePriority: Math.max(1, Number.parseInt($("#featuredModulePriority").value, 10) || 100),
     seoTitle: $("#seoTitle").value,
     seoDescription: $("#seoDescription").value,
     blocks: state.blocks.map(({ file, files, ...block }) => block),
@@ -557,6 +608,12 @@ function restoreDraft() {
   $("#featuredPriority").value = String(
     Number.isFinite(Number(draft.featuredPriority))
       ? Math.max(1, Number(draft.featuredPriority))
+      : 100
+  );
+  $("#featuredModule").checked = Boolean(draft.featuredModule);
+  $("#featuredModulePriority").value = String(
+    Number.isFinite(Number(draft.featuredModulePriority))
+      ? Math.max(1, Number(draft.featuredModulePriority))
       : 100
   );
   updateHomepageDisplayControls();
@@ -1024,13 +1081,18 @@ function getFeaturedModuleName(post) {
     String(post.moduleName || post.module || post.section || "Chưa phân loại");
 }
 
+function featuredScopePredicate(post) {
+  return state.featuredScope === "module" ? isModuleFeatured(post) : isHomeFeatured(post);
+}
+
 function getFeaturedPriority(post) {
-  const value = Number(post?.featuredPriority);
-  return Number.isFinite(value) && value > 0 ? value : 9999;
+  return state.featuredScope === "module"
+    ? getModuleFeaturedPriority(post)
+    : getHomeFeaturedPriority(post);
 }
 
 function getSortedFeaturedPosts() {
-  const byId = new Map(state.posts.filter(post => post.featured === true).map(post => [post.id, post]));
+  const byId = new Map(state.posts.filter(featuredScopePredicate).map(post => [post.id, post]));
   const sorted = [...byId.values()].sort((a, b) => {
     const priorityDiff = getFeaturedPriority(a) - getFeaturedPriority(b);
     if (priorityDiff) return priorityDiff;
@@ -1039,7 +1101,6 @@ function getSortedFeaturedPosts() {
     return dateB - dateA;
   });
 
-  if (!state.featuredOrder.length) state.featuredOrder = sorted.map(post => post.id);
   const validIds = new Set(sorted.map(post => post.id));
   state.featuredOrder = state.featuredOrder.filter(id => validIds.has(id));
   for (const post of sorted) if (!state.featuredOrder.includes(post.id)) state.featuredOrder.push(post.id);
@@ -1052,19 +1113,14 @@ function getFilteredFeaturedPosts() {
   return getSortedFeaturedPosts().filter(post => {
     const moduleName = getFeaturedModuleName(post);
     const haystack = normalizeSearchValue([
-      post.title,
-      post.internalId,
-      post.aiId,
-      post.slug,
-      moduleName,
-      getPostCategoryLabel(post)
+      post.title, post.internalId, post.aiId, post.slug, moduleName, getPostCategoryLabel(post)
     ].filter(Boolean).join(" "));
     return (!term || haystack.includes(term)) && (!moduleFilter || moduleName === moduleFilter);
   });
 }
 
 function syncFeaturedSelection() {
-  const validIds = new Set(state.posts.filter(post => post.featured === true).map(post => post.id));
+  const validIds = new Set(state.posts.filter(featuredScopePredicate).map(post => post.id));
   for (const id of [...state.featuredSelectedIds]) if (!validIds.has(id)) state.featuredSelectedIds.delete(id);
 }
 
@@ -1075,15 +1131,21 @@ function renderFeaturedManager() {
   const allFeatured = getSortedFeaturedPosts();
   const posts = getFilteredFeaturedPosts();
   const priorities = allFeatured.map(getFeaturedPriority).filter(value => value < 9999);
+  const scopeLabel = state.featuredScope === "module" ? "Nổi bật theo module" : "Nổi bật trang chủ";
 
+  $$("[data-featured-scope]").forEach(button =>
+    button.classList.toggle("active", button.dataset.featuredScope === state.featuredScope)
+  );
+  $("#featuredTotalLabel").textContent = scopeLabel;
   $("#featuredTotalCount").textContent = String(allFeatured.length);
   $("#featuredVisibleCount").textContent = String(posts.length);
   $("#featuredSelectedCount").textContent = String(state.featuredSelectedIds.size);
   $("#featuredTopPriority").textContent = priorities.length ? String(Math.min(...priorities)) : "—";
 
-  list.innerHTML = posts.length ? posts.map((post, visibleIndex) => {
+  list.innerHTML = posts.length ? posts.map(post => {
     const globalIndex = state.featuredOrder.indexOf(post.id);
     const moduleName = getFeaturedModuleName(post);
+    const scopeBadge = state.featuredScope === "module" ? `📂 ${moduleName}` : "🏠 Trang chủ";
     return `
       <article class="featured-row ${state.featuredSelectedIds.has(post.id) ? "selected" : ""}" draggable="true" data-featured-row="${escapeHtml(post.id)}">
         <div class="featured-select"><input type="checkbox" data-featured-select="${escapeHtml(post.id)}" ${state.featuredSelectedIds.has(post.id) ? "checked" : ""}></div>
@@ -1098,7 +1160,7 @@ function renderFeaturedManager() {
           <div class="featured-meta"><strong>${escapeHtml(post.internalId || post.aiId || "—")}</strong><span>${escapeHtml(getPostDate(post) || "Chưa có ngày")}</span><span>👁 ${getNumericValue(post,["views","viewCount","viewsCount"]).toLocaleString("vi-VN")}</span></div>
           <div class="featured-slug">${escapeHtml(post.slug || post.id)}</div>
         </div>
-        <div class="featured-category"><strong>${escapeHtml(moduleName)}</strong><span>${escapeHtml(getPostCategoryLabel(post))}</span></div>
+        <div class="featured-category"><strong>${escapeHtml(scopeBadge)}</strong><span>${escapeHtml(getPostCategoryLabel(post))}</span></div>
         <div class="featured-actions">
           <a class="btn ghost" href="${getPostViewUrl(post)}" target="_blank" rel="noopener">Xem</a>
           <button class="btn ghost" type="button" data-featured-edit="${escapeHtml(post.id)}">Sửa</button>
@@ -1106,7 +1168,7 @@ function renderFeaturedManager() {
           <button class="btn danger" type="button" data-featured-remove="${escapeHtml(post.id)}">Bỏ nổi bật</button>
         </div>
       </article>`;
-  }).join("") : `<div class="manager-empty">Không có bài nổi bật phù hợp.</div>`;
+  }).join("") : `<div class="manager-empty">Không có bài ${scopeLabel.toLowerCase()} phù hợp.</div>`;
 }
 
 function moveFeaturedId(dragId, targetId) {
@@ -1135,15 +1197,25 @@ async function saveFeaturedOrder(button) {
     for (let index = 0; index < state.featuredOrder.length; index += 1) {
       const id = state.featuredOrder[index];
       const post = postsById.get(id);
-      if (!post || post.featured !== true) continue;
+      if (!post || !featuredScopePredicate(post)) continue;
       const nextPriority = index + 1;
       if (getFeaturedPriority(post) === nextPriority) continue;
-      const payload = { ...post, featured: true, showOnHome: post.showOnHome !== false, featuredPriority: nextPriority };
+      const payload = { ...post };
+      if (state.featuredScope === "module") {
+        payload.featuredModule = true;
+        payload.featuredModulePriority = nextPriority;
+      } else {
+        payload.featured = true;
+        payload.featuredPriority = nextPriority;
+        payload.featuredHome = true;
+        payload.featuredHomePriority = nextPriority;
+        payload.showOnHome = post.showOnHome !== false;
+      }
       delete payload.id;
       await repo.savePost(payload, id);
     }
     await refreshData();
-    showNotice("Đã lưu thứ tự bài nổi bật.");
+    showNotice(`Đã lưu thứ tự ${state.featuredScope === "module" ? "nổi bật module" : "nổi bật trang chủ"}.`);
   } catch (error) {
     console.error(error);
     showNotice(error.message || "Không thể lưu thứ tự bài nổi bật.", "error");
@@ -1155,21 +1227,28 @@ async function saveFeaturedOrder(button) {
 async function removeFeaturedPosts(ids, button) {
   const cleanIds = [...new Set(ids)].filter(Boolean);
   if (!cleanIds.length) return showNotice("Bạn chưa chọn bài nổi bật.", "error");
-  const ok = await confirmAction("Bỏ nổi bật", `Bỏ trạng thái nổi bật của ${cleanIds.length} bài viết?`);
+  const scopeText = state.featuredScope === "module" ? "khỏi module" : "khỏi trang chủ";
+  const ok = await confirmAction("Bỏ nổi bật", `Bỏ ${cleanIds.length} bài nổi bật ${scopeText}?`);
   if (!ok) return;
   setBusy(button, true, "Đang xử lý…");
   try {
     for (const id of cleanIds) {
       const post = await repo.getPost(id);
       if (!post) continue;
-      const payload = { ...post, featured: false };
+      const payload = { ...post };
+      if (state.featuredScope === "module") {
+        payload.featuredModule = false;
+      } else {
+        payload.featured = false;
+        payload.featuredHome = false;
+      }
       delete payload.id;
       await repo.savePost(payload, id);
     }
     cleanIds.forEach(id => state.featuredSelectedIds.delete(id));
     state.featuredOrder = state.featuredOrder.filter(id => !cleanIds.includes(id));
     await refreshData();
-    showNotice(`Đã bỏ nổi bật ${cleanIds.length} bài viết.`);
+    showNotice(`Đã bỏ nổi bật ${cleanIds.length} bài ${scopeText}.`);
   } catch (error) {
     console.error(error);
     showNotice(error.message || "Không thể bỏ nổi bật.", "error");
@@ -1344,7 +1423,13 @@ async function confirmAction(title, message) {
 function bindEvents() {
   $("#showOnHome")?.addEventListener("change", updateHomepageDisplayControls);
   $("#featured")?.addEventListener("change", updateHomepageDisplayControls);
+  $("#featuredModule")?.addEventListener("change", updateHomepageDisplayControls);
+  $("#categoryLevel1")?.addEventListener("change", updateHomepageDisplayControls);
   $("#featuredPriority")?.addEventListener("input", event => {
+    const value = Number.parseInt(event.currentTarget.value, 10);
+    if (Number.isFinite(value) && value < 1) event.currentTarget.value = "1";
+  });
+  $("#featuredModulePriority")?.addEventListener("input", event => {
     const value = Number.parseInt(event.currentTarget.value, 10);
     if (Number.isFinite(value) && value < 1) event.currentTarget.value = "1";
   });
@@ -1352,6 +1437,12 @@ function bindEvents() {
   $$(".nav-item[data-view]").forEach(button => button.addEventListener("click", () => openView(button.dataset.view)));
   $("#featuredSearch")?.addEventListener("input", renderFeaturedManager);
   $("#featuredModuleFilter")?.addEventListener("change", renderFeaturedManager);
+  $$("[data-featured-scope]").forEach(button => button.addEventListener("click", () => {
+    state.featuredScope = button.dataset.featuredScope === "module" ? "module" : "home";
+    state.featuredOrder = [];
+    state.featuredSelectedIds.clear();
+    renderFeaturedManager();
+  }));
   $("#refreshFeaturedButton")?.addEventListener("click", async event => {
     setBusy(event.currentTarget, true, "Đang tải…");
     try { await refreshData(); showNotice("Đã tải lại bài nổi bật."); }
@@ -1613,8 +1704,14 @@ function bindEvents() {
         delete payload.id;
         if (action === "publish") payload.status = "published";
         if (action === "draft") payload.status = "draft";
-        if (action === "feature") payload.featured = true;
-        if (action === "unfeature") payload.featured = false;
+        if (action === "feature") {
+          payload.featured = true;
+          payload.featuredHome = true;
+        }
+        if (action === "unfeature") {
+          payload.featured = false;
+          payload.featuredHome = false;
+        }
         await repo.savePost(payload, id);
       }
       state.selectedPostIds.clear();

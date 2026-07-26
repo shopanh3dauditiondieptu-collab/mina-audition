@@ -464,3 +464,16 @@ mark{background:rgba(255,214,110,.3);color:#fff3b3;border-radius:4px;padding:0 2
 .featured-help{margin-top:14px;padding:12px 14px;border:1px dashed #31516e;border-radius:14px;color:var(--muted);font-size:12px}
 @media(max-width:1250px){.featured-toolbar{grid-template-columns:1fr 220px}.featured-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.featured-toolbar{grid-template-columns:1fr}.featured-summary{grid-template-columns:1fr}.featured-head-actions{width:100%}.featured-head-actions .btn{flex:1}}
+
+
+/* ===== Mina CMS v6 — Nổi bật Trang chủ / Theo Module ===== */
+.featured-location-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.featured-location-card{padding:16px;border:1px solid #31516e;border-radius:16px;background:#0d0d22}
+.featured-location-card label:last-child{margin-bottom:0}
+.featured-location-title{margin-bottom:12px;color:#fff;font-size:16px;font-weight:900}
+.featured-module-hint{min-height:42px;margin:0 0 12px!important;padding:10px 12px;border:1px dashed #31516e;border-radius:12px;color:var(--cyan)!important;font-size:12px;line-height:1.45}
+.featured-scope-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 16px;padding:6px;border:1px solid #31516e;border-radius:16px;background:#0d0d22}
+.featured-scope-tab{border:1px solid transparent;border-radius:12px;padding:11px 16px;background:transparent;color:var(--muted);font:inherit;font-weight:900;cursor:pointer}
+.featured-scope-tab:hover{color:#fff;background:#191934}
+.featured-scope-tab.active{color:#101020;background:linear-gradient(90deg,var(--cyan),var(--pink));box-shadow:0 8px 22px rgba(239,87,205,.16)}
+@media(max-width:850px){.featured-location-grid{grid-template-columns:1fr}}
