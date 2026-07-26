@@ -614,12 +614,125 @@ function normalizeSearchValue(value = "") {
     .trim();
 }
 
-function getPostCategoryLabel(post) {
-  const path = Array.isArray(post.categoryPath) && post.categoryPath.length
-    ? post.categoryPath
-    : [post.section, post.categoryName || post.category].filter(Boolean);
+const LEGACY_CATEGORY_ALIASES = new Map([
+  ["mina blog", "Blog Mina"],
+  ["blog mina", "Blog Mina"],
+  ["kinh nghiem game", "Mẹo Game & PC"],
+  ["meo game & pc", "Mẹo Game & PC"],
+  ["video gameplay", "Gameplay Audition"],
+  ["gameplay audition", "Gameplay Audition"],
+  ["tam su - chia se", "Tâm Sự - Chia Sẻ"],
+  ["tin tuc - cap nhat", "Tin Tức - Cập Nhật"],
+  ["prompt lenh ai - free suu tam", "Prompt AI Sưu Tầm"],
+  ["prompt ai suu tam", "Prompt AI Sưu Tầm"],
+  ["shop anh 2d/3d audition", "Shop Ảnh 2D/3D Audition"],
+  ["mix & match outfit game", "Mix & Match"],
+  ["mix & match", "Mix & Match"],
+  ["wikipedia d8", "Wiki D8"],
+  ["wiki d8", "Wiki D8"]
+]);
 
-  return path.join(" / ") || "Chưa phân loại";
+function normalizeCategoryToken(value = "") {
+  return normalizeSearchValue(value)
+    .replace(/[–—]/g, "-")
+    .replace(/\s*\/\s*/g, "/")
+    .trim();
+}
+
+function rawPostCategoryPath(post) {
+  const candidates = [
+    post.categoryPath,
+    post.categoryNames,
+    post.categoryPathNames,
+    post.categories
+  ];
+
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate) && candidate.length) {
+      return candidate.map(String).map(value => value.trim()).filter(Boolean);
+    }
+  }
+
+  return [
+    post.section,
+    post.moduleName,
+    post.categoryName || post.category,
+    post.subcategoryName || post.subcategory,
+    post.typeName || post.type
+  ].map(value => String(value || "").trim()).filter(Boolean);
+}
+
+function inferLegacyModule(post, parts) {
+  const explicit = normalizeCategoryToken(post.module || post.moduleId || post.moduleName || "");
+  const tokens = parts.map(normalizeCategoryToken);
+  const has = (...values) => values.some(value => tokens.includes(normalizeCategoryToken(value)));
+
+  if (["ai-prompt", "ai prompt"].includes(explicit)) return "AI Prompt";
+  if (["mix-match", "mix & match", "mix-match-outfit-game"].includes(explicit)) return "Mix & Match";
+  if (["academy"].includes(explicit)) return "Academy";
+  if (["game-gear", "game gear"].includes(explicit)) return "Game Gear";
+  if (["wiki", "wiki d8", "wikipedia-d8"].includes(explicit)) return "Wiki D8";
+
+  // Dữ liệu cũ thường gắn module cha là Mina Blog cho mọi loại bài.
+  // Vì vậy phải ưu tiên dấu hiệu danh mục con trước khi kết luận đây là Blog Mina.
+  if (has("Prompt Lệnh AI - Free Sưu Tầm", "Prompt AI Sưu Tầm", "Shop Ảnh 2D/3D Audition")) return "AI Prompt";
+  if (has("Mix & Match Outfit Game", "Mix & Match", "Style Girl", "Style Boy", "Couple Outfit")) return "Mix & Match";
+  if (has("Academy", "Hướng Dẫn Audition", "Hướng Dẫn AI")) return "Academy";
+  if (has("Game Gear", "Bàn Phím", "Chuột", "Tai nghe", "Màn Hình", "Phụ Kiện Game", "Đồ Decor")) return "Game Gear";
+  if (has("Wikipedia D8", "Wiki D8", "4K", "8K", "Top Skill Đẹp")) return "Wiki D8";
+  if (has("Kinh Nghiệm Game", "Mẹo Game & PC", "Video Gameplay", "Gameplay Audition", "Tâm Sự - Chia Sẻ", "Tin Tức - Cập Nhật")) return "Blog Mina";
+  if (["blog", "blog mina", "mina blog", "mina-blog"].includes(explicit)) return "Blog Mina";
+
+  return "";
+}
+
+function canonicalizePostCategoryPath(post) {
+  const rawParts = rawPostCategoryPath(post);
+  if (!rawParts.length) return [];
+
+  const aliased = rawParts.map(part => LEGACY_CATEGORY_ALIASES.get(normalizeCategoryToken(part)) || part);
+  const moduleName = inferLegacyModule(post, aliased);
+
+  const genericRoots = new Set(["mina blog", "blog mina"]);
+  let parts = aliased.filter((part, index) => {
+    const token = normalizeCategoryToken(part);
+    if (!genericRoots.has(token)) return true;
+    return moduleName === "Blog Mina" && index === aliased.length - 1;
+  });
+
+  if (moduleName) {
+    const moduleToken = normalizeCategoryToken(moduleName);
+    const markerIndex = parts.findIndex(part => normalizeCategoryToken(part) === moduleToken);
+    if (markerIndex >= 0) parts = parts.slice(markerIndex + 1);
+
+    if (moduleName === "AI Prompt") {
+      const legacyPromptIndex = parts.findIndex(part => normalizeCategoryToken(part) === "prompt ai suu tam");
+      const legacyShopIndex = parts.findIndex(part => normalizeCategoryToken(part) === "shop anh 2d/3d audition");
+      const startIndex = legacyPromptIndex >= 0 ? legacyPromptIndex : legacyShopIndex;
+      if (startIndex > 0) parts = parts.slice(startIndex);
+    }
+
+    if (moduleName === "Mix & Match") {
+      const legacyRootIndex = parts.findIndex(part => normalizeCategoryToken(part) === "mix & match");
+      if (legacyRootIndex >= 0) parts = parts.slice(legacyRootIndex + 1);
+    }
+
+    parts.unshift(moduleName);
+  }
+
+  const result = [];
+  for (const part of parts) {
+    const clean = String(part || "").trim();
+    if (!clean) continue;
+    if (result.length && normalizeCategoryToken(result[result.length - 1]) === normalizeCategoryToken(clean)) continue;
+    result.push(clean);
+  }
+
+  return result;
+}
+
+function getPostCategoryLabel(post) {
+  return canonicalizePostCategoryPath(post).join(" / ") || "Chưa phân loại";
 }
 
 function getPostImage(post) {
@@ -656,10 +769,7 @@ function getPostViewUrl(post) {
 }
 
 function getPostCategoryPath(post) {
-  if (Array.isArray(post.categoryPath) && post.categoryPath.length) {
-    return post.categoryPath.map(String).filter(Boolean);
-  }
-  return [post.section, post.categoryName || post.category].filter(Boolean).map(String);
+  return canonicalizePostCategoryPath(post);
 }
 
 function pathKey(parts = []) {
