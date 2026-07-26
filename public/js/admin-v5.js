@@ -1,6 +1,6 @@
 /*
- * Mina CMS v6.0 Enterprise
- * Foundation: module dashboard, lọc module chính xác và tương thích bài viết cũ.
+ * Mina CMS v5.4 Enterprise
+ * Nâng cấp: gắn Smart Link trực tiếp vào bài viết.
  */
 import { auth, db } from "/js/firebase-config.js";
 import { CmsV5Repository } from "/js/admin-v5-repository.js";
@@ -20,8 +20,6 @@ const state = {
   user: null,
   posts: [],
   categoryTree: [],
-  categoryIndexById: new Map(),
-  categoryPathsByName: new Map(),
   blocks: [],
   coverFile: null,
   coverUrl: "",
@@ -603,7 +601,7 @@ function renderCategoryLevel(level) {
   if(level<=4)fillCategorySelect($("#categoryLevel4"),c?.children||[],"Chọn loại"); renderCategoryPath();
 }
 
-async function loadCategoryTree(){const response=await fetch("/data/category-tree.json",{cache:"no-store"});if(!response.ok)throw new Error("Không tải được cây danh mục.");state.categoryTree=await response.json();rebuildCategoryIndexes();renderCategoryRoot();state.categoryTree.forEach(node=>state.expandedCategoryPaths.add(pathKey([node.name])));}
+async function loadCategoryTree(){const response=await fetch("/data/category-tree.json",{cache:"no-store"});if(!response.ok)throw new Error("Không tải được cây danh mục.");state.categoryTree=await response.json();renderCategoryRoot();state.categoryTree.forEach(node=>state.expandedCategoryPaths.add(pathKey([node.name])));}
 
 function setCategoryPath(ids=[]){renderCategoryRoot();if(!ids.length)return;$("#categoryLevel1").value=ids[0]||"";renderCategoryLevel(2);$("#categoryLevel2").value=ids[1]||"";renderCategoryLevel(3);$("#categoryLevel3").value=ids[2]||"";renderCategoryLevel(4);$("#categoryLevel4").value=ids[3]||"";renderCategoryPath();}
 
@@ -616,60 +614,11 @@ function normalizeSearchValue(value = "") {
     .trim();
 }
 
-function normalizeCategoryToken(value = "") {
-  return normalizeSearchValue(value).replace(/[^a-z0-9 ]/g, "").trim();
-}
-
-function rebuildCategoryIndexes() {
-  state.categoryIndexById = new Map();
-  state.categoryPathsByName = new Map();
-
-  const walk = (nodes = [], parentPath = []) => {
-    nodes.forEach(node => {
-      const path = [...parentPath, node];
-      state.categoryIndexById.set(String(node.id || ""), path);
-      const token = normalizeCategoryToken(node.name);
-      if (token) {
-        const existing = state.categoryPathsByName.get(token) || [];
-        existing.push(path);
-        state.categoryPathsByName.set(token, existing);
-      }
-      walk(node.children || [], path);
-    });
-  };
-  walk(state.categoryTree);
-}
-
-function getCanonicalPostCategoryPath(post) {
-  const ids = Array.isArray(post.categoryPathIds) ? post.categoryPathIds.map(String).filter(Boolean) : [];
-  for (let index = ids.length - 1; index >= 0; index -= 1) {
-    const indexedPath = state.categoryIndexById.get(ids[index]);
-    if (indexedPath?.length) return indexedPath.map(node => node.name);
-  }
-
-  const rawPath = Array.isArray(post.categoryPath) && post.categoryPath.length
-    ? post.categoryPath.map(String).filter(Boolean)
-    : [post.moduleName, post.section, post.categoryName || post.category].filter(Boolean).map(String);
-
-  for (let index = rawPath.length - 1; index >= 0; index -= 1) {
-    const matches = state.categoryPathsByName.get(normalizeCategoryToken(rawPath[index])) || [];
-    if (matches.length === 1) return matches[0].map(node => node.name);
-    if (matches.length > 1) {
-      const moduleToken = normalizeCategoryToken(post.moduleName || post.module || rawPath[0]);
-      const preferred = matches.find(path => normalizeCategoryToken(path[0]?.name) === moduleToken);
-      if (preferred) return preferred.map(node => node.name);
-    }
-  }
-
-  return rawPath.filter((name, index, array) => index === 0 || normalizeCategoryToken(name) !== normalizeCategoryToken(array[index - 1]));
-}
-
-function getPostModuleName(post) {
-  return getCanonicalPostCategoryPath(post)[0] || post.moduleName || post.module || "Chưa phân loại";
-}
-
 function getPostCategoryLabel(post) {
-  const path = getCanonicalPostCategoryPath(post);
+  const path = Array.isArray(post.categoryPath) && post.categoryPath.length
+    ? post.categoryPath
+    : [post.section, post.categoryName || post.category].filter(Boolean);
+
   return path.join(" / ") || "Chưa phân loại";
 }
 
@@ -707,7 +656,10 @@ function getPostViewUrl(post) {
 }
 
 function getPostCategoryPath(post) {
-  return getCanonicalPostCategoryPath(post);
+  if (Array.isArray(post.categoryPath) && post.categoryPath.length) {
+    return post.categoryPath.map(String).filter(Boolean);
+  }
+  return [post.section, post.categoryName || post.category].filter(Boolean).map(String);
 }
 
 function pathKey(parts = []) {
@@ -829,37 +781,6 @@ function detectDuplicatePosts() {
   );
 }
 
-function getModuleStats() {
-  return state.categoryTree.map(moduleNode => {
-    const moduleName = moduleNode.name;
-    const posts = state.posts.filter(post => getPostModuleName(post) === moduleName);
-    return {
-      id: moduleNode.id,
-      name: moduleName,
-      icon: moduleNode.icon || "📁",
-      total: posts.length,
-      published: posts.filter(post => post.status === "published").length,
-      draft: posts.filter(post => post.status === "draft").length,
-      featured: posts.filter(post => Boolean(post.featured)).length,
-      views: posts.reduce((sum, post) => sum + getNumericValue(post, ["views", "viewCount", "viewsCount"]), 0)
-    };
-  });
-}
-
-function renderModuleDashboard() {
-  const grid = $("#moduleStatsGrid");
-  if (!grid) return;
-  grid.innerHTML = getModuleStats().map(item => {
-    const active = state.activeCategoryFilter === item.name;
-    return `<button class="module-stat-card ${active ? "active" : ""}" type="button" data-module-filter="${escapeHtml(item.name)}">
-      <span class="module-stat-title"><b>${escapeHtml(item.icon)}</b>${escapeHtml(item.name)}</span>
-      <strong>${item.total.toLocaleString("vi-VN")}</strong>
-      <span class="module-stat-meta">${item.published} công khai · ${item.draft} nháp · ${item.featured} nổi bật</span>
-      <small>👁 ${item.views.toLocaleString("vi-VN")} lượt xem</small>
-    </button>`;
-  }).join("");
-}
-
 function renderManagerStats() {
   const total = state.posts.length;
   const published = state.posts.filter(post => post.status === "published").length;
@@ -875,7 +796,6 @@ function renderManagerStats() {
   $("#statDuplicates").textContent = String(state.duplicateIds.size);
   $("#statViews").textContent = views.toLocaleString("vi-VN");
   $("#statClicks").textContent = clicks.toLocaleString("vi-VN");
-  renderModuleDashboard();
 }
 
 function getFilteredPosts() {
@@ -908,10 +828,6 @@ function getFilteredPosts() {
       getPostSmartLink(post),
       post.smartLinkSlug,
       getPostImage(post),
-      post.module,
-      post.moduleId,
-      post.moduleName,
-      getPostModuleName(post),
       getPostCategoryLabel(post),
       blockText
     ].filter(Boolean).join(" "));
@@ -954,26 +870,24 @@ function renderPosts() {
             <div class="post-content-cell">
               <h3>${highlightSearch(post.title || "(Không có tiêu đề)")}</h3>
               ${excerpt ? `<p class="post-excerpt">${highlightSearch(excerpt)}</p>` : ""}
-              <div class="post-submeta">${highlightSearch(post.slug || post.id)}</div>
-            </div>
-
-            <div class="post-identity-cell">
-              <strong>${highlightSearch(internalId)}</strong>
-              <span>${date || "Chưa có ngày"}</span>
-              ${viewCount ? `<small>👁 ${viewCount.toLocaleString("vi-VN")} lượt xem</small>` : ""}
+              <div class="post-compact-meta">
+                <strong>${highlightSearch(internalId)}</strong>
+                <span>${date || "Chưa có ngày"}</span>
+                ${viewCount ? `<span>👁 ${viewCount.toLocaleString("vi-VN")}</span>` : ""}
+                <span class="post-slug">${highlightSearch(post.slug || post.id)}</span>
+              </div>
             </div>
 
             <div class="post-category-cell">
               <div class="post-category-path">${highlightSearch(categoryLabel)}</div>
               <div class="post-category-id">${escapeHtml(post.categoryId || "")}</div>
-            </div>
-
-            <div class="post-link-cell">
-              <a class="mini-link web" href="${getPostViewUrl(post)}" target="_blank" rel="noopener" title="Xem trên website">🌐</a>
-              ${facebookUrl ? `<a class="mini-link facebook" href="${escapeHtml(facebookUrl)}" target="_blank" rel="noopener" title="Mở Facebook">f</a>` : `<span class="mini-link disabled" title="Chưa có Facebook">f</span>`}
-              ${youtubeUrl ? `<a class="mini-link youtube" href="${escapeHtml(youtubeUrl)}" target="_blank" rel="noopener" title="Mở YouTube">▶</a>` : `<span class="mini-link disabled" title="Chưa có YouTube">▶</span>`}
-              ${smartLink ? `<button class="mini-link smart" type="button" data-copy-smart-link="${escapeHtml(smartLink)}" title="Copy Smart Link">🔗</button>` : `<span class="mini-link disabled" title="Smart Link chưa được gắn">🔗</span>`}
-              ${clickCount ? `<small>${clickCount.toLocaleString("vi-VN")} click</small>` : ""}
+              <div class="post-inline-links" aria-label="Liên kết bài viết">
+                <a class="mini-link web" href="${getPostViewUrl(post)}" target="_blank" rel="noopener" title="Xem trên website">🌐</a>
+                ${facebookUrl ? `<a class="mini-link facebook" href="${escapeHtml(facebookUrl)}" target="_blank" rel="noopener" title="Mở Facebook">f</a>` : ""}
+                ${youtubeUrl ? `<a class="mini-link youtube" href="${escapeHtml(youtubeUrl)}" target="_blank" rel="noopener" title="Mở YouTube">▶</a>` : ""}
+                ${smartLink ? `<button class="mini-link smart" type="button" data-copy-smart-link="${escapeHtml(smartLink)}" title="Copy Smart Link">🔗</button>` : ""}
+                ${clickCount ? `<small>${clickCount.toLocaleString("vi-VN")} click</small>` : ""}
+              </div>
             </div>
 
             <div class="status-stack">
@@ -1127,19 +1041,9 @@ async function saveSmartLink(event) {
 }
 
 function openView(name) {
-  const titles = {
-    dashboard: "Dashboard",
-    editor: "Đăng bài viết",
-    posts: "Quản lý bài viết",
-    categories: "Quản lý danh mục",
-    excel: "Import bài viết bằng Excel",
-    smartlinks: "Smart Link",
-    analytics: "Analytics",
-    settings: "Cài đặt"
-  };
   $$(".view").forEach(view => view.classList.toggle("active", view.id === `view-${name}`));
   $$(".nav-item[data-view]").forEach(button => button.classList.toggle("active", button.dataset.view === name));
-  $("#pageTitle").textContent = titles[name] || "Mina CMS";
+  $("#pageTitle").textContent = name === "posts" ? "Quản lý bài viết" : name === "smartlinks" ? "Smart Link Manager" : "Đăng bài viết";
   const editing = name === "editor";
   $("#savePostTopButton").hidden = !editing;
   $("#newPostButton").hidden = !editing;
@@ -1168,7 +1072,6 @@ function bindEvents() {
     if (Number.isFinite(value) && value < 1) event.currentTarget.value = "1";
   });
   $$(".nav-item[data-view]").forEach(button => button.addEventListener("click", () => openView(button.dataset.view)));
-  $$('[data-open-view]').forEach(button => button.addEventListener('click', () => openView(button.dataset.openView)));
   $("#smartLinkForm")?.addEventListener("submit", saveSmartLink);
   $("#newSmartLinkButton")?.addEventListener("click", resetSmartLinkForm);
   $("#resetSmartLinkButton")?.addEventListener("click", resetSmartLinkForm);
@@ -1305,20 +1208,6 @@ function bindEvents() {
 
   $("#checkDuplicatesButton").addEventListener("click", detectDuplicatePosts);
 
-
-  $("#moduleStatsGrid")?.addEventListener("click", event => {
-    const button = event.target.closest("[data-module-filter]");
-    if (!button) return;
-    state.activeCategoryFilter = button.dataset.moduleFilter || "";
-    state.selectedPostIds.clear();
-    renderPosts();
-  });
-
-  $("#clearModuleFilterButton")?.addEventListener("click", () => {
-    state.activeCategoryFilter = "";
-    state.selectedPostIds.clear();
-    renderPosts();
-  });
 
   $("#categoryTreeFilter").addEventListener("click", event => {
     const toggle = event.target.closest("[data-tree-toggle]");
@@ -1459,7 +1348,6 @@ function showFatalStartupError(error) {
 try {
   bindEvents();
   resetForm();
-  openView("dashboard");
 } catch (error) {
   showFatalStartupError(error);
 }
