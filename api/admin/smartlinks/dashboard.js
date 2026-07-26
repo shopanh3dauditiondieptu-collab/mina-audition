@@ -6,12 +6,26 @@ const {
 
 const MAX_RANGE_DAYS = 366;
 const DEFAULT_DAYS = 7;
-const CLICK_SCAN_LIMITS = { 1: 800, 7: 2000, 30: 3000, 90: 4000, 366: 5000 };
-const CACHE_TTL_MS = 5 * 60 * 1000;
-const CACHE_MAX_ITEMS = 40;
+const CLICK_SCAN_LIMITS = {
+  1: 150,
+  7: 400,
+  30: 800,
+  90: 1200,
+  366: 1800
+};
+const CACHE_TTL_MS = 15 * 60 * 1000;
+const CACHE_MAX_ITEMS = 20;
 
 const dashboardCache = global.__MINA_SMARTLINK_DASHBOARD_CACHE__ || new Map();
 global.__MINA_SMARTLINK_DASHBOARD_CACHE__ = dashboardCache;
+
+const linksCache = global.__MINA_SMARTLINK_LINKS_CACHE__ || {
+  createdAt: 0,
+  rows: null
+};
+global.__MINA_SMARTLINK_LINKS_CACHE__ = linksCache;
+
+const LINKS_CACHE_TTL_MS = 15 * 60 * 1000;
 
 function clean(value, max = 160) {
   return String(value || "").trim().slice(0, max);
@@ -149,6 +163,43 @@ async function loadFilteredPostMeta(db, postFilter) {
   return results;
 }
 
+
+async function loadSmartLinks(db) {
+  if (
+    Array.isArray(linksCache.rows) &&
+    Date.now() - linksCache.createdAt < LINKS_CACHE_TTL_MS
+  ) {
+    return {
+      rows: linksCache.rows,
+      cacheHit: true
+    };
+  }
+
+  const snapshot = await db.collection("smartLinks").get();
+
+  const rows = snapshot.docs.map(doc => {
+    const data = doc.data() || {};
+
+    return {
+      id: doc.id,
+      name: clean(data.name || data.title || data.slug || doc.id, 160),
+      slug: clean(data.slug || "", 120),
+      targetUrl: clean(data.targetUrl || data.url || "", 1000),
+      active: data.active === true,
+      clicks: Number(data.clicks || 0),
+      lastClickedAt: serializeDate(data.lastClickedAt)
+    };
+  });
+
+  linksCache.rows = rows;
+  linksCache.createdAt = Date.now();
+
+  return {
+    rows,
+    cacheHit: false
+  };
+}
+
 module.exports = async function handler(req, res) {
   setJsonHeaders(res);
 
@@ -188,8 +239,8 @@ module.exports = async function handler(req, res) {
     const db = getFirestore();
     const clickScanLimit = scanLimitForDays(days);
 
-    const [linksSnapshot, clicksSnapshot, postViews] = await Promise.all([
-      db.collection("smartLinks").get(),
+    const [linksResult, clicksSnapshot, postViews] = await Promise.all([
+      loadSmartLinks(db),
       db.collection("smartLinkClicks")
         .where("clickedAt", ">=", rangeStart)
         .orderBy("clickedAt", "desc")
@@ -198,18 +249,7 @@ module.exports = async function handler(req, res) {
       loadFilteredPostMeta(db, postFilter)
     ]);
 
-    const links = linksSnapshot.docs.map(doc => {
-      const data = doc.data() || {};
-      return {
-        id: doc.id,
-        name: clean(data.name || data.title || data.slug || doc.id, 160),
-        slug: clean(data.slug || "", 120),
-        targetUrl: clean(data.targetUrl || data.url || "", 1000),
-        active: data.active === true,
-        clicks: Number(data.clicks || 0),
-        lastClickedAt: serializeDate(data.lastClickedAt)
-      };
-    });
+    const links = linksResult.rows;
 
     const dailyMap = new Map();
     for (let i = 0; i < days; i += 1) {
@@ -350,7 +390,11 @@ module.exports = async function handler(req, res) {
       postPerformance,
       links: links.sort((a, b) => b.clicks - a.clicks).slice(0, 100),
       recentClicks: clickRows.slice(0, 100),
-      cache: { hit: false, ttlSeconds: Math.round(CACHE_TTL_MS / 1000) }
+      cache: {
+        hit: false,
+        ttlSeconds: Math.round(CACHE_TTL_MS / 1000),
+        linksHit: linksResult.cacheHit
+      }
     };
 
     writeCache(cacheKey, payload);
