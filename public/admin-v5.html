@@ -731,11 +731,79 @@
           </form>
 
           <div class="smartlink-list-panel">
-            <div class="smartlink-list-toolbar">
-              <input id="smartLinkSearch" type="search" placeholder="Tìm tên, slug hoặc URL đích...">
-              <button id="refreshSmartLinksButton" class="btn ghost" type="button">Tải lại</button>
-            </div>
-            <div id="smartLinksTable" class="smartlinks-table"></div>
+            <section class="smart-library-shell" aria-labelledby="smartLibraryHeading">
+              <div class="smart-library-head">
+                <div>
+                  <h3 id="smartLibraryHeading">🗂️ Smart Link Library</h3>
+                  <p>Quản lý số lượng lớn Smart Link bằng tìm kiếm, bộ lọc, sắp xếp và phân trang.</p>
+                </div>
+                <button id="smartLibraryReload" class="btn ghost" type="button">Tải lại</button>
+              </div>
+
+              <div class="smart-library-toolbar">
+                <input id="smartLibrarySearch" type="search" placeholder="Tìm tên, slug, URL, Provider, Campaign…">
+
+                <select id="smartLibraryStatusFilter">
+                  <option value="">Tất cả trạng thái</option>
+                  <option value="active">Đang hoạt động</option>
+                  <option value="inactive">Tạm dừng</option>
+                </select>
+
+                <select id="smartLibraryType">
+                  <option value="">Tất cả loại</option>
+                </select>
+
+                <select id="smartLibraryProvider">
+                  <option value="">Tất cả Provider</option>
+                </select>
+
+                <select id="smartLibrarySort">
+                  <option value="clicks_desc">Click nhiều nhất</option>
+                  <option value="clicks_asc">Click ít nhất</option>
+                  <option value="last_click">Click gần nhất</option>
+                  <option value="newest">Mới tạo</option>
+                  <option value="oldest">Cũ nhất</option>
+                  <option value="name_az">Tên A → Z</option>
+                  <option value="name_za">Tên Z → A</option>
+                </select>
+
+                <select id="smartLibraryPageSize">
+                  <option value="20">20 link / trang</option>
+                  <option value="50">50 link / trang</option>
+                  <option value="100">100 link / trang</option>
+                </select>
+              </div>
+
+              <div class="smart-library-batch">
+                <label>
+                  <input id="smartLibrarySelectPage" type="checkbox">
+                  Chọn trang hiện tại
+                </label>
+                <strong id="smartLibrarySelection">0 liên kết đã chọn</strong>
+                <button id="smartLibraryCopySelected" class="btn ghost" type="button" disabled>
+                  Copy link đã chọn
+                </button>
+                <span id="smartLibraryStatus"></span>
+              </div>
+
+              <div id="smartLibraryRows" class="smart-library-rows">
+                <div class="smart-library-empty">Đang tải thư viện Smart Link…</div>
+              </div>
+
+              <div class="smart-library-pagination">
+                <span id="smartLibraryPageInfo">0 liên kết</span>
+                <div id="smartLibraryPages" class="smart-library-pages"></div>
+              </div>
+            </section>
+
+            <details id="smartLibraryClassicDetails" class="smart-library-classic">
+              <summary>⚙️ Mở danh sách quản lý cũ để sửa hoặc xóa Smart Link</summary>
+              <div class="smartlink-list-toolbar">
+                <input id="smartLinkSearch" type="search" placeholder="Tìm tên, slug hoặc URL đích...">
+                <button id="refreshSmartLinksButton" class="btn ghost" type="button">Tải lại</button>
+              </div>
+              <div id="smartLinksTable" class="smartlinks-table"></div>
+            </details>
           </div>
         </div>
       </section>
@@ -823,6 +891,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script type="module" src="/js/smartlink-dashboard.js?v=1.2.0"></script>
+  <script type="module" src="/js/smartlink-library.js?v=1.0.0"></script>
   <script type="module">
     import("/js/admin-v5.js?v=1.9.0").catch(error => {
       console.error("Không tải được admin-v5.js", error);
