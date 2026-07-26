@@ -1127,9 +1127,19 @@ async function saveSmartLink(event) {
 }
 
 function openView(name) {
+  const titles = {
+    dashboard: "Dashboard",
+    editor: "Đăng bài viết",
+    posts: "Quản lý bài viết",
+    categories: "Quản lý danh mục",
+    excel: "Import bài viết bằng Excel",
+    smartlinks: "Smart Link",
+    analytics: "Analytics",
+    settings: "Cài đặt"
+  };
   $$(".view").forEach(view => view.classList.toggle("active", view.id === `view-${name}`));
   $$(".nav-item[data-view]").forEach(button => button.classList.toggle("active", button.dataset.view === name));
-  $("#pageTitle").textContent = name === "posts" ? "Quản lý bài viết" : name === "smartlinks" ? "Smart Link Manager" : "Đăng bài viết";
+  $("#pageTitle").textContent = titles[name] || "Mina CMS";
   const editing = name === "editor";
   $("#savePostTopButton").hidden = !editing;
   $("#newPostButton").hidden = !editing;
@@ -1158,6 +1168,7 @@ function bindEvents() {
     if (Number.isFinite(value) && value < 1) event.currentTarget.value = "1";
   });
   $$(".nav-item[data-view]").forEach(button => button.addEventListener("click", () => openView(button.dataset.view)));
+  $$('[data-open-view]').forEach(button => button.addEventListener('click', () => openView(button.dataset.openView)));
   $("#smartLinkForm")?.addEventListener("submit", saveSmartLink);
   $("#newSmartLinkButton")?.addEventListener("click", resetSmartLinkForm);
   $("#resetSmartLinkButton")?.addEventListener("click", resetSmartLinkForm);
@@ -1448,6 +1459,7 @@ function showFatalStartupError(error) {
 try {
   bindEvents();
   resetForm();
+  openView("dashboard");
 } catch (error) {
   showFatalStartupError(error);
 }
