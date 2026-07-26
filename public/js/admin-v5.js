@@ -31,7 +31,11 @@ const state = {
   duplicateScanDone: false,
   smartLinks: [],
   smartLinksLoaded: false,
-  smartLinksLoading: false
+  smartLinksLoading: false,
+  featuredOrder: [],
+  featuredSelectedIds: new Set(),
+  featuredDragId: "",
+  featuredScope: "home"
 };
 
 const $ = selector => document.querySelector(selector);
@@ -345,13 +349,167 @@ function legacyBlocks(post) {
 
 function updateHomepageDisplayControls() {
   const showOnHome = $("#showOnHome");
-  const featured = $("#featured");
-  const priority = $("#featuredPriority");
-  if (!showOnHome || !featured || !priority) return;
+  const featuredHome = $("#featured");
+  const homePriority = $("#featuredPriority");
+  const featuredModule = $("#featuredModule");
+  const modulePriority = $("#featuredModulePriority");
+  const moduleHint = $("#featuredModuleHint");
+  const featuredCategory = $("#featuredCategory");
+  const categoryPriority = $("#featuredCategoryPriority");
+  const categoryHint = $("#featuredCategoryHint");
 
-  if (!showOnHome.checked) featured.checked = false;
-  featured.disabled = !showOnHome.checked;
-  priority.disabled = !showOnHome.checked || !featured.checked;
+  if (showOnHome && featuredHome && homePriority) {
+    if (!showOnHome.checked) featuredHome.checked = false;
+    featuredHome.disabled = !showOnHome.checked;
+    homePriority.disabled = !showOnHome.checked || !featuredHome.checked;
+  }
+
+  const selectedNodes = selectedCategoryNodes();
+  const selectedModule = selectedNodes[0] || null;
+  const selectedCategory = selectedNodes.at(-1) || null;
+  const hasModule = Boolean(selectedModule);
+  const hasCategory = selectedNodes.length >= 2 && Boolean(selectedCategory);
+
+  if (featuredModule && modulePriority) {
+    if (!hasModule) featuredModule.checked = false;
+    featuredModule.disabled = !hasModule;
+    modulePriority.disabled = !hasModule || !featuredModule.checked;
+  }
+  if (moduleHint) {
+    moduleHint.textContent = hasModule
+      ? `Bài sẽ nổi bật trong module: ${selectedModule.name || selectedModule.id}`
+      : "Chọn Module ở phía trên để xác định nơi hiển thị.";
+  }
+
+  if (featuredCategory && categoryPriority) {
+    if (!hasCategory) featuredCategory.checked = false;
+    featuredCategory.disabled = !hasCategory;
+    categoryPriority.disabled = !hasCategory || !featuredCategory.checked;
+  }
+  if (categoryHint) {
+    categoryHint.textContent = hasCategory
+      ? `Bài sẽ nổi bật tại: ${selectedNodes.slice(1).map(node => node.name).join(" → ")}`
+      : "Chọn ít nhất một danh mục bên trong Module để bật nổi bật theo danh mục.";
+  }
+}
+
+function isHomeFeatured(post) {
+  if (post?.featuredHome === true) return true;
+  if (post?.featuredHome === false) return false;
+  return post?.featured === true;
+}
+
+function getHomeFeaturedPriority(post) {
+  const value = Number(post?.featuredHomePriority ?? post?.featuredPriority);
+  return Number.isFinite(value) && value > 0 ? value : 9999;
+}
+
+function isModuleFeatured(post) {
+  return post?.featuredModule === true;
+}
+
+function getModuleFeaturedPriority(post) {
+  const value = Number(post?.featuredModulePriority);
+  return Number.isFinite(value) && value > 0 ? value : 9999;
+}
+
+function isCategoryFeatured(post) {
+  return post?.featuredCategory === true;
+}
+
+function getCategoryFeaturedPriority(post) {
+  const value = Number(post?.featuredCategoryPriority);
+  return Number.isFinite(value) && value > 0 ? value : 9999;
+}
+
+function getFeaturedCategoryKey(post) {
+  return String(post?.featuredCategoryId || post?.categoryId || "").trim();
+}
+
+function normalizeInternalId(value = "") {
+  return String(value || "").trim().replace(/\s+/g, " ").toLocaleUpperCase("vi-VN");
+}
+
+function getPostInternalId(post) {
+  return String(post?.internalId || post?.aiId || post?.postCode || "").trim();
+}
+
+function getSelectedModuleNode() {
+  try { return selectedCategoryNodes()[0] || null; } catch { return null; }
+}
+
+function postMatchesSelectedModule(post, moduleNode) {
+  if (!moduleNode) return true;
+  const wanted = normalizeSearchValue([moduleNode.id, moduleNode.slug, moduleNode.module, moduleNode.name].filter(Boolean).join(" "));
+  const current = normalizeSearchValue([
+    post?.moduleId, post?.module, post?.moduleName, post?.sectionId, post?.section,
+    Array.isArray(post?.categoryPathIds) ? post.categoryPathIds[0] : "",
+    Array.isArray(post?.categoryPath) ? post.categoryPath[0] : ""
+  ].filter(Boolean).join(" "));
+  return [moduleNode.id, moduleNode.slug, moduleNode.module, moduleNode.name]
+    .filter(Boolean)
+    .some(token => current.includes(normalizeSearchValue(token))) || current.includes(wanted);
+}
+
+function findInternalIdDuplicate(rawValue = "") {
+  const wanted = normalizeInternalId(rawValue);
+  if (!wanted) return null;
+  const editingId = String($("#postId")?.value || "");
+  return state.posts.find(post => String(post.id) !== editingId && normalizeInternalId(getPostInternalId(post)) === wanted) || null;
+}
+
+function renderRecentInternalIds() {
+  const box = $("#recentInternalIds");
+  const moduleLabel = $("#recentInternalIdModule");
+  if (!box || !moduleLabel) return;
+  const moduleNode = getSelectedModuleNode();
+  moduleLabel.textContent = moduleNode?.name || "Tất cả module";
+  const seen = new Set();
+  const items = [...state.posts]
+    .filter(post => postMatchesSelectedModule(post, moduleNode))
+    .sort((a, b) => {
+      const av = a?.updatedAt?.seconds || a?.publishedAt?.seconds || a?.createdAt?.seconds || 0;
+      const bv = b?.updatedAt?.seconds || b?.publishedAt?.seconds || b?.createdAt?.seconds || 0;
+      return bv - av;
+    })
+    .map(post => ({ id: getPostInternalId(post), title: post.title || "Không tiêu đề", postId: post.id }))
+    .filter(item => {
+      const key = normalizeInternalId(item.id);
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 12);
+  box.innerHTML = items.length ? items.map(item => `
+    <button type="button" class="recent-id-chip" data-recent-internal-id="${escapeHtml(item.id)}" title="${escapeHtml(item.title)}">${escapeHtml(item.id)}</button>`
+  ).join("") : `<span class="recent-id-empty">Module này chưa có mã gần đây.</span>`;
+}
+
+function validateInternalId({ announce = false } = {}) {
+  const input = $("#internalId");
+  const status = $("#internalIdStatus");
+  if (!input || !status) return { valid: true, empty: true, duplicate: null };
+  const raw = input.value.trim();
+  input.classList.remove("is-valid", "is-duplicate");
+  status.className = "internal-id-status";
+  if (!raw) {
+    status.classList.add("is-empty");
+    status.textContent = "Nhập mã để CMS kiểm tra trùng. CMS không tự sinh hoặc tự thay đổi mã.";
+    return { valid: true, empty: true, duplicate: null };
+  }
+  const duplicate = findInternalIdDuplicate(raw);
+  if (duplicate) {
+    input.classList.add("is-duplicate");
+    status.classList.add("is-duplicate");
+    status.innerHTML = `❌ Mã <strong>${escapeHtml(raw)}</strong> đã được dùng cho “${escapeHtml(duplicate.title || "Không tiêu đề")}”. <button type="button" data-open-duplicate-id="${escapeHtml(duplicate.id)}">Mở bài</button>`;
+    if (announce) showNotice(`Mã ${raw} đã tồn tại.`, "error");
+    return { valid: false, empty: false, duplicate };
+  }
+  input.classList.add("is-valid");
+  status.classList.add("is-valid");
+  status.innerHTML = `✅ Mã <strong>${escapeHtml(raw)}</strong> chưa được sử dụng và sẽ được giữ nguyên khi lưu.`;
+  if (announce) showNotice(`Mã ${raw} có thể sử dụng.`);
+  return { valid: true, empty: false, duplicate: null };
 }
 
 function resetForm() {
@@ -360,6 +518,10 @@ function resetForm() {
   $("#showOnHome").checked = true;
   $("#featured").checked = false;
   $("#featuredPriority").value = "100";
+  $("#featuredModule").checked = false;
+  $("#featuredModulePriority").value = "100";
+  $("#featuredCategory").checked = false;
+  $("#featuredCategoryPriority").value = "100";
   updateHomepageDisplayControls();
   state.coverFile = null;
   state.coverUrl = "";
@@ -370,6 +532,8 @@ function resetForm() {
   setCategoryPath([]);
   renderCover();
   renderBlocks();
+  validateInternalId();
+  renderRecentInternalIds();
 }
 
 function fillForm(post) {
@@ -389,11 +553,13 @@ function fillForm(post) {
   );
   $("#status").value = post.status || "draft";
   $("#showOnHome").checked = post.showOnHome !== false;
-  $("#featured").checked = post.featured === true;
+  $("#featured").checked = isHomeFeatured(post);
   $("#featuredPriority").value = String(
-    Number.isFinite(Number(post.featuredPriority))
-      ? Math.max(1, Number(post.featuredPriority))
-      : 100
+    getHomeFeaturedPriority(post) < 9999 ? getHomeFeaturedPriority(post) : 100
+  );
+  $("#featuredModule").checked = isModuleFeatured(post);
+  $("#featuredModulePriority").value = String(
+    getModuleFeaturedPriority(post) < 9999 ? getModuleFeaturedPriority(post) : 100
   );
   updateHomepageDisplayControls();
   $("#seoTitle").value = post.seoTitle || "";
@@ -404,6 +570,8 @@ function fillForm(post) {
   $("#excerptCount").textContent = String($("#excerpt").value.length);
   renderCover();
   renderBlocks();
+  validateInternalId();
+  renderRecentInternalIds();
   openView("editor");
 }
 
@@ -447,6 +615,12 @@ async function savePost(event) {
     const title = $("#title").value.trim();
     if (!title) throw new Error("Bạn chưa nhập tiêu đề.");
 
+    const internalIdCheck = validateInternalId();
+    if (!internalIdCheck.valid) {
+      $("#internalId")?.focus();
+      throw new Error("Mã AI ID / Mã nội bộ đã tồn tại. Hãy nhập mã khác trước khi lưu.");
+    }
+
     let coverImage = $("#coverUrl").value.trim() || state.coverUrl;
     if (state.coverFile) coverImage = await uploadImage(state.coverFile, "cms-v5/covers");
 
@@ -469,6 +643,9 @@ async function savePost(event) {
       status,
       section: categoryNodes[0]?.name || "",
       sectionId: categoryNodes[0]?.id || "",
+      module: categoryNodes[0]?.module || categoryNodes[0]?.slug || categoryNodes[0]?.id || "",
+      moduleId: categoryNodes[0]?.id || "",
+      moduleName: categoryNodes[0]?.name || "",
       categoryId: categoryLeaf?.id || "",
       categoryName: categoryLeaf?.name || "",
       category: categoryLeaf?.name || "",
@@ -477,8 +654,18 @@ async function savePost(event) {
       categorySlugs: categoryNodes.map(node => node.slug),
       categoryUrl: "/" + categoryNodes.map(node => node.slug).filter(Boolean).join("/") + "/",
       showOnHome: $("#showOnHome").checked,
+      // Giữ featured/featuredPriority để bài cũ và frontend cũ vẫn hoạt động.
       featured: $("#showOnHome").checked && $("#featured").checked,
       featuredPriority: Math.max(1, Number.parseInt($("#featuredPriority").value, 10) || 100),
+      featuredHome: $("#showOnHome").checked && $("#featured").checked,
+      featuredHomePriority: Math.max(1, Number.parseInt($("#featuredPriority").value, 10) || 100),
+      featuredModule: Boolean(categoryNodes[0]) && $("#featuredModule").checked,
+      featuredModulePriority: Math.max(1, Number.parseInt($("#featuredModulePriority").value, 10) || 100),
+      featuredCategory: categoryNodes.length >= 2 && $("#featuredCategory").checked,
+      featuredCategoryPriority: Math.max(1, Number.parseInt($("#featuredCategoryPriority").value, 10) || 100),
+      featuredCategoryId: categoryNodes.length >= 2 ? (categoryLeaf?.id || "") : "",
+      featuredCategoryName: categoryNodes.length >= 2 ? (categoryLeaf?.name || "") : "",
+      featuredCategoryPathIds: categoryNodes.length >= 2 ? categoryNodes.map(node => node.id) : [],
       coverImage,
       image: coverImage,
       thumbnail: coverImage,
@@ -525,6 +712,10 @@ function serializeDraft() {
     showOnHome: $("#showOnHome").checked,
     featured: $("#featured").checked,
     featuredPriority: Math.max(1, Number.parseInt($("#featuredPriority").value, 10) || 100),
+    featuredModule: $("#featuredModule").checked,
+    featuredModulePriority: Math.max(1, Number.parseInt($("#featuredModulePriority").value, 10) || 100),
+    featuredCategory: $("#featuredCategory").checked,
+    featuredCategoryPriority: Math.max(1, Number.parseInt($("#featuredCategoryPriority").value, 10) || 100),
     seoTitle: $("#seoTitle").value,
     seoDescription: $("#seoDescription").value,
     blocks: state.blocks.map(({ file, files, ...block }) => block),
@@ -551,6 +742,12 @@ function restoreDraft() {
   $("#featuredPriority").value = String(
     Number.isFinite(Number(draft.featuredPriority))
       ? Math.max(1, Number(draft.featuredPriority))
+      : 100
+  );
+  $("#featuredModule").checked = Boolean(draft.featuredModule);
+  $("#featuredModulePriority").value = String(
+    Number.isFinite(Number(draft.featuredModulePriority))
+      ? Math.max(1, Number(draft.featuredModulePriority))
       : 100
   );
   updateHomepageDisplayControls();
@@ -583,7 +780,7 @@ function renderCategoryPath() {
 }
 
 function renderCategoryRoot() {
-  fillCategorySelect($("#categoryLevel1"),state.categoryTree,"Chọn chuyên mục");
+  fillCategorySelect($("#categoryLevel1"),state.categoryTree,"Chọn module");
   fillCategorySelect($("#categoryLevel2"),[],"Chọn danh mục");
   fillCategorySelect($("#categoryLevel3"),[],"Chọn danh mục con");
   fillCategorySelect($("#categoryLevel4"),[],"Chọn loại"); renderCategoryPath();
@@ -611,12 +808,125 @@ function normalizeSearchValue(value = "") {
     .trim();
 }
 
-function getPostCategoryLabel(post) {
-  const path = Array.isArray(post.categoryPath) && post.categoryPath.length
-    ? post.categoryPath
-    : [post.section, post.categoryName || post.category].filter(Boolean);
+const LEGACY_CATEGORY_ALIASES = new Map([
+  ["mina blog", "Blog Mina"],
+  ["blog mina", "Blog Mina"],
+  ["kinh nghiem game", "Mẹo Game & PC"],
+  ["meo game & pc", "Mẹo Game & PC"],
+  ["video gameplay", "Gameplay Audition"],
+  ["gameplay audition", "Gameplay Audition"],
+  ["tam su - chia se", "Tâm Sự - Chia Sẻ"],
+  ["tin tuc - cap nhat", "Tin Tức - Cập Nhật"],
+  ["prompt lenh ai - free suu tam", "Prompt AI Sưu Tầm"],
+  ["prompt ai suu tam", "Prompt AI Sưu Tầm"],
+  ["shop anh 2d/3d audition", "Shop Ảnh 2D/3D Audition"],
+  ["mix & match outfit game", "Mix & Match"],
+  ["mix & match", "Mix & Match"],
+  ["wikipedia d8", "Wiki D8"],
+  ["wiki d8", "Wiki D8"]
+]);
 
-  return path.join(" / ") || "Chưa phân loại";
+function normalizeCategoryToken(value = "") {
+  return normalizeSearchValue(value)
+    .replace(/[–—]/g, "-")
+    .replace(/\s*\/\s*/g, "/")
+    .trim();
+}
+
+function rawPostCategoryPath(post) {
+  const candidates = [
+    post.categoryPath,
+    post.categoryNames,
+    post.categoryPathNames,
+    post.categories
+  ];
+
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate) && candidate.length) {
+      return candidate.map(String).map(value => value.trim()).filter(Boolean);
+    }
+  }
+
+  return [
+    post.section,
+    post.moduleName,
+    post.categoryName || post.category,
+    post.subcategoryName || post.subcategory,
+    post.typeName || post.type
+  ].map(value => String(value || "").trim()).filter(Boolean);
+}
+
+function inferLegacyModule(post, parts) {
+  const explicit = normalizeCategoryToken(post.module || post.moduleId || post.moduleName || "");
+  const tokens = parts.map(normalizeCategoryToken);
+  const has = (...values) => values.some(value => tokens.includes(normalizeCategoryToken(value)));
+
+  if (["ai-prompt", "ai prompt"].includes(explicit)) return "AI Prompt";
+  if (["mix-match", "mix & match", "mix-match-outfit-game"].includes(explicit)) return "Mix & Match";
+  if (["academy"].includes(explicit)) return "Academy";
+  if (["game-gear", "game gear"].includes(explicit)) return "Game Gear";
+  if (["wiki", "wiki d8", "wikipedia-d8"].includes(explicit)) return "Wiki D8";
+
+  // Dữ liệu cũ thường gắn module cha là Mina Blog cho mọi loại bài.
+  // Vì vậy phải ưu tiên dấu hiệu danh mục con trước khi kết luận đây là Blog Mina.
+  if (has("Prompt Lệnh AI - Free Sưu Tầm", "Prompt AI Sưu Tầm", "Shop Ảnh 2D/3D Audition")) return "AI Prompt";
+  if (has("Mix & Match Outfit Game", "Mix & Match", "Style Girl", "Style Boy", "Couple Outfit")) return "Mix & Match";
+  if (has("Academy", "Hướng Dẫn Audition", "Hướng Dẫn AI")) return "Academy";
+  if (has("Game Gear", "Bàn Phím", "Chuột", "Tai nghe", "Màn Hình", "Phụ Kiện Game", "Đồ Decor")) return "Game Gear";
+  if (has("Wikipedia D8", "Wiki D8", "4K", "8K", "Top Skill Đẹp")) return "Wiki D8";
+  if (has("Kinh Nghiệm Game", "Mẹo Game & PC", "Video Gameplay", "Gameplay Audition", "Tâm Sự - Chia Sẻ", "Tin Tức - Cập Nhật")) return "Blog Mina";
+  if (["blog", "blog mina", "mina blog", "mina-blog"].includes(explicit)) return "Blog Mina";
+
+  return "";
+}
+
+function canonicalizePostCategoryPath(post) {
+  const rawParts = rawPostCategoryPath(post);
+  if (!rawParts.length) return [];
+
+  const aliased = rawParts.map(part => LEGACY_CATEGORY_ALIASES.get(normalizeCategoryToken(part)) || part);
+  const moduleName = inferLegacyModule(post, aliased);
+
+  const genericRoots = new Set(["mina blog", "blog mina"]);
+  let parts = aliased.filter((part, index) => {
+    const token = normalizeCategoryToken(part);
+    if (!genericRoots.has(token)) return true;
+    return moduleName === "Blog Mina" && index === aliased.length - 1;
+  });
+
+  if (moduleName) {
+    const moduleToken = normalizeCategoryToken(moduleName);
+    const markerIndex = parts.findIndex(part => normalizeCategoryToken(part) === moduleToken);
+    if (markerIndex >= 0) parts = parts.slice(markerIndex + 1);
+
+    if (moduleName === "AI Prompt") {
+      const legacyPromptIndex = parts.findIndex(part => normalizeCategoryToken(part) === "prompt ai suu tam");
+      const legacyShopIndex = parts.findIndex(part => normalizeCategoryToken(part) === "shop anh 2d/3d audition");
+      const startIndex = legacyPromptIndex >= 0 ? legacyPromptIndex : legacyShopIndex;
+      if (startIndex > 0) parts = parts.slice(startIndex);
+    }
+
+    if (moduleName === "Mix & Match") {
+      const legacyRootIndex = parts.findIndex(part => normalizeCategoryToken(part) === "mix & match");
+      if (legacyRootIndex >= 0) parts = parts.slice(legacyRootIndex + 1);
+    }
+
+    parts.unshift(moduleName);
+  }
+
+  const result = [];
+  for (const part of parts) {
+    const clean = String(part || "").trim();
+    if (!clean) continue;
+    if (result.length && normalizeCategoryToken(result[result.length - 1]) === normalizeCategoryToken(clean)) continue;
+    result.push(clean);
+  }
+
+  return result;
+}
+
+function getPostCategoryLabel(post) {
+  return canonicalizePostCategoryPath(post).join(" / ") || "Chưa phân loại";
 }
 
 function getPostImage(post) {
@@ -653,10 +963,7 @@ function getPostViewUrl(post) {
 }
 
 function getPostCategoryPath(post) {
-  if (Array.isArray(post.categoryPath) && post.categoryPath.length) {
-    return post.categoryPath.map(String).filter(Boolean);
-  }
-  return [post.section, post.categoryName || post.category].filter(Boolean).map(String);
+  return canonicalizePostCategoryPath(post);
 }
 
 function pathKey(parts = []) {
@@ -867,26 +1174,24 @@ function renderPosts() {
             <div class="post-content-cell">
               <h3>${highlightSearch(post.title || "(Không có tiêu đề)")}</h3>
               ${excerpt ? `<p class="post-excerpt">${highlightSearch(excerpt)}</p>` : ""}
-              <div class="post-submeta">${highlightSearch(post.slug || post.id)}</div>
-            </div>
-
-            <div class="post-identity-cell">
-              <strong>${highlightSearch(internalId)}</strong>
-              <span>${date || "Chưa có ngày"}</span>
-              ${viewCount ? `<small>👁 ${viewCount.toLocaleString("vi-VN")} lượt xem</small>` : ""}
+              <div class="post-compact-meta">
+                <strong>${highlightSearch(internalId)}</strong>
+                <span>${date || "Chưa có ngày"}</span>
+                ${viewCount ? `<span>👁 ${viewCount.toLocaleString("vi-VN")}</span>` : ""}
+                <span class="post-slug">${highlightSearch(post.slug || post.id)}</span>
+              </div>
             </div>
 
             <div class="post-category-cell">
               <div class="post-category-path">${highlightSearch(categoryLabel)}</div>
               <div class="post-category-id">${escapeHtml(post.categoryId || "")}</div>
-            </div>
-
-            <div class="post-link-cell">
-              <a class="mini-link web" href="${getPostViewUrl(post)}" target="_blank" rel="noopener" title="Xem trên website">🌐</a>
-              ${facebookUrl ? `<a class="mini-link facebook" href="${escapeHtml(facebookUrl)}" target="_blank" rel="noopener" title="Mở Facebook">f</a>` : `<span class="mini-link disabled" title="Chưa có Facebook">f</span>`}
-              ${youtubeUrl ? `<a class="mini-link youtube" href="${escapeHtml(youtubeUrl)}" target="_blank" rel="noopener" title="Mở YouTube">▶</a>` : `<span class="mini-link disabled" title="Chưa có YouTube">▶</span>`}
-              ${smartLink ? `<button class="mini-link smart" type="button" data-copy-smart-link="${escapeHtml(smartLink)}" title="Copy Smart Link">🔗</button>` : `<span class="mini-link disabled" title="Smart Link chưa được gắn">🔗</span>`}
-              ${clickCount ? `<small>${clickCount.toLocaleString("vi-VN")} click</small>` : ""}
+              <div class="post-inline-links" aria-label="Liên kết bài viết">
+                <a class="mini-link web" href="${getPostViewUrl(post)}" target="_blank" rel="noopener" title="Xem trên website">🌐</a>
+                ${facebookUrl ? `<a class="mini-link facebook" href="${escapeHtml(facebookUrl)}" target="_blank" rel="noopener" title="Mở Facebook">f</a>` : ""}
+                ${youtubeUrl ? `<a class="mini-link youtube" href="${escapeHtml(youtubeUrl)}" target="_blank" rel="noopener" title="Mở YouTube">▶</a>` : ""}
+                ${smartLink ? `<button class="mini-link smart" type="button" data-copy-smart-link="${escapeHtml(smartLink)}" title="Copy Smart Link">🔗</button>` : ""}
+                ${clickCount ? `<small>${clickCount.toLocaleString("vi-VN")} click</small>` : ""}
+              </div>
             </div>
 
             <div class="status-stack">
@@ -904,6 +1209,221 @@ function renderPosts() {
       }).join("")
     : `<div class="manager-empty">Không có bài viết phù hợp với bộ lọc.</div>`;
 }
+
+function getFeaturedModuleName(post) {
+  return inferLegacyModule(post, canonicalizePostCategoryPath(post)) ||
+    String(post.moduleName || post.module || post.section || "Chưa phân loại");
+}
+
+function featuredScopePredicate(post) {
+  return state.featuredScope === "module" ? isModuleFeatured(post) : isHomeFeatured(post);
+}
+
+function getFeaturedPriority(post) {
+  return state.featuredScope === "module"
+    ? getModuleFeaturedPriority(post)
+    : getHomeFeaturedPriority(post);
+}
+
+function getSortedFeaturedPosts() {
+  const byId = new Map(state.posts.filter(featuredScopePredicate).map(post => [post.id, post]));
+  const sorted = [...byId.values()].sort((a, b) => {
+    const priorityDiff = getFeaturedPriority(a) - getFeaturedPriority(b);
+    if (priorityDiff) return priorityDiff;
+    const dateA = new Date(a.updatedAt || a.createdAt || a.publishedAt || 0).getTime();
+    const dateB = new Date(b.updatedAt || b.createdAt || b.publishedAt || 0).getTime();
+    return dateB - dateA;
+  });
+
+  const validIds = new Set(sorted.map(post => post.id));
+  state.featuredOrder = state.featuredOrder.filter(id => validIds.has(id));
+  for (const post of sorted) if (!state.featuredOrder.includes(post.id)) state.featuredOrder.push(post.id);
+  return state.featuredOrder.map(id => byId.get(id)).filter(Boolean);
+}
+
+function getFilteredFeaturedPosts() {
+  const term = normalizeSearchValue($("#featuredSearch")?.value || "");
+  const moduleFilter = $("#featuredModuleFilter")?.value || "";
+  const categoryFilter = $("#featuredCategoryFilter")?.value || "";
+  return getSortedFeaturedPosts().filter(post => {
+    const moduleName = getFeaturedModuleName(post);
+    const haystack = normalizeSearchValue([
+      post.title, post.internalId, post.aiId, post.slug, moduleName, getPostCategoryLabel(post)
+    ].filter(Boolean).join(" "));
+    return (!term || haystack.includes(term)) && (!moduleFilter || moduleName === moduleFilter);
+  });
+}
+
+function syncFeaturedSelection() {
+  const validIds = new Set(state.posts.filter(featuredScopePredicate).map(post => post.id));
+  for (const id of [...state.featuredSelectedIds]) if (!validIds.has(id)) state.featuredSelectedIds.delete(id);
+}
+
+function renderFeaturedCategoryFilter() {
+  const select = $("#featuredCategoryFilter");
+  if (!select) return;
+  const current = select.value;
+  const seen = new Map();
+  state.posts.filter(isCategoryFeatured).forEach(post => {
+    const id = getFeaturedCategoryKey(post);
+    if (!id) return;
+    const name = post.featuredCategoryName || post.categoryName || post.category || id;
+    if (!seen.has(id)) seen.set(id, name);
+  });
+  select.innerHTML = `<option value="">Tất cả danh mục</option>` + [...seen.entries()]
+    .sort((a, b) => String(a[1]).localeCompare(String(b[1]), "vi"))
+    .map(([id, name]) => `<option value="${escapeHtml(id)}">${escapeHtml(name)}</option>`)
+    .join("");
+  if ([...seen.keys()].includes(current)) select.value = current;
+  select.hidden = state.featuredScope !== "category";
+}
+
+function renderFeaturedManager() {
+  renderFeaturedCategoryFilter();
+  const list = $("#featuredPostsList");
+  if (!list) return;
+  syncFeaturedSelection();
+  const allFeatured = getSortedFeaturedPosts();
+  const posts = getFilteredFeaturedPosts();
+  const priorities = allFeatured.map(getFeaturedPriority).filter(value => value < 9999);
+  const scopeLabel = state.featuredScope === "category"
+    ? "Nổi bật theo danh mục"
+    : state.featuredScope === "module"
+      ? "Nổi bật theo module"
+      : "Nổi bật trang chủ";
+
+  $$("[data-featured-scope]").forEach(button =>
+    button.classList.toggle("active", button.dataset.featuredScope === state.featuredScope)
+  );
+  $("#featuredTotalLabel").textContent = scopeLabel;
+  $("#featuredTotalCount").textContent = String(allFeatured.length);
+  $("#featuredVisibleCount").textContent = String(posts.length);
+  $("#featuredSelectedCount").textContent = String(state.featuredSelectedIds.size);
+  $("#featuredTopPriority").textContent = priorities.length ? String(Math.min(...priorities)) : "—";
+
+  list.innerHTML = posts.length ? posts.map(post => {
+    const globalIndex = state.featuredOrder.indexOf(post.id);
+    const moduleName = getFeaturedModuleName(post);
+    const scopeBadge = state.featuredScope === "category"
+      ? `🗂️ ${post.featuredCategoryName || post.categoryName || "Danh mục"}`
+      : state.featuredScope === "module"
+        ? `📂 ${moduleName}`
+        : "🏠 Trang chủ";
+    return `
+      <article class="featured-row ${state.featuredSelectedIds.has(post.id) ? "selected" : ""}" draggable="true" data-featured-row="${escapeHtml(post.id)}">
+        <div class="featured-select"><input type="checkbox" data-featured-select="${escapeHtml(post.id)}" ${state.featuredSelectedIds.has(post.id) ? "checked" : ""}></div>
+        <div class="featured-order-cell">
+          <button class="featured-drag-handle" type="button" title="Kéo để sắp xếp">⋮⋮</button>
+          <strong>${globalIndex + 1}</strong>
+          <small>Ưu tiên ${getFeaturedPriority(post) < 9999 ? getFeaturedPriority(post) : "chưa lưu"}</small>
+        </div>
+        <div class="featured-thumb"><img src="${escapeHtml(getPostImage(post))}" alt="" loading="lazy" onerror="this.onerror=null;this.src='/assets/images/logo-mina.png'"></div>
+        <div class="featured-content">
+          <h3>${escapeHtml(post.title || "(Không có tiêu đề)")}</h3>
+          <div class="featured-meta"><strong>${escapeHtml(post.internalId || post.aiId || "—")}</strong><span>${escapeHtml(getPostDate(post) || "Chưa có ngày")}</span><span>👁 ${getNumericValue(post,["views","viewCount","viewsCount"]).toLocaleString("vi-VN")}</span></div>
+          <div class="featured-slug">${escapeHtml(post.slug || post.id)}</div>
+        </div>
+        <div class="featured-category"><strong>${escapeHtml(scopeBadge)}</strong><span>${escapeHtml(getPostCategoryLabel(post))}</span></div>
+        <div class="featured-actions">
+          <a class="btn ghost" href="${getPostViewUrl(post)}" target="_blank" rel="noopener">Xem</a>
+          <button class="btn ghost" type="button" data-featured-edit="${escapeHtml(post.id)}">Sửa</button>
+          <button class="btn ghost" type="button" data-featured-pin="${escapeHtml(post.id)}">📌 Lên đầu</button>
+          <button class="btn danger" type="button" data-featured-remove="${escapeHtml(post.id)}">Bỏ nổi bật</button>
+        </div>
+      </article>`;
+  }).join("") : `<div class="manager-empty">Không có bài ${scopeLabel.toLowerCase()} phù hợp.</div>`;
+}
+
+function moveFeaturedId(dragId, targetId) {
+  if (!dragId || !targetId || dragId === targetId) return;
+  const order = [...state.featuredOrder];
+  const from = order.indexOf(dragId);
+  const to = order.indexOf(targetId);
+  if (from < 0 || to < 0) return;
+  order.splice(from, 1);
+  order.splice(to, 0, dragId);
+  state.featuredOrder = order;
+  renderFeaturedManager();
+}
+
+function pinFeaturedIdsToTop(ids) {
+  const selected = ids.filter(id => state.featuredOrder.includes(id));
+  if (!selected.length) return;
+  state.featuredOrder = [...selected, ...state.featuredOrder.filter(id => !selected.includes(id))];
+  renderFeaturedManager();
+}
+
+async function saveFeaturedOrder(button) {
+  const postsById = new Map(state.posts.map(post => [post.id, post]));
+  setBusy(button, true, "Đang lưu…");
+  try {
+    for (let index = 0; index < state.featuredOrder.length; index += 1) {
+      const id = state.featuredOrder[index];
+      const post = postsById.get(id);
+      if (!post || !featuredScopePredicate(post)) continue;
+      const nextPriority = index + 1;
+      if (getFeaturedPriority(post) === nextPriority) continue;
+      const payload = { ...post };
+      if (state.featuredScope === "category") {
+        payload.featuredCategory = true;
+        payload.featuredCategoryPriority = nextPriority;
+      } else if (state.featuredScope === "module") {
+        payload.featuredModule = true;
+        payload.featuredModulePriority = nextPriority;
+      } else {
+        payload.featured = true;
+        payload.featuredPriority = nextPriority;
+        payload.featuredHome = true;
+        payload.featuredHomePriority = nextPriority;
+        payload.showOnHome = post.showOnHome !== false;
+      }
+      delete payload.id;
+      await repo.savePost(payload, id);
+    }
+    await refreshData();
+    const savedLabel = state.featuredScope === "category" ? "nổi bật danh mục" : state.featuredScope === "module" ? "nổi bật module" : "nổi bật trang chủ";
+    showNotice(`Đã lưu thứ tự ${savedLabel}.`);
+  } catch (error) {
+    console.error(error);
+    showNotice(error.message || "Không thể lưu thứ tự bài nổi bật.", "error");
+  } finally {
+    setBusy(button, false);
+  }
+}
+
+async function removeFeaturedPosts(ids, button) {
+  const cleanIds = [...new Set(ids)].filter(Boolean);
+  if (!cleanIds.length) return showNotice("Bạn chưa chọn bài nổi bật.", "error");
+  const scopeText = state.featuredScope === "category" ? "khỏi danh mục" : state.featuredScope === "module" ? "khỏi module" : "khỏi trang chủ";
+  const ok = await confirmAction("Bỏ nổi bật", `Bỏ ${cleanIds.length} bài nổi bật ${scopeText}?`);
+  if (!ok) return;
+  setBusy(button, true, "Đang xử lý…");
+  try {
+    for (const id of cleanIds) {
+      const post = await repo.getPost(id);
+      if (!post) continue;
+      const payload = { ...post };
+      if (state.featuredScope === "module") {
+        payload.featuredModule = false;
+      } else {
+        payload.featured = false;
+        payload.featuredHome = false;
+      }
+      delete payload.id;
+      await repo.savePost(payload, id);
+    }
+    cleanIds.forEach(id => state.featuredSelectedIds.delete(id));
+    state.featuredOrder = state.featuredOrder.filter(id => !cleanIds.includes(id));
+    await refreshData();
+    showNotice(`Đã bỏ nổi bật ${cleanIds.length} bài ${scopeText}.`);
+  } catch (error) {
+    console.error(error);
+    showNotice(error.message || "Không thể bỏ nổi bật.", "error");
+  } finally {
+    setBusy(button, false);
+  }
+}
+
 async function refreshData() {
   state.posts = await repo.listPosts();
 
@@ -934,6 +1454,7 @@ async function refreshData() {
   }
 
   renderPosts();
+  renderFeaturedManager();
 }
 
 
@@ -1039,13 +1560,143 @@ async function saveSmartLink(event) {
   }
 }
 
+
+// ===== Mina Analytics Center v1.0 =====
+function analyticsPostDate(post) {
+  const raw = post?.publishedAt || post?.updatedAt || post?.createdAt;
+  if (!raw) return 0;
+  if (typeof raw?.toMillis === "function") return raw.toMillis();
+  if (typeof raw?.seconds === "number") return raw.seconds * 1000;
+  const time = new Date(raw).getTime();
+  return Number.isFinite(time) ? time : 0;
+}
+
+function analyticsViews(post) {
+  return getNumericValue(post, ["views", "viewCount", "totalViews", "analyticsViews"]);
+}
+
+function analyticsHasSmartLink(post) {
+  return Boolean(getPostSmartLink(post) || getPostSmartLinkId(post));
+}
+
+function analyticsFeatured(post) {
+  return isHomeFeatured(post) || isModuleFeatured(post) || isCategoryFeatured(post);
+}
+
+function analyticsSeoIssuesForPost(post) {
+  const issues = [];
+  const title = String(post.title || "").trim();
+  const description = String(post.seoDescription || post.excerpt || post.description || "").trim();
+  const image = String(post.coverImage || post.coverUrl || post.image || post.thumbnail || "").trim();
+  const slug = String(post.slug || "").trim();
+  const category = getPostCategoryLabel(post);
+  if (!image) issues.push("Thiếu ảnh đại diện");
+  if (!slug) issues.push("Thiếu slug");
+  if (title.length < 25) issues.push("Tiêu đề quá ngắn");
+  if (title.length > 70) issues.push("Tiêu đề quá dài");
+  if (!description) issues.push("Thiếu mô tả SEO");
+  else if (description.length < 70) issues.push("Mô tả SEO quá ngắn");
+  if (!category || category === "Chưa phân loại") issues.push("Thiếu danh mục");
+  if (!post.internalId && !post.aiId) issues.push("Thiếu mã nội bộ");
+  return issues;
+}
+
+function analyticsFilteredPosts() {
+  const moduleName = $("#cmsAnalyticsModuleFilter")?.value || "";
+  const range = $("#cmsAnalyticsRangeFilter")?.value || "all";
+  const term = normalizeCategoryToken($("#cmsAnalyticsSearch")?.value || "");
+  const cutoff = range === "all" ? 0 : Date.now() - Number(range) * 86400000;
+  return state.posts.filter(post => {
+    if (moduleName && getFeaturedModuleName(post) !== moduleName) return false;
+    if (cutoff && analyticsPostDate(post) < cutoff) return false;
+    if (term) {
+      const haystack = normalizeCategoryToken([
+        post.title, post.internalId, post.aiId, post.slug,
+        getFeaturedModuleName(post), getPostCategoryLabel(post)
+      ].filter(Boolean).join(" "));
+      if (!haystack.includes(term)) return false;
+    }
+    return true;
+  });
+}
+
+function renderAnalyticsModuleOptions() {
+  const select = $("#cmsAnalyticsModuleFilter");
+  if (!select) return;
+  const current = select.value;
+  const modules = [...new Set(state.posts.map(getFeaturedModuleName).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"vi"));
+  select.innerHTML = '<option value="">Tất cả module</option>' + modules.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("");
+  if (modules.includes(current)) select.value = current;
+}
+
+function analyticsPostAction(post) {
+  return `<div class="cms-analytics-actions"><a href="${PUBLIC_SITE_ORIGIN}/post.html?id=${encodeURIComponent(post.id)}" target="_blank" rel="noopener">Xem</a><button type="button" data-analytics-edit="${escapeHtml(post.id)}">Sửa</button></div>`;
+}
+
+function renderCmsAnalytics() {
+  if (!$("#view-analytics")) return;
+  renderAnalyticsModuleOptions();
+  const posts = analyticsFilteredPosts();
+  const totalViews = posts.reduce((sum, post) => sum + analyticsViews(post), 0);
+  const featured = posts.filter(analyticsFeatured);
+  const smartLinks = posts.filter(analyticsHasSmartLink);
+  const zeroViews = posts.filter(post => analyticsViews(post) === 0);
+  const seoRows = posts.map(post => ({ post, issues: analyticsSeoIssuesForPost(post) })).filter(row => row.issues.length);
+
+  $("#analyticsTotalPosts").textContent = posts.length.toLocaleString("vi-VN");
+  $("#analyticsTotalViews").textContent = totalViews.toLocaleString("vi-VN");
+  $("#analyticsFeaturedPosts").textContent = featured.length.toLocaleString("vi-VN");
+  $("#analyticsSmartLinks").textContent = smartLinks.length.toLocaleString("vi-VN");
+  $("#analyticsZeroViews").textContent = zeroViews.length.toLocaleString("vi-VN");
+  $("#analyticsSeoIssues").textContent = seoRows.length.toLocaleString("vi-VN");
+
+  const moduleMap = new Map();
+  posts.forEach(post => {
+    const name = getFeaturedModuleName(post) || "Chưa phân loại";
+    const item = moduleMap.get(name) || { name, posts: 0, views: 0, featured: 0, smart: 0 };
+    item.posts += 1;
+    item.views += analyticsViews(post);
+    if (analyticsFeatured(post)) item.featured += 1;
+    if (analyticsHasSmartLink(post)) item.smart += 1;
+    moduleMap.set(name, item);
+  });
+  const modules = [...moduleMap.values()].sort((a,b)=>b.views-a.views || b.posts-a.posts);
+  $("#analyticsModuleTable").innerHTML = modules.length ? `
+    <div class="cms-module-row head"><span>Module</span><span>Bài</span><span>Views</span><span>Nổi bật</span><span>Smart Link</span></div>
+    ${modules.map(item => `<button class="cms-module-row" type="button" data-analytics-module="${escapeHtml(item.name)}"><strong>${escapeHtml(item.name)}</strong><span>${item.posts}</span><span>${item.views.toLocaleString("vi-VN")}</span><span>${item.featured}</span><span>${item.smart}</span></button>`).join("")}` : '<div class="manager-empty">Chưa có dữ liệu module.</div>';
+
+  const top = [...posts].sort((a,b)=>analyticsViews(b)-analyticsViews(a)).slice(0,10);
+  $("#analyticsTopPosts").innerHTML = top.length ? top.map((post,index)=>`<article class="cms-ranking-item"><b>${index+1}</b><div><strong>${escapeHtml(post.title || "Không tiêu đề")}</strong><small>${escapeHtml(getFeaturedModuleName(post))} · ${analyticsViews(post).toLocaleString("vi-VN")} lượt xem</small></div>${analyticsPostAction(post)}</article>`).join("") : '<div class="manager-empty">Chưa có bài phù hợp.</div>';
+
+  const homeCount = posts.filter(isHomeFeatured).length;
+  const moduleCount = posts.filter(isModuleFeatured).length;
+  const categoryCount = posts.filter(isCategoryFeatured).length;
+  $("#analyticsFeaturedBreakdown").innerHTML = `
+    <div><span>🏠 Trang chủ</span><strong>${homeCount}</strong></div>
+    <div><span>📂 Theo module</span><strong>${moduleCount}</strong></div>
+    <div><span>🗂️ Theo danh mục</span><strong>${categoryCount}</strong></div>
+    <div><span>⭐ Tổng bài khác nhau</span><strong>${featured.length}</strong></div>`;
+
+  $("#analyticsSeoTable").innerHTML = seoRows.length ? seoRows.slice(0,20).map(({post,issues})=>`<article class="cms-seo-row"><div><strong>${escapeHtml(post.title || "Không tiêu đề")}</strong><small>${escapeHtml(getFeaturedModuleName(post))} · ${escapeHtml(post.internalId || post.aiId || post.slug || "Không mã")}</small></div><div class="cms-seo-tags">${issues.map(issue=>`<span>${escapeHtml(issue)}</span>`).join("")}</div>${analyticsPostAction(post)}</article>`).join("") : '<div class="manager-empty">Không phát hiện lỗi SEO trong bộ lọc hiện tại.</div>';
+
+  $("#analyticsZeroViewPosts").innerHTML = zeroViews.length ? zeroViews.slice(0,10).map((post,index)=>`<article class="cms-ranking-item"><b>${index+1}</b><div><strong>${escapeHtml(post.title || "Không tiêu đề")}</strong><small>${escapeHtml(getFeaturedModuleName(post))} · ${escapeHtml(getPostCategoryLabel(post))}</small></div>${analyticsPostAction(post)}</article>`).join("") : '<div class="manager-empty">Không có bài 0 lượt xem.</div>';
+
+  const coverage = posts.length ? Math.round(smartLinks.length / posts.length * 100) : 0;
+  $("#analyticsSmartLinkCoverage").innerHTML = `<strong>${coverage}%</strong><div class="cms-progress"><i style="width:${coverage}%"></i></div><p>${smartLinks.length}/${posts.length} bài đang gắn Smart Link.</p>`;
+  $("#cmsAnalyticsUpdatedAt").textContent = `Cập nhật lúc ${new Date().toLocaleString("vi-VN")}. Dữ liệu lấy từ ${posts.length} bài phù hợp.`;
+}
+
 function openView(name) {
   $$(".view").forEach(view => view.classList.toggle("active", view.id === `view-${name}`));
   $$(".nav-item[data-view]").forEach(button => button.classList.toggle("active", button.dataset.view === name));
-  $("#pageTitle").textContent = name === "posts" ? "Quản lý bài viết" : name === "smartlinks" ? "Smart Link Manager" : "Đăng bài viết";
+  const titles = { editor: "Đăng bài viết", posts: "Quản lý bài viết", featured: "Bài viết nổi bật", analytics: "Phân tích", excel: "Import Excel", smartlinks: "Smart Link Manager" };
+  $("#pageTitle").textContent = titles[name] || "Mina CMS";
   const editing = name === "editor";
   $("#savePostTopButton").hidden = !editing;
   $("#newPostButton").hidden = !editing;
+
+  if (name === "featured") renderFeaturedManager();
+  if (name === "analytics") renderCmsAnalytics();
 
   if (name === "smartlinks") {
     loadSmartLinks({ silent: false });
@@ -1063,14 +1714,138 @@ async function confirmAction(title, message) {
   return new Promise(resolve => dialog.addEventListener("close", () => resolve(dialog.returnValue === "confirm"), { once: true }));
 }
 
+async function syncLegacyFeaturedToAllLevels() {
+  const legacyPosts = state.posts.filter(isHomeFeatured);
+  if (!legacyPosts.length) return showNotice("Không có bài nổi bật cũ để đồng bộ.", "error");
+  if (!confirm(`Sao chép ${legacyPosts.length} bài nổi bật trang chủ sang Module và Danh mục hiện tại? Dữ liệu trang chủ vẫn được giữ nguyên.`)) return;
+  const button = $("#syncLegacyFeaturedButton");
+  setBusy(button, true, "Đang đồng bộ…");
+  try {
+    for (const post of legacyPosts) {
+      const priority = getHomeFeaturedPriority(post) === 9999 ? 100 : getHomeFeaturedPriority(post);
+      const pathIds = Array.isArray(post.categoryPathIds) ? post.categoryPathIds.filter(Boolean) : [];
+      const payload = { ...post, featuredModule: true, featuredModulePriority: priority };
+      if (pathIds.length >= 2 || post.categoryId) {
+        payload.featuredCategory = true;
+        payload.featuredCategoryPriority = priority;
+        payload.featuredCategoryId = post.categoryId || pathIds.at(-1) || "";
+        payload.featuredCategoryName = post.categoryName || post.category || "";
+        payload.featuredCategoryPathIds = pathIds;
+      }
+      await repo.savePost(payload, post.id);
+    }
+    await refreshData();
+    showNotice("Đã đồng bộ bài nổi bật cũ sang Module và Danh mục.");
+  } catch (error) {
+    console.error(error);
+    showNotice(error.message || "Không thể đồng bộ bài nổi bật.", "error");
+  } finally {
+    setBusy(button, false);
+  }
+}
+
 function bindEvents() {
   $("#showOnHome")?.addEventListener("change", updateHomepageDisplayControls);
   $("#featured")?.addEventListener("change", updateHomepageDisplayControls);
+  $("#featuredModule")?.addEventListener("change", updateHomepageDisplayControls);
+  $("#featuredCategory")?.addEventListener("change", updateHomepageDisplayControls);
+  $("#categoryLevel1")?.addEventListener("change", updateHomepageDisplayControls);
   $("#featuredPriority")?.addEventListener("input", event => {
     const value = Number.parseInt(event.currentTarget.value, 10);
     if (Number.isFinite(value) && value < 1) event.currentTarget.value = "1";
   });
+  $("#featuredModulePriority")?.addEventListener("input", event => {
+    const value = Number.parseInt(event.currentTarget.value, 10);
+    if (Number.isFinite(value) && value < 1) event.currentTarget.value = "1";
+  });
+
   $$(".nav-item[data-view]").forEach(button => button.addEventListener("click", () => openView(button.dataset.view)));
+  $("#refreshCmsAnalyticsButton")?.addEventListener("click", async event => {
+    setBusy(event.currentTarget, true, "Đang tải…");
+    try { await refreshData(); renderCmsAnalytics(); showNotice("Đã cập nhật Analytics."); }
+    finally { setBusy(event.currentTarget, false); }
+  });
+  $("#cmsAnalyticsModuleFilter")?.addEventListener("change", renderCmsAnalytics);
+  $("#cmsAnalyticsRangeFilter")?.addEventListener("change", renderCmsAnalytics);
+  $("#cmsAnalyticsSearch")?.addEventListener("input", renderCmsAnalytics);
+  $("#view-analytics")?.addEventListener("click", event => {
+    const moduleButton = event.target.closest("[data-analytics-module]");
+    if (moduleButton) {
+      $("#cmsAnalyticsModuleFilter").value = moduleButton.dataset.analyticsModule || "";
+      renderCmsAnalytics();
+      return;
+    }
+    const editButton = event.target.closest("[data-analytics-edit]");
+    if (editButton) {
+      const post = state.posts.find(item => item.id === editButton.dataset.analyticsEdit);
+      if (post) fillForm(post);
+    }
+  });
+  $("#featuredSearch")?.addEventListener("input", renderFeaturedManager);
+  $("#featuredModuleFilter")?.addEventListener("change", renderFeaturedManager);
+  $("#featuredCategoryFilter")?.addEventListener("change", renderFeaturedManager);
+  $$("[data-featured-scope]").forEach(button => button.addEventListener("click", () => {
+    state.featuredScope = ["home", "module", "category"].includes(button.dataset.featuredScope) ? button.dataset.featuredScope : "home";
+    state.featuredOrder = [];
+    state.featuredSelectedIds.clear();
+    renderFeaturedManager();
+  }));
+  $("#refreshFeaturedButton")?.addEventListener("click", async event => {
+    setBusy(event.currentTarget, true, "Đang tải…");
+    try { await refreshData(); showNotice("Đã tải lại bài nổi bật."); }
+    finally { setBusy(event.currentTarget, false); }
+  });
+  $("#saveFeaturedOrderButton")?.addEventListener("click", event => saveFeaturedOrder(event.currentTarget));
+  $("#pinSelectedFeaturedButton")?.addEventListener("click", () => {
+    const ids = [...state.featuredSelectedIds];
+    if (!ids.length) return showNotice("Bạn chưa chọn bài nổi bật.", "error");
+    pinFeaturedIdsToTop(ids);
+    showNotice("Đã đưa bài đã chọn lên đầu. Bấm Lưu thứ tự để áp dụng.");
+  });
+  $("#unfeatureSelectedButton")?.addEventListener("click", event => removeFeaturedPosts([...state.featuredSelectedIds], event.currentTarget));
+  $("#featuredPostsList")?.addEventListener("change", event => {
+    const id = event.target.dataset.featuredSelect;
+    if (!id) return;
+    if (event.target.checked) state.featuredSelectedIds.add(id);
+    else state.featuredSelectedIds.delete(id);
+    renderFeaturedManager();
+  });
+  $("#featuredPostsList")?.addEventListener("click", async event => {
+    const editId = event.target.closest("[data-featured-edit]")?.dataset.featuredEdit;
+    const pinId = event.target.closest("[data-featured-pin]")?.dataset.featuredPin;
+    const removeId = event.target.closest("[data-featured-remove]")?.dataset.featuredRemove;
+    if (editId) return fillForm(await repo.getPost(editId));
+    if (pinId) {
+      pinFeaturedIdsToTop([pinId]);
+      return showNotice("Đã đưa bài lên đầu. Bấm Lưu thứ tự để áp dụng.");
+    }
+    if (removeId) return removeFeaturedPosts([removeId], event.target.closest("button"));
+  });
+  $("#featuredPostsList")?.addEventListener("dragstart", event => {
+    const row = event.target.closest("[data-featured-row]");
+    if (!row) return;
+    state.featuredDragId = row.dataset.featuredRow;
+    row.classList.add("dragging");
+    event.dataTransfer.effectAllowed = "move";
+  });
+  $("#featuredPostsList")?.addEventListener("dragend", event => {
+    event.target.closest("[data-featured-row]")?.classList.remove("dragging");
+    state.featuredDragId = "";
+  });
+  $("#featuredPostsList")?.addEventListener("dragover", event => {
+    if (!state.featuredDragId) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    event.target.closest("[data-featured-row]")?.classList.add("drag-over");
+  });
+  $("#featuredPostsList")?.addEventListener("dragleave", event => event.target.closest("[data-featured-row]")?.classList.remove("drag-over"));
+  $("#featuredPostsList")?.addEventListener("drop", event => {
+    event.preventDefault();
+    const target = event.target.closest("[data-featured-row]");
+    if (!target) return;
+    target.classList.remove("drag-over");
+    moveFeaturedId(state.featuredDragId, target.dataset.featuredRow);
+  });
   $("#smartLinkForm")?.addEventListener("submit", saveSmartLink);
   $("#newSmartLinkButton")?.addEventListener("click", resetSmartLinkForm);
   $("#resetSmartLinkButton")?.addEventListener("click", resetSmartLinkForm);
@@ -1130,6 +1905,24 @@ function bindEvents() {
   $("#categoryLevel2").addEventListener("change",()=>renderCategoryLevel(3));
   $("#categoryLevel3").addEventListener("change",()=>renderCategoryLevel(4));
   $("#categoryLevel4").addEventListener("change",renderCategoryPath);
+
+  $("#internalId")?.addEventListener("input", () => validateInternalId());
+  $("#internalId")?.addEventListener("blur", () => validateInternalId());
+  $("#checkInternalIdButton")?.addEventListener("click", () => validateInternalId({ announce: true }));
+  $("#recentInternalIds")?.addEventListener("click", event => {
+    const button = event.target.closest("[data-recent-internal-id]");
+    if (!button) return;
+    $("#internalId").value = button.dataset.recentInternalId || "";
+    validateInternalId();
+    $("#internalId").focus();
+  });
+  $("#internalIdStatus")?.addEventListener("click", event => {
+    const button = event.target.closest("[data-open-duplicate-id]");
+    if (!button) return;
+    const post = state.posts.find(item => String(item.id) === String(button.dataset.openDuplicateId));
+    if (post) fillForm(post);
+  });
+  $("#categoryLevel1")?.addEventListener("change", renderRecentInternalIds);
 
   $("#title").addEventListener("input", () => {
     if (!$("#postId").value && !$("#slug").dataset.touched) $("#slug").value = slugify($("#title").value);
@@ -1276,8 +2069,14 @@ function bindEvents() {
         delete payload.id;
         if (action === "publish") payload.status = "published";
         if (action === "draft") payload.status = "draft";
-        if (action === "feature") payload.featured = true;
-        if (action === "unfeature") payload.featured = false;
+        if (action === "feature") {
+          payload.featured = true;
+          payload.featuredHome = true;
+        }
+        if (action === "unfeature") {
+          payload.featured = false;
+          payload.featuredHome = false;
+        }
         await repo.savePost(payload, id);
       }
       state.selectedPostIds.clear();

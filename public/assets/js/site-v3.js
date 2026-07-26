@@ -6,6 +6,99 @@ const AFFILIATE_SLUG = "taoanh3d";
 
 const CATEGORY_TREE_URL = "/data/category-tree.json";
 
+const activeModuleId = document.body.dataset.module || "";
+
+function findCategoryNode(nodes, target) {
+  const wanted = normalize(target || "");
+  for (const node of nodes || []) {
+    if ([node.id, node.slug, node.module, node.name].filter(Boolean).some(value => normalize(value) === wanted)) return node;
+    const child = findCategoryNode(node.children || [], target);
+    if (child) return child;
+  }
+  return null;
+}
+
+function moduleTree(tree) {
+  if (!activeModuleId) return tree;
+  const root = findCategoryNode(tree, activeModuleId);
+  if (!root) return [];
+
+  // Mỗi trang module đã là một khu vực độc lập, vì vậy sidebar chỉ hiển thị
+  // danh mục trực thuộc module. Không lặp lại thêm một “thư mục lớn” bên trong.
+  return Array.isArray(root.children) && root.children.length
+    ? root.children
+    : [root];
+}
+
+function moduleAliases(root) {
+  return [root?.id, root?.slug, root?.module, root?.name]
+    .filter(Boolean)
+    .map(normalize)
+    .filter(Boolean);
+}
+
+function moduleChildTokens(root) {
+  return (root?.children || [])
+    .flatMap(collectNodeTokens)
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length);
+}
+
+function inferModuleRoot(post, categoryTree) {
+  const roots = (categoryTree || []).filter(node => Array.isArray(node.children));
+  const haystack = categoryTokens(post);
+  let winner = null;
+  let winnerScore = 0;
+
+  for (const root of roots) {
+    const matched = moduleChildTokens(root).find(token => token && haystack.includes(token));
+    const score = matched ? matched.length : 0;
+    if (score > winnerScore) {
+      winner = root;
+      winnerScore = score;
+    }
+  }
+
+  return winner;
+}
+
+function postBelongsToModule(post, root, categoryTree = []) {
+  if (!root) return true;
+
+  // Ưu tiên danh mục con cụ thể. Đây là nguồn dữ liệu đáng tin cậy nhất cho
+  // bài cũ vì nhiều bài trước đây cùng mang module cha "Mina Blog".
+  const inferredRoot = inferModuleRoot(post, categoryTree);
+  if (inferredRoot) {
+    const currentAliases = moduleAliases(root);
+    const inferredAliases = moduleAliases(inferredRoot);
+    return currentAliases.some(alias => inferredAliases.includes(alias));
+  }
+
+  // Chỉ dùng module được lưu trực tiếp khi bài không có danh mục con đủ rõ.
+  // Nhờ vậy module cha cũ không còn kéo nhầm toàn bộ bài sang Blog Mina.
+  const explicit = normalize(value(post, ["moduleId", "module", "sectionId", "section"], ""));
+  if (explicit) {
+    return moduleAliases(root).includes(explicit);
+  }
+
+  // Fallback cho dữ liệu rất cũ chỉ lưu đúng tên/slug module, không có cấp con.
+  // Không áp dụng cho Blog Mina vì token cha này từng được gắn vào gần như mọi bài.
+  if (normalize(root.module) !== "blog") {
+    const haystack = categoryTokens(post);
+    return moduleAliases(root).some(alias => alias && haystack.includes(alias));
+  }
+
+  return false;
+}
+
+function moduleAllLabel() {
+  const key = normalize(activeModuleId);
+  if (key.includes("mix-match")) return "🔥 Tất cả bộ phối";
+  if (key.includes("academy")) return "🔥 Tất cả bài học";
+  if (key.includes("ai-prompt")) return "🔥 Tất cả nội dung";
+  if (key.includes("game-gear")) return "🔥 Tất cả nội dung";
+  return "🔥 Tất cả bài viết";
+}
 
 const CATEGORY_COLOR_RULES = [
   { color: "#ec4899", keywords: ["mina blog", "prompt", "ai prompt", "lenh ai", "lệnh ai"] },
@@ -159,7 +252,7 @@ function renderCategorySidebar(container, tree, posts, onSelect) {
       type="button"
       class="blog-category-all is-active"
       data-category-value="">
-      <span>🔥 Tất cả bài viết</span>
+      <span>${esc(moduleAllLabel())}</span>
       <span class="blog-category-count">${posts.length}</span>
     </button>
     ${renderNodes(tree)}
@@ -368,6 +461,65 @@ function getHomePostTime(post) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function isHomeFeatured(post) {
+  if (post?.featuredHome === true) return true;
+  if (post?.featuredHome === false) return false;
+  return post?.featured === true;
+}
+
+function getHomeFeaturedPriority(post) {
+  const value = Number.parseInt(post?.featuredHomePriority ?? post?.featuredPriority, 10);
+  return Number.isFinite(value) && value > 0 ? value : 100;
+}
+
+function isModuleFeatured(post) {
+  return post?.featuredModule === true;
+}
+
+function getModuleFeaturedPriority(post) {
+  const value = Number.parseInt(post?.featuredModulePriority, 10);
+  return Number.isFinite(value) && value > 0 ? value : 100;
+}
+
+function isCategoryFeatured(post) {
+  return post?.featuredCategory === true;
+}
+
+function getCategoryFeaturedPriority(post) {
+  const value = Number.parseInt(post?.featuredCategoryPriority, 10);
+  return Number.isFinite(value) && value > 0 ? value : 100;
+}
+
+function postMatchesCategory(post, activeCategory = "") {
+  if (!activeCategory) return false;
+  const wanted = normalize(activeCategory);
+  const tokens = [post?.featuredCategoryId, post?.categoryId, post?.categorySlug,
+    ...(Array.isArray(post?.categoryPathIds) ? post.categoryPathIds : []),
+    ...(Array.isArray(post?.categorySlugs) ? post.categorySlugs : [])]
+    .filter(Boolean).map(normalize);
+  return tokens.includes(wanted) || categoryTokens(post).includes(wanted);
+}
+
+function sortModulePosts(posts = [], activeCategory = "") {
+  return [...posts].sort((a, b) => {
+    const aCategory = isCategoryFeatured(a) && postMatchesCategory(a, activeCategory);
+    const bCategory = isCategoryFeatured(b) && postMatchesCategory(b, activeCategory);
+    if (aCategory !== bCategory) return aCategory ? -1 : 1;
+    if (aCategory && bCategory) {
+      const categoryDiff = getCategoryFeaturedPriority(a) - getCategoryFeaturedPriority(b);
+      if (categoryDiff) return categoryDiff;
+    }
+    const aModule = isModuleFeatured(a);
+    const bModule = isModuleFeatured(b);
+    if (aModule !== bModule) return aModule ? -1 : 1;
+    if (aModule && bModule) {
+      const moduleDiff = getModuleFeaturedPriority(a) - getModuleFeaturedPriority(b);
+      if (moduleDiff) return moduleDiff;
+    }
+    return getHomePostTime(b) - getHomePostTime(a);
+  });
+}
+
 function canShowPostOnHome(post) {
   if (!post) return false;
   const isPublished = !post.status || post.status === "published";
@@ -376,13 +528,13 @@ function canShowPostOnHome(post) {
 
 function sortHomePosts(posts = []) {
   return [...posts].sort((a, b) => {
-    const aFeatured = a?.featured === true;
-    const bFeatured = b?.featured === true;
+    const aFeatured = isHomeFeatured(a);
+    const bFeatured = isHomeFeatured(b);
     if (aFeatured !== bFeatured) return aFeatured ? -1 : 1;
 
     if (aFeatured && bFeatured) {
-      const aPriority = Number.parseInt(a.featuredPriority, 10) || 100;
-      const bPriority = Number.parseInt(b.featuredPriority, 10) || 100;
+      const aPriority = getHomeFeaturedPriority(a);
+      const bPriority = getHomeFeaturedPriority(b);
       if (aPriority !== bPriority) return aPriority - bPriority;
     }
 
@@ -393,10 +545,14 @@ function sortHomePosts(posts = []) {
 function cardPost(post) {
   const type = classify(post);
   const id = getInternalId(post);
+  const featuredHere = page === "home"
+    ? isHomeFeatured(post)
+    : Boolean(activeModuleId) && isModuleFeatured(post);
+  const featuredLabel = page === "home" ? "🏠 Nổi bật" : "📌 Nổi bật module";
 
   return `
-    <article class="content-card ${post.featured === true ? "is-featured" : ""}" data-type="${type}">
-      ${post.featured === true ? `<span class="home-featured-badge">📌 Bài nổi bật</span>` : ""}
+    <article class="content-card ${featuredHere ? "is-featured" : ""}" data-type="${type}">
+      ${featuredHere ? `<span class="home-featured-badge">${featuredLabel}</span>` : ""}
       <a class="card-media" href="${postUrl(post)}">
         <img loading="lazy" src="${esc(getImage(post))}" alt="${esc(post.title || "Mina Audition")}" onerror="this.src='${placeholder}'">
         ${id ? `<span class="card-id">${esc(id)}</span>` : ""}
@@ -710,6 +866,10 @@ async function blog() {
   const jumpInput = document.querySelector("#blogJumpPage");
   const chips = [...document.querySelectorAll("[data-type]")];
 
+  // Các trang đã tách module độc lập nên bộ lọc chéo AI Prompt / Outfit /
+  // Academy / Video không còn phù hợp. Xóa cả các nút cũ còn sót do cache HTML.
+  chips.forEach(chip => chip.remove());
+
   if (!box || !search || !category || !count) return;
 
   renderMinaSkeleton(box, 6, "post");
@@ -750,11 +910,15 @@ async function blog() {
       loadSharedCategoryTree().catch(() => [])
     ]);
 
-    const all = allPosts.filter(post => post.status !== "draft");
-    renderCategorySelect(category, categoryTree, all);
+    const rootModule = activeModuleId ? findCategoryNode(categoryTree, activeModuleId) : null;
+    const visibleTree = moduleTree(categoryTree);
+    const all = sortModulePosts(
+      allPosts.filter(post => post.status !== "draft" && postBelongsToModule(post, rootModule, categoryTree))
+    );
+    renderCategorySelect(category, visibleTree, all);
 
     const urlParams = new URLSearchParams(location.search);
-    const requestedType = urlParams.get("type") || "";
+    const requestedType = "";
     const requestedCategory = urlParams.get("category") || "";
     const requestedCategoryName = urlParams.get("categoryName") || "";
     const requestedSearch = urlParams.get("q") || "";
@@ -778,7 +942,7 @@ async function blog() {
         else params.delete(key);
       };
 
-      setOrDelete("type", activeType);
+      params.delete("type");
       setOrDelete("category", activeCategory);
       setOrDelete("categoryName", activeCategoryName);
       setOrDelete("q", search.value.trim());
@@ -881,6 +1045,7 @@ async function blog() {
         return typeOk && categoryOk && searchOk;
       });
 
+      lastFiltered = sortModulePosts(lastFiltered, activeCategory);
       const totalPages = Math.max(1, Math.ceil(lastFiltered.length / pageSize));
       currentPage = Math.min(Math.max(1, currentPage), totalPages);
 
@@ -905,7 +1070,7 @@ async function blog() {
       if (scroll) scrollToResults();
     };
 
-    renderCategorySidebar(sidebar, categoryTree, all, (categoryValue, categoryName) => {
+    renderCategorySidebar(sidebar, visibleTree, all, (categoryValue, categoryName) => {
       activeCategory = categoryValue;
       activeCategoryName = categoryName;
       category.value = categoryValue;
@@ -947,14 +1112,6 @@ async function blog() {
       searchTimer = window.setTimeout(() => {
         render({ resetPage: true });
       }, 180);
-    });
-
-    chips.forEach(chip => {
-      chip.addEventListener("click", () => {
-        activeType = chip.dataset.type;
-        chips.forEach(item => item.classList.toggle("active", item === chip));
-        render({ resetPage: true });
-      });
     });
 
     pageSizeSelect?.addEventListener("change", () => {
@@ -1078,33 +1235,152 @@ function setupPostLightbox() {
   const lightboxImage = lightbox?.querySelector("img");
   if (!lightbox || !lightboxImage) return;
 
+  let scale = 1;
+  let translateX = 0;
+  let translateY = 0;
+  let dragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let originX = 0;
+  let originY = 0;
+
+  const clamp = (number, min, max) => Math.min(max, Math.max(min, number));
+
+  const toolbar = document.createElement("div");
+  toolbar.className = "post-lightbox__toolbar";
+  toolbar.setAttribute("aria-label", "Điều khiển phóng to ảnh");
+  toolbar.innerHTML = `
+    <button type="button" data-zoom="out" aria-label="Thu nhỏ ảnh">−</button>
+    <span class="post-lightbox__zoom-value" aria-live="polite">100%</span>
+    <button type="button" data-zoom="in" aria-label="Phóng to ảnh">+</button>
+    <button type="button" data-zoom="reset" aria-label="Đặt lại kích thước">↺</button>
+  `;
+  lightbox.appendChild(toolbar);
+
+  const hint = document.createElement("div");
+  hint.className = "post-lightbox__hint";
+  hint.textContent = "Cuộn chuột để zoom • Kéo ảnh khi đã phóng to • ESC để đóng";
+  lightbox.appendChild(hint);
+
+  const zoomValue = toolbar.querySelector(".post-lightbox__zoom-value");
+
+  const renderTransform = () => {
+    lightboxImage.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`;
+    lightbox.classList.toggle("is-zoomed", scale > 1.01);
+    if (zoomValue) zoomValue.textContent = `${Math.round(scale * 100)}%`;
+  };
+
+  const resetTransform = () => {
+    scale = 1;
+    translateX = 0;
+    translateY = 0;
+    dragging = false;
+    lightbox.classList.remove("is-dragging");
+    renderTransform();
+  };
+
+  const setScale = nextScale => {
+    scale = clamp(nextScale, 1, 5);
+    if (scale === 1) {
+      translateX = 0;
+      translateY = 0;
+    }
+    renderTransform();
+  };
+
   const close = () => {
     lightbox.hidden = true;
     lightbox.setAttribute("aria-hidden", "true");
     document.body.classList.remove("post-lightbox-open");
+    resetTransform();
     lightboxImage.removeAttribute("src");
   };
 
   document.querySelectorAll(".post-v6-content .post-zoomable-image, .post-v6-cover").forEach(image => {
     image.classList.add("is-lightbox-ready");
-    image.addEventListener("click", () => {
+    image.setAttribute("tabindex", "0");
+    image.setAttribute("role", "button");
+    image.setAttribute("aria-label", "Mở ảnh ở chế độ phóng to");
+
+    const open = () => {
+      resetTransform();
       lightboxImage.src = image.currentSrc || image.src;
       lightboxImage.alt = image.alt || "Ảnh bài viết";
       lightbox.hidden = false;
       lightbox.setAttribute("aria-hidden", "false");
       document.body.classList.add("post-lightbox-open");
+      lightbox.querySelector(".post-lightbox__close")?.focus();
+    };
+
+    image.addEventListener("click", open);
+    image.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        open();
+      }
     });
   });
+
+  toolbar.addEventListener("click", event => {
+    event.stopPropagation();
+    const action = event.target.closest("button")?.dataset.zoom;
+    if (action === "in") setScale(scale + 0.25);
+    if (action === "out") setScale(scale - 0.25);
+    if (action === "reset") resetTransform();
+  });
+
+  lightbox.addEventListener("wheel", event => {
+    if (lightbox.hidden) return;
+    event.preventDefault();
+    setScale(scale + (event.deltaY < 0 ? 0.2 : -0.2));
+  }, { passive: false });
+
+  lightboxImage.addEventListener("dblclick", event => {
+    event.preventDefault();
+    setScale(scale > 1 ? 1 : 2);
+  });
+
+  lightboxImage.addEventListener("pointerdown", event => {
+    if (scale <= 1) return;
+    dragging = true;
+    dragStartX = event.clientX;
+    dragStartY = event.clientY;
+    originX = translateX;
+    originY = translateY;
+    lightbox.classList.add("is-dragging");
+    lightboxImage.setPointerCapture?.(event.pointerId);
+    event.preventDefault();
+  });
+
+  lightboxImage.addEventListener("pointermove", event => {
+    if (!dragging) return;
+    translateX = originX + event.clientX - dragStartX;
+    translateY = originY + event.clientY - dragStartY;
+    renderTransform();
+  });
+
+  const stopDragging = event => {
+    if (!dragging) return;
+    dragging = false;
+    lightbox.classList.remove("is-dragging");
+    lightboxImage.releasePointerCapture?.(event.pointerId);
+  };
+
+  lightboxImage.addEventListener("pointerup", stopDragging);
+  lightboxImage.addEventListener("pointercancel", stopDragging);
 
   lightbox.querySelector(".post-lightbox__close")?.addEventListener("click", close);
   lightbox.addEventListener("click", event => {
     if (event.target === lightbox) close();
   });
   document.addEventListener("keydown", event => {
-    if (event.key === "Escape" && !lightbox.hidden) close();
+    if (lightbox.hidden) return;
+    if (event.key === "Escape") close();
+    if (event.key === "+" || event.key === "=") setScale(scale + 0.25);
+    if (event.key === "-") setScale(scale - 0.25);
+    if (event.key === "0") resetTransform();
   });
 }
-
 function setupPostTableOfContents() {
   const content = document.querySelector(".post-v6-content");
   const tocList = document.querySelector("#postTocList");
@@ -1482,6 +1758,13 @@ async function wiki() {
   const resetButton = document.querySelector("#resetWikiFilters");
   const resultCount = document.querySelector("#wikiResultCount");
   const activeFilters = document.querySelector("#wikiActiveFilters");
+  const pageSizeSelect = document.querySelector("#wikiPageSize");
+  const pagination = document.querySelector("#wikiPagination");
+  const prevPageButton = document.querySelector("#wikiPrevPage");
+  const nextPageButton = document.querySelector("#wikiNextPage");
+  const pageNumbers = document.querySelector("#wikiPageNumbers");
+  const goToPageForm = document.querySelector("#wikiGoToPage");
+  const pageInput = document.querySelector("#wikiPageInput");
 
   if (!box || !search || !levelSelect || !keyModeSelect || !styleSelect || !bpmSelect) return;
 
@@ -1750,13 +2033,7 @@ async function wiki() {
 
   try {
     const all = await listSkills();
-    const urlParams = new URLSearchParams(location.search);
-    const requestedQuery = urlParams.get("q") || "";
-    const requestedLevel = urlParams.get("level") || "";
-    const requestedKeyMode = urlParams.get("keyMode") || "";
-    const requestedStyle = urlParams.get("style") || "";
-    const requestedBpm = urlParams.get("bpm") || "";
-    const requestedSkill = urlParams.get("skill") || "";
+    const allowedPageSizes = [12, 24, 36, 48];
 
     const canonicalLevel = skill => {
       const raw = String(skillValue(skill, ["level", "lv", "skillLevel"], "")).trim();
@@ -1795,13 +2072,30 @@ async function wiki() {
     bpmSelect.innerHTML = `<option value="">Tất cả BPM</option>` +
       bpms.map(item => `<option value="${esc(item)}">${esc(item)} BPM</option>`).join("");
 
-    if (requestedQuery) search.value = requestedQuery;
-    if (["6", "7", "8", "9", "10", "11"].includes(requestedLevel)) levelSelect.value = requestedLevel;
-    if (["4K", "8K"].includes(requestedKeyMode)) keyModeSelect.value = requestedKeyMode;
-    if (styles.includes(requestedStyle)) styleSelect.value = requestedStyle;
-    if (bpms.includes(requestedBpm)) bpmSelect.value = requestedBpm;
+    let currentPage = 1;
+    let pageSize = 24;
+    let filteredSkills = [];
 
-    const syncFilterUrl = () => {
+    const readStateFromUrl = () => {
+      const params = new URLSearchParams(location.search);
+      search.value = params.get("q") || "";
+      levelSelect.value = ["6", "7", "8", "9", "10", "11"].includes(params.get("level"))
+        ? params.get("level") : "";
+      keyModeSelect.value = ["4K", "8K"].includes(params.get("keyMode"))
+        ? params.get("keyMode") : "";
+      styleSelect.value = styles.includes(params.get("style")) ? params.get("style") : "";
+      bpmSelect.value = bpms.includes(params.get("bpm")) ? params.get("bpm") : "";
+
+      const requestedSize = Number(params.get("pageSize"));
+      pageSize = allowedPageSizes.includes(requestedSize) ? requestedSize : 24;
+      if (pageSizeSelect) pageSizeSelect.value = String(pageSize);
+
+      const requestedPage = Number.parseInt(params.get("page") || "1", 10);
+      currentPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+      return params.get("skill") || "";
+    };
+
+    const syncUrl = (mode = "replace") => {
       const url = new URL(location.href);
       const values = {
         q: search.value.trim(),
@@ -1814,17 +2108,50 @@ async function wiki() {
         if (val) url.searchParams.set(key, val);
         else url.searchParams.delete(key);
       });
-      history.replaceState(null, "", url);
+      if (currentPage > 1) url.searchParams.set("page", String(currentPage));
+      else url.searchParams.delete("page");
+      if (pageSize !== 24) url.searchParams.set("pageSize", String(pageSize));
+      else url.searchParams.delete("pageSize");
+      url.searchParams.delete("skill");
+      history[mode === "push" ? "pushState" : "replaceState"](null, "", url);
     };
 
-    const render = () => {
+    const buildPageList = (page, totalPages) => {
+      if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+      const pages = new Set([1, totalPages, page - 1, page, page + 1]);
+      const sorted = [...pages].filter(item => item >= 1 && item <= totalPages).sort((a, b) => a - b);
+      const result = [];
+      sorted.forEach((item, index) => {
+        if (index && item - sorted[index - 1] > 1) result.push("…");
+        result.push(item);
+      });
+      return result;
+    };
+
+    const renderPagination = totalPages => {
+      if (!pagination || !pageNumbers || !prevPageButton || !nextPageButton) return;
+      pagination.hidden = totalPages <= 1;
+      prevPageButton.disabled = currentPage <= 1;
+      nextPageButton.disabled = currentPage >= totalPages;
+      if (pageInput) {
+        pageInput.max = String(Math.max(1, totalPages));
+        pageInput.value = String(currentPage);
+      }
+      pageNumbers.innerHTML = buildPageList(currentPage, totalPages).map(item =>
+        item === "…"
+          ? `<span class="wiki-page-gap" aria-hidden="true">…</span>`
+          : `<button type="button" data-wiki-page="${item}" class="${item === currentPage ? "is-active" : ""}" ${item === currentPage ? 'aria-current="page"' : ""}>${item}</button>`
+      ).join("");
+    };
+
+    const render = ({ historyMode = "replace", scroll = false } = {}) => {
       const term = normalize(search.value);
       const selectedLevel = levelSelect.value;
       const selectedKeyMode = keyModeSelect.value;
       const selectedStyle = styleSelect.value;
       const selectedBpm = bpmSelect.value;
 
-      currentSkills = all.filter(skill => {
+      filteredSkills = all.filter(skill => {
         const levelOk = !selectedLevel || canonicalLevel(skill) === selectedLevel;
         const keyModeOk = !selectedKeyMode || canonicalKeyMode(skill) === selectedKeyMode;
         const styleOk = !selectedStyle || canonicalStyle(skill) === selectedStyle;
@@ -1832,6 +2159,11 @@ async function wiki() {
         const searchOk = !term || getSkillSearchText(skill).includes(term);
         return levelOk && keyModeOk && styleOk && bpmOk && searchOk;
       });
+
+      const totalPages = Math.max(1, Math.ceil(filteredSkills.length / pageSize));
+      currentPage = Math.min(Math.max(1, currentPage), totalPages);
+      const startIndex = (currentPage - 1) * pageSize;
+      currentSkills = filteredSkills.slice(startIndex, startIndex + pageSize);
 
       const selectedLabels = [
         search.value.trim() ? `Từ khóa: ${search.value.trim()}` : "",
@@ -1841,11 +2173,17 @@ async function wiki() {
         selectedBpm ? `${selectedBpm} BPM` : ""
       ].filter(Boolean);
 
-      if (resultCount) resultCount.textContent = `${currentSkills.length} Skill phù hợp`;
+      if (resultCount) {
+        const rangeStart = filteredSkills.length ? startIndex + 1 : 0;
+        const rangeEnd = Math.min(startIndex + pageSize, filteredSkills.length);
+        resultCount.textContent = filteredSkills.length
+          ? `${filteredSkills.length} Skill phù hợp • Hiển thị ${rangeStart}–${rangeEnd}`
+          : "0 Skill phù hợp";
+      }
       if (activeFilters) {
         activeFilters.textContent = selectedLabels.length
-          ? selectedLabels.join(" • ")
-          : "Có thể kết hợp Level, 4K/8K, Style và BPM";
+          ? `${selectedLabels.join(" • ")} • Trang ${currentPage}/${totalPages}`
+          : `Có thể kết hợp Level, 4K/8K, Style và BPM • Trang ${currentPage}/${totalPages}`;
       }
       resetButton?.classList.toggle("is-visible", selectedLabels.length > 0);
 
@@ -1880,8 +2218,17 @@ async function wiki() {
         `;
       }).join("") : `<div class="empty">Không tìm thấy Skill phù hợp với bộ lọc hiện tại.</div>`;
 
-      syncFilterUrl();
+      renderPagination(totalPages);
+      syncUrl(historyMode);
       if (!modal.hidden) closeModal();
+      if (scroll) {
+        document.querySelector(".wiki-toolbar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    };
+
+    const resetToFirstPageAndRender = () => {
+      currentPage = 1;
+      render({ historyMode: "replace" });
     };
 
     box.addEventListener("click", event => {
@@ -1897,28 +2244,71 @@ async function wiki() {
       openModal(Number(card.dataset.skillIndex));
     });
 
-    search.addEventListener("input", render);
+    search.addEventListener("input", resetToFirstPageAndRender);
     [levelSelect, keyModeSelect, styleSelect, bpmSelect].forEach(select => {
-      select.addEventListener("change", render);
+      select.addEventListener("change", resetToFirstPageAndRender);
     });
+    pageSizeSelect?.addEventListener("change", () => {
+      const nextSize = Number(pageSizeSelect.value);
+      pageSize = allowedPageSizes.includes(nextSize) ? nextSize : 24;
+      currentPage = 1;
+      render({ historyMode: "replace", scroll: true });
+    });
+
+    prevPageButton?.addEventListener("click", () => {
+      if (currentPage <= 1) return;
+      currentPage -= 1;
+      render({ historyMode: "push", scroll: true });
+    });
+    nextPageButton?.addEventListener("click", () => {
+      const totalPages = Math.max(1, Math.ceil(filteredSkills.length / pageSize));
+      if (currentPage >= totalPages) return;
+      currentPage += 1;
+      render({ historyMode: "push", scroll: true });
+    });
+    pageNumbers?.addEventListener("click", event => {
+      const button = event.target.closest("[data-wiki-page]");
+      if (!button) return;
+      currentPage = Number(button.dataset.wikiPage) || 1;
+      render({ historyMode: "push", scroll: true });
+    });
+    goToPageForm?.addEventListener("submit", event => {
+      event.preventDefault();
+      const totalPages = Math.max(1, Math.ceil(filteredSkills.length / pageSize));
+      const requested = Number.parseInt(pageInput?.value || "1", 10);
+      currentPage = Math.min(Math.max(1, Number.isFinite(requested) ? requested : 1), totalPages);
+      render({ historyMode: "push", scroll: true });
+    });
+
     resetButton?.addEventListener("click", () => {
       search.value = "";
       levelSelect.value = "";
       keyModeSelect.value = "";
       styleSelect.value = "";
       bpmSelect.value = "";
-      render();
+      currentPage = 1;
+      render({ historyMode: "replace" });
       search.focus();
     });
 
-    render();
+    const requestedSkill = readStateFromUrl();
+    render({ historyMode: "replace" });
 
     if (requestedSkill) {
-      const index = currentSkills.findIndex(skill =>
+      const fullIndex = filteredSkills.findIndex(skill =>
         normalize(skillIdentity(skill)) === normalize(requestedSkill)
       );
-      if (index >= 0) openModal(index);
+      if (fullIndex >= 0) {
+        currentPage = Math.floor(fullIndex / pageSize) + 1;
+        render({ historyMode: "replace" });
+        openModal(fullIndex % pageSize);
+      }
     }
+
+    window.addEventListener("popstate", () => {
+      readStateFromUrl();
+      render({ historyMode: "replace" });
+    });
   } catch (error) {
     box.innerHTML = `<div class="empty">${esc(error.message)}</div>`;
   }
@@ -2032,6 +2422,11 @@ if (contactNavLink) {
 }
 
 document.querySelector(`[data-nav="${page}"]`)?.classList.add("active");
+if (activeModuleId) {
+  document.querySelectorAll("[data-module-nav]").forEach(link => {
+    link.classList.toggle("active", normalize(link.dataset.moduleNav) === normalize(activeModuleId));
+  });
+}
 
 ({ home, blog, post: postPage, wiki }[page] || (() => {}))();
 
