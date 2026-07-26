@@ -3,7 +3,8 @@ const {
   getFirestore
 } = require("../../../lib/mina-admin-server");
 
-const MAX_EXPORT_ROWS = 20000;
+const MAX_EXPORT_ROWS = 5000;
+const DEFAULT_EXPORT_DAYS = 7;
 
 function clean(value, max = 1000) {
   return String(value || "").trim().slice(0, max);
@@ -34,7 +35,7 @@ module.exports = async function handler(req, res) {
   try {
     const days = Math.min(
       366,
-      Math.max(1, Number.parseInt(req.query.days, 10) || 30)
+      Math.max(1, Number.parseInt(req.query.days, 10) || DEFAULT_EXPORT_DAYS)
     );
 
     const from = new Date();
@@ -54,17 +55,8 @@ module.exports = async function handler(req, res) {
       .get();
 
     const header = [
-      "clickedAt",
-      "linkId",
-      "linkSlug",
-      "linkTitle",
-      "source",
-      "postCode",
-      "campaign",
-      "deviceType",
-      "referrer",
-      "targetUrl",
-      "userAgent"
+      "clickedAt", "linkId", "linkSlug", "linkTitle", "source",
+      "postCode", "campaign", "deviceType", "referrer", "targetUrl", "userAgent"
     ];
 
     const rows = [header.map(csvCell).join(",")];
@@ -88,32 +80,30 @@ module.exports = async function handler(req, res) {
       if (linkId && row.linkId !== linkId) continue;
       if (source && row.source.toLowerCase() !== source) continue;
       if (postCode && row.postCode.toLowerCase() !== postCode) continue;
-      if (
-        campaign &&
-        row.campaign.toLowerCase() !== campaign
-      ) continue;
+      if (campaign && row.campaign.toLowerCase() !== campaign) continue;
 
       rows.push(header.map(key => csvCell(row[key])).join(","));
     }
 
     const date = new Date().toISOString().slice(0, 10);
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="mina-smartlink-${date}.csv"`);
+    res.setHeader("X-Mina-Export-Limit", String(MAX_EXPORT_ROWS));
 
-    res.setHeader(
-      "Content-Type",
-      "text/csv; charset=utf-8"
-    );
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="mina-smartlink-${date}.csv"`
-    );
-
-    // BOM giúp Excel nhận tiếng Việt đúng.
     return res.status(200).send("\uFEFF" + rows.join("\r\n"));
   } catch (error) {
     console.error("[Mina Smart Link Export] Error:", error);
-    return res.status(500).json({
+
+    const isQuotaError =
+      String(error.code || "").includes("RESOURCE_EXHAUSTED") ||
+      String(error.message || "").toLowerCase().includes("quota");
+
+    return res.status(isQuotaError ? 429 : 500).json({
       success: false,
-      message: error.message || "Không thể xuất CSV."
+      code: error.code || "EXPORT_ERROR",
+      message: isQuotaError
+        ? "Firestore đang tạm giới hạn lượt đọc. Hãy xuất khoảng thời gian ngắn hơn."
+        : error.message || "Không thể xuất CSV."
     });
   }
 };
