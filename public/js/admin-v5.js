@@ -426,6 +426,92 @@ function getFeaturedCategoryKey(post) {
   return String(post?.featuredCategoryId || post?.categoryId || "").trim();
 }
 
+function normalizeInternalId(value = "") {
+  return String(value || "").trim().replace(/\s+/g, " ").toLocaleUpperCase("vi-VN");
+}
+
+function getPostInternalId(post) {
+  return String(post?.internalId || post?.aiId || post?.postCode || "").trim();
+}
+
+function getSelectedModuleNode() {
+  try { return selectedCategoryNodes()[0] || null; } catch { return null; }
+}
+
+function postMatchesSelectedModule(post, moduleNode) {
+  if (!moduleNode) return true;
+  const wanted = normalizeSearchValue([moduleNode.id, moduleNode.slug, moduleNode.module, moduleNode.name].filter(Boolean).join(" "));
+  const current = normalizeSearchValue([
+    post?.moduleId, post?.module, post?.moduleName, post?.sectionId, post?.section,
+    Array.isArray(post?.categoryPathIds) ? post.categoryPathIds[0] : "",
+    Array.isArray(post?.categoryPath) ? post.categoryPath[0] : ""
+  ].filter(Boolean).join(" "));
+  return [moduleNode.id, moduleNode.slug, moduleNode.module, moduleNode.name]
+    .filter(Boolean)
+    .some(token => current.includes(normalizeSearchValue(token))) || current.includes(wanted);
+}
+
+function findInternalIdDuplicate(rawValue = "") {
+  const wanted = normalizeInternalId(rawValue);
+  if (!wanted) return null;
+  const editingId = String($("#postId")?.value || "");
+  return state.posts.find(post => String(post.id) !== editingId && normalizeInternalId(getPostInternalId(post)) === wanted) || null;
+}
+
+function renderRecentInternalIds() {
+  const box = $("#recentInternalIds");
+  const moduleLabel = $("#recentInternalIdModule");
+  if (!box || !moduleLabel) return;
+  const moduleNode = getSelectedModuleNode();
+  moduleLabel.textContent = moduleNode?.name || "Tất cả module";
+  const seen = new Set();
+  const items = [...state.posts]
+    .filter(post => postMatchesSelectedModule(post, moduleNode))
+    .sort((a, b) => {
+      const av = a?.updatedAt?.seconds || a?.publishedAt?.seconds || a?.createdAt?.seconds || 0;
+      const bv = b?.updatedAt?.seconds || b?.publishedAt?.seconds || b?.createdAt?.seconds || 0;
+      return bv - av;
+    })
+    .map(post => ({ id: getPostInternalId(post), title: post.title || "Không tiêu đề", postId: post.id }))
+    .filter(item => {
+      const key = normalizeInternalId(item.id);
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 12);
+  box.innerHTML = items.length ? items.map(item => `
+    <button type="button" class="recent-id-chip" data-recent-internal-id="${escapeHtml(item.id)}" title="${escapeHtml(item.title)}">${escapeHtml(item.id)}</button>`
+  ).join("") : `<span class="recent-id-empty">Module này chưa có mã gần đây.</span>`;
+}
+
+function validateInternalId({ announce = false } = {}) {
+  const input = $("#internalId");
+  const status = $("#internalIdStatus");
+  if (!input || !status) return { valid: true, empty: true, duplicate: null };
+  const raw = input.value.trim();
+  input.classList.remove("is-valid", "is-duplicate");
+  status.className = "internal-id-status";
+  if (!raw) {
+    status.classList.add("is-empty");
+    status.textContent = "Nhập mã để CMS kiểm tra trùng. CMS không tự sinh hoặc tự thay đổi mã.";
+    return { valid: true, empty: true, duplicate: null };
+  }
+  const duplicate = findInternalIdDuplicate(raw);
+  if (duplicate) {
+    input.classList.add("is-duplicate");
+    status.classList.add("is-duplicate");
+    status.innerHTML = `❌ Mã <strong>${escapeHtml(raw)}</strong> đã được dùng cho “${escapeHtml(duplicate.title || "Không tiêu đề")}”. <button type="button" data-open-duplicate-id="${escapeHtml(duplicate.id)}">Mở bài</button>`;
+    if (announce) showNotice(`Mã ${raw} đã tồn tại.`, "error");
+    return { valid: false, empty: false, duplicate };
+  }
+  input.classList.add("is-valid");
+  status.classList.add("is-valid");
+  status.innerHTML = `✅ Mã <strong>${escapeHtml(raw)}</strong> chưa được sử dụng và sẽ được giữ nguyên khi lưu.`;
+  if (announce) showNotice(`Mã ${raw} có thể sử dụng.`);
+  return { valid: true, empty: false, duplicate: null };
+}
+
 function resetForm() {
   $("#postForm").reset();
   $("#postId").value = "";
@@ -446,6 +532,8 @@ function resetForm() {
   setCategoryPath([]);
   renderCover();
   renderBlocks();
+  validateInternalId();
+  renderRecentInternalIds();
 }
 
 function fillForm(post) {
@@ -482,6 +570,8 @@ function fillForm(post) {
   $("#excerptCount").textContent = String($("#excerpt").value.length);
   renderCover();
   renderBlocks();
+  validateInternalId();
+  renderRecentInternalIds();
   openView("editor");
 }
 
@@ -524,6 +614,12 @@ async function savePost(event) {
   try {
     const title = $("#title").value.trim();
     if (!title) throw new Error("Bạn chưa nhập tiêu đề.");
+
+    const internalIdCheck = validateInternalId();
+    if (!internalIdCheck.valid) {
+      $("#internalId")?.focus();
+      throw new Error("Mã AI ID / Mã nội bộ đã tồn tại. Hãy nhập mã khác trước khi lưu.");
+    }
 
     let coverImage = $("#coverUrl").value.trim() || state.coverUrl;
     if (state.coverFile) coverImage = await uploadImage(state.coverFile, "cms-v5/covers");
@@ -1809,6 +1905,24 @@ function bindEvents() {
   $("#categoryLevel2").addEventListener("change",()=>renderCategoryLevel(3));
   $("#categoryLevel3").addEventListener("change",()=>renderCategoryLevel(4));
   $("#categoryLevel4").addEventListener("change",renderCategoryPath);
+
+  $("#internalId")?.addEventListener("input", () => validateInternalId());
+  $("#internalId")?.addEventListener("blur", () => validateInternalId());
+  $("#checkInternalIdButton")?.addEventListener("click", () => validateInternalId({ announce: true }));
+  $("#recentInternalIds")?.addEventListener("click", event => {
+    const button = event.target.closest("[data-recent-internal-id]");
+    if (!button) return;
+    $("#internalId").value = button.dataset.recentInternalId || "";
+    validateInternalId();
+    $("#internalId").focus();
+  });
+  $("#internalIdStatus")?.addEventListener("click", event => {
+    const button = event.target.closest("[data-open-duplicate-id]");
+    if (!button) return;
+    const post = state.posts.find(item => String(item.id) === String(button.dataset.openDuplicateId));
+    if (post) fillForm(post);
+  });
+  $("#categoryLevel1")?.addEventListener("change", renderRecentInternalIds);
 
   $("#title").addEventListener("input", () => {
     if (!$("#postId").value && !$("#slug").dataset.touched) $("#slug").value = slugify($("#title").value);

@@ -177,10 +177,24 @@
               <span>Slug</span>
               <input id="slug" placeholder="tu-dong-tao-tu-tieu-de">
             </label>
-            <label>
-              <span>AI ID / Mã nội bộ</span>
-              <input id="internalId" placeholder="AI-0104 hoặc TEST-0001">
-            </label>
+            <div class="internal-id-field">
+              <label>
+                <span>AI ID / Mã nội bộ</span>
+                <div class="internal-id-input-row">
+                  <input id="internalId" autocomplete="off" spellcheck="false" placeholder="Nhập tay: AI-0104, DT8006, GO0017...">
+                  <button id="checkInternalIdButton" class="btn ghost internal-id-check-button" type="button">Kiểm tra</button>
+                </div>
+              </label>
+              <div id="internalIdStatus" class="internal-id-status is-empty" aria-live="polite">Nhập mã để CMS kiểm tra trùng. CMS không tự sinh hoặc tự thay đổi mã.</div>
+              <div class="recent-id-box">
+                <div class="recent-id-head">
+                  <strong>📋 Mã gần đây</strong>
+                  <span id="recentInternalIdModule">Tất cả module</span>
+                </div>
+                <div id="recentInternalIds" class="recent-id-list"><span class="recent-id-empty">Chưa có dữ liệu.</span></div>
+                <small>Bấm vào một mã để điền nhanh. Bạn vẫn toàn quyền quyết định mã sẽ lưu.</small>
+              </div>
+            </div>
           </div>
 
 
