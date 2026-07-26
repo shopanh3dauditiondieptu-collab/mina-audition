@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/admin-v5.css?v=1.5.0">
+  <link rel="stylesheet" href="/css/admin-v5.css?v=1.8.0">
   <link rel="stylesheet" href="/css/smartlink-dashboard.css?v=1.1.0">
 
   <style>
@@ -118,6 +118,7 @@
     <nav>
       <button class="nav-item active" data-view="editor">✦ Đăng bài</button>
       <button class="nav-item" data-view="posts">▦ Quản lý bài</button>
+      <button class="nav-item" data-view="featured">⭐ Bài nổi bật</button>
       <button class="nav-item" data-view="excel">📥 Import Excel</button>
       <button class="nav-item" data-view="smartlinks">🔗 Smart Link Manager</button>
       <a class="nav-link" href="/admin-v4.html">↩ CMS v4</a>
@@ -380,6 +381,49 @@
       </section>
     </section>
 
+
+    <section id="view-featured" class="view">
+      <section class="panel featured-manager-panel">
+        <div class="panel-head featured-manager-head">
+          <div>
+            <h2>⭐ Quản lý bài nổi bật</h2>
+            <p>Sắp xếp, chỉnh sửa và bỏ nổi bật mà không cần mở từng bài.</p>
+          </div>
+          <div class="featured-head-actions">
+            <button id="saveFeaturedOrderButton" class="btn primary" type="button">Lưu thứ tự</button>
+            <button id="refreshFeaturedButton" class="btn ghost" type="button">Tải lại</button>
+          </div>
+        </div>
+
+        <div class="featured-toolbar">
+          <input id="featuredSearch" type="search" placeholder="Tìm tiêu đề, AI ID, module hoặc danh mục...">
+          <select id="featuredModuleFilter">
+            <option value="">Tất cả module</option>
+            <option value="Blog Mina">Blog Mina</option>
+            <option value="AI Prompt">AI Prompt</option>
+            <option value="Mix & Match">Mix & Match</option>
+            <option value="Academy">Academy</option>
+            <option value="Game Gear">Game Gear</option>
+            <option value="Wiki D8">Wiki D8</option>
+          </select>
+          <button id="pinSelectedFeaturedButton" class="btn ghost" type="button">📌 Đưa lên đầu</button>
+          <button id="unfeatureSelectedButton" class="btn danger" type="button">☆ Bỏ nổi bật đã chọn</button>
+        </div>
+
+        <div class="featured-summary">
+          <article><strong id="featuredTotalCount">0</strong><span>Tổng bài nổi bật</span></article>
+          <article><strong id="featuredVisibleCount">0</strong><span>Đang hiển thị</span></article>
+          <article><strong id="featuredSelectedCount">0</strong><span>Đã chọn</span></article>
+          <article><strong id="featuredTopPriority">—</strong><span>Ưu tiên đầu</span></article>
+        </div>
+
+        <div class="featured-list-head">
+          <span>Chọn</span><span>Thứ tự</span><span>Ảnh</span><span>Bài viết</span><span>Module / Danh mục</span><span>Thao tác</span>
+        </div>
+        <div id="featuredPostsList" class="featured-posts-list"></div>
+        <div class="featured-help">Kéo biểu tượng <b>⋮⋮</b> để đổi thứ tự, sau đó bấm <b>Lưu thứ tự</b>. Số ưu tiên nhỏ hơn sẽ hiển thị trước.</div>
+      </section>
+    </section>
 
     <section id="view-excel" class="view">
       <section class="panel excel-import-panel">
@@ -657,7 +701,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script type="module" src="/js/smartlink-dashboard.js?v=1.1.2"></script>
   <script type="module">
-    import("/js/admin-v5.js?v=1.7.0").catch(error => {
+    import("/js/admin-v5.js?v=1.8.0").catch(error => {
       console.error("Không tải được admin-v5.js", error);
       const badge = document.getElementById("authBadge");
       const notice = document.getElementById("notice");
