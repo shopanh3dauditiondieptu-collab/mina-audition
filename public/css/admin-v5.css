@@ -376,3 +376,56 @@ mark{background:rgba(255,214,110,.3);color:#fff3b3;border-radius:4px;padding:0 2
   .enterprise-manager-grid{grid-template-columns:1fr}
   .category-tree-panel{position:static;max-height:420px}
 }
+
+/* ===== Mina CMS v6.0.2 — Hiển thị đầy đủ nút Xem / Sửa / Xóa ===== */
+/* Tận dụng toàn bộ chiều rộng màn hình quản trị thay vì khóa ở 1280px. */
+.workspace{
+  max-width:none;
+  width:auto;
+  padding-right:24px;
+}
+
+/* Thu gọn cây danh mục để dành thêm không gian cho danh sách bài. */
+.enterprise-manager-grid{
+  grid-template-columns:minmax(250px,290px) minmax(0,1fr);
+}
+.category-tree-panel{
+  min-width:0;
+  max-width:none;
+  resize:none;
+}
+
+/* Bảo đảm cột thao tác luôn nằm trong khung nhìn. */
+.posts-table-head.enterprise-head,
+.posts-table.enterprise-table .post-row{
+  grid-template-columns:36px 64px minmax(240px,1.55fr) minmax(165px,.9fr) 106px 116px;
+  min-width:0;
+  width:100%;
+}
+.enterprise-posts-panel{
+  min-width:0;
+  overflow:visible;
+}
+.post-buttons.compact-actions{
+  min-width:108px;
+  justify-content:flex-end;
+  position:relative;
+  z-index:2;
+}
+
+@media(max-width:1280px){
+  .workspace{padding-left:18px;padding-right:18px}
+  .enterprise-manager-grid{grid-template-columns:240px minmax(0,1fr)}
+  .posts-table-head.enterprise-head,
+  .posts-table.enterprise-table .post-row{
+    grid-template-columns:34px 56px minmax(190px,1.45fr) minmax(130px,.8fr) 98px 108px;
+    gap:8px;
+  }
+  .post-buttons.compact-actions{min-width:102px;gap:4px}
+  .post-buttons.compact-actions .icon-action{width:30px;height:30px;flex-basis:30px}
+}
+
+@media(max-width:1000px){
+  .enterprise-manager-grid{grid-template-columns:1fr}
+  .category-tree-panel{max-height:380px}
+}
