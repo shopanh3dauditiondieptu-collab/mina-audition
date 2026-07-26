@@ -1464,16 +1464,143 @@ async function saveSmartLink(event) {
   }
 }
 
+
+// ===== Mina Analytics Center v1.0 =====
+function analyticsPostDate(post) {
+  const raw = post?.publishedAt || post?.updatedAt || post?.createdAt;
+  if (!raw) return 0;
+  if (typeof raw?.toMillis === "function") return raw.toMillis();
+  if (typeof raw?.seconds === "number") return raw.seconds * 1000;
+  const time = new Date(raw).getTime();
+  return Number.isFinite(time) ? time : 0;
+}
+
+function analyticsViews(post) {
+  return getNumericValue(post, ["views", "viewCount", "totalViews", "analyticsViews"]);
+}
+
+function analyticsHasSmartLink(post) {
+  return Boolean(getPostSmartLink(post) || getPostSmartLinkId(post));
+}
+
+function analyticsFeatured(post) {
+  return isHomeFeatured(post) || isModuleFeatured(post) || isCategoryFeatured(post);
+}
+
+function analyticsSeoIssuesForPost(post) {
+  const issues = [];
+  const title = String(post.title || "").trim();
+  const description = String(post.seoDescription || post.excerpt || post.description || "").trim();
+  const image = String(post.coverImage || post.coverUrl || post.image || post.thumbnail || "").trim();
+  const slug = String(post.slug || "").trim();
+  const category = getPostCategoryLabel(post);
+  if (!image) issues.push("Thiếu ảnh đại diện");
+  if (!slug) issues.push("Thiếu slug");
+  if (title.length < 25) issues.push("Tiêu đề quá ngắn");
+  if (title.length > 70) issues.push("Tiêu đề quá dài");
+  if (!description) issues.push("Thiếu mô tả SEO");
+  else if (description.length < 70) issues.push("Mô tả SEO quá ngắn");
+  if (!category || category === "Chưa phân loại") issues.push("Thiếu danh mục");
+  if (!post.internalId && !post.aiId) issues.push("Thiếu mã nội bộ");
+  return issues;
+}
+
+function analyticsFilteredPosts() {
+  const moduleName = $("#cmsAnalyticsModuleFilter")?.value || "";
+  const range = $("#cmsAnalyticsRangeFilter")?.value || "all";
+  const term = normalizeCategoryToken($("#cmsAnalyticsSearch")?.value || "");
+  const cutoff = range === "all" ? 0 : Date.now() - Number(range) * 86400000;
+  return state.posts.filter(post => {
+    if (moduleName && getFeaturedModuleName(post) !== moduleName) return false;
+    if (cutoff && analyticsPostDate(post) < cutoff) return false;
+    if (term) {
+      const haystack = normalizeCategoryToken([
+        post.title, post.internalId, post.aiId, post.slug,
+        getFeaturedModuleName(post), getPostCategoryLabel(post)
+      ].filter(Boolean).join(" "));
+      if (!haystack.includes(term)) return false;
+    }
+    return true;
+  });
+}
+
+function renderAnalyticsModuleOptions() {
+  const select = $("#cmsAnalyticsModuleFilter");
+  if (!select) return;
+  const current = select.value;
+  const modules = [...new Set(state.posts.map(getFeaturedModuleName).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"vi"));
+  select.innerHTML = '<option value="">Tất cả module</option>' + modules.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("");
+  if (modules.includes(current)) select.value = current;
+}
+
+function analyticsPostAction(post) {
+  return `<div class="cms-analytics-actions"><a href="${PUBLIC_SITE_ORIGIN}/post.html?id=${encodeURIComponent(post.id)}" target="_blank" rel="noopener">Xem</a><button type="button" data-analytics-edit="${escapeHtml(post.id)}">Sửa</button></div>`;
+}
+
+function renderCmsAnalytics() {
+  if (!$("#view-analytics")) return;
+  renderAnalyticsModuleOptions();
+  const posts = analyticsFilteredPosts();
+  const totalViews = posts.reduce((sum, post) => sum + analyticsViews(post), 0);
+  const featured = posts.filter(analyticsFeatured);
+  const smartLinks = posts.filter(analyticsHasSmartLink);
+  const zeroViews = posts.filter(post => analyticsViews(post) === 0);
+  const seoRows = posts.map(post => ({ post, issues: analyticsSeoIssuesForPost(post) })).filter(row => row.issues.length);
+
+  $("#analyticsTotalPosts").textContent = posts.length.toLocaleString("vi-VN");
+  $("#analyticsTotalViews").textContent = totalViews.toLocaleString("vi-VN");
+  $("#analyticsFeaturedPosts").textContent = featured.length.toLocaleString("vi-VN");
+  $("#analyticsSmartLinks").textContent = smartLinks.length.toLocaleString("vi-VN");
+  $("#analyticsZeroViews").textContent = zeroViews.length.toLocaleString("vi-VN");
+  $("#analyticsSeoIssues").textContent = seoRows.length.toLocaleString("vi-VN");
+
+  const moduleMap = new Map();
+  posts.forEach(post => {
+    const name = getFeaturedModuleName(post) || "Chưa phân loại";
+    const item = moduleMap.get(name) || { name, posts: 0, views: 0, featured: 0, smart: 0 };
+    item.posts += 1;
+    item.views += analyticsViews(post);
+    if (analyticsFeatured(post)) item.featured += 1;
+    if (analyticsHasSmartLink(post)) item.smart += 1;
+    moduleMap.set(name, item);
+  });
+  const modules = [...moduleMap.values()].sort((a,b)=>b.views-a.views || b.posts-a.posts);
+  $("#analyticsModuleTable").innerHTML = modules.length ? `
+    <div class="cms-module-row head"><span>Module</span><span>Bài</span><span>Views</span><span>Nổi bật</span><span>Smart Link</span></div>
+    ${modules.map(item => `<button class="cms-module-row" type="button" data-analytics-module="${escapeHtml(item.name)}"><strong>${escapeHtml(item.name)}</strong><span>${item.posts}</span><span>${item.views.toLocaleString("vi-VN")}</span><span>${item.featured}</span><span>${item.smart}</span></button>`).join("")}` : '<div class="manager-empty">Chưa có dữ liệu module.</div>';
+
+  const top = [...posts].sort((a,b)=>analyticsViews(b)-analyticsViews(a)).slice(0,10);
+  $("#analyticsTopPosts").innerHTML = top.length ? top.map((post,index)=>`<article class="cms-ranking-item"><b>${index+1}</b><div><strong>${escapeHtml(post.title || "Không tiêu đề")}</strong><small>${escapeHtml(getFeaturedModuleName(post))} · ${analyticsViews(post).toLocaleString("vi-VN")} lượt xem</small></div>${analyticsPostAction(post)}</article>`).join("") : '<div class="manager-empty">Chưa có bài phù hợp.</div>';
+
+  const homeCount = posts.filter(isHomeFeatured).length;
+  const moduleCount = posts.filter(isModuleFeatured).length;
+  const categoryCount = posts.filter(isCategoryFeatured).length;
+  $("#analyticsFeaturedBreakdown").innerHTML = `
+    <div><span>🏠 Trang chủ</span><strong>${homeCount}</strong></div>
+    <div><span>📂 Theo module</span><strong>${moduleCount}</strong></div>
+    <div><span>🗂️ Theo danh mục</span><strong>${categoryCount}</strong></div>
+    <div><span>⭐ Tổng bài khác nhau</span><strong>${featured.length}</strong></div>`;
+
+  $("#analyticsSeoTable").innerHTML = seoRows.length ? seoRows.slice(0,20).map(({post,issues})=>`<article class="cms-seo-row"><div><strong>${escapeHtml(post.title || "Không tiêu đề")}</strong><small>${escapeHtml(getFeaturedModuleName(post))} · ${escapeHtml(post.internalId || post.aiId || post.slug || "Không mã")}</small></div><div class="cms-seo-tags">${issues.map(issue=>`<span>${escapeHtml(issue)}</span>`).join("")}</div>${analyticsPostAction(post)}</article>`).join("") : '<div class="manager-empty">Không phát hiện lỗi SEO trong bộ lọc hiện tại.</div>';
+
+  $("#analyticsZeroViewPosts").innerHTML = zeroViews.length ? zeroViews.slice(0,10).map((post,index)=>`<article class="cms-ranking-item"><b>${index+1}</b><div><strong>${escapeHtml(post.title || "Không tiêu đề")}</strong><small>${escapeHtml(getFeaturedModuleName(post))} · ${escapeHtml(getPostCategoryLabel(post))}</small></div>${analyticsPostAction(post)}</article>`).join("") : '<div class="manager-empty">Không có bài 0 lượt xem.</div>';
+
+  const coverage = posts.length ? Math.round(smartLinks.length / posts.length * 100) : 0;
+  $("#analyticsSmartLinkCoverage").innerHTML = `<strong>${coverage}%</strong><div class="cms-progress"><i style="width:${coverage}%"></i></div><p>${smartLinks.length}/${posts.length} bài đang gắn Smart Link.</p>`;
+  $("#cmsAnalyticsUpdatedAt").textContent = `Cập nhật lúc ${new Date().toLocaleString("vi-VN")}. Dữ liệu lấy từ ${posts.length} bài phù hợp.`;
+}
+
 function openView(name) {
   $$(".view").forEach(view => view.classList.toggle("active", view.id === `view-${name}`));
   $$(".nav-item[data-view]").forEach(button => button.classList.toggle("active", button.dataset.view === name));
-  const titles = { editor: "Đăng bài viết", posts: "Quản lý bài viết", featured: "Bài viết nổi bật", excel: "Import Excel", smartlinks: "Smart Link Manager" };
+  const titles = { editor: "Đăng bài viết", posts: "Quản lý bài viết", featured: "Bài viết nổi bật", analytics: "Phân tích", excel: "Import Excel", smartlinks: "Smart Link Manager" };
   $("#pageTitle").textContent = titles[name] || "Mina CMS";
   const editing = name === "editor";
   $("#savePostTopButton").hidden = !editing;
   $("#newPostButton").hidden = !editing;
 
   if (name === "featured") renderFeaturedManager();
+  if (name === "analytics") renderCmsAnalytics();
 
   if (name === "smartlinks") {
     loadSmartLinks({ silent: false });
@@ -1537,6 +1664,27 @@ function bindEvents() {
   });
 
   $$(".nav-item[data-view]").forEach(button => button.addEventListener("click", () => openView(button.dataset.view)));
+  $("#refreshCmsAnalyticsButton")?.addEventListener("click", async event => {
+    setBusy(event.currentTarget, true, "Đang tải…");
+    try { await refreshData(); renderCmsAnalytics(); showNotice("Đã cập nhật Analytics."); }
+    finally { setBusy(event.currentTarget, false); }
+  });
+  $("#cmsAnalyticsModuleFilter")?.addEventListener("change", renderCmsAnalytics);
+  $("#cmsAnalyticsRangeFilter")?.addEventListener("change", renderCmsAnalytics);
+  $("#cmsAnalyticsSearch")?.addEventListener("input", renderCmsAnalytics);
+  $("#view-analytics")?.addEventListener("click", event => {
+    const moduleButton = event.target.closest("[data-analytics-module]");
+    if (moduleButton) {
+      $("#cmsAnalyticsModuleFilter").value = moduleButton.dataset.analyticsModule || "";
+      renderCmsAnalytics();
+      return;
+    }
+    const editButton = event.target.closest("[data-analytics-edit]");
+    if (editButton) {
+      const post = state.posts.find(item => item.id === editButton.dataset.analyticsEdit);
+      if (post) fillForm(post);
+    }
+  });
   $("#featuredSearch")?.addEventListener("input", renderFeaturedManager);
   $("#featuredModuleFilter")?.addEventListener("change", renderFeaturedManager);
   $("#featuredCategoryFilter")?.addEventListener("change", renderFeaturedManager);
