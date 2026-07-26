@@ -477,3 +477,13 @@ mark{background:rgba(255,214,110,.3);color:#fff3b3;border-radius:4px;padding:0 2
 .featured-scope-tab:hover{color:#fff;background:#191934}
 .featured-scope-tab.active{color:#101020;background:linear-gradient(90deg,var(--cyan),var(--pink));box-shadow:0 8px 22px rgba(239,87,205,.16)}
 @media(max-width:850px){.featured-location-grid{grid-template-columns:1fr}}
+
+
+/* ===== Featured 3 tầng: Trang chủ / Module / Danh mục ===== */
+.featured-location-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.category-location-card{border-color:rgba(125,232,255,.4);background:linear-gradient(145deg,rgba(125,232,255,.08),rgba(139,92,246,.08))}
+.featured-scope-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+#featuredCategoryFilter[hidden]{display:none}
+#featuredCategoryFilter{min-width:190px}
+@media(max-width:1100px){.featured-location-grid{grid-template-columns:1fr 1fr}.category-location-card{grid-column:1/-1}}
+@media(max-width:760px){.featured-location-grid,.featured-scope-tabs{grid-template-columns:1fr}.category-location-card{grid-column:auto}}

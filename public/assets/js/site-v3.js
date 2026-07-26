@@ -481,14 +481,40 @@ function getModuleFeaturedPriority(post) {
   return Number.isFinite(value) && value > 0 ? value : 100;
 }
 
-function sortModulePosts(posts = []) {
+function isCategoryFeatured(post) {
+  return post?.featuredCategory === true;
+}
+
+function getCategoryFeaturedPriority(post) {
+  const value = Number.parseInt(post?.featuredCategoryPriority, 10);
+  return Number.isFinite(value) && value > 0 ? value : 100;
+}
+
+function postMatchesCategory(post, activeCategory = "") {
+  if (!activeCategory) return false;
+  const wanted = normalize(activeCategory);
+  const tokens = [post?.featuredCategoryId, post?.categoryId, post?.categorySlug,
+    ...(Array.isArray(post?.categoryPathIds) ? post.categoryPathIds : []),
+    ...(Array.isArray(post?.categorySlugs) ? post.categorySlugs : [])]
+    .filter(Boolean).map(normalize);
+  return tokens.includes(wanted) || categoryTokens(post).includes(wanted);
+}
+
+function sortModulePosts(posts = [], activeCategory = "") {
   return [...posts].sort((a, b) => {
-    const aFeatured = isModuleFeatured(a);
-    const bFeatured = isModuleFeatured(b);
-    if (aFeatured !== bFeatured) return aFeatured ? -1 : 1;
-    if (aFeatured && bFeatured) {
-      const priorityDiff = getModuleFeaturedPriority(a) - getModuleFeaturedPriority(b);
-      if (priorityDiff) return priorityDiff;
+    const aCategory = isCategoryFeatured(a) && postMatchesCategory(a, activeCategory);
+    const bCategory = isCategoryFeatured(b) && postMatchesCategory(b, activeCategory);
+    if (aCategory !== bCategory) return aCategory ? -1 : 1;
+    if (aCategory && bCategory) {
+      const categoryDiff = getCategoryFeaturedPriority(a) - getCategoryFeaturedPriority(b);
+      if (categoryDiff) return categoryDiff;
+    }
+    const aModule = isModuleFeatured(a);
+    const bModule = isModuleFeatured(b);
+    if (aModule !== bModule) return aModule ? -1 : 1;
+    if (aModule && bModule) {
+      const moduleDiff = getModuleFeaturedPriority(a) - getModuleFeaturedPriority(b);
+      if (moduleDiff) return moduleDiff;
     }
     return getHomePostTime(b) - getHomePostTime(a);
   });
@@ -1019,6 +1045,7 @@ async function blog() {
         return typeOk && categoryOk && searchOk;
       });
 
+      lastFiltered = sortModulePosts(lastFiltered, activeCategory);
       const totalPages = Math.max(1, Math.ceil(lastFiltered.length / pageSize));
       currentPage = Math.min(Math.max(1, currentPage), totalPages);
 

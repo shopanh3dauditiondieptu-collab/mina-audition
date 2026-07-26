@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/admin-v5.css?v=1.9.0">
+  <link rel="stylesheet" href="/css/admin-v5.css?v=2.0.0">
   <link rel="stylesheet" href="/css/smartlink-dashboard.css?v=1.1.0">
 
   <style>
@@ -306,6 +306,20 @@
                   <small class="priority-help">Mỗi module có thứ tự nổi bật riêng, không ảnh hưởng thứ tự trang chủ.</small>
                 </label>
               </article>
+
+              <article class="featured-location-card category-location-card">
+                <div class="featured-location-title">🗂️ Danh mục hiện tại</div>
+                <p id="featuredCategoryHint" class="featured-module-hint">Chọn ít nhất một danh mục bên trong Module để bật nổi bật theo danh mục.</p>
+                <label class="checkbox-row">
+                  <input id="featuredCategory" type="checkbox">
+                  <span>Nổi bật trong danh mục đang chọn</span>
+                </label>
+                <label>
+                  <span>Ưu tiên trong danh mục</span>
+                  <input id="featuredCategoryPriority" type="number" min="1" max="999" step="1" value="100" placeholder="Ví dụ: 1">
+                  <small class="priority-help">Đưa bài lên đầu đúng trang danh mục con, không ảnh hưởng Module hoặc Trang chủ.</small>
+                </label>
+              </article>
             </div>
           </section>
 
@@ -408,6 +422,7 @@
           </div>
           <div class="featured-head-actions">
             <button id="saveFeaturedOrderButton" class="btn primary" type="button">Lưu thứ tự</button>
+            <button id="syncLegacyFeaturedButton" class="btn ghost" type="button">✨ Đồng bộ bài cũ</button>
             <button id="refreshFeaturedButton" class="btn ghost" type="button">Tải lại</button>
           </div>
         </div>
@@ -415,6 +430,7 @@
         <div class="featured-scope-tabs" role="tablist" aria-label="Vị trí nổi bật">
           <button class="featured-scope-tab active" type="button" data-featured-scope="home">🏠 Trang chủ</button>
           <button class="featured-scope-tab" type="button" data-featured-scope="module">📂 Theo module</button>
+          <button class="featured-scope-tab" type="button" data-featured-scope="category">🗂️ Theo danh mục</button>
         </div>
 
         <div class="featured-toolbar">
@@ -427,6 +443,9 @@
             <option value="Academy">Academy</option>
             <option value="Game Gear">Game Gear</option>
             <option value="Wiki D8">Wiki D8</option>
+          </select>
+          <select id="featuredCategoryFilter" hidden>
+            <option value="">Tất cả danh mục</option>
           </select>
           <button id="pinSelectedFeaturedButton" class="btn ghost" type="button">📌 Đưa lên đầu</button>
           <button id="unfeatureSelectedButton" class="btn danger" type="button">☆ Bỏ nổi bật đã chọn</button>
@@ -443,7 +462,7 @@
           <span>Chọn</span><span>Thứ tự</span><span>Ảnh</span><span>Bài viết</span><span>Module / Danh mục</span><span>Thao tác</span>
         </div>
         <div id="featuredPostsList" class="featured-posts-list"></div>
-        <div class="featured-help">Chọn <b>Trang chủ</b> hoặc <b>Theo module</b>, kéo biểu tượng <b>⋮⋮</b> để đổi thứ tự rồi bấm <b>Lưu thứ tự</b>.</div>
+        <div class="featured-help">Chọn <b>Trang chủ</b>, <b>Theo module</b> hoặc <b>Theo danh mục</b>, kéo biểu tượng <b>⋮⋮</b> để đổi thứ tự rồi bấm <b>Lưu thứ tự</b>.</div>
       </section>
     </section>
 
