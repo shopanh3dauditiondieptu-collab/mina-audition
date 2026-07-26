@@ -1169,33 +1169,152 @@ function setupPostLightbox() {
   const lightboxImage = lightbox?.querySelector("img");
   if (!lightbox || !lightboxImage) return;
 
+  let scale = 1;
+  let translateX = 0;
+  let translateY = 0;
+  let dragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let originX = 0;
+  let originY = 0;
+
+  const clamp = (number, min, max) => Math.min(max, Math.max(min, number));
+
+  const toolbar = document.createElement("div");
+  toolbar.className = "post-lightbox__toolbar";
+  toolbar.setAttribute("aria-label", "Điều khiển phóng to ảnh");
+  toolbar.innerHTML = `
+    <button type="button" data-zoom="out" aria-label="Thu nhỏ ảnh">−</button>
+    <span class="post-lightbox__zoom-value" aria-live="polite">100%</span>
+    <button type="button" data-zoom="in" aria-label="Phóng to ảnh">+</button>
+    <button type="button" data-zoom="reset" aria-label="Đặt lại kích thước">↺</button>
+  `;
+  lightbox.appendChild(toolbar);
+
+  const hint = document.createElement("div");
+  hint.className = "post-lightbox__hint";
+  hint.textContent = "Cuộn chuột để zoom • Kéo ảnh khi đã phóng to • ESC để đóng";
+  lightbox.appendChild(hint);
+
+  const zoomValue = toolbar.querySelector(".post-lightbox__zoom-value");
+
+  const renderTransform = () => {
+    lightboxImage.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`;
+    lightbox.classList.toggle("is-zoomed", scale > 1.01);
+    if (zoomValue) zoomValue.textContent = `${Math.round(scale * 100)}%`;
+  };
+
+  const resetTransform = () => {
+    scale = 1;
+    translateX = 0;
+    translateY = 0;
+    dragging = false;
+    lightbox.classList.remove("is-dragging");
+    renderTransform();
+  };
+
+  const setScale = nextScale => {
+    scale = clamp(nextScale, 1, 5);
+    if (scale === 1) {
+      translateX = 0;
+      translateY = 0;
+    }
+    renderTransform();
+  };
+
   const close = () => {
     lightbox.hidden = true;
     lightbox.setAttribute("aria-hidden", "true");
     document.body.classList.remove("post-lightbox-open");
+    resetTransform();
     lightboxImage.removeAttribute("src");
   };
 
   document.querySelectorAll(".post-v6-content .post-zoomable-image, .post-v6-cover").forEach(image => {
     image.classList.add("is-lightbox-ready");
-    image.addEventListener("click", () => {
+    image.setAttribute("tabindex", "0");
+    image.setAttribute("role", "button");
+    image.setAttribute("aria-label", "Mở ảnh ở chế độ phóng to");
+
+    const open = () => {
+      resetTransform();
       lightboxImage.src = image.currentSrc || image.src;
       lightboxImage.alt = image.alt || "Ảnh bài viết";
       lightbox.hidden = false;
       lightbox.setAttribute("aria-hidden", "false");
       document.body.classList.add("post-lightbox-open");
+      lightbox.querySelector(".post-lightbox__close")?.focus();
+    };
+
+    image.addEventListener("click", open);
+    image.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        open();
+      }
     });
   });
+
+  toolbar.addEventListener("click", event => {
+    event.stopPropagation();
+    const action = event.target.closest("button")?.dataset.zoom;
+    if (action === "in") setScale(scale + 0.25);
+    if (action === "out") setScale(scale - 0.25);
+    if (action === "reset") resetTransform();
+  });
+
+  lightbox.addEventListener("wheel", event => {
+    if (lightbox.hidden) return;
+    event.preventDefault();
+    setScale(scale + (event.deltaY < 0 ? 0.2 : -0.2));
+  }, { passive: false });
+
+  lightboxImage.addEventListener("dblclick", event => {
+    event.preventDefault();
+    setScale(scale > 1 ? 1 : 2);
+  });
+
+  lightboxImage.addEventListener("pointerdown", event => {
+    if (scale <= 1) return;
+    dragging = true;
+    dragStartX = event.clientX;
+    dragStartY = event.clientY;
+    originX = translateX;
+    originY = translateY;
+    lightbox.classList.add("is-dragging");
+    lightboxImage.setPointerCapture?.(event.pointerId);
+    event.preventDefault();
+  });
+
+  lightboxImage.addEventListener("pointermove", event => {
+    if (!dragging) return;
+    translateX = originX + event.clientX - dragStartX;
+    translateY = originY + event.clientY - dragStartY;
+    renderTransform();
+  });
+
+  const stopDragging = event => {
+    if (!dragging) return;
+    dragging = false;
+    lightbox.classList.remove("is-dragging");
+    lightboxImage.releasePointerCapture?.(event.pointerId);
+  };
+
+  lightboxImage.addEventListener("pointerup", stopDragging);
+  lightboxImage.addEventListener("pointercancel", stopDragging);
 
   lightbox.querySelector(".post-lightbox__close")?.addEventListener("click", close);
   lightbox.addEventListener("click", event => {
     if (event.target === lightbox) close();
   });
   document.addEventListener("keydown", event => {
-    if (event.key === "Escape" && !lightbox.hidden) close();
+    if (lightbox.hidden) return;
+    if (event.key === "Escape") close();
+    if (event.key === "+" || event.key === "=") setScale(scale + 0.25);
+    if (event.key === "-") setScale(scale - 0.25);
+    if (event.key === "0") resetTransform();
   });
 }
-
 function setupPostTableOfContents() {
   const content = document.querySelector(".post-v6-content");
   const tocList = document.querySelector("#postTocList");
