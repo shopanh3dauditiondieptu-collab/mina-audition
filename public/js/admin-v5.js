@@ -1,6 +1,6 @@
 /*
- * Mina CMS v5.4 Enterprise
- * Nâng cấp: gắn Smart Link trực tiếp vào bài viết.
+ * Mina CMS v6.0 Enterprise
+ * Foundation: module dashboard, lọc module chính xác và tương thích bài viết cũ.
  */
 import { auth, db } from "/js/firebase-config.js";
 import { CmsV5Repository } from "/js/admin-v5-repository.js";
@@ -20,6 +20,8 @@ const state = {
   user: null,
   posts: [],
   categoryTree: [],
+  categoryIndexById: new Map(),
+  categoryPathsByName: new Map(),
   blocks: [],
   coverFile: null,
   coverUrl: "",
@@ -601,7 +603,7 @@ function renderCategoryLevel(level) {
   if(level<=4)fillCategorySelect($("#categoryLevel4"),c?.children||[],"Chọn loại"); renderCategoryPath();
 }
 
-async function loadCategoryTree(){const response=await fetch("/data/category-tree.json",{cache:"no-store"});if(!response.ok)throw new Error("Không tải được cây danh mục.");state.categoryTree=await response.json();renderCategoryRoot();state.categoryTree.forEach(node=>state.expandedCategoryPaths.add(pathKey([node.name])));}
+async function loadCategoryTree(){const response=await fetch("/data/category-tree.json",{cache:"no-store"});if(!response.ok)throw new Error("Không tải được cây danh mục.");state.categoryTree=await response.json();rebuildCategoryIndexes();renderCategoryRoot();state.categoryTree.forEach(node=>state.expandedCategoryPaths.add(pathKey([node.name])));}
 
 function setCategoryPath(ids=[]){renderCategoryRoot();if(!ids.length)return;$("#categoryLevel1").value=ids[0]||"";renderCategoryLevel(2);$("#categoryLevel2").value=ids[1]||"";renderCategoryLevel(3);$("#categoryLevel3").value=ids[2]||"";renderCategoryLevel(4);$("#categoryLevel4").value=ids[3]||"";renderCategoryPath();}
 
@@ -614,11 +616,60 @@ function normalizeSearchValue(value = "") {
     .trim();
 }
 
-function getPostCategoryLabel(post) {
-  const path = Array.isArray(post.categoryPath) && post.categoryPath.length
-    ? post.categoryPath
-    : [post.section, post.categoryName || post.category].filter(Boolean);
+function normalizeCategoryToken(value = "") {
+  return normalizeSearchValue(value).replace(/[^a-z0-9 ]/g, "").trim();
+}
 
+function rebuildCategoryIndexes() {
+  state.categoryIndexById = new Map();
+  state.categoryPathsByName = new Map();
+
+  const walk = (nodes = [], parentPath = []) => {
+    nodes.forEach(node => {
+      const path = [...parentPath, node];
+      state.categoryIndexById.set(String(node.id || ""), path);
+      const token = normalizeCategoryToken(node.name);
+      if (token) {
+        const existing = state.categoryPathsByName.get(token) || [];
+        existing.push(path);
+        state.categoryPathsByName.set(token, existing);
+      }
+      walk(node.children || [], path);
+    });
+  };
+  walk(state.categoryTree);
+}
+
+function getCanonicalPostCategoryPath(post) {
+  const ids = Array.isArray(post.categoryPathIds) ? post.categoryPathIds.map(String).filter(Boolean) : [];
+  for (let index = ids.length - 1; index >= 0; index -= 1) {
+    const indexedPath = state.categoryIndexById.get(ids[index]);
+    if (indexedPath?.length) return indexedPath.map(node => node.name);
+  }
+
+  const rawPath = Array.isArray(post.categoryPath) && post.categoryPath.length
+    ? post.categoryPath.map(String).filter(Boolean)
+    : [post.moduleName, post.section, post.categoryName || post.category].filter(Boolean).map(String);
+
+  for (let index = rawPath.length - 1; index >= 0; index -= 1) {
+    const matches = state.categoryPathsByName.get(normalizeCategoryToken(rawPath[index])) || [];
+    if (matches.length === 1) return matches[0].map(node => node.name);
+    if (matches.length > 1) {
+      const moduleToken = normalizeCategoryToken(post.moduleName || post.module || rawPath[0]);
+      const preferred = matches.find(path => normalizeCategoryToken(path[0]?.name) === moduleToken);
+      if (preferred) return preferred.map(node => node.name);
+    }
+  }
+
+  return rawPath.filter((name, index, array) => index === 0 || normalizeCategoryToken(name) !== normalizeCategoryToken(array[index - 1]));
+}
+
+function getPostModuleName(post) {
+  return getCanonicalPostCategoryPath(post)[0] || post.moduleName || post.module || "Chưa phân loại";
+}
+
+function getPostCategoryLabel(post) {
+  const path = getCanonicalPostCategoryPath(post);
   return path.join(" / ") || "Chưa phân loại";
 }
 
@@ -656,10 +707,7 @@ function getPostViewUrl(post) {
 }
 
 function getPostCategoryPath(post) {
-  if (Array.isArray(post.categoryPath) && post.categoryPath.length) {
-    return post.categoryPath.map(String).filter(Boolean);
-  }
-  return [post.section, post.categoryName || post.category].filter(Boolean).map(String);
+  return getCanonicalPostCategoryPath(post);
 }
 
 function pathKey(parts = []) {
@@ -781,6 +829,37 @@ function detectDuplicatePosts() {
   );
 }
 
+function getModuleStats() {
+  return state.categoryTree.map(moduleNode => {
+    const moduleName = moduleNode.name;
+    const posts = state.posts.filter(post => getPostModuleName(post) === moduleName);
+    return {
+      id: moduleNode.id,
+      name: moduleName,
+      icon: moduleNode.icon || "📁",
+      total: posts.length,
+      published: posts.filter(post => post.status === "published").length,
+      draft: posts.filter(post => post.status === "draft").length,
+      featured: posts.filter(post => Boolean(post.featured)).length,
+      views: posts.reduce((sum, post) => sum + getNumericValue(post, ["views", "viewCount", "viewsCount"]), 0)
+    };
+  });
+}
+
+function renderModuleDashboard() {
+  const grid = $("#moduleStatsGrid");
+  if (!grid) return;
+  grid.innerHTML = getModuleStats().map(item => {
+    const active = state.activeCategoryFilter === item.name;
+    return `<button class="module-stat-card ${active ? "active" : ""}" type="button" data-module-filter="${escapeHtml(item.name)}">
+      <span class="module-stat-title"><b>${escapeHtml(item.icon)}</b>${escapeHtml(item.name)}</span>
+      <strong>${item.total.toLocaleString("vi-VN")}</strong>
+      <span class="module-stat-meta">${item.published} công khai · ${item.draft} nháp · ${item.featured} nổi bật</span>
+      <small>👁 ${item.views.toLocaleString("vi-VN")} lượt xem</small>
+    </button>`;
+  }).join("");
+}
+
 function renderManagerStats() {
   const total = state.posts.length;
   const published = state.posts.filter(post => post.status === "published").length;
@@ -796,6 +875,7 @@ function renderManagerStats() {
   $("#statDuplicates").textContent = String(state.duplicateIds.size);
   $("#statViews").textContent = views.toLocaleString("vi-VN");
   $("#statClicks").textContent = clicks.toLocaleString("vi-VN");
+  renderModuleDashboard();
 }
 
 function getFilteredPosts() {
@@ -828,6 +908,10 @@ function getFilteredPosts() {
       getPostSmartLink(post),
       post.smartLinkSlug,
       getPostImage(post),
+      post.module,
+      post.moduleId,
+      post.moduleName,
+      getPostModuleName(post),
       getPostCategoryLabel(post),
       blockText
     ].filter(Boolean).join(" "));
@@ -1210,6 +1294,20 @@ function bindEvents() {
 
   $("#checkDuplicatesButton").addEventListener("click", detectDuplicatePosts);
 
+
+  $("#moduleStatsGrid")?.addEventListener("click", event => {
+    const button = event.target.closest("[data-module-filter]");
+    if (!button) return;
+    state.activeCategoryFilter = button.dataset.moduleFilter || "";
+    state.selectedPostIds.clear();
+    renderPosts();
+  });
+
+  $("#clearModuleFilterButton")?.addEventListener("click", () => {
+    state.activeCategoryFilter = "";
+    state.selectedPostIds.clear();
+    renderPosts();
+  });
 
   $("#categoryTreeFilter").addEventListener("click", event => {
     const toggle = event.target.closest("[data-tree-toggle]");

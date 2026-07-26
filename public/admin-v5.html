@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#09061a">
   <meta name="robots" content="noindex,nofollow">
-  <title>Mina CMS v5.4 Enterprise</title>
+  <title>Mina CMS v6.0 Enterprise</title>
   <link rel="icon" href="/assets/images/logo-mina.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/admin-v5.css?v=1.5.0">
+  <link rel="stylesheet" href="/css/admin-v5.css?v=2.0.0">
   <link rel="stylesheet" href="/css/smartlink-dashboard.css?v=1.1.0">
 
   <style>
@@ -114,7 +114,7 @@
 </head>
 <body>
   <aside class="sidebar">
-    <a class="brand" href="/"><img src="/assets/images/logo-mina.png" alt=""><span>Mina CMS v5.4</span></a>
+    <a class="brand" href="/"><img src="/assets/images/logo-mina.png" alt=""><span>Mina CMS v6.0</span></a>
     <nav>
       <button class="nav-item active" data-view="editor">✦ Đăng bài</button>
       <button class="nav-item" data-view="posts">▦ Quản lý bài</button>
@@ -337,6 +337,17 @@
           <article class="stat-card"><strong id="statViews">0</strong><span>Lượt xem</span></article>
           <article class="stat-card"><strong id="statClicks">0</strong><span>Smart Click</span></article>
         </div>
+
+        <section class="module-dashboard" aria-labelledby="moduleDashboardTitle">
+          <div class="module-dashboard-head">
+            <div>
+              <h3 id="moduleDashboardTitle">Tổng quan theo module</h3>
+              <p>Bấm vào một module để lọc nhanh danh sách và toàn bộ danh mục con.</p>
+            </div>
+            <button id="clearModuleFilterButton" class="btn ghost module-clear-button" type="button">Xem tất cả</button>
+          </div>
+          <div id="moduleStatsGrid" class="module-stats-grid"></div>
+        </section>
 
         <div class="enterprise-manager-grid">
           <aside class="category-tree-panel">
@@ -657,7 +668,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script type="module" src="/js/smartlink-dashboard.js?v=1.1.2"></script>
   <script type="module">
-    import("/js/admin-v5.js?v=1.7.0").catch(error => {
+    import("/js/admin-v5.js?v=2.0.0").catch(error => {
       console.error("Không tải được admin-v5.js", error);
       const badge = document.getElementById("authBadge");
       const notice = document.getElementById("notice");

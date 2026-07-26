@@ -310,3 +310,31 @@ mark{background:rgba(255,214,110,.3);color:#fff3b3;border-radius:4px;padding:0 2
 .excel-row-error{background:rgba(255,80,120,.04)}
 @media(max-width:1050px){.excel-import-controls{grid-template-columns:1fr 1fr}.excel-checkbox{grid-column:1/-1}}
 @media(max-width:700px){.excel-import-controls,.excel-summary{grid-template-columns:1fr}.excel-preview-head{flex-direction:column}}
+
+
+/* Mina CMS v6.0 — Module dashboard */
+.module-dashboard {
+  margin: 18px 0 22px;
+  padding: 18px;
+  border: 1px solid rgba(101, 218, 255, .24);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(15, 18, 52, .92), rgba(28, 17, 55, .82));
+}
+.module-dashboard-head { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:14px; }
+.module-dashboard-head h3 { margin:0 0 4px; font-size:18px; }
+.module-dashboard-head p { margin:0; color:#aeb4cc; font-size:13px; }
+.module-clear-button { flex:0 0 auto; }
+.module-stats-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.module-stat-card {
+  min-width:0; padding:15px; text-align:left; color:#fff; cursor:pointer;
+  border:1px solid rgba(116, 220, 255, .2); border-radius:15px;
+  background:rgba(7, 12, 38, .72); transition:.18s ease;
+}
+.module-stat-card:hover { transform:translateY(-2px); border-color:#65dcff; box-shadow:0 12px 28px rgba(0,0,0,.22); }
+.module-stat-card.active { border-color:#ff64cf; box-shadow:0 0 0 2px rgba(255,100,207,.18); background:rgba(63,25,79,.82); }
+.module-stat-title { display:flex; align-items:center; gap:8px; color:#dfe5ff; font-weight:800; font-size:13px; }
+.module-stat-card > strong { display:block; margin:10px 0 5px; color:#6fe7ff; font-size:28px; line-height:1; }
+.module-stat-meta { display:block; color:#c6cbe0; font-size:12px; line-height:1.5; }
+.module-stat-card small { display:block; margin-top:7px; color:#8f98bb; }
+@media (max-width: 1050px) { .module-stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width: 680px) { .module-dashboard-head { align-items:flex-start; flex-direction:column; } .module-stats-grid { grid-template-columns:1fr; } }

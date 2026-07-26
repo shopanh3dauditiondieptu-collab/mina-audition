@@ -28,7 +28,7 @@ export class CmsV5Repository {
   async savePost(payload, id = "") {
     const data = {
       ...payload,
-      cmsVersion: "mina-cms-v5.3-enterprise",
+      cmsVersion: "mina-cms-v6.0-enterprise",
       updatedAt: serverTimestamp()
     };
     if (id) {
@@ -57,7 +57,7 @@ export class CmsV5Repository {
   async saveSmartLink(payload, id = "") {
     const data = {
       ...payload,
-      cmsVersion: "mina-cms-v5.3-enterprise",
+      cmsVersion: "mina-cms-v6.0-enterprise",
       updatedAt: serverTimestamp()
     };
 
