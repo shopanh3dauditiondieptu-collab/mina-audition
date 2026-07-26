@@ -1,6 +1,3 @@
-import { auth } from "/js/firebase-config.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-
 const LIBRARY_ENDPOINT = "/api/admin/smartlinks/library";
 
 const libraryState = {
@@ -22,7 +19,25 @@ const API_KEY_STORAGE_KEYS = [
   "mina-admin-api-key"
 ];
 
-function getFallbackApiKey() {
+function $(selector) {
+  return document.querySelector(selector);
+}
+
+function escapeHtml(value = "") {
+  return String(value).replace(/[&<>"']/g, character => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  }[character]));
+}
+
+function number(value) {
+  return Number(value || 0).toLocaleString("vi-VN");
+}
+
+function getApiKey() {
   for (const key of API_KEY_STORAGE_KEYS) {
     const value =
       sessionStorage.getItem(key) ||
@@ -30,59 +45,16 @@ function getFallbackApiKey() {
 
     if (value) return value;
   }
-
   return "";
 }
 
-function waitForAuthUser(timeoutMs = 5000) {
-  if (auth.currentUser) return Promise.resolve(auth.currentUser);
-
-  return new Promise(resolve => {
-    let done = false;
-    let unsubscribe = () => {};
-
-    const finish = user => {
-      if (done) return;
-      done = true;
-      clearTimeout(timer);
-      unsubscribe();
-      resolve(user || null);
-    };
-
-    unsubscribe = onAuthStateChanged(
-      auth,
-      user => finish(user),
-      () => finish(null)
-    );
-
-    const timer = setTimeout(
-      () => finish(auth.currentUser || null),
-      timeoutMs
-    );
-  });
-}
-
-async function authHeaders(forceRefresh = false) {
-  const user = auth.currentUser || await waitForAuthUser();
-
-  if (user) {
-    const token = await user.getIdToken(forceRefresh);
-    return {
-      Authorization: `Bearer ${token}`
-    };
-  }
-
-  const apiKey = getFallbackApiKey();
-
-  if (apiKey) {
-    return {
-      "X-Mina-Admin-Key": apiKey
-    };
-  }
-
-  throw new Error(
-    "Không tìm thấy phiên đăng nhập Firebase. Hãy tải lại CMS hoặc đăng nhập lại."
-  );
+function authHeaders() {
+  const apiKey = getApiKey();
+  return apiKey
+    ? {
+        "X-Mina-Admin-Key": apiKey
+      }
+    : {};
 }
 
 function formatDate(value) {
@@ -257,34 +229,35 @@ async function loadLibrary() {
   const status = $("#smartLibraryStatus");
   const reload = $("#smartLibraryReload");
 
+  if (!getApiKey()) {
+    if (status) {
+      status.textContent =
+        "Không tìm thấy API key quản trị trong phiên. Hãy đăng xuất rồi đăng nhập lại CMS.";
+    }
+    renderRows([]);
+    return;
+  }
+
   if (reload) {
     reload.disabled = true;
     reload.textContent = "Đang tải…";
   }
 
   try {
-    let response = await fetch(
+    const response = await fetch(
       `${LIBRARY_ENDPOINT}?${buildQuery()}`,
       {
         cache: "no-store",
-        headers: await authHeaders()
+        headers: authHeaders()
       }
     );
-
-    if (response.status === 401 && auth.currentUser) {
-      response = await fetch(
-        `${LIBRARY_ENDPOINT}?${buildQuery()}`,
-        {
-          cache: "no-store",
-          headers: await authHeaders(true)
-        }
-      );
-    }
 
     const result = await response.json();
 
     if (!response.ok || !result.success) {
-      throw new Error(result.message || "Không tải được Smart Link Library.");
+      throw new Error(
+        `${result.message || "Không tải được Smart Link Library."} (HTTP ${response.status})`
+      );
     }
 
     libraryState.rows = result.rows || [];
