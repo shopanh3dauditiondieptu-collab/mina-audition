@@ -1,5 +1,11 @@
 const admin = require("firebase-admin");
 
+const LINK_CACHE_TTL_MS = 10 * 60 * 1000;
+const LINK_CACHE_MAX_ITEMS = 500;
+const linkCache = global.__MINA_SMARTLINK_REDIRECT_CACHE__ || new Map();
+global.__MINA_SMARTLINK_REDIRECT_CACHE__ = linkCache;
+
+
 function getAdminApp() {
   if (admin.apps.length) return admin.app();
 
@@ -70,6 +76,76 @@ function getCountry(req) {
   ).toUpperCase();
 }
 
+
+function readCachedLink(slug, allowStale = false) {
+  const item = linkCache.get(slug);
+  if (!item) return null;
+
+  const age = Date.now() - item.createdAt;
+
+  if (!allowStale && age > LINK_CACHE_TTL_MS) {
+    return null;
+  }
+
+  return {
+    ...item,
+    stale: age > LINK_CACHE_TTL_MS
+  };
+}
+
+function writeCachedLink(slug, value) {
+  linkCache.set(slug, {
+    ...value,
+    createdAt: Date.now()
+  });
+
+  if (linkCache.size > LINK_CACHE_MAX_ITEMS) {
+    const oldestKey = linkCache.keys().next().value;
+    if (oldestKey) linkCache.delete(oldestKey);
+  }
+}
+
+async function loadLinkBySlug(db, slug) {
+  const cached = readCachedLink(slug);
+  if (cached) return cached;
+
+  try {
+    const querySnapshot = await db
+      .collection("smartLinks")
+      .where("slug", "==", slug)
+      .limit(1)
+      .get();
+
+    if (querySnapshot.empty) {
+      return null;
+    }
+
+    const documentSnapshot = querySnapshot.docs[0];
+    const value = {
+      id: documentSnapshot.id,
+      link: documentSnapshot.data() || {},
+      stale: false
+    };
+
+    writeCachedLink(slug, value);
+    return value;
+  } catch (error) {
+    // Nếu Firestore tạm hết quota nhưng function vẫn còn cache cũ,
+    // ưu tiên chuyển hướng thay vì làm hỏng Smart Link.
+    const stale = readCachedLink(slug, true);
+
+    if (stale) {
+      console.warn(
+        "[Mina Smart Link] Firestore read failed, using stale cache:",
+        error.message
+      );
+      return stale;
+    }
+
+    throw error;
+  }
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store, max-age=0");
   res.setHeader("Pragma", "no-cache");
@@ -91,19 +167,22 @@ module.exports = async function handler(req, res) {
     getAdminApp();
     const db = admin.firestore();
 
-    const querySnapshot = await db
-      .collection("smartLinks")
-      .where("slug", "==", slug)
-      .limit(1)
-      .get();
+    const loaded = await loadLinkBySlug(db, slug);
 
-    if (querySnapshot.empty) {
+    if (!loaded) {
       return res.status(404).send("Liên kết không tồn tại.");
     }
 
-    const documentSnapshot = querySnapshot.docs[0];
-    const linkRef = documentSnapshot.ref;
-    const link = documentSnapshot.data() || {};
+    const documentSnapshot = {
+      id: loaded.id
+    };
+    const linkRef = db.collection("smartLinks").doc(loaded.id);
+    const link = loaded.link || {};
+
+    res.setHeader(
+      "X-Mina-Link-Cache",
+      loaded.stale ? "STALE" : "HIT-OR-MISS"
+    );
 
     if (link.active !== true) {
       return res.status(404).send("Liên kết hiện không hoạt động.");
