@@ -10,7 +10,19 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/admin-v6.css?v=6.0.0">
+  <link rel="stylesheet" href="/css/admin-v6.css?v=6.1.0-enterprise-slug">
+  <style>
+    .slug-enterprise-box{margin-top:14px;padding:14px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.035)}
+    .slug-enterprise-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:end}
+    .slug-enterprise-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .slug-enterprise-meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px}
+    .slug-url-preview{font-size:13px;word-break:break-all;opacity:.88}
+    .slug-status{font-size:13px;font-weight:700}
+    .slug-status[data-kind="success"]{color:#59d98e}.slug-status[data-kind="error"]{color:#ff7c8d}.slug-status[data-kind="warning"]{color:#f6c65b}.slug-status[data-kind="checking"]{color:#75b7ff}
+    .slug-options{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px}
+    .slug-lock-message{margin-top:10px;font-size:13px;padding:9px 11px;border-radius:10px;background:rgba(246,198,91,.09)}
+    @media(max-width:760px){.slug-enterprise-row{grid-template-columns:1fr}.slug-enterprise-actions .btn{flex:1}}
+  </style>
 </head>
 <body>
   <aside class="sidebar">
@@ -71,10 +83,30 @@
           <div id="categoryPathPreview" class="category-path">Chưa chọn danh mục.</div>
 
           <div class="grid two">
-            <label>
-              <span>Slug</span>
-              <input id="slug" placeholder="tu-dong-tao-tu-tieu-de">
-            </label>
+            <div>
+              <span>Slug bài viết</span>
+              <div class="slug-enterprise-box">
+                <div class="slug-enterprise-row">
+                  <label>
+                    <span>Đường dẫn URL</span>
+                    <input id="slug" maxlength="100" autocomplete="off" spellcheck="false" placeholder="tu-dong-tao-tu-tieu-de">
+                  </label>
+                  <div class="slug-enterprise-actions">
+                    <button id="regenerateSlugButton" class="btn ghost" type="button">↻ Tạo lại</button>
+                    <button id="checkSlugButton" class="btn ghost" type="button">Kiểm tra</button>
+                  </div>
+                </div>
+                <div class="slug-enterprise-meta">
+                  <div id="slugUrlPreview" class="slug-url-preview">https://www.minaaudition.vn/slug-bai-viet</div>
+                  <div id="slugStatus" class="slug-status" data-kind="neutral">Slug sẽ tự tạo theo tiêu đề.</div>
+                </div>
+                <div class="slug-options">
+                  <label class="checkbox-row"><input id="autoSlug" type="checkbox" checked><span>Tự cập nhật slug theo tiêu đề</span></label>
+                  <label class="checkbox-row"><input id="unlockSlug" type="checkbox"><span>Mở khóa URL bài đã công khai</span></label>
+                </div>
+                <div id="slugLockMessage" class="slug-lock-message" hidden></div>
+              </div>
+            </div>
             <label>
               <span>AI ID / Mã nội bộ</span>
               <input id="internalId" placeholder="AI-0104 hoặc TEST-0001">
@@ -342,8 +374,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script type="module">
-    import("/js/admin-v5.js?v=1.5.0").catch(error => {
-      console.error("Không tải được admin-v5.js", error);
+    import("/js/admin-v6.js?v=6.1.0-enterprise-slug").catch(error => {
+      console.error("Không tải được admin-v6.js", error);
       const badge = document.getElementById("authBadge");
       const notice = document.getElementById("notice");
       if (badge) badge.textContent = "Lỗi tải JavaScript";
