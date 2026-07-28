@@ -13,6 +13,8 @@ export class CmsV6Repository {
     this.posts = collection(db, "posts");
     this.affiliateCategories = collection(db, "affiliateCategories");
     this.affiliateLinks = collection(db, "affiliateLinks");
+    this.affiliatePlatforms = collection(db, "affiliatePlatforms");
+    this.affiliateStatuses = collection(db, "affiliateStatuses");
   }
 
   async listPosts(max = 500) {
@@ -184,6 +186,108 @@ export class CmsV6Repository {
 
   async deleteAffiliateLink(id) {
     await deleteDoc(doc(this.db, "affiliateLinks", id));
+  }
+
+
+  async listAffiliatePlatforms(max = 500) {
+    let snapshot;
+    try {
+      snapshot = await getDocs(query(this.affiliatePlatforms, orderBy("sortOrder", "asc"), limit(max)));
+    } catch {
+      snapshot = await getDocs(this.affiliatePlatforms);
+    }
+    return snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+  }
+
+  async saveAffiliatePlatform(payload, id = "") {
+    const name = String(payload?.name || "").trim();
+    const code = String(payload?.code || "").trim().toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d").replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "").slice(0, 60);
+    if (!name) throw new Error("Tên nền tảng không được để trống.");
+    if (!code) throw new Error("Mã nền tảng không hợp lệ.");
+
+    const existing = await this.listAffiliatePlatforms();
+    const duplicated = existing.some(item => item.code === code && item.id !== id);
+    if (duplicated) throw new Error("Mã nền tảng đã tồn tại.");
+
+    const data = {
+      name,
+      code,
+      sortOrder: Math.max(1, Number(payload?.sortOrder || 100)),
+      active: payload?.active !== false,
+      cmsVersion: "mina-cms-v6.4.1-dynamic-taxonomy",
+      updatedAt: serverTimestamp()
+    };
+
+    if (id) {
+      await updateDoc(doc(this.db, "affiliatePlatforms", id), data);
+      return id;
+    }
+
+    const created = await addDoc(this.affiliatePlatforms, {
+      ...data,
+      createdAt: serverTimestamp()
+    });
+    return created.id;
+  }
+
+  async deleteAffiliatePlatform(id) {
+    await deleteDoc(doc(this.db, "affiliatePlatforms", id));
+  }
+
+  async listAffiliateStatuses(max = 500) {
+    let snapshot;
+    try {
+      snapshot = await getDocs(query(this.affiliateStatuses, orderBy("sortOrder", "asc"), limit(max)));
+    } catch {
+      snapshot = await getDocs(this.affiliateStatuses);
+    }
+    return snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+  }
+
+  async saveAffiliateStatus(payload, id = "") {
+    const name = String(payload?.name || "").trim();
+    const code = String(payload?.code || "").trim().toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d").replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "").slice(0, 60);
+    if (!name) throw new Error("Tên trạng thái không được để trống.");
+    if (!code) throw new Error("Mã trạng thái không hợp lệ.");
+
+    const existing = await this.listAffiliateStatuses();
+    const duplicated = existing.some(item => item.code === code && item.id !== id);
+    if (duplicated) throw new Error("Mã trạng thái đã tồn tại.");
+
+    const allowedGroups = new Set(["active", "review", "warning", "dead", "paused"]);
+    const group = allowedGroups.has(payload?.group) ? payload.group : "review";
+
+    const data = {
+      name,
+      code,
+      icon: String(payload?.icon || "").trim().slice(0, 8),
+      group,
+      sortOrder: Math.max(1, Number(payload?.sortOrder || 100)),
+      active: payload?.active !== false,
+      cmsVersion: "mina-cms-v6.4.1-dynamic-taxonomy",
+      updatedAt: serverTimestamp()
+    };
+
+    if (id) {
+      await updateDoc(doc(this.db, "affiliateStatuses", id), data);
+      return id;
+    }
+
+    const created = await addDoc(this.affiliateStatuses, {
+      ...data,
+      createdAt: serverTimestamp()
+    });
+    return created.id;
+  }
+
+  async deleteAffiliateStatus(id) {
+    await deleteDoc(doc(this.db, "affiliateStatuses", id));
   }
 
 }
