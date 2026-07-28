@@ -7,6 +7,7 @@ export const state = {
   coverUrl: "",
   saving: false,
   activeCategoryFilter: "",
+  postViewMode: "all",
   expandedCategoryPaths: new Set(),
   selectedPostIds: new Set(),
   duplicateIds: new Set(),

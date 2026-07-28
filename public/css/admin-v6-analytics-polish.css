@@ -1,0 +1,1221 @@
+/*
+ * Mina CMS v6.3.1 — UI Display Fix
+ * Chỉ sửa giao diện Bài nổi bật + Phân tích.
+ * Không thay đổi dữ liệu, Slug Enterprise, AI ID, Smart Link hoặc Firestore.
+ */
+
+:root {
+  --mina-panel: #17162f;
+  --mina-panel-deep: #0d0d22;
+  --mina-panel-soft: #111126;
+  --mina-line: #31516e;
+  --mina-cyan: #7de8ff;
+  --mina-pink: #ef57cd;
+  --mina-text: #f7f5ff;
+  --mina-muted: #b8b4cf;
+  --mina-danger: #ff6b8b;
+}
+
+/* Mở rộng vùng làm việc trên desktop, tránh bảng bị bó hẹp. */
+.workspace {
+  max-width: none !important;
+  width: calc(100% - 250px);
+}
+
+#view-featured,
+#view-analytics {
+  width: 100%;
+  min-width: 0;
+}
+
+#view-featured .panel,
+#view-analytics .panel {
+  width: 100%;
+  min-width: 0;
+}
+
+/* =========================================================
+   FEATURED MANAGER
+   ========================================================= */
+
+.featured-manager-panel {
+  overflow: hidden;
+}
+
+.featured-manager-head,
+.featured-head-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.featured-head-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.featured-scope-tabs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  margin: 4px 0 18px;
+  border: 1px solid var(--mina-line);
+  border-radius: 16px;
+  background: var(--mina-panel-soft);
+  overflow-x: auto;
+}
+
+.featured-scope-tab {
+  flex: 0 0 auto;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 11px 16px;
+  background: transparent;
+  color: var(--mina-text);
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform .18s ease, background .18s ease, color .18s ease;
+}
+
+.featured-scope-tab:hover {
+  background: rgba(125, 232, 255, .10);
+}
+
+.featured-scope-tab.active {
+  color: #101020;
+  background: linear-gradient(90deg, var(--mina-cyan), var(--mina-pink));
+  box-shadow: 0 8px 24px rgba(239, 87, 205, .18);
+}
+
+.featured-toolbar {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) 190px 190px auto auto;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.featured-toolbar input,
+.featured-toolbar select {
+  min-height: 48px;
+  margin: 0;
+}
+
+.featured-toolbar .btn {
+  white-space: nowrap;
+}
+
+.featured-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 20px;
+}
+
+.featured-summary article {
+  min-height: 82px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 14px 16px;
+  border: 1px solid var(--mina-line);
+  border-radius: 16px;
+  background: var(--mina-panel-deep);
+}
+
+.featured-summary strong {
+  color: var(--mina-cyan);
+  font-size: 25px;
+  line-height: 1;
+}
+
+.featured-summary span {
+  margin-top: 7px;
+  color: var(--mina-text);
+  font-size: 13px;
+}
+
+.featured-list-head,
+.featured-row {
+  display: grid;
+  grid-template-columns: 52px 92px 76px minmax(300px, 1.5fr) minmax(220px, .95fr) minmax(280px, auto);
+  gap: 14px;
+  align-items: center;
+  min-width: 1050px;
+}
+
+.featured-list-head {
+  padding: 10px 14px;
+  color: var(--mina-cyan);
+  font-size: 13px;
+  font-weight: 900;
+  border-bottom: 1px solid var(--mina-line);
+}
+
+.featured-posts-list {
+  display: grid;
+  gap: 10px;
+  min-width: 1050px;
+  margin-top: 10px;
+}
+
+.featured-manager-panel {
+  overflow-x: auto;
+}
+
+.featured-row {
+  padding: 14px;
+  border: 1px solid var(--mina-line);
+  border-radius: 18px;
+  background: var(--mina-panel-deep);
+  transition: border-color .18s ease, transform .18s ease, background .18s ease;
+}
+
+.featured-row:hover {
+  border-color: rgba(125, 232, 255, .75);
+  transform: translateY(-1px);
+}
+
+.featured-row.selected {
+  border-color: var(--mina-pink);
+  background: linear-gradient(90deg, rgba(125,232,255,.06), rgba(239,87,205,.08));
+}
+
+.featured-row.dragging {
+  opacity: .55;
+  border-style: dashed;
+}
+
+.featured-select {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.featured-select input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.featured-order-cell {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 3px 8px;
+  align-items: center;
+}
+
+.featured-order-cell strong {
+  color: var(--mina-cyan);
+  font-size: 18px;
+}
+
+.featured-order-cell small {
+  grid-column: 1 / -1;
+  color: var(--mina-muted);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.featured-drag-handle {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--mina-line);
+  border-radius: 10px;
+  background: #191934;
+  color: #fff;
+  font: inherit;
+  font-weight: 900;
+  cursor: grab;
+}
+
+.featured-drag-handle:active {
+  cursor: grabbing;
+}
+
+.featured-thumb {
+  width: 72px;
+  height: 72px;
+  overflow: hidden;
+  border: 1px solid var(--mina-line);
+  border-radius: 14px;
+  background: #15152d;
+}
+
+.featured-thumb img {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: cover !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+.featured-content {
+  min-width: 0;
+}
+
+.featured-content h3 {
+  margin: 0 0 7px;
+  color: var(--mina-text);
+  font-size: 15px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.featured-meta {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+  color: var(--mina-muted);
+  font-size: 11px;
+}
+
+.featured-meta strong {
+  color: var(--mina-cyan);
+}
+
+.featured-slug {
+  margin-top: 6px;
+  color: #8f8aa8;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+
+.featured-category {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.featured-category strong {
+  color: var(--mina-text);
+}
+
+.featured-category span {
+  color: var(--mina-muted);
+  overflow-wrap: anywhere;
+}
+
+.featured-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.featured-actions .btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 11px;
+  font-size: 11px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.featured-help {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px dashed var(--mina-line);
+  border-radius: 14px;
+  color: var(--mina-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   CMS ANALYTICS
+   ========================================================= */
+
+.cms-analytics-panel {
+  overflow: hidden;
+}
+
+.cms-analytics-heading {
+  align-items: center;
+}
+
+.cms-analytics-toolbar {
+  display: grid;
+  grid-template-columns: 190px 190px minmax(320px, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cms-analytics-toolbar > * {
+  min-height: 48px;
+  margin: 0;
+}
+
+.cms-analytics-stats {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.cms-analytics-stats article {
+  min-height: 84px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 14px;
+  border: 1px solid var(--mina-line);
+  border-radius: 16px;
+  background: var(--mina-panel-deep);
+}
+
+.cms-analytics-stats strong {
+  color: var(--mina-cyan);
+  font-size: 25px;
+  line-height: 1;
+}
+
+.cms-analytics-stats span {
+  margin-top: 8px;
+  color: var(--mina-text);
+  font-size: 12px;
+}
+
+.cms-analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.cms-analytics-card {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--mina-line);
+  border-radius: 18px;
+  background: var(--mina-panel-deep);
+}
+
+.cms-analytics-card.wide {
+  grid-column: 1 / -1;
+}
+
+.cms-analytics-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.cms-analytics-card-head h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.cms-analytics-card-head small {
+  color: var(--mina-muted);
+  font-size: 11px;
+  text-align: right;
+}
+
+.cms-module-table,
+.cms-ranking-list,
+.cms-breakdown-list,
+.cms-seo-table {
+  display: grid;
+  gap: 8px;
+}
+
+.cms-module-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(230px, 1fr) 80px 90px 90px 100px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--mina-line);
+  border-radius: 12px;
+  background: var(--mina-panel-soft);
+  color: var(--mina-text);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+}
+
+button.cms-module-row {
+  cursor: pointer;
+}
+
+button.cms-module-row:hover {
+  border-color: var(--mina-cyan);
+  background: rgba(125, 232, 255, .07);
+}
+
+.cms-module-row.head {
+  border: 0;
+  background: transparent;
+  color: var(--mina-cyan);
+  font-weight: 900;
+  padding-top: 0;
+}
+
+.cms-module-row span:not(:first-child) {
+  text-align: center;
+}
+
+.cms-ranking-item {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--mina-line);
+  border-radius: 12px;
+  background: var(--mina-panel-soft);
+}
+
+.cms-ranking-item > b {
+  color: var(--mina-cyan);
+  font-size: 16px;
+}
+
+.cms-ranking-item > div {
+  min-width: 0;
+}
+
+.cms-ranking-item strong,
+.cms-seo-row strong {
+  display: block;
+  color: var(--mina-text);
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.cms-ranking-item small,
+.cms-seo-row small {
+  display: block;
+  margin-top: 3px;
+  color: var(--mina-muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.cms-ranking-item .btn,
+.cms-seo-row .btn {
+  padding: 7px 10px;
+  font-size: 10px;
+}
+
+.cms-breakdown-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid var(--mina-line);
+  border-radius: 12px;
+  background: var(--mina-panel-soft);
+}
+
+.cms-breakdown-list span {
+  color: var(--mina-text);
+  font-size: 13px;
+}
+
+.cms-breakdown-list strong {
+  color: var(--mina-cyan);
+  font-size: 18px;
+}
+
+.cms-seo-row {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(220px, .8fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 12px;
+  border: 1px solid var(--mina-line);
+  border-radius: 12px;
+  background: var(--mina-panel-soft);
+}
+
+.cms-seo-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cms-seo-tags span {
+  display: inline-flex;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(255, 107, 139, .18);
+  color: #ff9ab4;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.cms-progress-shell {
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cms-progress-shell > strong {
+  color: var(--mina-cyan);
+  font-size: 34px;
+}
+
+.cms-progress {
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  margin: 14px 0 8px;
+  border: 1px solid var(--mina-line);
+  border-radius: 999px;
+  background: #080919;
+}
+
+.cms-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--mina-cyan), var(--mina-pink));
+}
+
+.cms-progress-shell p {
+  margin: 0;
+  color: var(--mina-muted);
+  font-size: 12px;
+}
+
+.cms-analytics-updated {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px dashed var(--mina-line);
+  border-radius: 12px;
+  color: var(--mina-muted);
+  font-size: 11px;
+}
+
+/* Không để rule `.view` chung ẩn các liên kết Xem bên trong Analytics. */
+#view-analytics a.btn,
+#view-featured a.btn {
+  display: inline-flex !important;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1280px) {
+  .featured-toolbar {
+    grid-template-columns: minmax(260px, 1fr) 180px 180px;
+  }
+
+  .featured-toolbar .btn {
+    width: 100%;
+  }
+
+  .cms-analytics-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .workspace {
+    width: 100%;
+  }
+
+  .featured-manager-head,
+  .cms-analytics-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .featured-head-actions {
+    justify-content: flex-start;
+  }
+
+  .featured-toolbar,
+  .cms-analytics-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .featured-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cms-analytics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cms-analytics-card.wide {
+    grid-column: auto;
+  }
+
+  .cms-seo-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .featured-summary,
+  .cms-analytics-stats {
+    grid-template-columns: 1fr;
+  }
+}
+/* =========================================================
+   MINA ANALYTICS POLISH — v6.3.2
+   Làm dashboard cân đối, rõ tầng thông tin và đẹp như V5.
+   ========================================================= */
+
+#view-analytics .panel {
+  padding: 24px;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(125,232,255,.055), transparent 28%),
+    radial-gradient(circle at 94% 0%, rgba(239,87,205,.06), transparent 30%),
+    rgba(23,22,47,.97);
+}
+
+#view-analytics .panel-head {
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+#view-analytics .panel-head h2 {
+  font-size: 24px;
+  letter-spacing: -.02em;
+}
+
+#view-analytics .panel-head p {
+  margin-top: 5px;
+  font-size: 13px;
+}
+
+#reloadCmsAnalytics {
+  min-height: 46px;
+  padding-inline: 22px;
+  box-shadow: 0 10px 26px rgba(239,87,205,.16);
+}
+
+/* Toolbar cân đối như V5 */
+.cms-analytics-toolbar {
+  grid-template-columns: 190px 190px minmax(360px, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.cms-analytics-toolbar select,
+.cms-analytics-toolbar input {
+  min-height: 46px;
+  border-radius: 14px;
+  background: rgba(7,9,25,.92);
+}
+
+/* Card KPI có chiều sâu và phân cấp rõ hơn */
+.cms-analytics-stats {
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.cms-analytics-stats article {
+  position: relative;
+  min-height: 78px;
+  overflow: hidden;
+  padding: 13px 14px;
+  border-color: rgba(70,112,145,.75);
+  background:
+    linear-gradient(145deg, rgba(17,17,38,.98), rgba(10,10,28,.98));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+.cms-analytics-stats article::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  opacity: .75;
+  background: linear-gradient(90deg, var(--mina-cyan), var(--mina-pink));
+}
+
+.cms-analytics-stats strong {
+  font-size: 24px;
+  text-shadow: 0 0 18px rgba(125,232,255,.14);
+}
+
+.cms-analytics-stats span {
+  margin-top: 6px;
+  color: #e9e7f5;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Card nội dung */
+.cms-analytics-grid {
+  gap: 12px;
+}
+
+.cms-analytics-card {
+  padding: 15px;
+  border-radius: 16px;
+  border-color: rgba(70,112,145,.7);
+  background:
+    linear-gradient(145deg, rgba(12,12,33,.98), rgba(8,9,25,.98));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+}
+
+.cms-analytics-card-head {
+  margin-bottom: 10px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid rgba(49,81,110,.48);
+}
+
+.cms-analytics-card-head h3 {
+  font-size: 14px;
+  letter-spacing: -.01em;
+}
+
+.cms-analytics-card-head small {
+  max-width: 48%;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+/* Bảng module nhìn gọn, không quá cao */
+.cms-module-table {
+  gap: 6px;
+}
+
+.cms-module-row {
+  min-height: 36px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.cms-module-row.head {
+  min-height: 30px;
+  padding: 2px 10px 6px;
+  color: var(--mina-cyan);
+  border-bottom: 1px solid rgba(49,81,110,.55);
+  border-radius: 0;
+}
+
+.cms-module-row strong {
+  font-size: 12px;
+}
+
+/* Ranking list giống card compact của V5 */
+.cms-ranking-list {
+  gap: 7px;
+}
+
+.cms-ranking-item {
+  min-height: 54px;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: 9px;
+  padding: 9px 10px;
+  border-radius: 11px;
+  transition: border-color .18s ease, transform .18s ease, background .18s ease;
+}
+
+.cms-ranking-item:hover {
+  border-color: rgba(125,232,255,.8);
+  background: linear-gradient(90deg, rgba(125,232,255,.055), rgba(239,87,205,.035));
+  transform: translateY(-1px);
+}
+
+.cms-ranking-item > b {
+  font-size: 15px;
+}
+
+.cms-ranking-item strong {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.cms-ranking-item small {
+  margin-top: 2px;
+  font-size: 9px;
+  color: #9f9ab7;
+}
+
+/* Nút Xem / Sửa — tránh style mặc định của trình duyệt */
+.cms-analytics-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.cms-analytics-actions a,
+.cms-analytics-actions button {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 28px;
+  margin: 0;
+  padding: 0 10px;
+  border: 1px solid #365c75;
+  border-radius: 999px;
+  background: #15162f;
+  color: #f7f5ff !important;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+.cms-analytics-actions a:hover,
+.cms-analytics-actions button:hover {
+  border-color: transparent;
+  color: #101020 !important;
+  background: linear-gradient(90deg, var(--mina-cyan), var(--mina-pink));
+  transform: translateY(-1px);
+}
+
+/* Featured breakdown */
+.cms-breakdown-list {
+  gap: 7px;
+}
+
+.cms-breakdown-list > div {
+  min-height: 48px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  transition: border-color .18s ease, background .18s ease;
+}
+
+.cms-breakdown-list > div:hover {
+  border-color: rgba(125,232,255,.72);
+  background: rgba(125,232,255,.045);
+}
+
+.cms-breakdown-list span {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cms-breakdown-list strong {
+  font-size: 17px;
+}
+
+/* SEO Center compact hơn và dễ quét */
+.cms-seo-table {
+  gap: 7px;
+}
+
+.cms-seo-row {
+  min-height: 58px;
+  grid-template-columns: minmax(260px,1.35fr) minmax(180px,.75fr) auto;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 11px;
+}
+
+.cms-seo-row:hover {
+  border-color: rgba(255,107,139,.55);
+  background: linear-gradient(90deg, rgba(255,107,139,.035), rgba(125,232,255,.025));
+}
+
+.cms-seo-row strong {
+  font-size: 12px;
+}
+
+.cms-seo-row small {
+  font-size: 9px;
+}
+
+.cms-seo-tags {
+  justify-content: flex-start;
+  gap: 5px;
+}
+
+.cms-seo-tags span {
+  padding: 4px 7px;
+  font-size: 9px;
+  letter-spacing: .01em;
+}
+
+/* Smart Link coverage đẹp và gọn hơn */
+.cms-progress-shell {
+  min-height: 220px;
+  padding: 12px 20px;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at center, rgba(125,232,255,.045), transparent 58%);
+}
+
+.cms-progress-shell > strong {
+  font-size: 38px;
+  line-height: 1;
+  text-shadow: 0 0 22px rgba(125,232,255,.2);
+}
+
+.cms-progress {
+  height: 11px;
+  margin: 16px 0 9px;
+  border-color: rgba(70,112,145,.72);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.3);
+}
+
+.cms-progress i {
+  box-shadow: 0 0 18px rgba(239,87,205,.22);
+}
+
+.cms-progress-shell p {
+  font-size: 11px;
+}
+
+/* Footer cập nhật */
+.cms-analytics-updated {
+  margin-top: 12px;
+  padding: 9px 11px;
+  color: #aaa6bf;
+  font-size: 10px;
+  background: rgba(8,9,25,.52);
+}
+
+/* Giảm cảm giác quá rộng ở màn hình lớn */
+@media (min-width: 1400px) {
+  #view-analytics .panel {
+    padding-inline: 24px;
+  }
+
+  .cms-analytics-card {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 1100px) {
+  .cms-analytics-toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cms-analytics-toolbar input {
+    grid-column: 1 / -1;
+  }
+
+  .cms-analytics-stats {
+    grid-template-columns: repeat(3, minmax(0,1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  #view-analytics .panel {
+    padding: 16px;
+  }
+
+  .cms-analytics-stats {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+  }
+
+  .cms-module-row {
+    grid-template-columns: minmax(150px,1fr) 52px 62px 62px 72px;
+    min-width: 520px;
+  }
+
+  .cms-module-table {
+    overflow-x: auto;
+  }
+
+  .cms-seo-row {
+    grid-template-columns: 1fr;
+  }
+
+  .cms-analytics-actions {
+    justify-content: flex-start;
+  }
+}
+/* =========================================================
+   MINA ANALYTICS READABILITY FIX — v6.3.3
+   Chỉ tăng khả năng đọc. Không thay đổi dữ liệu hoặc logic.
+   ========================================================= */
+
+#view-analytics {
+  font-size: 15px;
+}
+
+#view-analytics .panel-head p {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.cms-analytics-toolbar select,
+.cms-analytics-toolbar input {
+  font-size: 15px;
+}
+
+.cms-analytics-stats article {
+  min-height: 92px;
+  padding: 16px;
+}
+
+.cms-analytics-stats strong {
+  font-size: 30px;
+}
+
+.cms-analytics-stats span {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.cms-analytics-card {
+  padding: 18px;
+}
+
+.cms-analytics-card-head h3 {
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.cms-analytics-card-head small {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.cms-module-row {
+  min-height: 46px;
+  padding: 11px 12px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.cms-module-row.head {
+  min-height: 38px;
+  font-size: 13px;
+}
+
+.cms-module-row strong {
+  font-size: 15px;
+}
+
+.cms-ranking-item {
+  min-height: 68px;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 12px 13px;
+}
+
+.cms-ranking-item > b {
+  font-size: 18px;
+}
+
+.cms-ranking-item strong {
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.cms-ranking-item small {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.cms-analytics-actions {
+  gap: 8px;
+}
+
+.cms-analytics-actions a,
+.cms-analytics-actions button {
+  min-width: 48px;
+  height: 34px;
+  padding: 0 13px;
+  font-size: 12px;
+}
+
+.cms-breakdown-list > div {
+  min-height: 58px;
+  padding: 13px 14px;
+}
+
+.cms-breakdown-list span {
+  font-size: 15px;
+}
+
+.cms-breakdown-list strong {
+  font-size: 21px;
+}
+
+.cms-seo-row {
+  min-height: 72px;
+  padding: 13px 14px;
+}
+
+.cms-seo-row strong {
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.cms-seo-row small {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.cms-seo-tags span {
+  padding: 6px 9px;
+  font-size: 11px;
+}
+
+.cms-progress-shell > strong {
+  font-size: 44px;
+}
+
+.cms-progress-shell p {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.cms-analytics-updated {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (max-width: 1100px) {
+  #view-analytics {
+    font-size: 14px;
+  }
+
+  .cms-ranking-item strong,
+  .cms-seo-row strong {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 760px) {
+  .cms-analytics-card-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .cms-analytics-card-head small {
+    max-width: 100%;
+    text-align: left;
+  }
+
+  .cms-ranking-item {
+    grid-template-columns: 30px minmax(0, 1fr);
+  }
+
+  .cms-analytics-actions {
+    grid-column: 2;
+    margin-top: 6px;
+  }
+}

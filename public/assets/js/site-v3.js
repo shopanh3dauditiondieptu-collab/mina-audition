@@ -418,6 +418,70 @@ async function copyText(text) {
   toast("Đã copy nội dung.");
 }
 
+const MINA_BADGE_CONFIG = Object.freeze({
+  newDays: 7,
+  hotViews: 500,
+  maxBodyBadges: 3
+});
+
+const MINA_TYPE_BADGES = Object.freeze({
+  prompt: { label: "AI Prompt", icon: "✦", className: "prompt" },
+  outfit: { label: "Outfit", icon: "♛", className: "outfit" },
+  academy: { label: "Academy", icon: "◆", className: "academy" },
+  video: { label: "Video", icon: "▶", className: "video" },
+  article: { label: "Bài viết", icon: "✎", className: "article" }
+});
+
+function getPostViews(post) {
+  const candidates = [post?.views, post?.viewCount, post?.totalViews, post?.analytics?.views];
+  for (const candidate of candidates) {
+    const value = Number(candidate);
+    if (Number.isFinite(value) && value >= 0) return value;
+  }
+  return 0;
+}
+
+function isNewPost(post) {
+  if (post?.isNew === true) return true;
+  if (post?.isNew === false) return false;
+  const time = getHomePostTime(post);
+  if (!time) return false;
+  const age = Date.now() - time;
+  return age >= 0 && age <= MINA_BADGE_CONFIG.newDays * 86400000;
+}
+
+function isHotPost(post) {
+  if (post?.hot === true || post?.isHot === true) return true;
+  if (post?.hot === false || post?.isHot === false) return false;
+  return getPostViews(post) >= MINA_BADGE_CONFIG.hotViews;
+}
+
+function getAutomaticBadges(post, type, featuredHere) {
+  const typeBadge = MINA_TYPE_BADGES[type] || MINA_TYPE_BADGES.article;
+  const badges = [{
+    key: "type",
+    label: typeBadge.label,
+    icon: typeBadge.icon,
+    className: typeBadge.className
+  }];
+
+  if (featuredHere) {
+    badges.push({ key: "featured", label: "Nổi bật", icon: "★", className: "featured" });
+  }
+  if (isHotPost(post)) {
+    badges.push({ key: "hot", label: "Hot", icon: "🔥", className: "hot" });
+  }
+  if (isNewPost(post)) {
+    badges.push({ key: "new", label: "Mới", icon: "✦", className: "new" });
+  }
+
+  return badges;
+}
+
+function renderBadge(badge, extraClass = "") {
+  return `<span class="mina-content-badge mina-content-badge--${esc(badge.className)} ${extraClass}" data-badge="${esc(badge.key)}"><span aria-hidden="true">${esc(badge.icon)}</span>${esc(badge.label)}</span>`;
+}
+
 function ensureHomeFeaturedStyles() {
   if (document.getElementById("mina-home-featured-styles")) return;
   const style = document.createElement("style");
@@ -428,24 +492,70 @@ function ensureHomeFeaturedStyles() {
       border-color: rgba(234, 77, 202, .72);
       box-shadow: 0 0 0 1px rgba(103, 224, 255, .15), 0 14px 36px rgba(234, 77, 202, .16);
     }
-    .home-featured-badge {
+    .content-card .card-media { position: relative; }
+    .mina-card-badge-left,
+    .mina-card-badge-right {
       position: absolute;
       top: 12px;
-      left: 12px;
-      z-index: 4;
+      z-index: 5;
+      display: flex;
+      gap: 7px;
+      pointer-events: none;
+    }
+    .mina-card-badge-left { left: 12px; }
+    .mina-card-badge-right { right: 12px; }
+    .mina-content-badge {
       display: inline-flex;
       align-items: center;
-      min-height: 29px;
+      justify-content: center;
+      gap: 5px;
+      min-height: 28px;
+      max-width: 150px;
       padding: 5px 10px;
-      border: 1px solid rgba(255,255,255,.32);
+      border: 1px solid rgba(255,255,255,.25);
       border-radius: 999px;
-      background: linear-gradient(135deg, rgba(234,77,202,.96), rgba(124,92,255,.96));
+      background: rgba(8,7,20,.82);
+      backdrop-filter: blur(12px);
       color: #fff;
-      font-size: 12px;
-      font-weight: 800;
+      font-size: 11px;
+      font-weight: 900;
       line-height: 1;
-      box-shadow: 0 7px 18px rgba(234,77,202,.3);
-      pointer-events: none;
+      white-space: nowrap;
+      box-shadow: 0 7px 18px rgba(0,0,0,.24);
+    }
+    .mina-content-badge--prompt { background: linear-gradient(135deg,#2563eb,#4f46e5); }
+    .mina-content-badge--outfit { background: linear-gradient(135deg,#16a34a,#059669); }
+    .mina-content-badge--academy { background: linear-gradient(135deg,#7c3aed,#a855f7); }
+    .mina-content-badge--video { background: linear-gradient(135deg,#dc2626,#f43f5e); }
+    .mina-content-badge--article { background: linear-gradient(135deg,#475569,#334155); }
+    .mina-content-badge--featured { background: linear-gradient(135deg,#ec4899,#8b5cf6); }
+    .mina-content-badge--hot { background: linear-gradient(135deg,#ea580c,#ef4444); }
+    .mina-content-badge--new { background: linear-gradient(135deg,#eab308,#f59e0b); color:#211500; }
+    .mina-card-body-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin: 0 0 11px;
+    }
+    .mina-card-body-badges .mina-content-badge {
+      min-height: 25px;
+      padding: 4px 8px;
+      font-size: 10px;
+      box-shadow: none;
+    }
+    .content-card[data-type="prompt"] { --mina-card-accent:#3b82f6; }
+    .content-card[data-type="outfit"] { --mina-card-accent:#22c55e; }
+    .content-card[data-type="academy"] { --mina-card-accent:#a855f7; }
+    .content-card[data-type="video"] { --mina-card-accent:#ef4444; }
+    .content-card[data-type="article"] { --mina-card-accent:#94a3b8; }
+    .content-card { border-top-color: color-mix(in srgb,var(--mina-card-accent,#7c5cff) 70%,transparent); }
+    @media (max-width:760px) {
+      .mina-card-badge-left,
+      .mina-card-badge-right { top: 9px; }
+      .mina-card-badge-left { left: 9px; }
+      .mina-card-badge-right { right: 9px; }
+      .mina-content-badge { min-height:24px;padding:4px 7px;font-size:9px;max-width:112px; }
+      .mina-card-body-badges .mina-content-badge:nth-child(n+3) { display:none; }
     }
   `;
   document.head.append(style);
@@ -548,17 +658,27 @@ function cardPost(post) {
   const featuredHere = page === "home"
     ? isHomeFeatured(post)
     : Boolean(activeModuleId) && isModuleFeatured(post);
-  const featuredLabel = page === "home" ? "🏠 Nổi bật" : "📌 Nổi bật module";
+  const badges = getAutomaticBadges(post, type, featuredHere);
+  const typeBadge = badges.find(item => item.key === "type");
+  const stateBadges = badges.filter(item => item.key !== "type");
+  const bodyBadges = badges.slice(0, MINA_BADGE_CONFIG.maxBodyBadges);
 
   return `
-    <article class="content-card ${featuredHere ? "is-featured" : ""}" data-type="${type}">
-      ${featuredHere ? `<span class="home-featured-badge">${featuredLabel}</span>` : ""}
+    <article class="content-card ${featuredHere ? "is-featured" : ""}" data-type="${esc(type)}" data-new="${isNewPost(post)}" data-hot="${isHotPost(post)}">
       <a class="card-media" href="${postUrl(post)}">
         <img loading="lazy" src="${esc(getImage(post))}" alt="${esc(post.title || "Mina Audition")}" onerror="this.src='${placeholder}'">
+        <span class="mina-card-badge-left">
+          ${stateBadges.slice(0, 1).map(item => renderBadge(item, "mina-ribbon-badge")).join("")}
+        </span>
+        <span class="mina-card-badge-right">
+          ${typeBadge ? renderBadge(typeBadge) : ""}
+        </span>
         ${id ? `<span class="card-id">${esc(id)}</span>` : ""}
-        <span class="card-type">${typeLabel(type)}</span>
       </a>
       <div class="card-body">
+        <div class="mina-card-body-badges" aria-label="Phân loại bài viết">
+          ${bodyBadges.map(item => renderBadge(item)).join("")}
+        </div>
         <h3><a href="${postUrl(post)}">${esc(post.title || "Chưa có tiêu đề")}</a></h3>
         <p>${esc(getExcerpt(post))}</p>
         <div class="card-meta">
