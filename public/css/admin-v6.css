@@ -401,3 +401,36 @@ mark{background:rgba(255,214,110,.3);color:#fff3b3;border-radius:4px;padding:0 2
 .posts-table-head.enterprise-head{position:sticky;top:80px;z-index:7;background:#0d0d22}
 @media(max-width:1180px){.posts-pagination{grid-template-columns:1fr}.pagination-size-group,.pagination-jump{justify-content:center}.pagination-center{order:-1}}
 @media(max-width:700px){.posts-pagination{position:static;padding:12px}.pagination-nav{font-size:0}.pagination-nav::first-letter{font-size:14px}.pagination-jump{flex-wrap:wrap}.pagination-size-group{flex-wrap:wrap}}
+
+
+/* ===== Mina CMS v6.0.1 Maintenance: Post Manager overlap fix ===== */
+#view-posts .posts-table-wrap {
+  position: relative;
+  isolation: isolate;
+  padding-top: 0;
+}
+#view-posts .posts-table-head.enterprise-head {
+  position: relative !important;
+  top: auto !important;
+  z-index: 2 !important;
+  margin: 0 0 10px;
+  border: 1px solid #31516e;
+  border-radius: 14px;
+  min-height: 52px;
+  align-items: center;
+}
+#view-posts .posts-table.enterprise-table {
+  margin-top: 0 !important;
+  position: relative;
+  z-index: 1;
+}
+#view-posts .posts-table.enterprise-table .post-row {
+  min-height: 112px;
+  align-items: center;
+}
+#view-posts .post-content-cell,
+#view-posts .post-content-cell h3,
+#view-posts .post-excerpt {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

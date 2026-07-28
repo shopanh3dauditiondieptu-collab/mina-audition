@@ -1,4 +1,4 @@
-import { listPosts, listSkills, getPost } from "./repository.js";
+import { listPosts, listSkills, getPost, getPostBySlug } from "./repository.js";
 import { esc, formatDate, placeholder, normalize } from "./utils.js";
 
 const page = document.body.dataset.page;
@@ -374,7 +374,20 @@ function typeLabel(type) {
 }
 
 function postUrl(post) {
-  return `/post.html?id=${encodeURIComponent(post.id)}`;
+  const slug = String(post?.slugNormalized || post?.slug || "")
+    .trim()
+    .replace(/^\/+|\/+$/g, "");
+
+  return slug
+    ? `/${encodeURIComponent(slug)}`
+    : `/post.html?id=${encodeURIComponent(post?.id || "")}`;
+}
+
+function formatCompactViews(rawValue) {
+  const views = Math.max(0, Number(rawValue) || 0);
+  if (views < 1000) return new Intl.NumberFormat("vi-VN").format(views);
+  if (views < 1_000_000) return `${(views / 1000).toFixed(views >= 10_000 ? 0 : 1).replace(".0", "")}K`;
+  return `${(views / 1_000_000).toFixed(views >= 10_000_000 ? 0 : 1).replace(".0", "")}M`;
 }
 
 function affiliateUrl(post, source = "website-card") {
@@ -543,6 +556,16 @@ function ensureHomeFeaturedStyles() {
       font-size: 10px;
       box-shadow: none;
     }
+    .card-meta .mina-card-views {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: rgba(255,255,255,.82);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .card-meta .mina-card-views.is-popular { color: #ffd166; }
     .content-card[data-type="prompt"] { --mina-card-accent:#3b82f6; }
     .content-card[data-type="outfit"] { --mina-card-accent:#22c55e; }
     .content-card[data-type="academy"] { --mina-card-accent:#a855f7; }
@@ -684,6 +707,9 @@ function cardPost(post) {
         <div class="card-meta">
           <span>${esc(getCategory(post))}</span>
           <span>${formatDate(post.updatedAt || post.createdAt)}</span>
+          <span class="mina-card-views ${getPostViews(post) >= MINA_BADGE_CONFIG.hotViews ? "is-popular" : ""}" title="${new Intl.NumberFormat("vi-VN").format(getPostViews(post))} lượt xem">
+            👁 ${formatCompactViews(getPostViews(post))}
+          </span>
         </div>
         <div class="card-actions">
           <a class="primary-action" href="${postUrl(post)}">Xem bài</a>
@@ -1075,8 +1101,10 @@ async function blog() {
 
     const scrollToResults = () => {
       const target = document.querySelector(".library-toolbar") || box;
-      const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - 105);
-      window.scrollTo({ top, behavior: "smooth" });
+      requestAnimationFrame(() => {
+        const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - 105);
+        window.scrollTo({ top, behavior: "smooth" });
+      });
     };
 
     const renderPagination = (totalItems, totalPages) => {
@@ -1256,6 +1284,7 @@ async function blog() {
       const params = new URLSearchParams(location.search);
       currentPage = positiveInteger(params.get("page"), 1);
       render({ updateHistory: false });
+      scrollToResults();
     });
 
     bindCardActions(all);
@@ -1527,12 +1556,21 @@ function setupPostTableOfContents() {
 
 async function postPage() {
   const box = document.querySelector("#article");
-  const id = new URLSearchParams(location.search).get("id");
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+  const querySlug = params.get("slug");
+  const pathSlug = location.pathname
+    .replace(/^\/+|\/+$/g, "")
+    .split("/")
+    .filter(Boolean)
+    .at(-1) || "";
+  const reservedPaths = new Set(["post.html", "index.html", "blog.html"]);
+  const slug = querySlug || (!reservedPaths.has(pathSlug.toLowerCase()) ? decodeURIComponent(pathSlug) : "");
 
   if (!box) return;
 
-  if (!id) {
-    box.innerHTML = `<div class="empty">Thiếu ID bài viết.</div>`;
+  if (!id && !slug) {
+    box.innerHTML = `<div class="empty">Không xác định được bài viết.</div>`;
     return;
   }
 
@@ -1578,10 +1616,18 @@ async function postPage() {
   };
 
   try {
-    const post = await getPost(id);
+    const post = id
+      ? await getPost(id)
+      : await getPostBySlug(slug);
 
     if (!post) {
       box.innerHTML = `<div class="empty">Bài viết không tồn tại.</div>`;
+      return;
+    }
+
+    // URL ID cũ vẫn đọc được, sau đó chuyển sang URL slug sạch.
+    if (id && (post.slugNormalized || post.slug) && location.pathname.endsWith("/post.html")) {
+      location.replace(postUrl(post));
       return;
     }
 

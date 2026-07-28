@@ -6,6 +6,7 @@ import {
   getDoc,
   getDocs,
   query,
+  where,
   orderBy,
   limit,
   serverTimestamp,
@@ -45,6 +46,32 @@ export async function getPost(id) {
         ...snapshot.data()
       }
     : null;
+}
+
+export async function getPostBySlug(rawSlug) {
+  const slug = String(rawSlug || "").trim().toLowerCase();
+  if (!slug) return null;
+
+  // Ưu tiên slugNormalized do CMS v6 lưu. Fallback sang slug để hỗ trợ bài cũ.
+  for (const field of ["slugNormalized", "slug"]) {
+    const snapshot = await getDocs(
+      query(
+        collection(db, "posts"),
+        where(field, "==", slug),
+        limit(1)
+      )
+    );
+
+    if (!snapshot.empty) {
+      const item = snapshot.docs[0];
+      return {
+        id: item.id,
+        ...item.data()
+      };
+    }
+  }
+
+  return null;
 }
 
 export async function listSkills(max = 1000) {
