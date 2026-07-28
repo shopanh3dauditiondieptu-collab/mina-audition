@@ -1042,3 +1042,180 @@ button.cms-module-row:hover {
     justify-content: flex-start;
   }
 }
+/* =========================================================
+   MINA ANALYTICS READABILITY FIX — v6.3.3
+   Chỉ tăng khả năng đọc. Không thay đổi dữ liệu hoặc logic.
+   ========================================================= */
+
+#view-analytics {
+  font-size: 15px;
+}
+
+#view-analytics .panel-head p {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.cms-analytics-toolbar select,
+.cms-analytics-toolbar input {
+  font-size: 15px;
+}
+
+.cms-analytics-stats article {
+  min-height: 92px;
+  padding: 16px;
+}
+
+.cms-analytics-stats strong {
+  font-size: 30px;
+}
+
+.cms-analytics-stats span {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.cms-analytics-card {
+  padding: 18px;
+}
+
+.cms-analytics-card-head h3 {
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.cms-analytics-card-head small {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.cms-module-row {
+  min-height: 46px;
+  padding: 11px 12px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.cms-module-row.head {
+  min-height: 38px;
+  font-size: 13px;
+}
+
+.cms-module-row strong {
+  font-size: 15px;
+}
+
+.cms-ranking-item {
+  min-height: 68px;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 12px 13px;
+}
+
+.cms-ranking-item > b {
+  font-size: 18px;
+}
+
+.cms-ranking-item strong {
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.cms-ranking-item small {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.cms-analytics-actions {
+  gap: 8px;
+}
+
+.cms-analytics-actions a,
+.cms-analytics-actions button {
+  min-width: 48px;
+  height: 34px;
+  padding: 0 13px;
+  font-size: 12px;
+}
+
+.cms-breakdown-list > div {
+  min-height: 58px;
+  padding: 13px 14px;
+}
+
+.cms-breakdown-list span {
+  font-size: 15px;
+}
+
+.cms-breakdown-list strong {
+  font-size: 21px;
+}
+
+.cms-seo-row {
+  min-height: 72px;
+  padding: 13px 14px;
+}
+
+.cms-seo-row strong {
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.cms-seo-row small {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.cms-seo-tags span {
+  padding: 6px 9px;
+  font-size: 11px;
+}
+
+.cms-progress-shell > strong {
+  font-size: 44px;
+}
+
+.cms-progress-shell p {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.cms-analytics-updated {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (max-width: 1100px) {
+  #view-analytics {
+    font-size: 14px;
+  }
+
+  .cms-ranking-item strong,
+  .cms-seo-row strong {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 760px) {
+  .cms-analytics-card-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .cms-analytics-card-head small {
+    max-width: 100%;
+    text-align: left;
+  }
+
+  .cms-ranking-item {
+    grid-template-columns: 30px minmax(0, 1fr);
+  }
+
+  .cms-analytics-actions {
+    grid-column: 2;
+    margin-top: 6px;
+  }
+}
