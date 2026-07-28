@@ -10,7 +10,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/admin-v6.css?v=6.1.0-enterprise-slug">
+  <link rel="stylesheet" href="/css/admin-v6.css?v=6.2.0-recovery">
+  <link rel="stylesheet" href="/css/smartlink-dashboard.css?v=1.1.0">
   <style>
     .slug-enterprise-box{margin-top:14px;padding:14px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.035)}
     .slug-enterprise-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:end}
@@ -30,6 +31,8 @@
     <nav>
       <button class="nav-item active" data-view="editor">✦ Đăng bài</button>
       <button class="nav-item" data-view="posts">▦ Quản lý bài</button>
+      <button class="nav-item" data-view="featured">⭐ Bài nổi bật</button>
+      <button class="nav-item" data-view="analytics">📈 Phân tích</button>
       <button class="nav-item" data-view="excel">📥 Import Excel</button>
       <button class="nav-item" data-view="smartlinks">🔗 Smart Link Manager</button>
       <a class="nav-link" href="/admin-v4.html">↩ CMS v4</a>
@@ -324,6 +327,31 @@
       </section>
     </section>
 
+
+    <section id="view-analytics" class="view">
+      <section class="panel analytics-overview-panel">
+        <div class="panel-head">
+          <div>
+            <h2>Phân tích nội dung</h2>
+            <p>Tổng quan bài viết, lượt xem, bài nổi bật và hiệu suất theo module.</p>
+          </div>
+          <button id="refreshContentAnalyticsButton" class="btn ghost" type="button">Tải lại dữ liệu</button>
+        </div>
+        <div class="content-analytics-stats">
+          <article><strong id="contentStatTotal">0</strong><span>Tổng bài</span></article>
+          <article><strong id="contentStatPublished">0</strong><span>Công khai</span></article>
+          <article><strong id="contentStatDraft">0</strong><span>Bản nháp</span></article>
+          <article><strong id="contentStatFeatured">0</strong><span>Nổi bật</span></article>
+          <article><strong id="contentStatViews">0</strong><span>Lượt xem</span></article>
+          <article><strong id="contentStatClicks">0</strong><span>Smart Click</span></article>
+        </div>
+        <div class="content-analytics-grid">
+          <article class="analytics-card"><div class="analytics-card-head"><h4>Bài viết theo module</h4></div><div id="contentModuleBreakdown" class="analytics-bars"></div></article>
+          <article class="analytics-card"><div class="analytics-card-head"><h4>Top bài viết theo lượt xem</h4></div><div id="contentTopPosts" class="analytics-bars"></div></article>
+        </div>
+      </section>
+    </section>
+
     <section id="view-smartlinks" class="view">
       <section class="panel smartlink-manager">
         <div class="panel-head">
@@ -333,6 +361,150 @@
           </div>
           <button id="newSmartLinkButton" class="btn primary" type="button">+ Tạo Smart Link</button>
         </div>
+
+<section id="view-smartlinks"> CỦA admin-v5.html
+-->
+<section class="smart-analytics-shell" aria-label="Smart Link Analytics">
+  <div class="smart-analytics-head">
+    <div>
+      <h3>📊 Smart Link Dashboard</h3>
+      <p>
+        Tổng hợp lượt click theo thời gian, nguồn, bài viết,
+        chiến dịch và thiết bị.
+      </p>
+    </div>
+
+    <div class="smart-analytics-actions">
+      <button id="refreshSmartAnalyticsButton" class="btn ghost" type="button">
+        Tải thống kê
+      </button>
+      <button id="exportSmartAnalyticsButton" class="btn primary" type="button">
+        Xuất CSV
+      </button>
+    </div>
+  </div>
+
+  <div class="smart-analytics-filters">
+    <label>
+      <span>Khoảng thời gian</span>
+      <select id="smartAnalyticsRange">
+        <option value="1">Hôm nay</option>
+        <option value="7">7 ngày</option>
+        <option value="30" selected>30 ngày</option>
+        <option value="90">90 ngày</option>
+        <option value="365">365 ngày</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Smart Link</span>
+      <select id="smartAnalyticsLink">
+        <option value="">Tất cả Smart Link</option>
+      </select>
+    </label>
+
+    <label>
+      <span>Nguồn</span>
+      <input id="smartAnalyticsSource" placeholder="facebook">
+    </label>
+
+    <label>
+      <span>Mã bài</span>
+      <input id="smartAnalyticsPost" placeholder="AI-0180">
+    </label>
+
+    <label>
+      <span>Campaign</span>
+      <input id="smartAnalyticsCampaign" placeholder="summer-2026">
+    </label>
+  </div>
+
+  <div class="smart-analytics-stats">
+    <article class="smart-analytics-stat">
+      <strong id="smartStatTotalLinks">0</strong>
+      <span>Tổng Smart Link</span>
+    </article>
+    <article class="smart-analytics-stat">
+      <strong id="smartStatActiveLinks">0</strong>
+      <span>Đang hoạt động</span>
+    </article>
+    <article class="smart-analytics-stat">
+      <strong id="smartStatTotalClicks">0</strong>
+      <span>Tổng click đã lưu</span>
+    </article>
+    <article class="smart-analytics-stat">
+      <strong id="smartStatToday">0</strong>
+      <span>Click hôm nay</span>
+    </article>
+    <article class="smart-analytics-stat">
+      <strong id="smartStat7Days">0</strong>
+      <span>Click 7 ngày</span>
+    </article>
+    <article class="smart-analytics-stat">
+      <strong id="smartStat30Days">0</strong>
+      <span>Click 30 ngày</span>
+    </article>
+    <article class="smart-analytics-stat">
+      <strong id="smartStatFiltered">0</strong>
+      <span>Click theo bộ lọc</span>
+    </article>
+  </div>
+
+  <div id="smartAnalyticsWarning" class="analytics-warning" hidden></div>
+
+  <div class="smart-analytics-grid">
+    <article class="analytics-card wide">
+      <div class="analytics-card-head">
+        <h4>Click theo ngày</h4>
+        <small>
+          Cập nhật:
+          <span id="smartAnalyticsUpdatedAt">—</span>
+        </small>
+      </div>
+      <div id="smartDailyChart"></div>
+    </article>
+
+    <article class="analytics-card">
+      <div class="analytics-card-head"><h4>Nguồn truy cập</h4></div>
+      <div id="smartSourceBreakdown" class="analytics-bars"></div>
+    </article>
+
+    <article class="analytics-card">
+      <div class="analytics-card-head"><h4>Thiết bị</h4></div>
+      <div id="smartDeviceBreakdown" class="analytics-bars"></div>
+    </article>
+
+    <article class="analytics-card">
+      <div class="analytics-card-head"><h4>Top bài viết</h4></div>
+      <div id="smartPostBreakdown" class="analytics-bars"></div>
+    </article>
+
+    <article class="analytics-card">
+      <div class="analytics-card-head"><h4>Top Campaign</h4></div>
+      <div id="smartCampaignBreakdown" class="analytics-bars"></div>
+    </article>
+
+    <article class="analytics-card">
+      <div class="analytics-card-head"><h4>Top Smart Link</h4></div>
+      <div id="smartTopLinks" class="analytics-bars"></div>
+    </article>
+
+    <article class="analytics-card">
+      <div class="analytics-card-head"><h4>Top Referrer</h4></div>
+      <div id="smartReferrerBreakdown" class="analytics-bars"></div>
+    </article>
+
+    <article class="analytics-card wide">
+      <div class="analytics-card-head"><h4>Click gần nhất</h4></div>
+      <div id="smartRecentClicks" class="analytics-click-list"></div>
+    </article>
+  </div>
+
+  <div id="smartAnalyticsStatus" class="analytics-status">
+    Bấm “Tải thống kê” để xem dữ liệu.
+  </div>
+</section>
+
 
         <div class="smartlink-grid">
           <form id="smartLinkForm" class="smartlink-form">
@@ -373,8 +545,9 @@
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="/js/smartlink-dashboard.js?v=1.1.0"></script>
   <script type="module">
-    import("/js/admin-v6.js?v=6.1.0-enterprise-slug").catch(error => {
+    import("/js/admin-v6.js?v=6.2.0-recovery").catch(error => {
       console.error("Không tải được admin-v6.js", error);
       const badge = document.getElementById("authBadge");
       const notice = document.getElementById("notice");

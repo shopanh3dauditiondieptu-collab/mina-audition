@@ -309,3 +309,23 @@ mark{background:rgba(255,214,110,.3);color:#fff3b3;border-radius:4px;padding:0 2
 .excel-row-error{background:rgba(255,80,120,.04)}
 @media(max-width:1050px){.excel-import-controls{grid-template-columns:1fr 1fr}.excel-checkbox{grid-column:1/-1}}
 @media(max-width:700px){.excel-import-controls,.excel-summary{grid-template-columns:1fr}.excel-preview-head{flex-direction:column}}
+
+/* Mina CMS v6.2 Enterprise Recovery */
+.workspace{max-width:none;width:calc(100% - 250px);padding-right:32px}
+.content-manager{width:100%}
+.enterprise-manager-grid{grid-template-columns:300px minmax(0,1fr)}
+.enterprise-posts-panel{min-width:0}
+.posts-table-wrap{overflow-x:auto;overflow-y:visible}
+.posts-table-head.enterprise-head,.enterprise-table .post-row{min-width:1120px}
+.enterprise-table .post-row{grid-template-columns:46px 76px minmax(280px,1.6fr) 130px minmax(170px,.8fr) 72px 110px 92px}
+.post-content-cell h3{white-space:normal;line-height:1.35}
+.post-excerpt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.content-analytics-stats{display:grid;grid-template-columns:repeat(6,minmax(130px,1fr));gap:12px;margin-bottom:18px;overflow-x:auto}
+.content-analytics-stats article{min-width:130px;padding:16px;border:1px solid #31516e;border-radius:17px;background:#0d0d22}
+.content-analytics-stats strong{display:block;font-size:25px;color:var(--cyan)}
+.content-analytics-stats span{display:block;margin-top:6px;color:var(--muted);font-size:12px;font-weight:800}
+.content-analytics-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.featured-mode-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;margin-bottom:12px;border:1px solid rgba(239,87,205,.45);border-radius:14px;background:rgba(239,87,205,.09)}
+.featured-mode-banner strong{color:#f5b8eb}
+@media(max-width:1200px){.workspace{width:calc(100% - 220px)}.enterprise-manager-grid{grid-template-columns:260px minmax(0,1fr)}.content-analytics-stats{grid-template-columns:repeat(3,minmax(130px,1fr))}}
+@media(max-width:900px){.workspace{width:auto}.content-analytics-grid{grid-template-columns:1fr}.enterprise-manager-grid{grid-template-columns:1fr}.category-tree-panel{max-height:360px}}
