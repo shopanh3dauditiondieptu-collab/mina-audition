@@ -401,3 +401,59 @@ mark{background:rgba(255,214,110,.3);color:#fff3b3;border-radius:4px;padding:0 2
 .posts-table-head.enterprise-head{position:sticky;top:80px;z-index:7;background:#0d0d22}
 @media(max-width:1180px){.posts-pagination{grid-template-columns:1fr}.pagination-size-group,.pagination-jump{justify-content:center}.pagination-center{order:-1}}
 @media(max-width:700px){.posts-pagination{position:static;padding:12px}.pagination-nav{font-size:0}.pagination-nav::first-letter{font-size:14px}.pagination-jump{flex-wrap:wrap}.pagination-size-group{flex-wrap:wrap}}
+
+
+/* ===== Mina CMS v6.0.1 Maintenance: Post Manager overlap fix ===== */
+#view-posts .posts-table-wrap {
+  position: relative;
+  isolation: isolate;
+  padding-top: 0;
+}
+#view-posts .posts-table-head.enterprise-head {
+  position: relative !important;
+  top: auto !important;
+  z-index: 2 !important;
+  margin: 0 0 10px;
+  border: 1px solid #31516e;
+  border-radius: 14px;
+  min-height: 52px;
+  align-items: center;
+}
+#view-posts .posts-table.enterprise-table {
+  margin-top: 0 !important;
+  position: relative;
+  z-index: 1;
+}
+#view-posts .posts-table.enterprise-table .post-row {
+  min-height: 112px;
+  align-items: center;
+}
+#view-posts .post-content-cell,
+#view-posts .post-content-cell h3,
+#view-posts .post-excerpt {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   MINA CMS v6.0.2 — ENTERPRISE RICH EDITOR
+   ========================================================= */
+.rich-editor-shell{display:grid;gap:10px}
+.rich-editor-toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:10px;border:1px solid #31516e;border-radius:14px;background:#0b0b20}
+.rich-editor-toolbar button,.rich-editor-toolbar select{width:auto;min-height:38px;margin:0;padding:7px 10px;border:1px solid #39627a;border-radius:10px;background:#191934;color:#fff;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+.rich-editor-toolbar button:hover,.rich-editor-toolbar button:focus-visible{border-color:var(--cyan);background:rgba(125,232,255,.12)}
+.rich-editor-toolbar select{min-width:110px}
+.rich-color-control{display:inline-flex;align-items:center;gap:6px;margin:0;padding:5px 8px;border:1px solid #39627a;border-radius:10px;background:#191934;font-size:12px;font-weight:900}
+.rich-color-control input[type="color"]{width:28px;height:28px;padding:0;border:0;border-radius:7px;background:transparent;cursor:pointer}
+.rich-editor-canvas{min-height:190px;padding:18px;border:1px solid #34617a;border-radius:16px;background:#080919;color:#fff;line-height:1.75;outline:none;overflow-wrap:anywhere}
+.rich-editor-canvas:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(125,232,255,.12)}
+.rich-editor-canvas:empty:before{content:attr(data-placeholder);color:#716d86;pointer-events:none}
+.rich-editor-canvas h2{margin:.25em 0 .55em;font-size:1.75em;line-height:1.3}
+.rich-editor-canvas h3{margin:.25em 0 .55em;font-size:1.45em;line-height:1.35}
+.rich-editor-canvas h4{margin:.25em 0 .55em;font-size:1.2em;line-height:1.4}
+.rich-editor-canvas ul,.rich-editor-canvas ol{padding-left:1.5em}
+.rich-editor-canvas blockquote{margin:1em 0;padding:12px 16px;border-left:4px solid var(--pink);background:rgba(239,87,205,.08);border-radius:0 12px 12px 0}
+.rich-editor-canvas hr{border:0;border-top:1px solid #31516e;margin:20px 0}
+.rich-editor-help{color:var(--muted);font-size:11px;line-height:1.5}
+@media(max-width:700px){.rich-editor-toolbar select{min-width:calc(50% - 5px)}.rich-editor-toolbar button{flex:0 0 auto}.rich-editor-canvas{min-height:160px;padding:14px}}

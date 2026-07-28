@@ -8,6 +8,27 @@ const CATEGORY_TREE_URL = "/data/category-tree.json";
 
 const activeModuleId = document.body.dataset.module || "";
 
+/* Mina v6.0.1 — cuộn ổn định sau khi DOM phân trang đã render xong.
+ * Dùng hai requestAnimationFrame để trình duyệt hoàn tất cập nhật chiều cao danh sách
+ * trước khi tính vị trí cuộn. Áp dụng chung cho Blog, module, danh mục và Wiki.
+ */
+function scrollAfterPagination() {
+  // Người dùng muốn mỗi lần đổi trang luôn trở về đầu trang, không chỉ đầu danh sách.
+  // Dùng rAF + setTimeout để chạy sau khi URL và DOM đã cập nhật hoàn tất.
+  const performScroll = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
+
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      performScroll();
+      window.setTimeout(performScroll, 60);
+    });
+  });
+}
+
 function findCategoryNode(nodes, target) {
   const wanted = normalize(target || "");
   for (const node of nodes || []) {
@@ -1074,9 +1095,11 @@ async function blog() {
     };
 
     const scrollToResults = () => {
-      const target = document.querySelector(".library-toolbar") || box;
-      const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - 105);
-      window.scrollTo({ top, behavior: "smooth" });
+      scrollAfterPagination([
+        ".library-toolbar",
+        ".blog-library-main",
+        "#posts"
+      ], 108);
     };
 
     const renderPagination = (totalItems, totalPages) => {
@@ -1195,6 +1218,7 @@ async function blog() {
       activeCategoryName = categoryName;
       category.value = categoryValue;
       render({ resetPage: true });
+      scrollToResults();
     });
 
     if (activeCategory || activeCategoryName) {
@@ -1256,6 +1280,7 @@ async function blog() {
       const params = new URLSearchParams(location.search);
       currentPage = positiveInteger(params.get("page"), 1);
       render({ updateHistory: false });
+      scrollToResults();
     });
 
     bindCardActions(all);
@@ -1265,6 +1290,58 @@ async function blog() {
     if (sidebar) sidebar.innerHTML = `<div class="empty">Không tải được danh mục.</div>`;
     if (pagination) pagination.hidden = true;
   }
+}
+
+function sanitizeRichHtml(rawHtml = "") {
+  const template = document.createElement("template");
+  template.innerHTML = String(rawHtml || "");
+
+  const allowedTags = new Set([
+    "P", "BR", "STRONG", "B", "EM", "I", "U", "S", "DEL",
+    "H2", "H3", "H4", "UL", "OL", "LI", "A", "HR", "BLOCKQUOTE",
+    "SPAN", "FONT", "CODE", "PRE"
+  ]);
+  const allowedStyles = new Set([
+    "color", "background-color", "font-size", "font-weight", "font-style",
+    "text-decoration", "text-align"
+  ]);
+
+  [...template.content.querySelectorAll("*")].forEach(node => {
+    if (!allowedTags.has(node.tagName)) {
+      node.replaceWith(...node.childNodes);
+      return;
+    }
+
+    [...node.attributes].forEach(attribute => {
+      const name = attribute.name.toLowerCase();
+      if (name === "href" && node.tagName === "A") {
+        try {
+          const url = new URL(attribute.value, location.origin);
+          if (!["http:", "https:", "mailto:"].includes(url.protocol)) node.removeAttribute(attribute.name);
+          else {
+            node.setAttribute("target", "_blank");
+            node.setAttribute("rel", "noopener noreferrer");
+          }
+        } catch {
+          node.removeAttribute(attribute.name);
+        }
+        return;
+      }
+      if (name === "style") {
+        const safeDeclarations = attribute.value.split(";").map(item => item.trim()).filter(Boolean).filter(item => {
+          const property = item.split(":")[0]?.trim().toLowerCase();
+          return allowedStyles.has(property);
+        });
+        if (safeDeclarations.length) node.setAttribute("style", safeDeclarations.join(";"));
+        else node.removeAttribute("style");
+        return;
+      }
+      if (node.tagName === "FONT" && ["color", "size", "face"].includes(name)) return;
+      node.removeAttribute(attribute.name);
+    });
+  });
+
+  return template.innerHTML;
 }
 
 function renderContentBlocks(post) {
@@ -1282,7 +1359,19 @@ function renderContentBlocks(post) {
     const text = block?.text || block?.content || block?.value || "";
 
     if (type === "paragraph" || type === "text") {
-      return `<p>${esc(text).replace(/\n/g, "<br>")}</p>`;
+      const format = ["p", "h2", "h3", "h4"].includes(block.format) ? block.format : "p";
+      const fontSize = [14, 16, 18, 20, 24, 28, 32].includes(Number(block.fontSize)) ? Number(block.fontSize) : 16;
+      const align = ["left", "center", "right", "justify"].includes(block.align) ? block.align : "left";
+      const style = [
+        `font-size:${fontSize}px`,
+        `text-align:${align}`,
+        block.color ? `color:${block.color}` : "",
+        block.backgroundColor ? `background-color:${block.backgroundColor}` : ""
+      ].filter(Boolean).join(";");
+      const html = block.html
+        ? sanitizeRichHtml(block.html)
+        : esc(text).replace(/\n/g, "<br>");
+      return `<div class="post-rich-block post-rich-block--${format}" style="${esc(style)}">${html}</div>`;
     }
     if (["heading", "heading2", "h2", "title"].includes(type)) {
       return `<h2 id="post-section-${index}">${esc(text)}</h2>`;
@@ -2342,7 +2431,11 @@ async function wiki() {
       syncUrl(historyMode);
       if (!modal.hidden) closeModal();
       if (scroll) {
-        document.querySelector(".wiki-toolbar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        scrollAfterPagination([
+          ".wiki-toolbar",
+          ".wiki-library",
+          "#skills"
+        ], 108);
       }
     };
 
@@ -2427,7 +2520,7 @@ async function wiki() {
 
     window.addEventListener("popstate", () => {
       readStateFromUrl();
-      render({ historyMode: "replace" });
+      render({ historyMode: "replace", scroll: true });
     });
   } catch (error) {
     box.innerHTML = `<div class="empty">${esc(error.message)}</div>`;

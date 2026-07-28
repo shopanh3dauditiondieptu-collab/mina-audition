@@ -73,6 +73,10 @@
     {
       "source": "/cms-v5",
       "destination": "/admin-v5.html"
+    },
+    {
+      "source": "/:slug",
+      "destination": "/post.html?slug=:slug"
     }
   ],
   "headers": [
