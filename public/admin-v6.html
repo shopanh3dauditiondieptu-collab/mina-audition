@@ -776,20 +776,17 @@
     <section id="view-affiliate" class="view">
       <section class="panel affiliate-manager-panel">
         <div class="panel-head affiliate-page-head">
-          <div>
-            <h2>🛍️ Kho tiếp thị liên kết</h2>
-            <p>Quản lý sản phẩm, liên kết bán hàng và danh mục tự tạo. Không ảnh hưởng dữ liệu Smart Link hiện có.</p>
-          </div>
+          <div><h2>🛍️ Kho tiếp thị liên kết Enterprise</h2><p>Quản lý theo cấu trúc Danh mục → Sản phẩm → nhiều link bán hàng. Dữ liệu Smart Link cũ được giữ nguyên.</p></div>
           <div class="affiliate-head-actions">
             <button id="affiliateSettingsButton" class="btn ghost" type="button">⚙️ Cấu hình</button>
             <button id="newAffiliateCategoryButton" class="btn ghost" type="button">+ Danh mục</button>
-            <button id="newAffiliateLinkButton" class="btn primary" type="button">+ Thêm sản phẩm/link</button>
+            <button id="newAffiliateProductButton" class="btn primary" type="button">+ Sản phẩm</button>
           </div>
         </div>
-
-        <div class="affiliate-stats" aria-label="Thống kê kho tiếp thị">
-          <article><strong id="affiliateStatTotal">0</strong><span>Tổng link</span></article>
-          <article><strong id="affiliateStatActive">0</strong><span>Đang hoạt động</span></article>
+        <div class="affiliate-stats">
+          <article><strong id="affiliateStatProducts">0</strong><span>Sản phẩm</span></article>
+          <article><strong id="affiliateStatOffers">0</strong><span>Link bán hàng</span></article>
+          <article><strong id="affiliateStatActive">0</strong><span>Link hoạt động</span></article>
           <article><strong id="affiliateStatReview">0</strong><span>Cần kiểm tra</span></article>
           <article><strong id="affiliateStatDead">0</strong><span>Link chết</span></article>
           <article><strong id="affiliateStatCategories">0</strong><span>Danh mục</span></article>
@@ -797,225 +794,65 @@
 
         <div class="affiliate-layout">
           <aside class="affiliate-category-panel">
-            <div class="affiliate-section-head">
-              <div>
-                <h3>📁 Danh mục tự tạo</h3>
-                <small>Tạo ngành hàng và danh mục con theo nhu cầu thực tế.</small>
-              </div>
-              <button id="refreshAffiliateCategoriesButton" class="btn ghost compact" type="button">Tải lại</button>
-            </div>
-
+            <div class="affiliate-section-head"><div><h3>📁 Danh mục tự tạo</h3><small>Tạo ngành hàng và danh mục con tùy nhu cầu.</small></div><button id="refreshAffiliateCategoriesButton" class="btn ghost compact" type="button">Tải lại</button></div>
             <form id="affiliateCategoryForm" class="affiliate-category-form" hidden>
               <input id="affiliateCategoryId" type="hidden">
-              <label>
-                <span>Tên danh mục *</span>
-                <input id="affiliateCategoryName" required maxlength="80" placeholder="Ví dụ: Đồ gia dụng">
-              </label>
-              <label>
-                <span>Danh mục cha</span>
-                <select id="affiliateCategoryParent">
-                  <option value="">Danh mục gốc</option>
-                </select>
-              </label>
-              <div class="grid two">
-                <label>
-                  <span>Thứ tự</span>
-                  <input id="affiliateCategoryOrder" type="number" min="1" max="9999" value="100">
-                </label>
-                <label class="checkbox-row affiliate-active-row">
-                  <input id="affiliateCategoryActive" type="checkbox" checked>
-                  <span>Đang sử dụng</span>
-                </label>
-              </div>
-              <div class="form-actions">
-                <button class="btn primary" type="submit">Lưu danh mục</button>
-                <button id="cancelAffiliateCategoryButton" class="btn ghost" type="button">Hủy</button>
-              </div>
+              <label><span>Tên danh mục *</span><input id="affiliateCategoryName" required maxlength="80"></label>
+              <label><span>Danh mục cha</span><select id="affiliateCategoryParent"><option value="">Danh mục gốc</option></select></label>
+              <div class="grid two"><label><span>Thứ tự</span><input id="affiliateCategoryOrder" type="number" min="1" value="100"></label><label class="checkbox-row affiliate-active-row"><input id="affiliateCategoryActive" type="checkbox" checked><span>Đang sử dụng</span></label></div>
+              <div class="form-actions"><button class="btn primary" type="submit">Lưu danh mục</button><button id="cancelAffiliateCategoryButton" class="btn ghost" type="button">Hủy</button></div>
             </form>
-
-            <div id="affiliateCategoryTree" class="affiliate-category-tree">
-              <div class="manager-empty">Chưa tải danh mục.</div>
-            </div>
+            <div id="affiliateCategoryTree" class="affiliate-category-tree"><div class="manager-empty">Chưa tải danh mục.</div></div>
           </aside>
 
           <div class="affiliate-main-panel">
             <div class="affiliate-filter-bar">
-              <input id="affiliateSearch" type="search" placeholder="Tìm tên sản phẩm, thương hiệu, sàn, URL hoặc ghi chú…">
+              <input id="affiliateSearch" type="search" placeholder="Tìm sản phẩm, thương hiệu, tag…">
               <select id="affiliateCategoryFilter"><option value="">Tất cả danh mục</option></select>
+              <select id="affiliateBrandFilter"><option value="">Tất cả thương hiệu</option></select>
               <select id="affiliatePlatformFilter"><option value="">Tất cả nền tảng</option></select>
               <select id="affiliateHealthFilter"><option value="">Tất cả tình trạng</option></select>
               <button id="refreshAffiliateLinksButton" class="btn ghost" type="button">Tải lại</button>
             </div>
 
-            <form id="affiliateLinkForm" class="affiliate-link-form" hidden>
-              <input id="affiliateLinkId" type="hidden">
-              <div class="affiliate-form-head">
-                <div>
-                  <h3 id="affiliateFormTitle">Thêm sản phẩm/link tiếp thị</h3>
-                  <p>Danh mục được lấy từ cây danh mục bạn tự tạo ở bên trái.</p>
-                </div>
-                <button id="closeAffiliateLinkFormButton" class="btn ghost compact" type="button">Đóng</button>
-              </div>
-
-              <div class="grid two">
-                <label>
-                  <span>Tên sản phẩm/link *</span>
-                  <input id="affiliateName" required maxlength="180" placeholder="Ví dụ: Chuột gaming không dây">
-                </label>
-                <label>
-                  <span>Danh mục</span>
-                  <select id="affiliateCategoryIdSelect"><option value="">Chưa phân loại</option></select>
-                </label>
-              </div>
-
-              <div class="grid three">
-                <label>
-                  <span>Nền tảng</span>
-                  <select id="affiliatePlatform"><option value="">Chọn nền tảng</option></select>
-                </label>
-                <label>
-                  <span>Nhà bán / Thương hiệu</span>
-                  <input id="affiliateMerchant" maxlength="100" placeholder="Tên shop hoặc thương hiệu">
-                </label>
-                <label>
-                  <span>Hoa hồng (%)</span>
-                  <input id="affiliateCommissionRate" type="number" min="0" max="100" step="0.01" placeholder="Ví dụ: 8">
-                </label>
-              </div>
-
-              <label>
-                <span>URL tiếp thị liên kết *</span>
-                <input id="affiliateTargetUrl" type="url" required placeholder="https://...">
-              </label>
-
-              <div class="grid two">
-                <label>
-                  <span>Gắn Smart Link (không bắt buộc)</span>
-                  <select id="affiliateSmartLinkId"><option value="">Không gắn Smart Link</option></select>
-                </label>
-                <label>
-                  <span>Tình trạng link</span>
-                  <select id="affiliateHealthStatus"><option value="">Chọn tình trạng</option></select>
-                </label>
-              </div>
-
-              <div class="grid two">
-                <label>
-                  <span>Thẻ (phân cách bằng dấu phẩy)</span>
-                  <input id="affiliateTags" placeholder="gaming, văn phòng, giá rẻ">
-                </label>
-                <label class="checkbox-row affiliate-active-row">
-                  <input id="affiliateActive" type="checkbox" checked>
-                  <span>Đang sử dụng</span>
-                </label>
-              </div>
-
-              <label>
-                <span>Ghi chú</span>
-                <textarea id="affiliateNote" rows="3" maxlength="500" placeholder="Chiến dịch, đối tượng, lưu ý thay link…"></textarea>
-              </label>
-
-              <div class="form-actions">
-                <button class="btn primary" type="submit">Lưu vào kho</button>
-                <button id="resetAffiliateLinkButton" class="btn ghost" type="button">Làm mới</button>
-              </div>
+            <form id="affiliateProductForm" class="affiliate-link-form" hidden>
+              <div class="affiliate-form-head"><div><h3 id="affiliateProductFormTitle">Thêm sản phẩm</h3><p>Một sản phẩm có thể chứa nhiều link Shopee, Lazada, TikTok Shop…</p></div><button id="closeAffiliateProductFormButton" class="btn ghost compact" type="button">Đóng</button></div>
+              <input id="affiliateProductId" type="hidden">
+              <div class="grid two"><label><span>Tên sản phẩm *</span><input id="affiliateProductName" required maxlength="180"></label><label><span>Mã nội bộ / SKU</span><input id="affiliateProductCode" maxlength="80"></label></div>
+              <div class="grid three"><label><span>Danh mục</span><select id="affiliateProductCategory"><option value="">Chưa phân loại</option></select></label><label><span>Thương hiệu</span><select id="affiliateProductBrand"><option value="">Chưa chọn</option></select></label><label><span>Ảnh sản phẩm</span><input id="affiliateProductImage" type="url" placeholder="https://..."></label></div>
+              <div class="grid three"><label><span>Giá tham khảo</span><input id="affiliateProductPrice" type="number" min="0"></label><label><span>Giá gốc</span><input id="affiliateProductOriginalPrice" type="number" min="0"></label><label><span>Tag</span><input id="affiliateProductTags" placeholder="gaming, wireless, màu hồng"></label></div>
+              <label><span>Mô tả / ghi chú</span><textarea id="affiliateProductNote" rows="3" maxlength="800"></textarea></label>
+              <label class="checkbox-row"><input id="affiliateProductActive" type="checkbox" checked><span>Đang sử dụng</span></label>
+              <div class="form-actions"><button class="btn primary" type="submit">Lưu sản phẩm</button><button id="resetAffiliateProductButton" class="btn ghost" type="button">Làm mới</button></div>
             </form>
 
-            <div id="affiliateLinksTable" class="affiliate-links-table">
-              <div class="manager-empty">Chưa tải kho tiếp thị liên kết.</div>
-            </div>
+            <form id="affiliateOfferForm" class="affiliate-link-form affiliate-offer-form" hidden>
+              <div class="affiliate-form-head"><div><h3 id="affiliateOfferFormTitle">Thêm link bán hàng</h3><p id="affiliateOfferProductLabel"></p></div><button id="closeAffiliateOfferFormButton" class="btn ghost compact" type="button">Đóng</button></div>
+              <input id="affiliateOfferId" type="hidden"><input id="affiliateOfferProductId" type="hidden">
+              <div class="grid three"><label><span>Nền tảng *</span><select id="affiliateOfferPlatform" required></select></label><label><span>Nhà bán</span><input id="affiliateOfferMerchant" maxlength="100"></label><label><span>Hoa hồng (%)</span><input id="affiliateOfferCommission" type="number" min="0" max="100" step="0.01"></label></div>
+              <label><span>URL tiếp thị *</span><input id="affiliateOfferUrl" type="url" required placeholder="https://..."></label>
+              <div class="grid three"><label><span>Giá tại sàn</span><input id="affiliateOfferPrice" type="number" min="0"></label><label><span>Tình trạng</span><select id="affiliateOfferStatus"></select></label><label><span>Ưu tiên</span><input id="affiliateOfferPriority" type="number" min="1" value="100"></label></div>
+              <div class="grid two"><label><span>Gắn Smart Link</span><select id="affiliateOfferSmartLink"><option value="">Không gắn</option></select></label><label class="checkbox-row affiliate-active-row"><input id="affiliateOfferActive" type="checkbox" checked><span>Đang sử dụng</span></label></div>
+              <label><span>Ghi chú link</span><textarea id="affiliateOfferNote" rows="2" maxlength="500"></textarea></label>
+              <div class="form-actions"><button class="btn primary" type="submit">Lưu link bán hàng</button><button id="resetAffiliateOfferButton" class="btn ghost" type="button">Làm mới</button></div>
+            </form>
+
+            <div id="affiliateProductsTable" class="affiliate-products-table"><div class="manager-empty">Chưa tải kho tiếp thị.</div></div>
           </div>
         </div>
-
 
         <section id="affiliateSettingsPanel" class="affiliate-settings-panel" hidden>
-          <div class="affiliate-settings-head">
-            <div>
-              <h3>⚙️ Cấu hình Kho tiếp thị liên kết</h3>
-              <p>Tự tạo nền tảng và trạng thái. Các bộ lọc và biểu mẫu sẽ cập nhật theo dữ liệu này.</p>
-            </div>
-            <button id="closeAffiliateSettingsButton" class="btn ghost compact" type="button">Đóng</button>
-          </div>
-
-          <div class="affiliate-settings-tabs" role="tablist" aria-label="Cấu hình Affiliate">
-            <button class="active" type="button" data-affiliate-setting-tab="platforms">Nền tảng</button>
+          <div class="affiliate-settings-head"><div><h3>⚙️ Cấu hình Kho tiếp thị</h3><p>Tự tạo thương hiệu, nền tảng và trạng thái.</p></div><button id="closeAffiliateSettingsButton" class="btn ghost compact" type="button">Đóng</button></div>
+          <div class="affiliate-settings-tabs">
+            <button class="active" type="button" data-affiliate-setting-tab="brands">Thương hiệu</button>
+            <button type="button" data-affiliate-setting-tab="platforms">Nền tảng</button>
             <button type="button" data-affiliate-setting-tab="statuses">Trạng thái</button>
           </div>
-
-          <div id="affiliatePlatformsSettings" class="affiliate-settings-view active">
-            <form id="affiliatePlatformForm" class="affiliate-inline-config-form">
-              <input id="affiliatePlatformId" type="hidden">
-              <label>
-                <span>Tên nền tảng *</span>
-                <input id="affiliatePlatformName" required maxlength="80" placeholder="Ví dụ: Shopee">
-              </label>
-              <label>
-                <span>Mã nội bộ *</span>
-                <input id="affiliatePlatformCode" required maxlength="60" placeholder="shopee">
-              </label>
-              <label>
-                <span>Thứ tự</span>
-                <input id="affiliatePlatformOrder" type="number" min="1" max="9999" value="100">
-              </label>
-              <label class="checkbox-row affiliate-config-checkbox">
-                <input id="affiliatePlatformActive" type="checkbox" checked>
-                <span>Đang sử dụng</span>
-              </label>
-              <div class="form-actions">
-                <button class="btn primary" type="submit">Lưu nền tảng</button>
-                <button id="resetAffiliatePlatformButton" class="btn ghost" type="button">Làm mới</button>
-              </div>
-            </form>
-            <div id="affiliatePlatformsList" class="affiliate-config-list"></div>
-          </div>
-
-          <div id="affiliateStatusesSettings" class="affiliate-settings-view">
-            <form id="affiliateStatusForm" class="affiliate-inline-config-form">
-              <input id="affiliateStatusId" type="hidden">
-              <label>
-                <span>Tên trạng thái *</span>
-                <input id="affiliateStatusName" required maxlength="80" placeholder="Ví dụ: Hoạt động">
-              </label>
-              <label>
-                <span>Mã nội bộ *</span>
-                <input id="affiliateStatusCode" required maxlength="60" placeholder="healthy">
-              </label>
-              <label>
-                <span>Biểu tượng</span>
-                <input id="affiliateStatusIcon" maxlength="8" placeholder="🟢">
-              </label>
-              <label>
-                <span>Nhóm trạng thái</span>
-                <select id="affiliateStatusGroup">
-                  <option value="active">Hoạt động</option>
-                  <option value="review">Cần kiểm tra</option>
-                  <option value="warning">Cảnh báo</option>
-                  <option value="dead">Link chết</option>
-                  <option value="paused">Tạm dừng</option>
-                </select>
-              </label>
-              <label>
-                <span>Thứ tự</span>
-                <input id="affiliateStatusOrder" type="number" min="1" max="9999" value="100">
-              </label>
-              <label class="checkbox-row affiliate-config-checkbox">
-                <input id="affiliateStatusActive" type="checkbox" checked>
-                <span>Đang sử dụng</span>
-              </label>
-              <div class="form-actions">
-                <button class="btn primary" type="submit">Lưu trạng thái</button>
-                <button id="resetAffiliateStatusButton" class="btn ghost" type="button">Làm mới</button>
-              </div>
-            </form>
-            <div id="affiliateStatusesList" class="affiliate-config-list"></div>
-          </div>
+          <div id="affiliateBrandsSettings" class="affiliate-settings-view active"><form id="affiliateBrandForm" class="affiliate-inline-config-form"><input id="affiliateBrandId" type="hidden"><label><span>Tên thương hiệu *</span><input id="affiliateBrandName" required></label><label><span>Mã nội bộ *</span><input id="affiliateBrandCode" required></label><label><span>Thứ tự</span><input id="affiliateBrandOrder" type="number" min="1" value="100"></label><label class="checkbox-row affiliate-config-checkbox"><input id="affiliateBrandActive" type="checkbox" checked><span>Đang sử dụng</span></label><button class="btn primary" type="submit">Lưu thương hiệu</button><button id="resetAffiliateBrandButton" class="btn ghost" type="button">Làm mới</button></form><div id="affiliateBrandsList" class="affiliate-config-list"></div></div>
+          <div id="affiliatePlatformsSettings" class="affiliate-settings-view"><form id="affiliatePlatformForm" class="affiliate-inline-config-form"><input id="affiliatePlatformId" type="hidden"><label><span>Tên nền tảng *</span><input id="affiliatePlatformName" required></label><label><span>Mã nội bộ *</span><input id="affiliatePlatformCode" required></label><label><span>Thứ tự</span><input id="affiliatePlatformOrder" type="number" min="1" value="100"></label><label class="checkbox-row affiliate-config-checkbox"><input id="affiliatePlatformActive" type="checkbox" checked><span>Đang sử dụng</span></label><button class="btn primary" type="submit">Lưu nền tảng</button><button id="resetAffiliatePlatformButton" class="btn ghost" type="button">Làm mới</button></form><div id="affiliatePlatformsList" class="affiliate-config-list"></div></div>
+          <div id="affiliateStatusesSettings" class="affiliate-settings-view"><form id="affiliateStatusForm" class="affiliate-inline-config-form"><input id="affiliateStatusId" type="hidden"><label><span>Tên trạng thái *</span><input id="affiliateStatusName" required></label><label><span>Mã *</span><input id="affiliateStatusCode" required></label><label><span>Biểu tượng</span><input id="affiliateStatusIcon" maxlength="8"></label><label><span>Nhóm</span><select id="affiliateStatusGroup"><option value="active">Hoạt động</option><option value="review">Cần kiểm tra</option><option value="warning">Cảnh báo</option><option value="dead">Link chết</option><option value="paused">Tạm dừng</option></select></label><label><span>Thứ tự</span><input id="affiliateStatusOrder" type="number" min="1" value="100"></label><label class="checkbox-row affiliate-config-checkbox"><input id="affiliateStatusActive" type="checkbox" checked><span>Đang sử dụng</span></label><button class="btn primary" type="submit">Lưu trạng thái</button><button id="resetAffiliateStatusButton" class="btn ghost" type="button">Làm mới</button></form><div id="affiliateStatusesList" class="affiliate-config-list"></div></div>
         </section>
-
-        <div class="affiliate-scope-note">
-          <strong>Giai đoạn Preview hiện tại:</strong>
-          Danh mục, nền tảng, trạng thái và link được quản lý độc lập trong Firestore. Bộ lọc tự sinh từ dữ liệu cấu hình.
-          Tự động kiểm tra HTTP sẽ được bổ sung sau khi đối chiếu giao diện và dữ liệu.
-        </div>
+        <div class="affiliate-preview-note"><strong>Preview v6.5:</strong> Dữ liệu cũ trong <code>affiliateLinks</code> vẫn được đọc và hiển thị dưới dạng “Sản phẩm cũ”. Không tự động xóa hoặc thay đổi dữ liệu cũ.</div>
       </section>
     </section>
 
