@@ -4,12 +4,14 @@
  */
 import { auth, db } from "/js/firebase-config.js";
 import { CmsV6Repository } from "/js/cms-v6/services/repository.js";
+import { createAffiliateManager } from "/js/cms-v6/modules/affiliate-manager.js";
 import {
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 const repo = new CmsV6Repository(db);
+let affiliateManager = null;
 const CLOUDINARY_CLOUD_NAME = "rpwcnrfg";
 const CLOUDINARY_UPLOAD_PRESET = "mina-upload";
 const CLOUDINARY_ENDPOINT = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
@@ -1804,7 +1806,7 @@ function renderCmsAnalytics() {
 function openView(name) {
   $$(".view").forEach(view => view.classList.toggle("active", view.id === `view-${name}`));
   $$(".nav-item[data-view]").forEach(button => button.classList.toggle("active", button.dataset.view === name));
-  const titles = { editor: "Đăng bài viết", posts: "Quản lý bài viết", featured: "Bài viết nổi bật", analytics: "Phân tích", excel: "Import Excel", smartlinks: "Smart Link Manager" };
+  const titles = { editor: "Đăng bài viết", posts: "Quản lý bài viết", featured: "Bài viết nổi bật", analytics: "Phân tích", excel: "Import Excel", smartlinks: "Smart Link Analytics", affiliate: "Kho tiếp thị liên kết" };
   $("#pageTitle").textContent = titles[name] || "Mina CMS";
   const editing = name === "editor";
   $("#savePostTopButton").hidden = !editing;
@@ -1812,6 +1814,7 @@ function openView(name) {
 
   if (name === "featured") renderFeaturedManager();
   if (name === "analytics") renderCmsAnalytics();
+  if (name === "affiliate") affiliateManager?.load();
 
   if (name === "smartlinks") {
     loadSmartLinks({ silent: false });
@@ -2285,6 +2288,15 @@ function showFatalStartupError(error) {
 }
 
 try {
+  affiliateManager = createAffiliateManager({
+    repo,
+    $,
+    showNotice,
+    confirmAction,
+    setBusy,
+    escapeHtml
+  });
+  affiliateManager.bind();
   bindEvents();
   resetForm();
 } catch (error) {

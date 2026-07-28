@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="/css/admin-v6.css?v=6.3.0-full">
   <link rel="stylesheet" href="/css/smartlink-dashboard.css?v=1.3.0-full">
   <link rel="stylesheet" href="/css/admin-v6-analytics-polish.css?v=6.3.3-readability-fix">
+  <link rel="stylesheet" href="/css/affiliate-manager.css?v=6.4.0-preview">
 
   <style>
     .post-smartlink-box {
@@ -122,7 +123,8 @@
       <button class="nav-item" data-view="featured">⭐ Bài nổi bật</button>
       <button class="nav-item" data-view="analytics">📈 Phân tích</button>
       <button class="nav-item" data-view="excel">📥 Import Excel</button>
-      <button class="nav-item" data-view="smartlinks">🔗 Smart Link Manager</button>
+      <button class="nav-item" data-view="smartlinks">📊 Smart Link Analytics</button>
+      <button class="nav-item" data-view="affiliate">🛍️ Kho tiếp thị liên kết</button>
       <a class="nav-link" href="/admin-v4.html">↩ CMS v4</a>
       <a class="nav-link" href="/" target="_blank" rel="noopener">↗ Xem website</a>
     </nav>
@@ -569,8 +571,8 @@
       <section class="panel smartlink-manager">
         <div class="panel-head">
           <div>
-            <h2>Smart Link Manager</h2>
-            <p>Tạo và quản lý đường dẫn rút gọn dạng <b>/go/slug</b>.</p>
+            <h2>Smart Link Analytics</h2>
+            <p>Theo dõi hiệu quả đường dẫn <b>/go/slug</b> và quản lý Smart Link rút gọn hiện có.</p>
           </div>
           <button id="newSmartLinkButton" class="btn primary" type="button">+ Tạo Smart Link</button>
         </div>
@@ -737,6 +739,13 @@
           </div>
         </section>
 
+        <div class="smartlink-manager-divider">
+          <div>
+            <h3>🔗 Quản lý Smart Link rút gọn</h3>
+            <p>Phần này chỉ quản lý đường dẫn <b>/go/slug</b>. Sản phẩm tiếp thị được quản lý tại mục <b>Kho tiếp thị liên kết</b>.</p>
+          </div>
+        </div>
+
         <div class="smartlink-grid">
           <form id="smartLinkForm" class="smartlink-form">
             <input id="smartLinkId" type="hidden">
@@ -758,6 +767,201 @@
             </div>
             <div id="smartLinksTable" class="smartlinks-table"></div>
           </div>
+        </div>
+      </section>
+    </section>
+
+
+
+    <section id="view-affiliate" class="view">
+      <section class="panel affiliate-manager-panel">
+        <div class="panel-head affiliate-page-head">
+          <div>
+            <h2>🛍️ Kho tiếp thị liên kết</h2>
+            <p>Quản lý sản phẩm, liên kết bán hàng và danh mục tự tạo. Không ảnh hưởng dữ liệu Smart Link hiện có.</p>
+          </div>
+          <div class="affiliate-head-actions">
+            <button id="newAffiliateCategoryButton" class="btn ghost" type="button">+ Danh mục</button>
+            <button id="newAffiliateLinkButton" class="btn primary" type="button">+ Thêm sản phẩm/link</button>
+          </div>
+        </div>
+
+        <div class="affiliate-stats" aria-label="Thống kê kho tiếp thị">
+          <article><strong id="affiliateStatTotal">0</strong><span>Tổng link</span></article>
+          <article><strong id="affiliateStatActive">0</strong><span>Đang hoạt động</span></article>
+          <article><strong id="affiliateStatReview">0</strong><span>Cần kiểm tra</span></article>
+          <article><strong id="affiliateStatDead">0</strong><span>Link chết</span></article>
+          <article><strong id="affiliateStatCategories">0</strong><span>Danh mục</span></article>
+        </div>
+
+        <div class="affiliate-layout">
+          <aside class="affiliate-category-panel">
+            <div class="affiliate-section-head">
+              <div>
+                <h3>📁 Danh mục tự tạo</h3>
+                <small>Tạo ngành hàng và danh mục con theo nhu cầu thực tế.</small>
+              </div>
+              <button id="refreshAffiliateCategoriesButton" class="btn ghost compact" type="button">Tải lại</button>
+            </div>
+
+            <form id="affiliateCategoryForm" class="affiliate-category-form" hidden>
+              <input id="affiliateCategoryId" type="hidden">
+              <label>
+                <span>Tên danh mục *</span>
+                <input id="affiliateCategoryName" required maxlength="80" placeholder="Ví dụ: Đồ gia dụng">
+              </label>
+              <label>
+                <span>Danh mục cha</span>
+                <select id="affiliateCategoryParent">
+                  <option value="">Danh mục gốc</option>
+                </select>
+              </label>
+              <div class="grid two">
+                <label>
+                  <span>Thứ tự</span>
+                  <input id="affiliateCategoryOrder" type="number" min="1" max="9999" value="100">
+                </label>
+                <label class="checkbox-row affiliate-active-row">
+                  <input id="affiliateCategoryActive" type="checkbox" checked>
+                  <span>Đang sử dụng</span>
+                </label>
+              </div>
+              <div class="form-actions">
+                <button class="btn primary" type="submit">Lưu danh mục</button>
+                <button id="cancelAffiliateCategoryButton" class="btn ghost" type="button">Hủy</button>
+              </div>
+            </form>
+
+            <div id="affiliateCategoryTree" class="affiliate-category-tree">
+              <div class="manager-empty">Chưa tải danh mục.</div>
+            </div>
+          </aside>
+
+          <div class="affiliate-main-panel">
+            <div class="affiliate-filter-bar">
+              <input id="affiliateSearch" type="search" placeholder="Tìm tên sản phẩm, thương hiệu, sàn, URL hoặc ghi chú…">
+              <select id="affiliateCategoryFilter"><option value="">Tất cả danh mục</option></select>
+              <select id="affiliatePlatformFilter">
+                <option value="">Tất cả nền tảng</option>
+                <option value="shopee">Shopee</option>
+                <option value="lazada">Lazada</option>
+                <option value="tiktok-shop">TikTok Shop</option>
+                <option value="access-trade">AccessTrade</option>
+                <option value="amazon">Amazon</option>
+                <option value="website">Website</option>
+                <option value="other">Khác</option>
+              </select>
+              <select id="affiliateHealthFilter">
+                <option value="">Tất cả tình trạng</option>
+                <option value="healthy">🟢 Hoạt động</option>
+                <option value="redirect">🟡 Chuyển hướng</option>
+                <option value="needs_check">🟠 Cần kiểm tra</option>
+                <option value="dead">🔴 Link chết</option>
+                <option value="paused">⚫ Tạm dừng</option>
+                <option value="out_of_stock">📦 Hết hàng</option>
+              </select>
+              <button id="refreshAffiliateLinksButton" class="btn ghost" type="button">Tải lại</button>
+            </div>
+
+            <form id="affiliateLinkForm" class="affiliate-link-form" hidden>
+              <input id="affiliateLinkId" type="hidden">
+              <div class="affiliate-form-head">
+                <div>
+                  <h3 id="affiliateFormTitle">Thêm sản phẩm/link tiếp thị</h3>
+                  <p>Danh mục được lấy từ cây danh mục bạn tự tạo ở bên trái.</p>
+                </div>
+                <button id="closeAffiliateLinkFormButton" class="btn ghost compact" type="button">Đóng</button>
+              </div>
+
+              <div class="grid two">
+                <label>
+                  <span>Tên sản phẩm/link *</span>
+                  <input id="affiliateName" required maxlength="180" placeholder="Ví dụ: Chuột gaming không dây">
+                </label>
+                <label>
+                  <span>Danh mục</span>
+                  <select id="affiliateCategoryIdSelect"><option value="">Chưa phân loại</option></select>
+                </label>
+              </div>
+
+              <div class="grid three">
+                <label>
+                  <span>Nền tảng</span>
+                  <select id="affiliatePlatform">
+                    <option value="shopee">Shopee</option>
+                    <option value="lazada">Lazada</option>
+                    <option value="tiktok-shop">TikTok Shop</option>
+                    <option value="access-trade">AccessTrade</option>
+                    <option value="amazon">Amazon</option>
+                    <option value="website">Website</option>
+                    <option value="other">Khác</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Nhà bán / Thương hiệu</span>
+                  <input id="affiliateMerchant" maxlength="100" placeholder="Tên shop hoặc thương hiệu">
+                </label>
+                <label>
+                  <span>Hoa hồng (%)</span>
+                  <input id="affiliateCommissionRate" type="number" min="0" max="100" step="0.01" placeholder="Ví dụ: 8">
+                </label>
+              </div>
+
+              <label>
+                <span>URL tiếp thị liên kết *</span>
+                <input id="affiliateTargetUrl" type="url" required placeholder="https://...">
+              </label>
+
+              <div class="grid two">
+                <label>
+                  <span>Gắn Smart Link (không bắt buộc)</span>
+                  <select id="affiliateSmartLinkId"><option value="">Không gắn Smart Link</option></select>
+                </label>
+                <label>
+                  <span>Tình trạng link</span>
+                  <select id="affiliateHealthStatus">
+                    <option value="healthy">🟢 Hoạt động</option>
+                    <option value="redirect">🟡 Chuyển hướng</option>
+                    <option value="needs_check" selected>🟠 Cần kiểm tra</option>
+                    <option value="dead">🔴 Link chết</option>
+                    <option value="paused">⚫ Tạm dừng</option>
+                    <option value="out_of_stock">📦 Hết hàng</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="grid two">
+                <label>
+                  <span>Thẻ (phân cách bằng dấu phẩy)</span>
+                  <input id="affiliateTags" placeholder="gaming, văn phòng, giá rẻ">
+                </label>
+                <label class="checkbox-row affiliate-active-row">
+                  <input id="affiliateActive" type="checkbox" checked>
+                  <span>Đang sử dụng</span>
+                </label>
+              </div>
+
+              <label>
+                <span>Ghi chú</span>
+                <textarea id="affiliateNote" rows="3" maxlength="500" placeholder="Chiến dịch, đối tượng, lưu ý thay link…"></textarea>
+              </label>
+
+              <div class="form-actions">
+                <button class="btn primary" type="submit">Lưu vào kho</button>
+                <button id="resetAffiliateLinkButton" class="btn ghost" type="button">Làm mới</button>
+              </div>
+            </form>
+
+            <div id="affiliateLinksTable" class="affiliate-links-table">
+              <div class="manager-empty">Chưa tải kho tiếp thị liên kết.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="affiliate-scope-note">
+          <strong>Giai đoạn Preview hiện tại:</strong>
+          Danh mục và link được quản lý độc lập trong Firestore. Trạng thái link có thể lọc và cập nhật thủ công.
+          Tự động kiểm tra HTTP sẽ được bổ sung sau khi đối chiếu giao diện và dữ liệu.
         </div>
       </section>
     </section>
@@ -845,7 +1049,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script type="module" src="/js/smartlink-dashboard.js?v=1.3.0-full"></script>
   <script type="module">
-    import("/js/admin-v6.js?v=6.3.2-analytics-polish").catch(error => {
+    import("/js/admin-v6.js?v=6.4.0-affiliate-preview").catch(error => {
       console.error("Không tải được admin-v6.js", error);
       const badge = document.getElementById("authBadge");
       const notice = document.getElementById("notice");

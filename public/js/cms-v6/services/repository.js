@@ -11,6 +11,8 @@ export class CmsV6Repository {
   constructor(db) {
     this.db = db;
     this.posts = collection(db, "posts");
+    this.affiliateCategories = collection(db, "affiliateCategories");
+    this.affiliateLinks = collection(db, "affiliateLinks");
   }
 
   async listPosts(max = 500) {
@@ -86,4 +88,102 @@ export class CmsV6Repository {
   }
 
   async deleteSmartLink(id) { await deleteDoc(doc(this.db, "smartLinks", id)); }
+
+
+  async listAffiliateCategories(max = 1000) {
+    let snapshot;
+    try {
+      snapshot = await getDocs(query(this.affiliateCategories, orderBy("sortOrder", "asc"), limit(max)));
+    } catch {
+      snapshot = await getDocs(this.affiliateCategories);
+    }
+    return snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+  }
+
+  async saveAffiliateCategory(payload, id = "") {
+    const name = String(payload?.name || "").trim();
+    if (!name) throw new Error("Tên danh mục không được để trống.");
+    const data = {
+      name,
+      parentId: String(payload?.parentId || "").trim(),
+      sortOrder: Math.max(1, Number(payload?.sortOrder || 100)),
+      active: payload?.active !== false,
+      cmsVersion: "mina-cms-v6.4-affiliate-preview",
+      updatedAt: serverTimestamp()
+    };
+    if (id) {
+      if (id === data.parentId) throw new Error("Danh mục không thể làm cha của chính nó.");
+      await updateDoc(doc(this.db, "affiliateCategories", id), data);
+      return id;
+    }
+    const created = await addDoc(this.affiliateCategories, {
+      ...data,
+      createdAt: serverTimestamp()
+    });
+    return created.id;
+  }
+
+  async deleteAffiliateCategory(id) {
+    await deleteDoc(doc(this.db, "affiliateCategories", id));
+  }
+
+  async listAffiliateLinks(max = 1000) {
+    let snapshot;
+    try {
+      snapshot = await getDocs(query(this.affiliateLinks, orderBy("updatedAt", "desc"), limit(max)));
+    } catch {
+      snapshot = await getDocs(this.affiliateLinks);
+    }
+    return snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+  }
+
+  async saveAffiliateLink(payload, id = "") {
+    const name = String(payload?.name || "").trim();
+    const targetUrl = String(payload?.targetUrl || "").trim();
+    if (!name) throw new Error("Tên sản phẩm/link không được để trống.");
+    if (!targetUrl) throw new Error("URL tiếp thị không được để trống.");
+    try {
+      new URL(targetUrl);
+    } catch {
+      throw new Error("URL tiếp thị không hợp lệ.");
+    }
+
+    const data = {
+      name,
+      categoryId: String(payload?.categoryId || "").trim(),
+      platform: String(payload?.platform || "other").trim(),
+      merchant: String(payload?.merchant || "").trim(),
+      targetUrl,
+      smartLinkId: String(payload?.smartLinkId || "").trim(),
+      commissionRate: Math.max(0, Number(payload?.commissionRate || 0)),
+      healthStatus: String(payload?.healthStatus || "needs_check").trim(),
+      active: payload?.active !== false,
+      tags: Array.isArray(payload?.tags)
+        ? payload.tags.map(item => String(item || "").trim()).filter(Boolean).slice(0, 30)
+        : [],
+      note: String(payload?.note || "").trim().slice(0, 500),
+      lastCheckedAt: payload?.lastCheckedAt || null,
+      lastHttpStatus: payload?.lastHttpStatus || null,
+      consecutiveFailures: Math.max(0, Number(payload?.consecutiveFailures || 0)),
+      cmsVersion: "mina-cms-v6.4-affiliate-preview",
+      updatedAt: serverTimestamp()
+    };
+
+    if (id) {
+      await updateDoc(doc(this.db, "affiliateLinks", id), data);
+      return id;
+    }
+
+    const created = await addDoc(this.affiliateLinks, {
+      ...data,
+      clicks: Math.max(0, Number(payload?.clicks || 0)),
+      createdAt: serverTimestamp()
+    });
+    return created.id;
+  }
+
+  async deleteAffiliateLink(id) {
+    await deleteDoc(doc(this.db, "affiliateLinks", id));
+  }
+
 }
