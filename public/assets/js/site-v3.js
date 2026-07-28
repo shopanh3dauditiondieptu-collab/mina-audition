@@ -394,8 +394,34 @@ function typeLabel(type) {
   }[type] || "Bài viết";
 }
 
+function getPostSlug(post) {
+  return String(value(post, ["slug", "postSlug", "urlSlug"], "") || "")
+    .trim()
+    .replace(/^\/+|\/+$/g, "");
+}
+
 function postUrl(post) {
+  const slug = getPostSlug(post);
+  if (slug) return `/post.html?slug=${encodeURIComponent(slug)}`;
   return `/post.html?id=${encodeURIComponent(post.id)}`;
+}
+
+function setPostCanonicalUrl(post) {
+  const canonicalPath = postUrl(post);
+  const canonicalUrl = new URL(canonicalPath, location.origin).href;
+
+  let canonical = document.querySelector('link[rel="canonical"]');
+  if (!canonical) {
+    canonical = document.createElement("link");
+    canonical.rel = "canonical";
+    document.head.appendChild(canonical);
+  }
+  canonical.href = canonicalUrl;
+
+  // URL cũ ?id= vẫn mở bình thường, nhưng thanh địa chỉ được chuẩn hóa sang slug.
+  if (location.pathname === "/post.html" && location.href !== canonicalUrl) {
+    history.replaceState(null, "", `${canonicalPath}${location.hash}`);
+  }
 }
 
 function affiliateUrl(post, source = "website-card") {
@@ -1616,12 +1642,14 @@ function setupPostTableOfContents() {
 
 async function postPage() {
   const box = document.querySelector("#article");
-  const id = new URLSearchParams(location.search).get("id");
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+  const requestedSlug = String(params.get("slug") || "").trim();
 
   if (!box) return;
 
-  if (!id) {
-    box.innerHTML = `<div class="empty">Thiếu ID bài viết.</div>`;
+  if (!id && !requestedSlug) {
+    box.innerHTML = `<div class="empty">Thiếu slug hoặc ID bài viết.</div>`;
     return;
   }
 
@@ -1667,18 +1695,32 @@ async function postPage() {
   };
 
   try {
-    const post = await getPost(id);
+    let allPosts = null;
+    let post = null;
+
+    if (requestedSlug) {
+      allPosts = (await listPosts()).filter(item => item.status !== "draft");
+      const wantedSlug = decodeURIComponent(requestedSlug).toLowerCase();
+      post = allPosts.find(item => getPostSlug(item).toLowerCase() === wantedSlug) || null;
+    } else if (id) {
+      post = await getPost(id);
+    }
 
     if (!post) {
-      box.innerHTML = `<div class="empty">Bài viết không tồn tại.</div>`;
+      box.innerHTML = `<div class="empty">Bài viết không tồn tại hoặc slug chưa được lưu đúng.</div>`;
       return;
     }
+
+    if (!allPosts) {
+      allPosts = (await listPosts()).filter(item => item.status !== "draft");
+    }
+
+    setPostCanonicalUrl(post);
 
     const type = classify(post);
     const internalId = getInternalId(post);
     const prompt = extractPrompt(post);
     const smartUrl = affiliateUrl(post, "website-post");
-    const allPosts = (await listPosts()).filter(item => item.status !== "draft");
     const currentIndex = allPosts.findIndex(item => String(item.id) === String(post.id));
     const newerPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
     const olderPost = currentIndex >= 0 && currentIndex < allPosts.length - 1
