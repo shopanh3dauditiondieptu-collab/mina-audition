@@ -37,7 +37,9 @@ const state = {
   featuredOrder: [],
   featuredSelectedIds: new Set(),
   featuredDragId: "",
-  featuredScope: "home"
+  featuredScope: "home",
+  postsPage: 1,
+  postsPageSize: Number(localStorage.getItem("mina-cms-posts-page-size") || 24)
 };
 
 const $ = selector => document.querySelector(selector);
@@ -1261,12 +1263,94 @@ function getFilteredPosts() {
   });
 }
 
+function getPostsPagination(filteredPosts = getFilteredPosts()) {
+  const allowedSizes = [12, 24, 36, 48, 60];
+  if (!allowedSizes.includes(Number(state.postsPageSize))) state.postsPageSize = 24;
+
+  const totalItems = filteredPosts.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / state.postsPageSize));
+  state.postsPage = Math.min(Math.max(1, Number(state.postsPage || 1)), totalPages);
+
+  const startIndex = totalItems ? (state.postsPage - 1) * state.postsPageSize : 0;
+  const endIndex = Math.min(startIndex + state.postsPageSize, totalItems);
+
+  return {
+    totalItems,
+    totalPages,
+    startIndex,
+    endIndex,
+    pagePosts: filteredPosts.slice(startIndex, endIndex)
+  };
+}
+
+function buildPageNumbers(currentPage, totalPages) {
+  if (totalPages <= 7) return Array.from({ length: totalPages }, (_, index) => index + 1);
+
+  const pages = new Set([1, totalPages, currentPage - 1, currentPage, currentPage + 1]);
+  if (currentPage <= 3) [2, 3, 4].forEach(page => pages.add(page));
+  if (currentPage >= totalPages - 2) [totalPages - 3, totalPages - 2, totalPages - 1].forEach(page => pages.add(page));
+
+  const sorted = [...pages].filter(page => page >= 1 && page <= totalPages).sort((a, b) => a - b);
+  const output = [];
+  sorted.forEach((page, index) => {
+    if (index && page - sorted[index - 1] > 1) output.push("ellipsis");
+    output.push(page);
+  });
+  return output;
+}
+
+function renderPostsPagination(pagination) {
+  const root = $("#postsPagination");
+  if (!root) return;
+
+  const { totalItems, totalPages, startIndex, endIndex } = pagination;
+  const rangeText = totalItems
+    ? `Đang xem ${startIndex + 1}–${endIndex} / ${totalItems} bài`
+    : "Không có bài phù hợp";
+
+  $("#postsPaginationRange").textContent = rangeText;
+  $("#postsPageSummary").textContent = `Trang ${state.postsPage} / ${totalPages}`;
+  $("#postsPageJump").value = String(state.postsPage);
+  $("#postsPageJump").max = String(totalPages);
+  $("#postsPageSize").value = String(state.postsPageSize);
+
+  $("#postsPrevPage").disabled = state.postsPage <= 1 || totalItems === 0;
+  $("#postsNextPage").disabled = state.postsPage >= totalPages || totalItems === 0;
+  $("#postsFirstPage").disabled = state.postsPage <= 1 || totalItems === 0;
+  $("#postsLastPage").disabled = state.postsPage >= totalPages || totalItems === 0;
+
+  $("#postsPageNumbers").innerHTML = buildPageNumbers(state.postsPage, totalPages).map(item =>
+    item === "ellipsis"
+      ? `<span class="pagination-ellipsis" aria-hidden="true">…</span>`
+      : `<button type="button" class="pagination-page ${item === state.postsPage ? "active" : ""}" data-posts-page="${item}" ${item === state.postsPage ? 'aria-current="page"' : ""}>${item}</button>`
+  ).join("");
+
+  root.hidden = false;
+}
+
+function goToPostsPage(page, { scroll = true } = {}) {
+  const totalPages = Math.max(1, Math.ceil(getFilteredPosts().length / state.postsPageSize));
+  const target = Math.min(Math.max(1, Number(page || 1)), totalPages);
+  if (target === state.postsPage) return;
+  state.postsPage = target;
+  renderPosts();
+  if (scroll) $("#postsTable")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function resetPostsPagination() {
+  state.postsPage = 1;
+}
+
 function renderPosts() {
   renderCategoryTreeFilter();
   renderManagerStats();
 
-  const posts = getFilteredPosts();
+  const filteredPosts = getFilteredPosts();
+  const pagination = getPostsPagination(filteredPosts);
+  const posts = pagination.pagePosts;
   syncSelectionToVisiblePosts(posts);
+  $("#visiblePostsCount").textContent = String(filteredPosts.length);
+  renderPostsPagination(pagination);
 
   $("#postsTable").innerHTML = posts.length
     ? posts.map(post => {
@@ -2125,8 +2209,14 @@ function bindEvents() {
     }
   });
 
-  $("#postSearch").addEventListener("input", renderPosts);
-  $("#postStatusFilter").addEventListener("change", renderPosts);
+  $("#postSearch").addEventListener("input", () => {
+    resetPostsPagination();
+    renderPosts();
+  });
+  $("#postStatusFilter").addEventListener("change", () => {
+    resetPostsPagination();
+    renderPosts();
+  });
   $("#refreshPostsButton").addEventListener("click", async () => {
     const button = $("#refreshPostsButton");
     setBusy(button, true, "Đang tải…");
@@ -2157,11 +2247,13 @@ function bindEvents() {
     const button = event.target.closest("[data-tree-path]");
     if (!button) return;
     state.activeCategoryFilter = button.dataset.treePath || "";
+    resetPostsPagination();
     renderPosts();
   });
 
   $("#allPostsTreeButton").addEventListener("click", () => {
     state.activeCategoryFilter = "";
+    resetPostsPagination();
     renderPosts();
   });
 
@@ -2181,8 +2273,38 @@ function bindEvents() {
     renderCategoryTreeFilter();
   });
 
+
+  $("#postsPageSize").addEventListener("change", event => {
+    const size = Number(event.target.value || 24);
+    state.postsPageSize = [12, 24, 36, 48, 60].includes(size) ? size : 24;
+    localStorage.setItem("mina-cms-posts-page-size", String(state.postsPageSize));
+    resetPostsPagination();
+    renderPosts();
+  });
+
+  $("#postsFirstPage").addEventListener("click", () => goToPostsPage(1));
+  $("#postsPrevPage").addEventListener("click", () => goToPostsPage(state.postsPage - 1));
+  $("#postsNextPage").addEventListener("click", () => goToPostsPage(state.postsPage + 1));
+  $("#postsLastPage").addEventListener("click", () => {
+    const totalPages = Math.max(1, Math.ceil(getFilteredPosts().length / state.postsPageSize));
+    goToPostsPage(totalPages);
+  });
+
+  $("#postsPageNumbers").addEventListener("click", event => {
+    const button = event.target.closest("[data-posts-page]");
+    if (button) goToPostsPage(Number(button.dataset.postsPage));
+  });
+
+  const submitPostsPageJump = () => goToPostsPage(Number($("#postsPageJump").value));
+  $("#postsPageJumpButton").addEventListener("click", submitPostsPageJump);
+  $("#postsPageJump").addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      submitPostsPageJump();
+    }
+  });
   $("#selectAllPosts").addEventListener("change", event => {
-    const visiblePosts = getFilteredPosts();
+    const visiblePosts = getPostsPagination(getFilteredPosts()).pagePosts;
     for (const post of visiblePosts) {
       if (event.target.checked) state.selectedPostIds.add(post.id);
       else state.selectedPostIds.delete(post.id);
