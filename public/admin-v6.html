@@ -12,6 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/admin-v6.css?v=6.3.0-full">
   <link rel="stylesheet" href="/css/smartlink-dashboard.css?v=1.3.0-full">
+  <link rel="stylesheet" href="/css/admin-v6-ui-fix.css?v=6.3.1-ui-fix">
 
   <style>
     .post-smartlink-box {
@@ -844,7 +845,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script type="module" src="/js/smartlink-dashboard.js?v=1.3.0-full"></script>
   <script type="module">
-    import("/js/admin-v6.js?v=6.3.0-full").catch(error => {
+    import("/js/admin-v6.js?v=6.3.1-ui-fix").catch(error => {
       console.error("Không tải được admin-v6.js", error);
       const badge = document.getElementById("authBadge");
       const notice = document.getElementById("notice");
