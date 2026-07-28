@@ -1,733 +1,472 @@
 
-const DEFAULT_PLATFORMS = [
-  { name: "Shopee", code: "shopee", sortOrder: 10, active: true },
-  { name: "Lazada", code: "lazada", sortOrder: 20, active: true },
-  { name: "TikTok Shop", code: "tiktok-shop", sortOrder: 30, active: true },
-  { name: "AccessTrade", code: "access-trade", sortOrder: 40, active: true },
-  { name: "Amazon", code: "amazon", sortOrder: 50, active: true },
-  { name: "Website", code: "website", sortOrder: 60, active: true },
-  { name: "Khác", code: "other", sortOrder: 999, active: true }
-];
-
-const DEFAULT_STATUSES = [
-  { name: "Hoạt động", code: "healthy", icon: "🟢", group: "active", sortOrder: 10, active: true },
-  { name: "Chuyển hướng", code: "redirect", icon: "🟡", group: "warning", sortOrder: 20, active: true },
-  { name: "Cần kiểm tra", code: "needs_check", icon: "🟠", group: "review", sortOrder: 30, active: true },
-  { name: "Link chết", code: "dead", icon: "🔴", group: "dead", sortOrder: 40, active: true },
-  { name: "Tạm dừng", code: "paused", icon: "⚫", group: "paused", sortOrder: 50, active: true },
-  { name: "Hết hàng", code: "out_of_stock", icon: "📦", group: "warning", sortOrder: 60, active: true }
-];
-
-export function createAffiliateManager({
-  repo,
-  $,
-  showNotice,
-  confirmAction,
-  setBusy,
-  escapeHtml
-}) {
-  const state = {
-    categories: [],
-    links: [],
-    smartLinks: [],
-    platforms: [],
-    statuses: [],
-    loaded: false,
-    loading: false,
-    selectedCategoryId: ""
-  };
-
-  const normalize = value => String(value || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim();
-
-  const sortRows = rows => [...rows].sort((a, b) =>
-    Number(a.sortOrder || 100) - Number(b.sortOrder || 100) ||
-    String(a.name || "").localeCompare(String(b.name || ""), "vi")
-  );
-
-  function platformMap() {
-    return new Map(state.platforms.map(item => [item.code, item]));
-  }
-
-  function statusMap() {
-    return new Map(state.statuses.map(item => [item.code, item]));
-  }
-
-  function platformLabel(code) {
-    return platformMap().get(code)?.name || code || "Chưa chọn";
-  }
-
-  function statusLabel(code) {
-    const item = statusMap().get(code);
-    if (!item) return "🟠 Cần kiểm tra";
-    return `${item.icon || ""} ${item.name || item.code}`.trim();
-  }
-
-  function statusGroup(code) {
-    return statusMap().get(code)?.group || "review";
-  }
-
-  function categoryMap() {
-    return new Map(state.categories.map(item => [item.id, item]));
-  }
-
-  function categoryPath(id) {
-    if (!id) return "Chưa phân loại";
-    const map = categoryMap();
-    const names = [];
-    const visited = new Set();
-    let current = map.get(id);
-    while (current && !visited.has(current.id)) {
-      visited.add(current.id);
-      names.unshift(current.name || "Không tên");
-      current = current.parentId ? map.get(current.parentId) : null;
-    }
-    return names.join(" / ") || "Chưa phân loại";
-  }
-
-  function descendantsOf(id) {
-    const output = new Set([id]);
-    let changed = true;
-    while (changed) {
-      changed = false;
-      state.categories.forEach(item => {
-        if (item.parentId && output.has(item.parentId) && !output.has(item.id)) {
-          output.add(item.id);
-          changed = true;
-        }
-      });
-    }
-    return output;
-  }
-
-  function flattenCategories(parentId = "", depth = 0, result = []) {
-    sortRows(state.categories.filter(item => String(item.parentId || "") === String(parentId || "")))
-      .forEach(item => {
-        result.push({ ...item, depth });
-        flattenCategories(item.id, depth + 1, result);
-      });
-    return result;
-  }
-
-  async function seedDefaultsIfEmpty() {
-    if (!state.platforms.length) {
-      for (const item of DEFAULT_PLATFORMS) await repo.saveAffiliatePlatform(item);
-      state.platforms = await repo.listAffiliatePlatforms();
-    }
-    if (!state.statuses.length) {
-      for (const item of DEFAULT_STATUSES) await repo.saveAffiliateStatus(item);
-      state.statuses = await repo.listAffiliateStatuses();
-    }
-  }
-
-  function populateCategorySelects() {
-    const flat = flattenCategories();
-    const options = flat.map(item => {
-      const prefix = item.depth ? `${"— ".repeat(item.depth)}` : "";
-      const inactive = item.active === false ? " (đã ẩn)" : "";
-      return `<option value="${escapeHtml(item.id)}">${escapeHtml(prefix + (item.name || "Không tên") + inactive)}</option>`;
-    }).join("");
-
-    const parent = $("#affiliateCategoryParent");
-    const category = $("#affiliateCategoryIdSelect");
-    const filter = $("#affiliateCategoryFilter");
-    if (parent) parent.innerHTML = `<option value="">Danh mục gốc</option>${options}`;
-    if (category) category.innerHTML = `<option value="">Chưa phân loại</option>${options}`;
-    if (filter) filter.innerHTML = `<option value="">Tất cả danh mục</option>${options}`;
-  }
-
-  function populateDynamicSelects() {
-    const platforms = sortRows(state.platforms);
-    const statuses = sortRows(state.statuses);
-
-    const platformOptions = platforms
-      .filter(item => item.active !== false)
-      .map(item => `<option value="${escapeHtml(item.code)}">${escapeHtml(item.name || item.code)}</option>`)
-      .join("");
-
-    const statusOptions = statuses
-      .filter(item => item.active !== false)
-      .map(item => `<option value="${escapeHtml(item.code)}">${escapeHtml(statusLabel(item.code))}</option>`)
-      .join("");
-
-    const platformFilter = $("#affiliatePlatformFilter");
-    const platformSelect = $("#affiliatePlatform");
-    const healthFilter = $("#affiliateHealthFilter");
-    const healthSelect = $("#affiliateHealthStatus");
-
-    if (platformFilter) platformFilter.innerHTML = `<option value="">Tất cả nền tảng</option>${platformOptions}`;
-    if (platformSelect) platformSelect.innerHTML = `<option value="">Chọn nền tảng</option>${platformOptions}`;
-    if (healthFilter) healthFilter.innerHTML = `<option value="">Tất cả tình trạng</option>${statusOptions}`;
-    if (healthSelect) healthSelect.innerHTML = `<option value="">Chọn tình trạng</option>${statusOptions}`;
-  }
-
-  function populateSmartLinks() {
-    const select = $("#affiliateSmartLinkId");
-    if (!select) return;
-    const options = [...state.smartLinks]
-      .sort((a, b) => String(a.name || a.slug || "").localeCompare(String(b.name || b.slug || ""), "vi"))
-      .map(item => `<option value="${escapeHtml(item.id || "")}">${escapeHtml(item.name || item.slug || "Không tên")} — /go/${escapeHtml(item.slug || "")}${item.active === false ? " (đã tắt)" : ""}</option>`)
-      .join("");
-    select.innerHTML = `<option value="">Không gắn Smart Link</option>${options}`;
-  }
-
-  function renderCategoryTree() {
-    const root = $("#affiliateCategoryTree");
-    if (!root) return;
-
-    const children = parentId => sortRows(
-      state.categories.filter(item => String(item.parentId || "") === String(parentId || ""))
-    );
-
-    const draw = (parentId = "", depth = 0) => children(parentId).map(item => {
-      const childRows = draw(item.id, depth + 1);
-      const count = state.links.filter(link => link.categoryId === item.id).length;
-      return `
-        <div class="affiliate-category-node" style="--affiliate-depth:${depth}">
-          <button class="affiliate-category-select ${state.selectedCategoryId === item.id ? "active" : ""}" type="button" data-affiliate-category-filter="${escapeHtml(item.id)}">
-            <span class="affiliate-category-name">${depth ? "↳ " : "📁 "}${escapeHtml(item.name || "Không tên")}</span>
-            <span class="affiliate-category-count">${count}</span>
-          </button>
-          <div class="affiliate-category-actions">
-            <button type="button" title="Thêm danh mục con" data-affiliate-add-child="${escapeHtml(item.id)}">＋</button>
-            <button type="button" title="Sửa danh mục" data-affiliate-edit-category="${escapeHtml(item.id)}">✎</button>
-            <button type="button" title="Xóa danh mục" data-affiliate-delete-category="${escapeHtml(item.id)}">×</button>
-          </div>
-        </div>
-        ${childRows}`;
-    }).join("");
-
-    root.innerHTML = state.categories.length
-      ? `<button class="affiliate-category-all ${!state.selectedCategoryId ? "active" : ""}" type="button" data-affiliate-category-filter="">Tất cả danh mục <span>${state.links.length}</span></button>${draw()}`
-      : `<div class="affiliate-empty-state"><strong>Chưa có danh mục.</strong><span>Bấm “+ Danh mục” để tự tạo ngành hàng đầu tiên.</span></div>`;
-  }
-
-  function renderSettingsLists() {
-    const platformList = $("#affiliatePlatformsList");
-    const statusList = $("#affiliateStatusesList");
-
-    if (platformList) {
-      platformList.innerHTML = sortRows(state.platforms).length
-        ? sortRows(state.platforms).map(item => `
-          <article class="affiliate-config-row">
-            <div>
-              <strong>${escapeHtml(item.name || "Không tên")}</strong>
-              <small>${escapeHtml(item.code || "")}${item.active === false ? " • Đã ẩn" : ""}</small>
-            </div>
-            <div class="affiliate-config-row-actions">
-              <button class="btn ghost" type="button" data-affiliate-edit-platform="${escapeHtml(item.id)}">Sửa</button>
-              <button class="btn danger" type="button" data-affiliate-delete-platform="${escapeHtml(item.id)}">Xóa</button>
-            </div>
-          </article>`).join("")
-        : `<div class="affiliate-empty-state"><strong>Chưa có nền tảng.</strong></div>`;
-    }
-
-    if (statusList) {
-      statusList.innerHTML = sortRows(state.statuses).length
-        ? sortRows(state.statuses).map(item => `
-          <article class="affiliate-config-row">
-            <div>
-              <strong>${escapeHtml(`${item.icon || ""} ${item.name || "Không tên"}`.trim())}</strong>
-              <small>${escapeHtml(item.code || "")} • ${escapeHtml(item.group || "review")}${item.active === false ? " • Đã ẩn" : ""}</small>
-            </div>
-            <div class="affiliate-config-row-actions">
-              <button class="btn ghost" type="button" data-affiliate-edit-status="${escapeHtml(item.id)}">Sửa</button>
-              <button class="btn danger" type="button" data-affiliate-delete-status="${escapeHtml(item.id)}">Xóa</button>
-            </div>
-          </article>`).join("")
-        : `<div class="affiliate-empty-state"><strong>Chưa có trạng thái.</strong></div>`;
-    }
-  }
-
-  function filteredLinks() {
-    const term = normalize($("#affiliateSearch")?.value);
-    const categoryFilter = $("#affiliateCategoryFilter")?.value || state.selectedCategoryId || "";
-    const platform = $("#affiliatePlatformFilter")?.value || "";
-    const health = $("#affiliateHealthFilter")?.value || "";
-    const categoryIds = categoryFilter ? descendantsOf(categoryFilter) : null;
-
-    return state.links.filter(item => {
-      if (categoryIds && !categoryIds.has(item.categoryId || "")) return false;
-      if (platform && item.platform !== platform) return false;
-      if (health && item.healthStatus !== health) return false;
-      if (!term) return true;
-      return normalize([
-        item.name,
-        item.merchant,
-        item.targetUrl,
-        item.note,
-        platformLabel(item.platform),
-        statusLabel(item.healthStatus),
-        ...(Array.isArray(item.tags) ? item.tags : [])
-      ].join(" ")).includes(term);
-    });
-  }
-
-  function renderStats() {
-    const activeCodes = new Set(state.statuses.filter(item => item.group === "active").map(item => item.code));
-    const reviewCodes = new Set(state.statuses.filter(item => ["review", "warning"].includes(item.group)).map(item => item.code));
-    const deadCodes = new Set(state.statuses.filter(item => item.group === "dead").map(item => item.code));
-
-    $("#affiliateStatTotal").textContent = state.links.length.toLocaleString("vi-VN");
-    $("#affiliateStatActive").textContent = state.links.filter(item => item.active !== false && activeCodes.has(item.healthStatus)).length.toLocaleString("vi-VN");
-    $("#affiliateStatReview").textContent = state.links.filter(item => reviewCodes.has(item.healthStatus)).length.toLocaleString("vi-VN");
-    $("#affiliateStatDead").textContent = state.links.filter(item => deadCodes.has(item.healthStatus)).length.toLocaleString("vi-VN");
-    $("#affiliateStatCategories").textContent = state.categories.length.toLocaleString("vi-VN");
-  }
-
-  function renderLinks() {
-    const table = $("#affiliateLinksTable");
-    if (!table) return;
-    const items = filteredLinks();
-
-    table.innerHTML = items.length ? items.map(item => {
-      const smartLink = state.smartLinks.find(link => link.id === item.smartLinkId);
-      const tags = Array.isArray(item.tags) ? item.tags : [];
-      const group = statusGroup(item.healthStatus);
-      return `<article class="affiliate-link-row">
-        <div class="affiliate-link-main">
-          <strong>${escapeHtml(item.name || "Không tên")}</strong>
-          <div class="affiliate-link-meta">
-            <span>${escapeHtml(platformLabel(item.platform))}</span>
-            <span>${escapeHtml(item.merchant || "Chưa có nhà bán")}</span>
-            <span>${escapeHtml(categoryPath(item.categoryId))}</span>
-          </div>
-          ${tags.length ? `<div class="affiliate-tags">${tags.slice(0, 8).map(tag => `<span>${escapeHtml(tag)}</span>`).join("")}</div>` : ""}
-        </div>
-        <div class="affiliate-link-target">
-          <a href="${escapeHtml(item.targetUrl || "#")}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.targetUrl || "Chưa có URL")}</a>
-          <small>${smartLink ? `Smart Link: /go/${escapeHtml(smartLink.slug || "")}` : "Chưa gắn Smart Link"}</small>
-        </div>
-        <div class="affiliate-link-health health-${escapeHtml(group)}">
-          <strong>${escapeHtml(statusLabel(item.healthStatus))}</strong>
-          <small>${item.active === false ? "Đã tắt trong kho" : `Hoa hồng: ${Number(item.commissionRate || 0).toLocaleString("vi-VN")}%`}</small>
-        </div>
-        <div class="affiliate-link-actions">
-          <button class="btn ghost" type="button" data-affiliate-copy="${escapeHtml(item.targetUrl || "")}">Copy</button>
-          <button class="btn ghost" type="button" data-affiliate-edit="${escapeHtml(item.id)}">Sửa</button>
-          <button class="btn danger" type="button" data-affiliate-delete="${escapeHtml(item.id)}">Xóa</button>
-        </div>
-      </article>`;
-    }).join("") : `<div class="affiliate-empty-state"><strong>Không có link phù hợp.</strong><span>Thử đổi bộ lọc hoặc thêm sản phẩm/link mới.</span></div>`;
-  }
-
-  function render() {
-    populateCategorySelects();
-    populateDynamicSelects();
-    populateSmartLinks();
-    renderCategoryTree();
-    renderSettingsLists();
-    renderStats();
-    renderLinks();
-  }
-
-  function resetCategoryForm({ parentId = "" } = {}) {
-    $("#affiliateCategoryForm").reset();
-    $("#affiliateCategoryId").value = "";
-    $("#affiliateCategoryParent").value = parentId;
-    $("#affiliateCategoryOrder").value = "100";
-    $("#affiliateCategoryActive").checked = true;
-  }
-
-  function openCategoryForm(category = null, parentId = "") {
-    const form = $("#affiliateCategoryForm");
-    form.hidden = false;
-    resetCategoryForm({ parentId });
-    if (category) {
-      $("#affiliateCategoryId").value = category.id || "";
-      $("#affiliateCategoryName").value = category.name || "";
-      $("#affiliateCategoryParent").value = category.parentId || "";
-      $("#affiliateCategoryOrder").value = String(category.sortOrder || 100);
-      $("#affiliateCategoryActive").checked = category.active !== false;
-    }
-    $("#affiliateCategoryName").focus();
-  }
-
-  function resetLinkForm() {
-    $("#affiliateLinkForm").reset();
-    $("#affiliateLinkId").value = "";
-    $("#affiliateFormTitle").textContent = "Thêm sản phẩm/link tiếp thị";
-    $("#affiliateActive").checked = true;
-    $("#affiliateCategoryIdSelect").value = state.selectedCategoryId || "";
-    $("#affiliatePlatform").value = state.platforms.find(item => item.active !== false)?.code || "";
-    $("#affiliateHealthStatus").value =
-      state.statuses.find(item => item.code === "needs_check" && item.active !== false)?.code ||
-      state.statuses.find(item => item.active !== false)?.code || "";
-  }
-
-  function openLinkForm(item = null) {
-    const form = $("#affiliateLinkForm");
-    form.hidden = false;
-    resetLinkForm();
-    if (item) {
-      $("#affiliateLinkId").value = item.id || "";
-      $("#affiliateFormTitle").textContent = "Chỉnh sửa sản phẩm/link tiếp thị";
-      $("#affiliateName").value = item.name || "";
-      $("#affiliateCategoryIdSelect").value = item.categoryId || "";
-      $("#affiliatePlatform").value = item.platform || "";
-      $("#affiliateMerchant").value = item.merchant || "";
-      $("#affiliateCommissionRate").value = Number(item.commissionRate || 0) || "";
-      $("#affiliateTargetUrl").value = item.targetUrl || "";
-      $("#affiliateSmartLinkId").value = item.smartLinkId || "";
-      $("#affiliateHealthStatus").value = item.healthStatus || "";
-      $("#affiliateTags").value = Array.isArray(item.tags) ? item.tags.join(", ") : "";
-      $("#affiliateNote").value = item.note || "";
-      $("#affiliateActive").checked = item.active !== false;
-    }
-    form.scrollIntoView({ behavior: "smooth", block: "start" });
-    $("#affiliateName").focus();
-  }
-
-  function resetPlatformForm() {
-    $("#affiliatePlatformForm").reset();
-    $("#affiliatePlatformId").value = "";
-    $("#affiliatePlatformOrder").value = "100";
-    $("#affiliatePlatformActive").checked = true;
-  }
-
-  function resetStatusForm() {
-    $("#affiliateStatusForm").reset();
-    $("#affiliateStatusId").value = "";
-    $("#affiliateStatusOrder").value = "100";
-    $("#affiliateStatusActive").checked = true;
-    $("#affiliateStatusGroup").value = "review";
-  }
-
-  function toggleSettings(show = true) {
-    const panel = $("#affiliateSettingsPanel");
-    panel.hidden = !show;
-    if (show) panel.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
-  async function load({ force = false } = {}) {
-    if (state.loaded && !force) {
-      render();
-      return;
-    }
-    if (state.loading) return;
-    state.loading = true;
-    $("#affiliateLinksTable").innerHTML = `<div class="manager-empty">Đang tải kho tiếp thị liên kết…</div>`;
-    try {
-      const [categories, links, smartLinks, platforms, statuses] = await Promise.all([
-        repo.listAffiliateCategories(),
-        repo.listAffiliateLinks(),
-        repo.listSmartLinks(),
-        repo.listAffiliatePlatforms(),
-        repo.listAffiliateStatuses()
-      ]);
-      state.categories = categories;
-      state.links = links;
-      state.smartLinks = smartLinks;
-      state.platforms = platforms;
-      state.statuses = statuses;
-
-      await seedDefaultsIfEmpty();
-
-      state.loaded = true;
-      render();
-    } catch (error) {
-      console.error("[Affiliate Manager]", error);
-      $("#affiliateLinksTable").innerHTML = `<div class="affiliate-empty-state error"><strong>Không tải được dữ liệu.</strong><span>${escapeHtml(error?.message || String(error))}</span></div>`;
-      showNotice(error?.message || "Không tải được Kho tiếp thị liên kết.", "error");
-    } finally {
-      state.loading = false;
-    }
-  }
-
-  function bindSettings() {
-    $("#affiliateSettingsButton")?.addEventListener("click", () => toggleSettings(true));
-    $("#closeAffiliateSettingsButton")?.addEventListener("click", () => toggleSettings(false));
-
-    document.querySelectorAll("[data-affiliate-setting-tab]").forEach(button => {
-      button.addEventListener("click", () => {
-        document.querySelectorAll("[data-affiliate-setting-tab]").forEach(item => item.classList.toggle("active", item === button));
-        $("#affiliatePlatformsSettings").classList.toggle("active", button.dataset.affiliateSettingTab === "platforms");
-        $("#affiliateStatusesSettings").classList.toggle("active", button.dataset.affiliateSettingTab === "statuses");
-      });
-    });
-
-    $("#affiliatePlatformName")?.addEventListener("input", event => {
-      if ($("#affiliatePlatformId").value) return;
-      $("#affiliatePlatformCode").value = normalize(event.currentTarget.value)
-        .replace(/đ/g, "d").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-    });
-
-    $("#affiliateStatusName")?.addEventListener("input", event => {
-      if ($("#affiliateStatusId").value) return;
-      $("#affiliateStatusCode").value = normalize(event.currentTarget.value)
-        .replace(/đ/g, "d").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
-    });
-
-    $("#resetAffiliatePlatformButton")?.addEventListener("click", resetPlatformForm);
-    $("#resetAffiliateStatusButton")?.addEventListener("click", resetStatusForm);
-
-    $("#affiliatePlatformForm")?.addEventListener("submit", async event => {
-      event.preventDefault();
-      const button = event.submitter;
-      setBusy(button, true, "Đang lưu…");
-      try {
-        await repo.saveAffiliatePlatform({
-          name: $("#affiliatePlatformName").value,
-          code: $("#affiliatePlatformCode").value,
-          sortOrder: $("#affiliatePlatformOrder").value,
-          active: $("#affiliatePlatformActive").checked
-        }, $("#affiliatePlatformId").value);
-        resetPlatformForm();
-        state.loaded = false;
-        await load({ force: true });
-        showNotice("Đã lưu nền tảng.");
-      } catch (error) {
-        showNotice(error?.message || "Không thể lưu nền tảng.", "error");
-      } finally {
-        setBusy(button, false);
-      }
-    });
-
-    $("#affiliateStatusForm")?.addEventListener("submit", async event => {
-      event.preventDefault();
-      const button = event.submitter;
-      setBusy(button, true, "Đang lưu…");
-      try {
-        await repo.saveAffiliateStatus({
-          name: $("#affiliateStatusName").value,
-          code: $("#affiliateStatusCode").value,
-          icon: $("#affiliateStatusIcon").value,
-          group: $("#affiliateStatusGroup").value,
-          sortOrder: $("#affiliateStatusOrder").value,
-          active: $("#affiliateStatusActive").checked
-        }, $("#affiliateStatusId").value);
-        resetStatusForm();
-        state.loaded = false;
-        await load({ force: true });
-        showNotice("Đã lưu trạng thái.");
-      } catch (error) {
-        showNotice(error?.message || "Không thể lưu trạng thái.", "error");
-      } finally {
-        setBusy(button, false);
-      }
-    });
-
-    $("#affiliatePlatformsList")?.addEventListener("click", async event => {
-      const editId = event.target.closest("[data-affiliate-edit-platform]")?.dataset.affiliateEditPlatform;
-      if (editId) {
-        const item = state.platforms.find(row => row.id === editId);
-        if (!item) return;
-        $("#affiliatePlatformId").value = item.id;
-        $("#affiliatePlatformName").value = item.name || "";
-        $("#affiliatePlatformCode").value = item.code || "";
-        $("#affiliatePlatformOrder").value = String(item.sortOrder || 100);
-        $("#affiliatePlatformActive").checked = item.active !== false;
-        return;
-      }
-
-      const deleteId = event.target.closest("[data-affiliate-delete-platform]")?.dataset.affiliateDeletePlatform;
-      if (!deleteId) return;
-      const item = state.platforms.find(row => row.id === deleteId);
-      const inUse = state.links.some(link => link.platform === item?.code);
-      if (inUse) {
-        showNotice("Nền tảng đang được sản phẩm sử dụng. Hãy đổi nền tảng của các sản phẩm trước.", "error");
-        return;
-      }
-      if (await confirmAction("Xóa nền tảng", "Nền tảng này sẽ bị xóa khỏi bộ lọc và biểu mẫu.")) {
-        await repo.deleteAffiliatePlatform(deleteId);
-        state.loaded = false;
-        await load({ force: true });
-        showNotice("Đã xóa nền tảng.");
-      }
-    });
-
-    $("#affiliateStatusesList")?.addEventListener("click", async event => {
-      const editId = event.target.closest("[data-affiliate-edit-status]")?.dataset.affiliateEditStatus;
-      if (editId) {
-        const item = state.statuses.find(row => row.id === editId);
-        if (!item) return;
-        $("#affiliateStatusId").value = item.id;
-        $("#affiliateStatusName").value = item.name || "";
-        $("#affiliateStatusCode").value = item.code || "";
-        $("#affiliateStatusIcon").value = item.icon || "";
-        $("#affiliateStatusGroup").value = item.group || "review";
-        $("#affiliateStatusOrder").value = String(item.sortOrder || 100);
-        $("#affiliateStatusActive").checked = item.active !== false;
-        return;
-      }
-
-      const deleteId = event.target.closest("[data-affiliate-delete-status]")?.dataset.affiliateDeleteStatus;
-      if (!deleteId) return;
-      const item = state.statuses.find(row => row.id === deleteId);
-      const inUse = state.links.some(link => link.healthStatus === item?.code);
-      if (inUse) {
-        showNotice("Trạng thái đang được sản phẩm sử dụng. Hãy đổi trạng thái của các sản phẩm trước.", "error");
-        return;
-      }
-      if (await confirmAction("Xóa trạng thái", "Trạng thái này sẽ bị xóa khỏi bộ lọc và biểu mẫu.")) {
-        await repo.deleteAffiliateStatus(deleteId);
-        state.loaded = false;
-        await load({ force: true });
-        showNotice("Đã xóa trạng thái.");
-      }
-    });
-  }
-
-  function bind() {
-    bindSettings();
-
-    $("#newAffiliateCategoryButton")?.addEventListener("click", () => openCategoryForm());
-    $("#cancelAffiliateCategoryButton")?.addEventListener("click", () => {
-      $("#affiliateCategoryForm").hidden = true;
-      resetCategoryForm();
-    });
-    $("#refreshAffiliateCategoriesButton")?.addEventListener("click", event => {
-      setBusy(event.currentTarget, true, "Đang tải…");
-      load({ force: true }).finally(() => setBusy(event.currentTarget, false));
-    });
-
-    $("#affiliateCategoryForm")?.addEventListener("submit", async event => {
-      event.preventDefault();
-      const button = event.submitter;
-      setBusy(button, true, "Đang lưu…");
-      try {
-        const id = $("#affiliateCategoryId").value;
-        await repo.saveAffiliateCategory({
-          name: $("#affiliateCategoryName").value,
-          parentId: $("#affiliateCategoryParent").value,
-          sortOrder: $("#affiliateCategoryOrder").value,
-          active: $("#affiliateCategoryActive").checked
-        }, id);
-        $("#affiliateCategoryForm").hidden = true;
-        state.loaded = false;
-        await load({ force: true });
-        showNotice("Đã lưu danh mục tiếp thị liên kết.");
-      } catch (error) {
-        showNotice(error?.message || "Không thể lưu danh mục.", "error");
-      } finally {
-        setBusy(button, false);
-      }
-    });
-
-    $("#affiliateCategoryTree")?.addEventListener("click", async event => {
-      const filterId = event.target.closest("[data-affiliate-category-filter]")?.dataset.affiliateCategoryFilter;
-      if (filterId !== undefined) {
-        state.selectedCategoryId = filterId;
-        $("#affiliateCategoryFilter").value = filterId;
-        render();
-        return;
-      }
-
-      const parentId = event.target.closest("[data-affiliate-add-child]")?.dataset.affiliateAddChild;
-      if (parentId) {
-        openCategoryForm(null, parentId);
-        return;
-      }
-
-      const editId = event.target.closest("[data-affiliate-edit-category]")?.dataset.affiliateEditCategory;
-      if (editId) {
-        const item = state.categories.find(category => category.id === editId);
-        if (item) openCategoryForm(item);
-        return;
-      }
-
-      const deleteId = event.target.closest("[data-affiliate-delete-category]")?.dataset.affiliateDeleteCategory;
-      if (deleteId) {
-        const hasChildren = state.categories.some(category => category.parentId === deleteId);
-        const hasLinks = state.links.some(link => link.categoryId === deleteId);
-        if (hasChildren || hasLinks) {
-          showNotice("Không thể xóa danh mục đang có danh mục con hoặc sản phẩm. Hãy chuyển dữ liệu trước.", "error");
-          return;
-        }
-        if (await confirmAction("Xóa danh mục", "Danh mục trống này sẽ bị xóa khỏi Kho tiếp thị liên kết.")) {
-          await repo.deleteAffiliateCategory(deleteId);
-          if (state.selectedCategoryId === deleteId) state.selectedCategoryId = "";
-          state.loaded = false;
-          await load({ force: true });
-          showNotice("Đã xóa danh mục.");
-        }
-      }
-    });
-
-    $("#newAffiliateLinkButton")?.addEventListener("click", () => openLinkForm());
-    $("#closeAffiliateLinkFormButton")?.addEventListener("click", () => {
-      $("#affiliateLinkForm").hidden = true;
-      resetLinkForm();
-    });
-    $("#resetAffiliateLinkButton")?.addEventListener("click", resetLinkForm);
-    $("#refreshAffiliateLinksButton")?.addEventListener("click", event => {
-      setBusy(event.currentTarget, true, "Đang tải…");
-      load({ force: true }).finally(() => setBusy(event.currentTarget, false));
-    });
-
-    $("#affiliateSearch")?.addEventListener("input", renderLinks);
-    $("#affiliateCategoryFilter")?.addEventListener("change", event => {
-      state.selectedCategoryId = event.currentTarget.value || "";
-      render();
-    });
-    $("#affiliatePlatformFilter")?.addEventListener("change", renderLinks);
-    $("#affiliateHealthFilter")?.addEventListener("change", renderLinks);
-
-    $("#affiliateLinkForm")?.addEventListener("submit", async event => {
-      event.preventDefault();
-      const button = event.submitter;
-      setBusy(button, true, "Đang lưu…");
-      try {
-        const id = $("#affiliateLinkId").value;
-        await repo.saveAffiliateLink({
-          name: $("#affiliateName").value,
-          categoryId: $("#affiliateCategoryIdSelect").value,
-          platform: $("#affiliatePlatform").value,
-          merchant: $("#affiliateMerchant").value,
-          commissionRate: $("#affiliateCommissionRate").value,
-          targetUrl: $("#affiliateTargetUrl").value,
-          smartLinkId: $("#affiliateSmartLinkId").value,
-          healthStatus: $("#affiliateHealthStatus").value,
-          tags: $("#affiliateTags").value.split(",").map(item => item.trim()).filter(Boolean),
-          note: $("#affiliateNote").value,
-          active: $("#affiliateActive").checked
-        }, id);
-        $("#affiliateLinkForm").hidden = true;
-        state.loaded = false;
-        await load({ force: true });
-        showNotice("Đã lưu sản phẩm/link tiếp thị.");
-      } catch (error) {
-        showNotice(error?.message || "Không thể lưu sản phẩm/link.", "error");
-      } finally {
-        setBusy(button, false);
-      }
-    });
-
-    $("#affiliateLinksTable")?.addEventListener("click", async event => {
-      const copyUrl = event.target.closest("[data-affiliate-copy]")?.dataset.affiliateCopy;
-      if (copyUrl) {
-        try {
-          await navigator.clipboard.writeText(copyUrl);
-          showNotice("Đã copy URL tiếp thị.");
-        } catch {
-          showNotice("Không thể copy URL.", "error");
-        }
-        return;
-      }
-
-      const editId = event.target.closest("[data-affiliate-edit]")?.dataset.affiliateEdit;
-      if (editId) {
-        const item = state.links.find(link => link.id === editId);
-        if (item) openLinkForm(item);
-        return;
-      }
-
-      const deleteId = event.target.closest("[data-affiliate-delete]")?.dataset.affiliateDelete;
-      if (deleteId && await confirmAction("Xóa sản phẩm/link", "Dữ liệu này sẽ bị xóa khỏi Kho tiếp thị liên kết.")) {
-        try {
-          await repo.deleteAffiliateLink(deleteId);
-          state.loaded = false;
-          await load({ force: true });
-          showNotice("Đã xóa sản phẩm/link.");
-        } catch (error) {
-          showNotice(error?.message || "Không thể xóa sản phẩm/link.", "error");
-        }
-      }
-    });
-  }
-
-  return { bind, load, render };
+/* Mina CMS v6.4 — Affiliate Manager Preview */
+.smartlink-manager-divider {
+  margin: 24px 0 16px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(89, 126, 158, .45);
 }
+.smartlink-manager-divider h3 { margin: 0 0 6px; }
+.smartlink-manager-divider p { margin: 0; color: #aaa6c7; line-height: 1.55; }
+
+.affiliate-manager-panel { overflow: hidden; }
+.affiliate-page-head,
+.affiliate-head-actions,
+.affiliate-section-head,
+.affiliate-form-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.affiliate-head-actions { flex-wrap: wrap; }
+.affiliate-section-head,
+.affiliate-form-head {
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+.affiliate-section-head h3,
+.affiliate-form-head h3 { margin: 0 0 5px; }
+.affiliate-section-head small,
+.affiliate-form-head p {
+  margin: 0;
+  color: #aaa6c7;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.btn.compact { padding: 8px 11px; font-size: 12px; }
+
+.affiliate-stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+.affiliate-stats article {
+  min-height: 86px;
+  padding: 15px;
+  border: 1px solid #31516e;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #101026, #0a0a1c);
+}
+.affiliate-stats strong {
+  display: block;
+  color: #7de8ff;
+  font-size: 27px;
+  line-height: 1;
+}
+.affiliate-stats span {
+  display: block;
+  margin-top: 8px;
+  color: #f4f2ff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.affiliate-layout {
+  display: grid;
+  grid-template-columns: minmax(270px, 330px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.affiliate-category-panel,
+.affiliate-main-panel {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #31516e;
+  border-radius: 18px;
+  background: #0c0c22;
+}
+.affiliate-category-form,
+.affiliate-link-form {
+  display: grid;
+  gap: 13px;
+  margin-bottom: 16px;
+  padding: 15px;
+  border: 1px solid rgba(239, 87, 205, .38);
+  border-radius: 15px;
+  background: linear-gradient(145deg, rgba(239,87,205,.07), rgba(125,232,255,.045));
+}
+.affiliate-category-form[hidden],
+.affiliate-link-form[hidden] { display: none !important; }
+.affiliate-active-row {
+  min-height: 48px;
+  margin-top: 24px;
+}
+
+.affiliate-category-tree { display: grid; gap: 6px; }
+.affiliate-category-all,
+.affiliate-category-node {
+  min-height: 44px;
+  border: 1px solid #263f59;
+  border-radius: 12px;
+  background: #11112a;
+}
+.affiliate-category-all {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.affiliate-category-all span {
+  color: #7de8ff;
+}
+.affiliate-category-all.active,
+.affiliate-category-select.active {
+  border-color: #ef57cd;
+  background: linear-gradient(90deg, rgba(125,232,255,.12), rgba(239,87,205,.15));
+}
+.affiliate-category-node {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-left: calc(var(--affiliate-depth, 0) * 14px);
+  overflow: hidden;
+}
+.affiliate-category-select {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 11px;
+  border: 0;
+  background: transparent;
+  color: #f7f5ff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.affiliate-category-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.affiliate-category-count {
+  flex: 0 0 auto;
+  min-width: 24px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #191936;
+  color: #7de8ff;
+  font-size: 11px;
+  text-align: center;
+}
+.affiliate-category-actions {
+  display: flex;
+  align-items: center;
+  padding-right: 5px;
+}
+.affiliate-category-actions button {
+  width: 29px;
+  height: 29px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #b9b5cf;
+  cursor: pointer;
+}
+.affiliate-category-actions button:hover {
+  color: #101020;
+  background: linear-gradient(90deg, #7de8ff, #ef57cd);
+}
+
+.affiliate-filter-bar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) 190px 150px 175px auto;
+  gap: 9px;
+  margin-bottom: 14px;
+}
+.affiliate-filter-bar > * { min-height: 44px; margin: 0; }
+
+.affiliate-links-table { display: grid; gap: 9px; }
+.affiliate-link-row {
+  display: grid;
+  grid-template-columns: minmax(250px, 1.15fr) minmax(230px, 1fr) 170px auto;
+  gap: 13px;
+  align-items: center;
+  padding: 13px;
+  border: 1px solid #29455f;
+  border-radius: 14px;
+  background: #101026;
+}
+.affiliate-link-row:hover { border-color: rgba(125,232,255,.7); }
+.affiliate-link-main,
+.affiliate-link-target { min-width: 0; }
+.affiliate-link-main > strong {
+  display: block;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.affiliate-link-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 9px;
+  margin-top: 5px;
+  color: #aaa6c7;
+  font-size: 11px;
+}
+.affiliate-link-meta span + span::before {
+  content: "•";
+  margin-right: 9px;
+  color: #56657f;
+}
+.affiliate-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+.affiliate-tags span {
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: rgba(125,232,255,.09);
+  color: #9cefff;
+  font-size: 10px;
+}
+.affiliate-link-target a {
+  display: block;
+  overflow: hidden;
+  color: #7de8ff;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.affiliate-link-target small {
+  display: block;
+  margin-top: 5px;
+  color: #aaa6c7;
+  font-size: 10px;
+}
+.affiliate-link-health {
+  padding: 9px 10px;
+  border: 1px solid #304d68;
+  border-radius: 12px;
+  background: #0b0b20;
+}
+.affiliate-link-health strong {
+  display: block;
+  font-size: 12px;
+}
+.affiliate-link-health small {
+  display: block;
+  margin-top: 5px;
+  color: #aaa6c7;
+  font-size: 10px;
+}
+.health-healthy strong { color: #70f3c2; }
+.health-redirect strong { color: #ffe08a; }
+.health-needs_check strong { color: #ffb86b; }
+.health-dead strong { color: #ff7895; }
+.health-paused strong { color: #b7b3c8; }
+.health-out_of_stock strong { color: #caa8ff; }
+.affiliate-link-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.affiliate-link-actions .btn { padding: 8px 10px; font-size: 11px; }
+
+.affiliate-empty-state {
+  display: grid;
+  gap: 6px;
+  padding: 28px 16px;
+  border: 1px dashed #31516e;
+  border-radius: 14px;
+  color: #aaa6c7;
+  text-align: center;
+}
+.affiliate-empty-state strong { color: #fff; }
+.affiliate-empty-state.error { border-color: rgba(255,107,139,.55); color: #ff9ab4; }
+
+.affiliate-scope-note {
+  margin-top: 16px;
+  padding: 13px 15px;
+  border: 1px dashed #31516e;
+  border-radius: 14px;
+  background: rgba(8,9,25,.55);
+  color: #aaa6c7;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.affiliate-scope-note strong { color: #7de8ff; }
+
+@media (max-width: 1350px) {
+  .affiliate-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .affiliate-filter-bar { grid-template-columns: 1fr 1fr; }
+  .affiliate-filter-bar input { grid-column: 1 / -1; }
+  .affiliate-link-row { grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr); }
+  .affiliate-link-actions { justify-content: flex-start; }
+}
+@media (max-width: 980px) {
+  .affiliate-layout { grid-template-columns: 1fr; }
+  .affiliate-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  .affiliate-page-head,
+  .affiliate-form-head { align-items: stretch; flex-direction: column; }
+  .affiliate-stats,
+  .affiliate-filter-bar,
+  .affiliate-link-row { grid-template-columns: 1fr; }
+  .affiliate-filter-bar input { grid-column: auto; }
+}
+/* Mina CMS v6.4.1 — Dynamic platforms & statuses */
+.affiliate-settings-panel {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid #31516e;
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(125,232,255,.055), rgba(239,87,205,.055));
+}
+.affiliate-settings-panel[hidden] { display: none !important; }
+.affiliate-settings-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+.affiliate-settings-head h3 { margin: 0 0 5px; }
+.affiliate-settings-head p {
+  margin: 0;
+  color: #aaa6c7;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.affiliate-settings-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+  padding: 6px;
+  border: 1px solid #263f59;
+  border-radius: 14px;
+  background: #0c0c22;
+}
+.affiliate-settings-tabs button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #aaa6c7;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.affiliate-settings-tabs button.active {
+  border-color: rgba(125,232,255,.65);
+  background: linear-gradient(90deg, rgba(125,232,255,.16), rgba(239,87,205,.18));
+  color: #fff;
+}
+.affiliate-settings-view { display: none; }
+.affiliate-settings-view.active { display: block; }
+.affiliate-inline-config-form {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(150px, .8fr) 110px 150px auto;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid rgba(239,87,205,.35);
+  border-radius: 15px;
+  background: #101026;
+}
+#affiliateStatusForm {
+  grid-template-columns: minmax(170px, 1fr) minmax(140px, .8fr) 90px 145px 100px 145px auto;
+}
+.affiliate-inline-config-form label { margin: 0; }
+.affiliate-config-checkbox {
+  min-height: 48px;
+  margin: 0;
+}
+.affiliate-inline-config-form .form-actions {
+  align-self: end;
+  margin: 0;
+}
+.affiliate-config-list {
+  display: grid;
+  gap: 8px;
+}
+.affiliate-config-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 60px;
+  padding: 11px 13px;
+  border: 1px solid #29455f;
+  border-radius: 13px;
+  background: #0d0d24;
+}
+.affiliate-config-row strong {
+  display: block;
+  color: #fff;
+  font-size: 14px;
+}
+.affiliate-config-row small {
+  display: block;
+  margin-top: 4px;
+  color: #aaa6c7;
+  font-size: 11px;
+}
+.affiliate-config-row-actions {
+  display: flex;
+  gap: 7px;
+}
+.affiliate-config-row-actions .btn {
+  padding: 8px 11px;
+  font-size: 11px;
+}
+.affiliate-link-health.health-active strong { color: #70f3c2; }
+.affiliate-link-health.health-review strong { color: #ffb86b; }
+.affiliate-link-health.health-warning strong { color: #ffe08a; }
+.affiliate-link-health.health-dead strong { color: #ff7895; }
+.affiliate-link-health.health-paused strong { color: #b7b3c8; }
+
+@media (max-width: 1350px) {
+  .affiliate-inline-config-form,
+  #affiliateStatusForm {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .affiliate-inline-config-form .form-actions {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 700px) {
+  .affiliate-settings-head { flex-direction: column; }
+  .affiliate-settings-tabs { flex-direction: column; }
+  .affiliate-inline-config-form,
+  #affiliateStatusForm {
+    grid-template-columns: 1fr;
+  }
+  .affiliate-config-row { grid-template-columns: 1fr; }
+  .affiliate-config-row-actions { justify-content: flex-start; }
+}
+
+/* Mina CMS v6.5 — Product → Multiple Offers */
+.affiliate-stats{grid-template-columns:repeat(6,minmax(0,1fr))}
+.affiliate-filter-bar{grid-template-columns:minmax(240px,1fr) repeat(4,minmax(145px,.55fr)) auto}
+.affiliate-products-table{display:grid;gap:13px}
+.affiliate-product-card{border:1px solid #29455f;border-radius:17px;background:#0e0e25;overflow:hidden}
+.affiliate-product-card.legacy{border-style:dashed;opacity:.92}
+.affiliate-product-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:15px}
+.affiliate-product-identity{display:flex;gap:13px;min-width:0}
+.affiliate-product-identity img,.affiliate-product-placeholder{width:72px;height:72px;flex:0 0 72px;border-radius:13px;object-fit:cover;border:1px solid #31516e;background:#15152f;display:grid;place-items:center;font-size:28px}
+.affiliate-product-identity>div{min-width:0}.affiliate-product-identity strong{display:block;font-size:16px;line-height:1.4}.affiliate-product-identity small{display:block;margin-top:5px;color:#aaa6c7;font-size:11px}
+.affiliate-product-actions,.affiliate-offer-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.legacy-badge{padding:6px 9px;border-radius:999px;background:#392d18;color:#ffdf8b;font-size:11px;font-weight:800}
+.affiliate-offers{border-top:1px solid #263f59;background:#09091d}
+.affiliate-offer-row{display:grid;grid-template-columns:minmax(240px,1.2fr) minmax(190px,.8fr) auto;gap:13px;align-items:center;padding:12px 15px;border-top:1px solid rgba(49,81,110,.45)}
+.affiliate-offer-row:first-child{border-top:0}.affiliate-offer-row>div{min-width:0}.affiliate-offer-row strong,.affiliate-offer-row small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.affiliate-offer-row small{margin-top:5px;color:#aaa6c7;font-size:10px}.affiliate-offer-actions button,.affiliate-config-row button{padding:7px 10px;border:1px solid #31516e;border-radius:10px;background:#11112a;color:#fff;cursor:pointer}.affiliate-offer-actions button:last-child,.affiliate-config-row button:last-child{border-color:#8c3957;color:#ff91ac}
+.affiliate-offer-row [class^="health-"]{font-size:11px;font-weight:800}.affiliate-offer-form{border-color:rgba(125,232,255,.45)}
+.affiliate-inline-config-form{grid-template-columns:minmax(180px,1fr) minmax(160px,.8fr) 100px 130px auto auto}
+.affiliate-config-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid #29455f;border-radius:12px;background:#101026}.affiliate-config-row small{display:block;margin-top:3px;color:#aaa6c7}
+@media(max-width:1300px){.affiliate-stats{grid-template-columns:repeat(3,1fr)}.affiliate-filter-bar{grid-template-columns:repeat(2,minmax(0,1fr))}.affiliate-inline-config-form{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:850px){.affiliate-stats{grid-template-columns:repeat(2,1fr)}.affiliate-product-head{flex-direction:column}.affiliate-product-actions{justify-content:flex-start}.affiliate-offer-row{grid-template-columns:1fr}.affiliate-offer-actions{justify-content:flex-start}.affiliate-filter-bar,.affiliate-inline-config-form{grid-template-columns:1fr}}
