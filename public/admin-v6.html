@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/admin-v6.css?v=6.3.0-full">
+  <link rel="stylesheet" href="/css/admin-v6.css?v=6.5.0-pagination">
   <link rel="stylesheet" href="/css/smartlink-dashboard.css?v=1.3.0-full">
   <link rel="stylesheet" href="/css/admin-v6-analytics-polish.css?v=6.3.3-readability-fix">
   <link rel="stylesheet" href="/css/affiliate-manager.css?v=6.4.1-dynamic-taxonomy">
@@ -445,6 +445,38 @@
               </div>
               <div id="postsTable" class="posts-table enterprise-table"></div>
             </div>
+
+            <nav id="postsPagination" class="posts-pagination" aria-label="Phân trang bài viết">
+              <div class="pagination-size-group">
+                <label for="postsPageSize">Hiển thị</label>
+                <select id="postsPageSize" aria-label="Số bài mỗi trang">
+                  <option value="12">12</option>
+                  <option value="24" selected>24</option>
+                  <option value="36">36</option>
+                  <option value="48">48</option>
+                  <option value="60">60</option>
+                </select>
+                <span>bài/trang</span>
+              </div>
+
+              <div class="pagination-center">
+                <strong id="postsPaginationRange">Đang xem 0 / 0 bài</strong>
+                <div class="pagination-buttons">
+                  <button id="postsFirstPage" class="pagination-nav" type="button" title="Trang đầu">«</button>
+                  <button id="postsPrevPage" class="pagination-nav" type="button">← Trước</button>
+                  <div id="postsPageNumbers" class="pagination-numbers"></div>
+                  <button id="postsNextPage" class="pagination-nav" type="button">Sau →</button>
+                  <button id="postsLastPage" class="pagination-nav" type="button" title="Trang cuối">»</button>
+                </div>
+              </div>
+
+              <div class="pagination-jump">
+                <span id="postsPageSummary">Trang 1 / 1</span>
+                <label for="postsPageJump">Đi tới</label>
+                <input id="postsPageJump" type="number" min="1" value="1" inputmode="numeric">
+                <button id="postsPageJumpButton" class="pagination-go" type="button">Đi</button>
+              </div>
+            </nav>
           </section>
         </div>
       </section>
@@ -939,7 +971,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script type="module" src="/js/smartlink-dashboard.js?v=1.3.0-full"></script>
   <script type="module">
-    import("/js/admin-v6.js?v=6.4.1-dynamic-taxonomy").catch(error => {
+    import("/js/admin-v6.js?v=6.5.0-pagination").catch(error => {
       console.error("Không tải được admin-v6.js", error);
       const badge = document.getElementById("authBadge");
       const notice = document.getElementById("notice");
