@@ -11,7 +11,16 @@ let loadedPostSlug = "";
 
 function defaultBlock(type) {
   const base = { id: uid(), type };
-  if (type === "paragraph") return { ...base, text: "" };
+  if (type === "paragraph") return {
+    ...base,
+    text: "",
+    html: "",
+    format: "p",
+    fontSize: "16",
+    align: "left",
+    color: "",
+    backgroundColor: ""
+  };
   if (type === "image") return { ...base, url: "", caption: "", file: null };
   if (type === "gallery") return { ...base, images: [], files: [] };
   if (type === "youtube") return { ...base, url: "", caption: "" };
@@ -20,9 +29,20 @@ function defaultBlock(type) {
 }
 
 function syncBlocks() {
-  $$(".content-block").forEach((node, index) => node.querySelectorAll("[data-field]").forEach(input => {
-    if (state.blocks[index]) state.blocks[index][input.dataset.field] = input.value;
-  }));
+  $$(".content-block").forEach((node, index) => {
+    const block = state.blocks[index];
+    if (!block) return;
+
+    const richEditor = node.querySelector("[data-rich-editor]");
+    if (richEditor && block.type === "paragraph") {
+      block.html = richEditor.innerHTML.trim();
+      block.text = richEditor.innerText.replace(/\u00a0/g, " ").trim();
+    }
+
+    node.querySelectorAll("[data-field]").forEach(input => {
+      block[input.dataset.field] = input.value;
+    });
+  });
 }
 
 function renderBlocks() {
@@ -30,13 +50,105 @@ function renderBlocks() {
   $("#contentBlocks").innerHTML = state.blocks.map((b, i) => {
     const actions = `<div class="block-actions"><button type="button" data-block-action="up" data-index="${i}">↑</button><button type="button" data-block-action="down" data-index="${i}">↓</button><button type="button" class="delete" data-block-action="delete" data-index="${i}">Xóa</button></div>`;
     let body = "";
-    if (b.type === "paragraph") body = `<textarea data-field="text" rows="6">${escapeHtml(b.text || "")}</textarea>`;
+    if (b.type === "paragraph") {
+      const safeHtml = b.html || escapeHtml(b.text || "").replace(/\n/g, "<br>");
+      const format = ["p", "h2", "h3", "h4"].includes(b.format) ? b.format : "p";
+      const fontSize = ["14", "16", "18", "20", "24", "28", "32"].includes(String(b.fontSize)) ? String(b.fontSize) : "16";
+      const align = ["left", "center", "right", "justify"].includes(b.align) ? b.align : "left";
+      body = `
+        <div class="rich-editor-shell" data-rich-block="${i}">
+          <div class="rich-editor-toolbar" role="toolbar" aria-label="Định dạng đoạn văn">
+            <select data-rich-setting="format" data-index="${i}" title="Kiểu đoạn">
+              <option value="p" ${format === "p" ? "selected" : ""}>Đoạn văn</option>
+              <option value="h2" ${format === "h2" ? "selected" : ""}>Tiêu đề H2</option>
+              <option value="h3" ${format === "h3" ? "selected" : ""}>Tiêu đề H3</option>
+              <option value="h4" ${format === "h4" ? "selected" : ""}>Tiêu đề H4</option>
+            </select>
+            <select data-rich-setting="fontSize" data-index="${i}" title="Cỡ chữ">
+              ${[14,16,18,20,24,28,32].map(size => `<option value="${size}" ${fontSize === String(size) ? "selected" : ""}>${size}px</option>`).join("")}
+            </select>
+            <button type="button" data-rich-command="bold" data-index="${i}" title="In đậm"><b>B</b></button>
+            <button type="button" data-rich-command="italic" data-index="${i}" title="In nghiêng"><i>I</i></button>
+            <button type="button" data-rich-command="underline" data-index="${i}" title="Gạch chân"><u>U</u></button>
+            <button type="button" data-rich-command="justifyLeft" data-index="${i}" title="Căn trái">☰</button>
+            <button type="button" data-rich-command="justifyCenter" data-index="${i}" title="Căn giữa">≡</button>
+            <button type="button" data-rich-command="justifyRight" data-index="${i}" title="Căn phải">☷</button>
+            <button type="button" data-rich-command="insertUnorderedList" data-index="${i}" title="Danh sách chấm">• List</button>
+            <button type="button" data-rich-command="insertOrderedList" data-index="${i}" title="Danh sách số">1. List</button>
+            <button type="button" data-rich-command="createLink" data-index="${i}" title="Chèn liên kết">🔗</button>
+            <button type="button" data-rich-command="insertHorizontalRule" data-index="${i}" title="Đường phân cách">—</button>
+            <button type="button" data-rich-command="removeFormat" data-index="${i}" title="Xóa định dạng">Tx</button>
+            <button type="button" data-rich-command="undo" data-index="${i}" title="Hoàn tác">↶</button>
+            <button type="button" data-rich-command="redo" data-index="${i}" title="Làm lại">↷</button>
+            <label class="rich-color-control" title="Màu chữ">A<input type="color" data-rich-setting="color" data-index="${i}" value="${escapeHtml(b.color || "#ffffff")}"></label>
+            <label class="rich-color-control" title="Màu nền">▧<input type="color" data-rich-setting="backgroundColor" data-index="${i}" value="${escapeHtml(b.backgroundColor || "#111126")}"></label>
+          </div>
+          <div class="rich-editor-canvas"
+            contenteditable="true"
+            spellcheck="true"
+            data-rich-editor="${i}"
+            data-format="${format}"
+            style="font-size:${fontSize}px;text-align:${align};${b.color ? `color:${escapeHtml(b.color)};` : ""}${b.backgroundColor ? `background-color:${escapeHtml(b.backgroundColor)};` : ""}"
+            data-placeholder="Viết nội dung và chọn chữ để định dạng...">${safeHtml}</div>
+          <small class="rich-editor-help">Bôi đen phần chữ cần chỉnh, sau đó dùng thanh công cụ. Nội dung cũ vẫn được giữ nguyên.</small>
+        </div>`;
+    }
     if (b.type === "image") body = `<input data-field="url" type="url" value="${escapeHtml(b.url || "")}" placeholder="URL ảnh"><input type="file" accept="image/*" data-image-file="${i}"><input data-field="caption" value="${escapeHtml(b.caption || "")}" placeholder="Chú thích"><div class="image-preview">${b.url ? `<img src="${escapeHtml(b.url)}">` : ""}</div>`;
     if (b.type === "gallery") body = `<input type="file" accept="image/*" multiple data-gallery-files="${i}"><div class="gallery-preview">${(b.images || []).map((url, j) => `<div class="gallery-item"><img src="${escapeHtml(url)}"><button type="button" data-remove-gallery="${i}:${j}">×</button></div>`).join("")}</div>`;
     if (b.type === "youtube") body = `<input data-field="url" type="url" value="${escapeHtml(b.url || "")}" placeholder="YouTube URL"><input data-field="caption" value="${escapeHtml(b.caption || "")}" placeholder="Chú thích">`;
     if (b.type === "quote") body = `<textarea data-field="text" rows="4">${escapeHtml(b.text || "")}</textarea><input data-field="author" value="${escapeHtml(b.author || "")}" placeholder="Tác giả">`;
     return `<article class="content-block"><div class="block-head"><div class="block-title">${i + 1}. ${b.type}</div>${actions}</div>${body}</article>`;
   }).join("");
+}
+
+function getRichEditor(index) {
+  return document.querySelector(`[data-rich-editor="${index}"]`);
+}
+
+function focusRichEditor(index) {
+  const editor = getRichEditor(index);
+  editor?.focus();
+  return editor;
+}
+
+function applyRichCommand(command, index, value = null) {
+  const editor = focusRichEditor(index);
+  if (!editor) return;
+
+  if (command === "createLink") {
+    const url = window.prompt("Nhập đường dẫn liên kết:", "https://");
+    if (!url) return;
+    document.execCommand("createLink", false, url);
+  } else {
+    document.execCommand(command, false, value);
+  }
+
+  editor.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+function applyRichSetting(setting, index, value) {
+  const block = state.blocks[index];
+  const editor = focusRichEditor(index);
+  if (!block || !editor) return;
+
+  if (setting === "format") {
+    block.format = value;
+    document.execCommand("formatBlock", false, value);
+  }
+  if (setting === "fontSize") {
+    block.fontSize = value;
+    editor.style.fontSize = `${value}px`;
+  }
+  if (setting === "color") {
+    block.color = value;
+    document.execCommand("foreColor", false, value);
+  }
+  if (setting === "backgroundColor") {
+    block.backgroundColor = value;
+    document.execCommand("hiliteColor", false, value);
+  }
+
+  editor.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
 function renderCover() {
@@ -312,6 +424,13 @@ export function createEditorModule({ repo, refreshPosts, openView }) {
     $("#blockToolbar").addEventListener("click", e => { const type = e.target.dataset.addBlock; if (type) { syncBlocks(); state.blocks.push(defaultBlock(type)); renderBlocks(); } });
     $("#contentBlocks").addEventListener("input", syncBlocks);
     $("#contentBlocks").addEventListener("click", e => {
+      const richButton = e.target.closest("[data-rich-command]");
+      if (richButton) {
+        e.preventDefault();
+        applyRichCommand(richButton.dataset.richCommand, Number(richButton.dataset.index));
+        return;
+      }
+
       const i = Number(e.target.dataset.index);
       const action = e.target.dataset.blockAction;
       if (action) {
@@ -330,6 +449,12 @@ export function createEditorModule({ repo, refreshPosts, openView }) {
       }
     });
     $("#contentBlocks").addEventListener("change", e => {
+      if (e.target.dataset.richSetting) {
+        applyRichSetting(e.target.dataset.richSetting, Number(e.target.dataset.index), e.target.value);
+        syncBlocks();
+        return;
+      }
+
       if (e.target.dataset.imageFile !== undefined) {
         const i = Number(e.target.dataset.imageFile);
         state.blocks[i].file = e.target.files?.[0] || null;

@@ -12,20 +12,19 @@ const activeModuleId = document.body.dataset.module || "";
  * Dùng hai requestAnimationFrame để trình duyệt hoàn tất cập nhật chiều cao danh sách
  * trước khi tính vị trí cuộn. Áp dụng chung cho Blog, module, danh mục và Wiki.
  */
-function scrollAfterPagination(targetSelectors = [], offset = 104) {
-  const selectors = Array.isArray(targetSelectors) ? targetSelectors : [targetSelectors];
+function scrollAfterPagination() {
+  // Người dùng muốn mỗi lần đổi trang luôn trở về đầu trang, không chỉ đầu danh sách.
+  // Dùng rAF + setTimeout để chạy sau khi URL và DOM đã cập nhật hoàn tất.
+  const performScroll = () => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
 
   window.requestAnimationFrame(() => {
     window.requestAnimationFrame(() => {
-      const target = selectors
-        .map(selector => typeof selector === "string" ? document.querySelector(selector) : selector)
-        .find(Boolean);
-
-      if (!target) return;
-
-      const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - offset);
-      const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-      window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
+      performScroll();
+      window.setTimeout(performScroll, 60);
     });
   });
 }
@@ -1293,6 +1292,58 @@ async function blog() {
   }
 }
 
+function sanitizeRichHtml(rawHtml = "") {
+  const template = document.createElement("template");
+  template.innerHTML = String(rawHtml || "");
+
+  const allowedTags = new Set([
+    "P", "BR", "STRONG", "B", "EM", "I", "U", "S", "DEL",
+    "H2", "H3", "H4", "UL", "OL", "LI", "A", "HR", "BLOCKQUOTE",
+    "SPAN", "FONT", "CODE", "PRE"
+  ]);
+  const allowedStyles = new Set([
+    "color", "background-color", "font-size", "font-weight", "font-style",
+    "text-decoration", "text-align"
+  ]);
+
+  [...template.content.querySelectorAll("*")].forEach(node => {
+    if (!allowedTags.has(node.tagName)) {
+      node.replaceWith(...node.childNodes);
+      return;
+    }
+
+    [...node.attributes].forEach(attribute => {
+      const name = attribute.name.toLowerCase();
+      if (name === "href" && node.tagName === "A") {
+        try {
+          const url = new URL(attribute.value, location.origin);
+          if (!["http:", "https:", "mailto:"].includes(url.protocol)) node.removeAttribute(attribute.name);
+          else {
+            node.setAttribute("target", "_blank");
+            node.setAttribute("rel", "noopener noreferrer");
+          }
+        } catch {
+          node.removeAttribute(attribute.name);
+        }
+        return;
+      }
+      if (name === "style") {
+        const safeDeclarations = attribute.value.split(";").map(item => item.trim()).filter(Boolean).filter(item => {
+          const property = item.split(":")[0]?.trim().toLowerCase();
+          return allowedStyles.has(property);
+        });
+        if (safeDeclarations.length) node.setAttribute("style", safeDeclarations.join(";"));
+        else node.removeAttribute("style");
+        return;
+      }
+      if (node.tagName === "FONT" && ["color", "size", "face"].includes(name)) return;
+      node.removeAttribute(attribute.name);
+    });
+  });
+
+  return template.innerHTML;
+}
+
 function renderContentBlocks(post) {
   const blocks = Array.isArray(post.contentBlocks) ? post.contentBlocks : [];
 
@@ -1308,7 +1359,19 @@ function renderContentBlocks(post) {
     const text = block?.text || block?.content || block?.value || "";
 
     if (type === "paragraph" || type === "text") {
-      return `<p>${esc(text).replace(/\n/g, "<br>")}</p>`;
+      const format = ["p", "h2", "h3", "h4"].includes(block.format) ? block.format : "p";
+      const fontSize = [14, 16, 18, 20, 24, 28, 32].includes(Number(block.fontSize)) ? Number(block.fontSize) : 16;
+      const align = ["left", "center", "right", "justify"].includes(block.align) ? block.align : "left";
+      const style = [
+        `font-size:${fontSize}px`,
+        `text-align:${align}`,
+        block.color ? `color:${block.color}` : "",
+        block.backgroundColor ? `background-color:${block.backgroundColor}` : ""
+      ].filter(Boolean).join(";");
+      const html = block.html
+        ? sanitizeRichHtml(block.html)
+        : esc(text).replace(/\n/g, "<br>");
+      return `<div class="post-rich-block post-rich-block--${format}" style="${esc(style)}">${html}</div>`;
     }
     if (["heading", "heading2", "h2", "title"].includes(type)) {
       return `<h2 id="post-section-${index}">${esc(text)}</h2>`;
