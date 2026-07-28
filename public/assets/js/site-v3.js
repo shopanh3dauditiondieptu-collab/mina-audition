@@ -1428,7 +1428,34 @@ function renderContentBlocks(post) {
     if (type === "youtube") {
       const url = block.url || block.youtubeUrl || "";
       const id = url.match(/(?:youtu\.be\/|v=|embed\/)([\w-]{6,})/)?.[1];
-      return id ? `<div class="post-video-frame"><iframe loading="lazy" src="https://www.youtube.com/embed/${esc(id)}" title="Video trong bài viết" allowfullscreen></iframe></div>` : "";
+      if (!id) return "";
+
+      const youtubeUrl = `https://www.youtube.com/watch?v=${id}`;
+      const videoTitle = block.title || block.caption || "Video tham khảo Skill D8";
+
+      return `
+        <section class="post-video-card" aria-label="${esc(videoTitle)}">
+          <div class="post-video-frame">
+            <iframe
+              loading="lazy"
+              src="https://www.youtube.com/embed/${esc(id)}"
+              title="${esc(videoTitle)}"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allowfullscreen></iframe>
+            <span class="post-video-badge">VIDEO</span>
+          </div>
+          <div class="post-video-actions">
+            <div class="post-video-info">
+              <span>MINA AUDITION • VIDEO THAM KHẢO</span>
+              <strong>${esc(videoTitle)}</strong>
+            </div>
+            <a href="${esc(youtubeUrl)}" target="_blank" rel="noopener noreferrer">
+              <b aria-hidden="true">▶</b>
+              <i>Xem ngay trên YouTube ↗</i>
+            </a>
+          </div>
+        </section>`;
     }
     return "";
   }).join("");
@@ -1720,6 +1747,14 @@ async function postPage() {
     const type = classify(post);
     const internalId = getInternalId(post);
     const prompt = extractPrompt(post);
+    const canCopyPrompt = ["prompt", "outfit"].includes(type) && Boolean(prompt);
+    const communityMessage = {
+      prompt: "💙 Bạn có thể chia sẻ ảnh đã tạo hoặc phiên bản prompt của mình dưới phần bình luận để mọi người cùng tham khảo và sáng tạo thêm.",
+      outfit: "💙 Đừng ngần ngại chia sẻ bộ Mix & Match của bạn dưới phần bình luận để mọi người cùng tham khảo và sáng tạo thêm nhiều phong cách mới!",
+      video: "💙 Đừng ngần ngại chia sẻ những màn D8 bạn yêu thích dưới phần bình luận để mọi người cùng tham khảo, luyện tập và tạo thêm nhiều màn nhảy đẹp mắt!",
+      academy: "💙 Bạn đã thử cách hướng dẫn trong bài chưa? Hãy chia sẻ kết quả hoặc câu hỏi dưới phần bình luận để mọi người cùng trao đổi.",
+      article: "💙 Hãy chia sẻ cảm nhận hoặc kinh nghiệm của bạn dưới phần bình luận để cộng đồng Mina cùng tham khảo và trao đổi."
+    }[type];
     const smartUrl = affiliateUrl(post, "website-post");
     const currentIndex = allPosts.findIndex(item => String(item.id) === String(post.id));
     const newerPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
@@ -1785,20 +1820,19 @@ async function postPage() {
 
           ${renderContentBlocks(post)}
 
-          ${prompt ? `
+          ${canCopyPrompt ? `
             <aside class="post-prompt-box">
               <div>
-                <span>📋 PROMPT AI</span>
-                <strong>Sao chép nội dung để tạo phiên bản của riêng bạn</strong>
+                <span>📋 ${type === "outfit" ? "MIX & MATCH" : "PROMPT AI"}</span>
+                <strong>${type === "outfit"
+                  ? "Sao chép nội dung để lưu lại hoặc tạo phiên bản phối đồ của riêng bạn"
+                  : "Sao chép nội dung để tạo phiên bản của riêng bạn"}</strong>
               </div>
-              <button id="copyPromptButton" type="button">Copy Prompt</button>
+              <button id="copyPromptButton" type="button">${type === "outfit" ? "Copy nội dung" : "Copy Prompt"}</button>
             </aside>
           ` : ""}
 
-          <blockquote class="post-community-note">
-            💙 Đừng ngần ngại chia sẻ mã lệnh Mix Match của bạn dưới phần bình luận
-            để mọi người cùng tham khảo, học hỏi và sáng tạo thêm nhiều phong cách mới!
-          </blockquote>
+          <blockquote class="post-community-note">${esc(communityMessage)}</blockquote>
 
           ${renderFacebookBlock(post)}
 
