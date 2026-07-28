@@ -1,4 +1,4 @@
-import { listPosts, listSkills, getPost, getPostBySlug } from "./repository.js";
+import { listPosts, listSkills, getPost } from "./repository.js";
 import { esc, formatDate, placeholder, normalize } from "./utils.js";
 
 const page = document.body.dataset.page;
@@ -7,6 +7,28 @@ const AFFILIATE_SLUG = "taoanh3d";
 const CATEGORY_TREE_URL = "/data/category-tree.json";
 
 const activeModuleId = document.body.dataset.module || "";
+
+/* Mina v6.0.1 — cuộn ổn định sau khi DOM phân trang đã render xong.
+ * Dùng hai requestAnimationFrame để trình duyệt hoàn tất cập nhật chiều cao danh sách
+ * trước khi tính vị trí cuộn. Áp dụng chung cho Blog, module, danh mục và Wiki.
+ */
+function scrollAfterPagination(targetSelectors = [], offset = 104) {
+  const selectors = Array.isArray(targetSelectors) ? targetSelectors : [targetSelectors];
+
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      const target = selectors
+        .map(selector => typeof selector === "string" ? document.querySelector(selector) : selector)
+        .find(Boolean);
+
+      if (!target) return;
+
+      const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - offset);
+      const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+      window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" });
+    });
+  });
+}
 
 function findCategoryNode(nodes, target) {
   const wanted = normalize(target || "");
@@ -374,20 +396,7 @@ function typeLabel(type) {
 }
 
 function postUrl(post) {
-  const slug = String(post?.slugNormalized || post?.slug || "")
-    .trim()
-    .replace(/^\/+|\/+$/g, "");
-
-  return slug
-    ? `/${encodeURIComponent(slug)}`
-    : `/post.html?id=${encodeURIComponent(post?.id || "")}`;
-}
-
-function formatCompactViews(rawValue) {
-  const views = Math.max(0, Number(rawValue) || 0);
-  if (views < 1000) return new Intl.NumberFormat("vi-VN").format(views);
-  if (views < 1_000_000) return `${(views / 1000).toFixed(views >= 10_000 ? 0 : 1).replace(".0", "")}K`;
-  return `${(views / 1_000_000).toFixed(views >= 10_000_000 ? 0 : 1).replace(".0", "")}M`;
+  return `/post.html?id=${encodeURIComponent(post.id)}`;
 }
 
 function affiliateUrl(post, source = "website-card") {
@@ -556,16 +565,6 @@ function ensureHomeFeaturedStyles() {
       font-size: 10px;
       box-shadow: none;
     }
-    .card-meta .mina-card-views {
-      margin-left: auto;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      color: rgba(255,255,255,.82);
-      font-weight: 800;
-      white-space: nowrap;
-    }
-    .card-meta .mina-card-views.is-popular { color: #ffd166; }
     .content-card[data-type="prompt"] { --mina-card-accent:#3b82f6; }
     .content-card[data-type="outfit"] { --mina-card-accent:#22c55e; }
     .content-card[data-type="academy"] { --mina-card-accent:#a855f7; }
@@ -707,9 +706,6 @@ function cardPost(post) {
         <div class="card-meta">
           <span>${esc(getCategory(post))}</span>
           <span>${formatDate(post.updatedAt || post.createdAt)}</span>
-          <span class="mina-card-views ${getPostViews(post) >= MINA_BADGE_CONFIG.hotViews ? "is-popular" : ""}" title="${new Intl.NumberFormat("vi-VN").format(getPostViews(post))} lượt xem">
-            👁 ${formatCompactViews(getPostViews(post))}
-          </span>
         </div>
         <div class="card-actions">
           <a class="primary-action" href="${postUrl(post)}">Xem bài</a>
@@ -1100,11 +1096,11 @@ async function blog() {
     };
 
     const scrollToResults = () => {
-      const target = document.querySelector(".library-toolbar") || box;
-      requestAnimationFrame(() => {
-        const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - 105);
-        window.scrollTo({ top, behavior: "smooth" });
-      });
+      scrollAfterPagination([
+        ".library-toolbar",
+        ".blog-library-main",
+        "#posts"
+      ], 108);
     };
 
     const renderPagination = (totalItems, totalPages) => {
@@ -1223,6 +1219,7 @@ async function blog() {
       activeCategoryName = categoryName;
       category.value = categoryValue;
       render({ resetPage: true });
+      scrollToResults();
     });
 
     if (activeCategory || activeCategoryName) {
@@ -1556,21 +1553,12 @@ function setupPostTableOfContents() {
 
 async function postPage() {
   const box = document.querySelector("#article");
-  const params = new URLSearchParams(location.search);
-  const id = params.get("id");
-  const querySlug = params.get("slug");
-  const pathSlug = location.pathname
-    .replace(/^\/+|\/+$/g, "")
-    .split("/")
-    .filter(Boolean)
-    .at(-1) || "";
-  const reservedPaths = new Set(["post.html", "index.html", "blog.html"]);
-  const slug = querySlug || (!reservedPaths.has(pathSlug.toLowerCase()) ? decodeURIComponent(pathSlug) : "");
+  const id = new URLSearchParams(location.search).get("id");
 
   if (!box) return;
 
-  if (!id && !slug) {
-    box.innerHTML = `<div class="empty">Không xác định được bài viết.</div>`;
+  if (!id) {
+    box.innerHTML = `<div class="empty">Thiếu ID bài viết.</div>`;
     return;
   }
 
@@ -1616,18 +1604,10 @@ async function postPage() {
   };
 
   try {
-    const post = id
-      ? await getPost(id)
-      : await getPostBySlug(slug);
+    const post = await getPost(id);
 
     if (!post) {
       box.innerHTML = `<div class="empty">Bài viết không tồn tại.</div>`;
-      return;
-    }
-
-    // URL ID cũ vẫn đọc được, sau đó chuyển sang URL slug sạch.
-    if (id && (post.slugNormalized || post.slug) && location.pathname.endsWith("/post.html")) {
-      location.replace(postUrl(post));
       return;
     }
 
@@ -2388,7 +2368,11 @@ async function wiki() {
       syncUrl(historyMode);
       if (!modal.hidden) closeModal();
       if (scroll) {
-        document.querySelector(".wiki-toolbar")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        scrollAfterPagination([
+          ".wiki-toolbar",
+          ".wiki-library",
+          "#skills"
+        ], 108);
       }
     };
 
@@ -2473,7 +2457,7 @@ async function wiki() {
 
     window.addEventListener("popstate", () => {
       readStateFromUrl();
-      render({ historyMode: "replace" });
+      render({ historyMode: "replace", scroll: true });
     });
   } catch (error) {
     box.innerHTML = `<div class="empty">${esc(error.message)}</div>`;
