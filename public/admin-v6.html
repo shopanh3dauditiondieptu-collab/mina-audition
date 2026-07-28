@@ -5,29 +5,116 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#09061a">
   <meta name="robots" content="noindex,nofollow">
-  <title>Mina CMS v6 Enterprise</title>
+  <title>Mina CMS v6.3 Enterprise Full</title>
   <link rel="icon" href="/assets/images/logo-mina.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/admin-v6.css?v=6.2.0-recovery">
-  <link rel="stylesheet" href="/css/smartlink-dashboard.css?v=1.1.0">
+  <link rel="stylesheet" href="/css/admin-v6.css?v=6.3.0-full">
+  <link rel="stylesheet" href="/css/smartlink-dashboard.css?v=1.3.0-full">
+
   <style>
-    .slug-enterprise-box{margin-top:14px;padding:14px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.035)}
-    .slug-enterprise-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:end}
-    .slug-enterprise-actions{display:flex;gap:8px;flex-wrap:wrap}
-    .slug-enterprise-meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px}
-    .slug-url-preview{font-size:13px;word-break:break-all;opacity:.88}
-    .slug-status{font-size:13px;font-weight:700}
-    .slug-status[data-kind="success"]{color:#59d98e}.slug-status[data-kind="error"]{color:#ff7c8d}.slug-status[data-kind="warning"]{color:#f6c65b}.slug-status[data-kind="checking"]{color:#75b7ff}
-    .slug-options{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px}
-    .slug-lock-message{margin-top:10px;font-size:13px;padding:9px 11px;border-radius:10px;background:rgba(246,198,91,.09)}
-    @media(max-width:760px){.slug-enterprise-row{grid-template-columns:1fr}.slug-enterprise-actions .btn{flex:1}}
+    .post-smartlink-box {
+      margin: 18px 0;
+      padding: 18px;
+      border: 1px solid rgba(103, 224, 255, .35);
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(64, 224, 255, .07), rgba(234, 77, 202, .08));
+    }
+    .post-smartlink-head,
+    .post-smartlink-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .post-smartlink-head strong {
+      display: block;
+      color: #7eeaff;
+      font-size: 15px;
+    }
+    .post-smartlink-head small {
+      display: block;
+      margin-top: 5px;
+      color: #aeb6d8;
+      line-height: 1.5;
+    }
+    .post-smartlink-grid {
+      margin-top: 14px;
+    }
+    .post-smartlink-grid input[readonly] {
+      color: #7eeaff;
+      background: rgba(4, 8, 25, .7);
+    }
+    .post-smartlink-actions {
+      margin-top: 12px;
+    }
+    .post-smartlink-actions > div {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .post-smartlink-status {
+      color: #aeb6d8;
+      font-size: 13px;
+    }
+    .post-smartlink-status.active {
+      color: #70f3c2;
+      font-weight: 700;
+    }
+    .post-smartlink-status.warning {
+      color: #ffd166;
+      font-weight: 700;
+    }
+    .post-smartlink-reload {
+      white-space: nowrap;
+    }
+
+    .homepage-display-settings {
+      display: grid;
+      gap: 14px;
+      margin: 18px 0;
+      padding: 18px;
+      border: 1px solid rgba(234, 77, 202, .32);
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(234, 77, 202, .08), rgba(103, 224, 255, .06));
+    }
+    .homepage-display-settings h3 {
+      margin: 0 0 5px;
+      color: #f5b8eb;
+      font-size: 16px;
+    }
+    .homepage-display-settings p {
+      margin: 0;
+      color: #aeb6d8;
+      line-height: 1.5;
+    }
+    .homepage-display-settings .priority-help {
+      display: block;
+      margin-top: 6px;
+      color: #aeb6d8;
+      line-height: 1.45;
+    }
+    .homepage-display-settings input:disabled {
+      cursor: not-allowed;
+      opacity: .55;
+    }
+    @media (max-width: 760px) {
+      .post-smartlink-head,
+      .post-smartlink-actions {
+        align-items: stretch;
+        flex-direction: column;
+      }
+      .post-smartlink-reload {
+        width: 100%;
+      }
+    }
   </style>
+
 </head>
 <body>
   <aside class="sidebar">
-    <a class="brand" href="/"><img src="/assets/images/logo-mina.png" alt=""><span>Mina CMS v6</span></a>
+    <a class="brand" href="/"><img src="/assets/images/logo-mina.png" alt=""><span>Mina CMS v6.3</span></a>
     <nav>
       <button class="nav-item active" data-view="editor">✦ Đăng bài</button>
       <button class="nav-item" data-view="posts">▦ Quản lý bài</button>
@@ -78,16 +165,16 @@
           </div>
 
           <div class="grid four category-grid">
-            <label><span>Chuyên mục</span><select id="categoryLevel1"><option value="">Chọn chuyên mục</option></select></label>
-            <label><span>Danh mục</span><select id="categoryLevel2" disabled><option value="">Chọn danh mục</option></select></label>
+            <label><span>Module</span><select id="categoryLevel1"><option value="">Chọn module</option></select></label>
+            <label><span>Danh mục chính</span><select id="categoryLevel2" disabled><option value="">Chọn danh mục</option></select></label>
             <label><span>Danh mục con</span><select id="categoryLevel3" disabled><option value="">Chọn danh mục con</option></select></label>
             <label><span>Loại</span><select id="categoryLevel4" disabled><option value="">Chọn loại</option></select></label>
           </div>
           <div id="categoryPathPreview" class="category-path">Chưa chọn danh mục.</div>
 
           <div class="grid two">
-            <div>
-              <span>Slug bài viết</span>
+            <div class="slug-enterprise-field">
+              <span class="field-label">Slug bài viết</span>
               <div class="slug-enterprise-box">
                 <div class="slug-enterprise-row">
                   <label>
@@ -110,11 +197,58 @@
                 <div id="slugLockMessage" class="slug-lock-message" hidden></div>
               </div>
             </div>
-            <label>
-              <span>AI ID / Mã nội bộ</span>
-              <input id="internalId" placeholder="AI-0104 hoặc TEST-0001">
-            </label>
+            <div class="internal-id-field">
+              <label>
+                <span>AI ID / Mã nội bộ</span>
+                <div class="internal-id-input-row">
+                  <input id="internalId" autocomplete="off" spellcheck="false" placeholder="Nhập tay: AI-0104, DT8006, GO0017...">
+                  <button id="checkInternalIdButton" class="btn ghost internal-id-check-button" type="button">Kiểm tra</button>
+                </div>
+              </label>
+              <div id="internalIdStatus" class="internal-id-status is-empty" aria-live="polite">Nhập mã để CMS kiểm tra trùng. CMS không tự sinh hoặc tự thay đổi mã.</div>
+              <div class="recent-id-box">
+                <div class="recent-id-head">
+                  <strong>📋 Mã gần đây</strong>
+                  <span id="recentInternalIdModule">Tất cả module</span>
+                </div>
+                <div id="recentInternalIds" class="recent-id-list"><span class="recent-id-empty">Chưa có dữ liệu.</span></div>
+                <small>Bấm vào một mã để điền nhanh. Bạn vẫn toàn quyền quyết định mã sẽ lưu.</small>
+              </div>
+            </div>
           </div>
+
+
+          <section class="post-smartlink-box" aria-labelledby="postSmartLinkHeading">
+            <div class="post-smartlink-head">
+              <div>
+                <strong id="postSmartLinkHeading">🔗 Smart Link của bài viết</strong>
+                <small>Chọn một liên kết đã tạo trong Smart Link Manager. Biểu tượng 🔗 tại Quản lý bài sẽ sáng sau khi lưu.</small>
+              </div>
+              <button id="reloadPostSmartLinksButton" class="btn ghost post-smartlink-reload" type="button">Tải lại danh sách</button>
+            </div>
+
+            <div class="grid two post-smartlink-grid">
+              <label>
+                <span>Chọn Smart Link</span>
+                <select id="postSmartLinkSelect">
+                  <option value="">Không gắn Smart Link</option>
+                </select>
+              </label>
+
+              <label>
+                <span>Đường dẫn sẽ lưu</span>
+                <input id="postSmartLinkPreview" type="text" readonly placeholder="Chưa chọn Smart Link">
+              </label>
+            </div>
+
+            <div class="post-smartlink-actions">
+              <span id="postSmartLinkStatus" class="post-smartlink-status">Chưa gắn Smart Link.</span>
+              <div>
+                <button id="copyPostSmartLinkButton" class="btn ghost" type="button" disabled>Copy link</button>
+                <button id="openPostSmartLinkButton" class="btn ghost" type="button" disabled>Mở thử</button>
+              </div>
+            </div>
+          </section>
 
           <div class="grid two">
             <label>
@@ -170,10 +304,59 @@
             </label>
           </div>
 
-          <label class="checkbox-row">
-            <input id="featured" type="checkbox">
-            <span>Ghim bài này làm bài nổi bật</span>
-          </label>
+          <section class="homepage-display-settings featured-location-settings" aria-labelledby="homepageDisplayHeading">
+            <div>
+              <h3 id="homepageDisplayHeading">📌 Vị trí bài nổi bật</h3>
+              <p>Một bài có thể nổi bật ở trang chủ, trong module hiện tại hoặc đồng thời ở cả hai vị trí.</p>
+            </div>
+
+            <div class="featured-location-grid">
+              <article class="featured-location-card home-location-card">
+                <div class="featured-location-title">🏠 Trang chủ</div>
+                <label class="checkbox-row">
+                  <input id="showOnHome" type="checkbox" checked>
+                  <span>Cho phép hiển thị bài này trên trang chủ</span>
+                </label>
+                <label class="checkbox-row">
+                  <input id="featured" type="checkbox">
+                  <span>Nổi bật ở trang chủ</span>
+                </label>
+                <label>
+                  <span>Ưu tiên trang chủ</span>
+                  <input id="featuredPriority" type="number" min="1" max="999" step="1" value="100" placeholder="Ví dụ: 1">
+                  <small class="priority-help">Số nhỏ hơn sẽ đứng trước trong nhóm nổi bật trang chủ.</small>
+                </label>
+              </article>
+
+              <article class="featured-location-card module-location-card">
+                <div class="featured-location-title">📂 Module hiện tại</div>
+                <p id="featuredModuleHint" class="featured-module-hint">Chọn Module ở phía trên để xác định nơi hiển thị.</p>
+                <label class="checkbox-row">
+                  <input id="featuredModule" type="checkbox">
+                  <span>Nổi bật trong module đã chọn</span>
+                </label>
+                <label>
+                  <span>Ưu tiên trong module</span>
+                  <input id="featuredModulePriority" type="number" min="1" max="999" step="1" value="100" placeholder="Ví dụ: 1">
+                  <small class="priority-help">Mỗi module có thứ tự nổi bật riêng, không ảnh hưởng thứ tự trang chủ.</small>
+                </label>
+              </article>
+
+              <article class="featured-location-card category-location-card">
+                <div class="featured-location-title">🗂️ Danh mục hiện tại</div>
+                <p id="featuredCategoryHint" class="featured-module-hint">Chọn ít nhất một danh mục bên trong Module để bật nổi bật theo danh mục.</p>
+                <label class="checkbox-row">
+                  <input id="featuredCategory" type="checkbox">
+                  <span>Nổi bật trong danh mục đang chọn</span>
+                </label>
+                <label>
+                  <span>Ưu tiên trong danh mục</span>
+                  <input id="featuredCategoryPriority" type="number" min="1" max="999" step="1" value="100" placeholder="Ví dụ: 1">
+                  <small class="priority-help">Đưa bài lên đầu đúng trang danh mục con, không ảnh hưởng Module hoặc Trang chủ.</small>
+                </label>
+              </article>
+            </div>
+          </section>
 
           <details class="seo-box">
             <summary>Thiết lập SEO</summary>
@@ -255,7 +438,7 @@
 
             <div class="posts-table-wrap">
               <div class="posts-table-head enterprise-head">
-                <span>Chọn</span><span>Ảnh</span><span>Nội dung</span><span>ID / Ngày</span><span>Danh mục</span><span>Liên kết</span><span>Trạng thái</span><span>Thao tác</span>
+                <span>Chọn</span><span>Ảnh</span><span>Nội dung bài viết</span><span>Danh mục</span><span>Trạng thái</span><span>Thao tác</span>
               </div>
               <div id="postsTable" class="posts-table enterprise-table"></div>
             </div>
@@ -265,19 +448,73 @@
     </section>
 
 
+    <section id="view-featured" class="view">
+      <section class="panel featured-manager-panel">
+        <div class="panel-head featured-manager-head">
+          <div>
+            <h2>⭐ Quản lý bài nổi bật</h2>
+            <p>Sắp xếp, chỉnh sửa và bỏ nổi bật mà không cần mở từng bài.</p>
+          </div>
+          <div class="featured-head-actions">
+            <button id="saveFeaturedOrderButton" class="btn primary" type="button">Lưu thứ tự</button>
+            <button id="syncLegacyFeaturedButton" class="btn ghost" type="button">✨ Đồng bộ bài cũ</button>
+            <button id="refreshFeaturedButton" class="btn ghost" type="button">Tải lại</button>
+          </div>
+        </div>
+
+        <div class="featured-scope-tabs" role="tablist" aria-label="Vị trí nổi bật">
+          <button class="featured-scope-tab active" type="button" data-featured-scope="home">🏠 Trang chủ</button>
+          <button class="featured-scope-tab" type="button" data-featured-scope="module">📂 Theo module</button>
+          <button class="featured-scope-tab" type="button" data-featured-scope="category">🗂️ Theo danh mục</button>
+        </div>
+
+        <div class="featured-toolbar">
+          <input id="featuredSearch" type="search" placeholder="Tìm tiêu đề, AI ID, module hoặc danh mục...">
+          <select id="featuredModuleFilter">
+            <option value="">Tất cả module</option>
+            <option value="Blog Mina">Blog Mina</option>
+            <option value="AI Prompt">AI Prompt</option>
+            <option value="Mix & Match">Mix & Match</option>
+            <option value="Academy">Academy</option>
+            <option value="Game Gear">Game Gear</option>
+            <option value="Wiki D8">Wiki D8</option>
+          </select>
+          <select id="featuredCategoryFilter" hidden>
+            <option value="">Tất cả danh mục</option>
+          </select>
+          <button id="pinSelectedFeaturedButton" class="btn ghost" type="button">📌 Đưa lên đầu</button>
+          <button id="unfeatureSelectedButton" class="btn danger" type="button">☆ Bỏ nổi bật đã chọn</button>
+        </div>
+
+        <div class="featured-summary">
+          <article><strong id="featuredTotalCount">0</strong><span id="featuredTotalLabel">Nổi bật trang chủ</span></article>
+          <article><strong id="featuredVisibleCount">0</strong><span>Đang hiển thị</span></article>
+          <article><strong id="featuredSelectedCount">0</strong><span>Đã chọn</span></article>
+          <article><strong id="featuredTopPriority">—</strong><span>Ưu tiên đầu</span></article>
+        </div>
+
+        <div class="featured-list-head">
+          <span>Chọn</span><span>Thứ tự</span><span>Ảnh</span><span>Bài viết</span><span>Module / Danh mục</span><span>Thao tác</span>
+        </div>
+        <div id="featuredPostsList" class="featured-posts-list"></div>
+        <div class="featured-help">Chọn <b>Trang chủ</b>, <b>Theo module</b> hoặc <b>Theo danh mục</b>, kéo biểu tượng <b>⋮⋮</b> để đổi thứ tự rồi bấm <b>Lưu thứ tự</b>.</div>
+      </section>
+    </section>
+
     <section id="view-excel" class="view">
       <section class="panel excel-import-panel">
         <div class="panel-head manager-head">
           <div>
             <h2>Đăng bài hàng loạt bằng Excel</h2>
-            <p>Đọc và kiểm tra dữ liệu trước khi ghi vào Firestore. Mặc định hệ thống không ghi đè bài trùng.</p>
+            <p>Đọc và kiểm tra dữ liệu trước khi ghi vào Firestore. Mặc định không ghi đè bài trùng.</p>
           </div>
-          <a class="btn ghost" href="/templates/mina-blog-import-v6.xlsx" download>Tải file Excel mẫu</a>
+          <a class="btn ghost" href="/templates/mina-blog-import-v53.xlsx" download>Tải file Excel mẫu</a>
         </div>
 
         <div class="excel-safety-note">
           <strong>Chế độ an toàn:</strong>
-          Bài trùng theo tiêu đề, slug hoặc mã nội bộ sẽ được bỏ qua. Hãy thử 3–5 bài trước khi nhập số lượng lớn.
+          Bài trùng theo tiêu đề, slug hoặc mã nội bộ sẽ được bỏ qua.
+          Nên nhập thử 3–5 bài ở trạng thái bản nháp trước.
         </div>
 
         <div class="excel-import-controls">
@@ -327,31 +564,6 @@
       </section>
     </section>
 
-
-    <section id="view-analytics" class="view">
-      <section class="panel analytics-overview-panel">
-        <div class="panel-head">
-          <div>
-            <h2>Phân tích nội dung</h2>
-            <p>Tổng quan bài viết, lượt xem, bài nổi bật và hiệu suất theo module.</p>
-          </div>
-          <button id="refreshContentAnalyticsButton" class="btn ghost" type="button">Tải lại dữ liệu</button>
-        </div>
-        <div class="content-analytics-stats">
-          <article><strong id="contentStatTotal">0</strong><span>Tổng bài</span></article>
-          <article><strong id="contentStatPublished">0</strong><span>Công khai</span></article>
-          <article><strong id="contentStatDraft">0</strong><span>Bản nháp</span></article>
-          <article><strong id="contentStatFeatured">0</strong><span>Nổi bật</span></article>
-          <article><strong id="contentStatViews">0</strong><span>Lượt xem</span></article>
-          <article><strong id="contentStatClicks">0</strong><span>Smart Click</span></article>
-        </div>
-        <div class="content-analytics-grid">
-          <article class="analytics-card"><div class="analytics-card-head"><h4>Bài viết theo module</h4></div><div id="contentModuleBreakdown" class="analytics-bars"></div></article>
-          <article class="analytics-card"><div class="analytics-card-head"><h4>Top bài viết theo lượt xem</h4></div><div id="contentTopPosts" class="analytics-bars"></div></article>
-        </div>
-      </section>
-    </section>
-
     <section id="view-smartlinks" class="view">
       <section class="panel smartlink-manager">
         <div class="panel-head">
@@ -362,149 +574,167 @@
           <button id="newSmartLinkButton" class="btn primary" type="button">+ Tạo Smart Link</button>
         </div>
 
-<section id="view-smartlinks"> CỦA admin-v5.html
--->
-<section class="smart-analytics-shell" aria-label="Smart Link Analytics">
-  <div class="smart-analytics-head">
-    <div>
-      <h3>📊 Smart Link Dashboard</h3>
-      <p>
-        Tổng hợp lượt click theo thời gian, nguồn, bài viết,
-        chiến dịch và thiết bị.
-      </p>
-    </div>
+        <section class="smart-analytics-shell" aria-label="Smart Link Analytics">
+          <div class="smart-analytics-head">
+            <div>
+              <h3>📊 Smart Link Dashboard</h3>
+              <p>
+                Tổng hợp lượt click theo thời gian, nguồn, bài viết,
+                chiến dịch và thiết bị.
+              </p>
+            </div>
 
-    <div class="smart-analytics-actions">
-      <button id="refreshSmartAnalyticsButton" class="btn ghost" type="button">
-        Tải thống kê
-      </button>
-      <button id="exportSmartAnalyticsButton" class="btn primary" type="button">
-        Xuất CSV
-      </button>
-    </div>
-  </div>
+            <div class="smart-analytics-actions">
+              <button id="refreshSmartAnalyticsButton" class="btn ghost" type="button">
+                Tải thống kê
+              </button>
+              <button id="exportSmartAnalyticsButton" class="btn primary" type="button">
+                Xuất CSV
+              </button>
+            </div>
+          </div>
 
-  <div class="smart-analytics-filters">
-    <label>
-      <span>Khoảng thời gian</span>
-      <select id="smartAnalyticsRange">
-        <option value="1">Hôm nay</option>
-        <option value="7">7 ngày</option>
-        <option value="30" selected>30 ngày</option>
-        <option value="90">90 ngày</option>
-        <option value="365">365 ngày</option>
-      </select>
-    </label>
+          <div class="smart-analytics-filters">
+            <label>
+              <span>Khoảng thời gian</span>
+              <select id="smartAnalyticsRange">
+                <option value="1">Hôm nay</option>
+                <option value="7" selected>7 ngày</option>
+                <option value="30">30 ngày</option>
+                <option value="90">90 ngày</option>
+                <option value="365">365 ngày</option>
+              </select>
+            </label>
 
-    <label>
-      <span>Smart Link</span>
-      <select id="smartAnalyticsLink">
-        <option value="">Tất cả Smart Link</option>
-      </select>
-    </label>
+            <label>
+              <span>Smart Link</span>
+              <select id="smartAnalyticsLink">
+                <option value="">Tất cả Smart Link</option>
+              </select>
+            </label>
 
-    <label>
-      <span>Nguồn</span>
-      <input id="smartAnalyticsSource" placeholder="facebook">
-    </label>
+            <label>
+              <span>Nguồn</span>
+              <input id="smartAnalyticsSource" placeholder="facebook">
+            </label>
 
-    <label>
-      <span>Mã bài</span>
-      <input id="smartAnalyticsPost" placeholder="AI-0180">
-    </label>
+            <label>
+              <span>Mã bài</span>
+              <input id="smartAnalyticsPost" placeholder="AI-0180">
+            </label>
 
-    <label>
-      <span>Campaign</span>
-      <input id="smartAnalyticsCampaign" placeholder="summer-2026">
-    </label>
-  </div>
+            <label>
+              <span>Campaign</span>
+              <input id="smartAnalyticsCampaign" placeholder="summer-2026">
+            </label>
+          </div>
 
-  <div class="smart-analytics-stats">
-    <article class="smart-analytics-stat">
-      <strong id="smartStatTotalLinks">0</strong>
-      <span>Tổng Smart Link</span>
-    </article>
-    <article class="smart-analytics-stat">
-      <strong id="smartStatActiveLinks">0</strong>
-      <span>Đang hoạt động</span>
-    </article>
-    <article class="smart-analytics-stat">
-      <strong id="smartStatTotalClicks">0</strong>
-      <span>Tổng click đã lưu</span>
-    </article>
-    <article class="smart-analytics-stat">
-      <strong id="smartStatToday">0</strong>
-      <span>Click hôm nay</span>
-    </article>
-    <article class="smart-analytics-stat">
-      <strong id="smartStat7Days">0</strong>
-      <span>Click 7 ngày</span>
-    </article>
-    <article class="smart-analytics-stat">
-      <strong id="smartStat30Days">0</strong>
-      <span>Click 30 ngày</span>
-    </article>
-    <article class="smart-analytics-stat">
-      <strong id="smartStatFiltered">0</strong>
-      <span>Click theo bộ lọc</span>
-    </article>
-  </div>
+          <div class="smart-analytics-stats">
+            <article class="smart-analytics-stat">
+              <strong id="smartStatTotalLinks">0</strong>
+              <span>Tổng Smart Link</span>
+            </article>
+            <article class="smart-analytics-stat">
+              <strong id="smartStatActiveLinks">0</strong>
+              <span>Đang hoạt động</span>
+            </article>
+            <article class="smart-analytics-stat">
+              <strong id="smartStatTotalClicks">0</strong>
+              <span>Tổng click đã lưu</span>
+            </article>
+            <article class="smart-analytics-stat">
+              <strong id="smartStatToday">0</strong>
+              <span>Click hôm nay</span>
+            </article>
+            <article class="smart-analytics-stat">
+              <strong id="smartStat7Days">0</strong>
+              <span>Click 7 ngày</span>
+            </article>
+            <article class="smart-analytics-stat">
+              <strong id="smartStat30Days">0</strong>
+              <span>Click 30 ngày</span>
+            </article>
+            <article class="smart-analytics-stat">
+              <strong id="smartStatFiltered">0</strong>
+              <span>Click theo bộ lọc</span>
+            </article>
+          </div>
 
-  <div id="smartAnalyticsWarning" class="analytics-warning" hidden></div>
+          <div id="smartAnalyticsWarning" class="analytics-warning" hidden></div>
 
-  <div class="smart-analytics-grid">
-    <article class="analytics-card wide">
-      <div class="analytics-card-head">
-        <h4>Click theo ngày</h4>
-        <small>
-          Cập nhật:
-          <span id="smartAnalyticsUpdatedAt">—</span>
-        </small>
-      </div>
-      <div id="smartDailyChart"></div>
-    </article>
+          <div class="smart-analytics-grid">
+            <article class="analytics-card wide">
+              <div class="analytics-card-head">
+                <h4>Click theo ngày</h4>
+                <small>
+                  Cập nhật:
+                  <span id="smartAnalyticsUpdatedAt">—</span>
+                </small>
+              </div>
+              <div id="smartDailyChart"></div>
+            </article>
 
-    <article class="analytics-card">
-      <div class="analytics-card-head"><h4>Nguồn truy cập</h4></div>
-      <div id="smartSourceBreakdown" class="analytics-bars"></div>
-    </article>
+            <article class="analytics-card">
+              <div class="analytics-card-head"><h4>Nguồn truy cập</h4></div>
+              <div id="smartSourceBreakdown" class="analytics-bars"></div>
+            </article>
 
-    <article class="analytics-card">
-      <div class="analytics-card-head"><h4>Thiết bị</h4></div>
-      <div id="smartDeviceBreakdown" class="analytics-bars"></div>
-    </article>
+            <article class="analytics-card">
+              <div class="analytics-card-head"><h4>Thiết bị</h4></div>
+              <div id="smartDeviceBreakdown" class="analytics-bars"></div>
+            </article>
 
-    <article class="analytics-card">
-      <div class="analytics-card-head"><h4>Top bài viết</h4></div>
-      <div id="smartPostBreakdown" class="analytics-bars"></div>
-    </article>
+            <article class="analytics-card">
+              <div class="analytics-card-head"><h4>Top bài viết</h4></div>
+              <div id="smartPostBreakdown" class="analytics-bars"></div>
+            </article>
 
-    <article class="analytics-card">
-      <div class="analytics-card-head"><h4>Top Campaign</h4></div>
-      <div id="smartCampaignBreakdown" class="analytics-bars"></div>
-    </article>
+            <article class="analytics-card">
+              <div class="analytics-card-head"><h4>Top Campaign</h4></div>
+              <div id="smartCampaignBreakdown" class="analytics-bars"></div>
+            </article>
 
-    <article class="analytics-card">
-      <div class="analytics-card-head"><h4>Top Smart Link</h4></div>
-      <div id="smartTopLinks" class="analytics-bars"></div>
-    </article>
+            <article class="analytics-card">
+              <div class="analytics-card-head"><h4>Top Smart Link</h4></div>
+              <div id="smartTopLinks" class="analytics-bars"></div>
+            </article>
 
-    <article class="analytics-card">
-      <div class="analytics-card-head"><h4>Top Referrer</h4></div>
-      <div id="smartReferrerBreakdown" class="analytics-bars"></div>
-    </article>
+            <article class="analytics-card">
+              <div class="analytics-card-head"><h4>Top Referrer</h4></div>
+              <div id="smartReferrerBreakdown" class="analytics-bars"></div>
+            </article>
 
-    <article class="analytics-card wide">
-      <div class="analytics-card-head"><h4>Click gần nhất</h4></div>
-      <div id="smartRecentClicks" class="analytics-click-list"></div>
-    </article>
-  </div>
 
-  <div id="smartAnalyticsStatus" class="analytics-status">
-    Bấm “Tải thống kê” để xem dữ liệu.
-  </div>
-</section>
+            <article class="analytics-card wide">
+              <div class="analytics-card-head"><h4>Heatmap giờ vàng</h4><small>Giờ Việt Nam (UTC+7)</small></div>
+              <div id="smartHourlyHeatmap" class="hourly-heatmap"></div>
+            </article>
 
+            <article class="analytics-card">
+              <div class="analytics-card-head"><h4>Trình duyệt</h4></div>
+              <div id="smartBrowserBreakdown" class="analytics-bars"></div>
+            </article>
+
+            <article class="analytics-card">
+              <div class="analytics-card-head"><h4>Quốc gia</h4></div>
+              <div id="smartCountryBreakdown" class="analytics-bars"></div>
+            </article>
+
+            <article class="analytics-card wide">
+              <div class="analytics-card-head"><h4>Hiệu suất bài viết</h4><small>CTR chỉ hiển thị khi bài có dữ liệu lượt xem</small></div>
+              <div id="smartPostPerformance" class="post-performance-table"></div>
+            </article>
+
+            <article class="analytics-card wide">
+              <div class="analytics-card-head"><h4>Click gần nhất</h4></div>
+              <div id="smartRecentClicks" class="analytics-click-list"></div>
+            </article>
+          </div>
+
+          <div id="smartAnalyticsStatus" class="analytics-status">
+            Bấm “Tải thống kê” để xem dữ liệu.
+          </div>
+        </section>
 
         <div class="smartlink-grid">
           <form id="smartLinkForm" class="smartlink-form">
@@ -531,6 +761,73 @@
       </section>
     </section>
 
+
+    <section id="view-analytics" class="view">
+      <section class="panel cms-analytics-panel">
+        <div class="panel-head cms-analytics-heading">
+          <div>
+            <h2>📈 Mina Analytics Center</h2>
+            <p>Phân tích bài viết, module, danh mục, SEO và Smart Link từ dữ liệu CMS hiện có.</p>
+          </div>
+          <button id="refreshCmsAnalyticsButton" class="btn primary" type="button">Tải lại phân tích</button>
+        </div>
+
+        <div class="cms-analytics-toolbar">
+          <select id="cmsAnalyticsModuleFilter"><option value="">Tất cả module</option></select>
+          <select id="cmsAnalyticsRangeFilter">
+            <option value="all">Toàn bộ thời gian</option>
+            <option value="7">7 ngày gần đây</option>
+            <option value="30">30 ngày gần đây</option>
+            <option value="90">90 ngày gần đây</option>
+          </select>
+          <input id="cmsAnalyticsSearch" type="search" placeholder="Tìm tiêu đề, AI ID, slug hoặc danh mục…">
+        </div>
+
+        <div class="cms-analytics-stats">
+          <article><strong id="analyticsTotalPosts">0</strong><span>Bài viết</span></article>
+          <article><strong id="analyticsTotalViews">0</strong><span>Lượt xem</span></article>
+          <article><strong id="analyticsFeaturedPosts">0</strong><span>Bài nổi bật</span></article>
+          <article><strong id="analyticsSmartLinks">0</strong><span>Bài có Smart Link</span></article>
+          <article><strong id="analyticsZeroViews">0</strong><span>Bài chưa có view</span></article>
+          <article><strong id="analyticsSeoIssues">0</strong><span>Lỗi SEO cần xử lý</span></article>
+        </div>
+
+        <div class="cms-analytics-grid">
+          <article class="cms-analytics-card wide">
+            <div class="cms-analytics-card-head"><h3>Hiệu suất theo module</h3><small>Bấm vào module để lọc danh sách bên dưới</small></div>
+            <div id="analyticsModuleTable" class="cms-module-table"></div>
+          </article>
+
+          <article class="cms-analytics-card">
+            <div class="cms-analytics-card-head"><h3>🔥 Bài nhiều lượt xem</h3><small>Top 10 bài</small></div>
+            <div id="analyticsTopPosts" class="cms-ranking-list"></div>
+          </article>
+
+          <article class="cms-analytics-card">
+            <div class="cms-analytics-card-head"><h3>⭐ Nổi bật đang hoạt động</h3><small>Trang chủ, module và danh mục</small></div>
+            <div id="analyticsFeaturedBreakdown" class="cms-breakdown-list"></div>
+          </article>
+
+          <article class="cms-analytics-card wide">
+            <div class="cms-analytics-card-head"><h3>⚠ Trung tâm kiểm tra SEO</h3><small>Ưu tiên các bài thiếu dữ liệu quan trọng</small></div>
+            <div id="analyticsSeoTable" class="cms-seo-table"></div>
+          </article>
+
+          <article class="cms-analytics-card">
+            <div class="cms-analytics-card-head"><h3>📉 Bài chưa có lượt xem</h3><small>Tối đa 10 bài</small></div>
+            <div id="analyticsZeroViewPosts" class="cms-ranking-list"></div>
+          </article>
+
+          <article class="cms-analytics-card">
+            <div class="cms-analytics-card-head"><h3>🔗 Smart Link trong bài</h3><small>Mức độ phủ liên kết</small></div>
+            <div id="analyticsSmartLinkCoverage" class="cms-progress-shell"></div>
+          </article>
+        </div>
+
+        <div id="cmsAnalyticsUpdatedAt" class="cms-analytics-updated">Chưa tải dữ liệu phân tích.</div>
+      </section>
+    </section>
+
   </main>
 
   <dialog id="confirmDialog">
@@ -545,9 +842,9 @@
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="/js/smartlink-dashboard.js?v=1.1.0"></script>
+  <script type="module" src="/js/smartlink-dashboard.js?v=1.3.0-full"></script>
   <script type="module">
-    import("/js/admin-v6.js?v=6.2.0-recovery").catch(error => {
+    import("/js/admin-v6.js?v=6.3.0-full").catch(error => {
       console.error("Không tải được admin-v6.js", error);
       const badge = document.getElementById("authBadge");
       const notice = document.getElementById("notice");
@@ -558,8 +855,15 @@
         notice.textContent = `Không tải được CMS: ${error?.message || error}`;
       }
     });
-    import("/js/admin-excel-import-v6.js?v=1.0.0").catch(error => {
+
+    import("/js/admin-excel-import-v53.js?v=1.0.0").catch(error => {
       console.error("Không tải được module Import Excel", error);
+      const notice = document.getElementById("notice");
+      if (notice) {
+        notice.hidden = false;
+        notice.className = "notice error";
+        notice.textContent = `Không tải được Import Excel: ${error?.message || error}`;
+      }
     });
   </script>
 </body>
