@@ -12,6 +12,8 @@ export class CmsV6Repository {
     this.db = db;
     this.posts = collection(db, "posts");
     this.affiliateCategories = collection(db, "affiliateCategories");
+    this.affiliateProducts = collection(db, "affiliateProducts");
+    this.affiliateBrands = collection(db, "affiliateBrands");
     this.affiliateLinks = collection(db, "affiliateLinks");
     this.affiliatePlatforms = collection(db, "affiliatePlatforms");
     this.affiliateStatuses = collection(db, "affiliateStatuses");
@@ -110,7 +112,7 @@ export class CmsV6Repository {
       parentId: String(payload?.parentId || "").trim(),
       sortOrder: Math.max(1, Number(payload?.sortOrder || 100)),
       active: payload?.active !== false,
-      cmsVersion: "mina-cms-v6.4-affiliate-preview",
+      cmsVersion: "mina-cms-v6.5-affiliate-products",
       updatedAt: serverTimestamp()
     };
     if (id) {
@@ -127,6 +129,67 @@ export class CmsV6Repository {
 
   async deleteAffiliateCategory(id) {
     await deleteDoc(doc(this.db, "affiliateCategories", id));
+  }
+
+
+  async listAffiliateProducts(max = 1000) {
+    let snapshot;
+    try { snapshot = await getDocs(query(this.affiliateProducts, orderBy("updatedAt", "desc"), limit(max))); }
+    catch { snapshot = await getDocs(this.affiliateProducts); }
+    return snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+  }
+
+  async saveAffiliateProduct(payload, id = "") {
+    const name = String(payload?.name || "").trim();
+    if (!name) throw new Error("Tên sản phẩm không được để trống.");
+    const data = {
+      name,
+      code: String(payload?.code || "").trim().slice(0, 80),
+      categoryId: String(payload?.categoryId || "").trim(),
+      brandId: String(payload?.brandId || "").trim(),
+      imageUrl: String(payload?.imageUrl || "").trim().slice(0, 1500),
+      price: Math.max(0, Number(payload?.price || 0)),
+      originalPrice: Math.max(0, Number(payload?.originalPrice || 0)),
+      tags: Array.isArray(payload?.tags) ? payload.tags.map(v => String(v || "").trim()).filter(Boolean).slice(0, 30) : [],
+      note: String(payload?.note || "").trim().slice(0, 800),
+      active: payload?.active !== false,
+      cmsVersion: "mina-cms-v6.5-affiliate-products",
+      updatedAt: serverTimestamp()
+    };
+    if (id) { await updateDoc(doc(this.db, "affiliateProducts", id), data); return id; }
+    const created = await addDoc(this.affiliateProducts, { ...data, createdAt: serverTimestamp() });
+    return created.id;
+  }
+
+  async deleteAffiliateProduct(id) {
+    const linked = await getDocs(query(this.affiliateLinks, where("productId", "==", id), limit(1)));
+    if (!linked.empty) throw new Error("Sản phẩm đang có link bán hàng. Hãy xóa hoặc chuyển các link trước.");
+    await deleteDoc(doc(this.db, "affiliateProducts", id));
+  }
+
+  async listAffiliateBrands(max = 500) {
+    let snapshot;
+    try { snapshot = await getDocs(query(this.affiliateBrands, orderBy("sortOrder", "asc"), limit(max))); }
+    catch { snapshot = await getDocs(this.affiliateBrands); }
+    return snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+  }
+
+  async saveAffiliateBrand(payload, id = "") {
+    const name = String(payload?.name || "").trim();
+    const code = String(payload?.code || "").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+    if (!name || !code) throw new Error("Tên và mã thương hiệu không hợp lệ.");
+    const existing = await this.listAffiliateBrands();
+    if (existing.some(item => item.code === code && item.id !== id)) throw new Error("Mã thương hiệu đã tồn tại.");
+    const data = { name, code, sortOrder: Math.max(1, Number(payload?.sortOrder || 100)), active: payload?.active !== false, cmsVersion: "mina-cms-v6.5-affiliate-products", updatedAt: serverTimestamp() };
+    if (id) { await updateDoc(doc(this.db, "affiliateBrands", id), data); return id; }
+    const created = await addDoc(this.affiliateBrands, { ...data, createdAt: serverTimestamp() });
+    return created.id;
+  }
+
+  async deleteAffiliateBrand(id) {
+    const linked = await getDocs(query(this.affiliateProducts, where("brandId", "==", id), limit(1)));
+    if (!linked.empty) throw new Error("Thương hiệu đang được sản phẩm sử dụng.");
+    await deleteDoc(doc(this.db, "affiliateBrands", id));
   }
 
   async listAffiliateLinks(max = 1000) {
@@ -152,12 +215,15 @@ export class CmsV6Repository {
 
     const data = {
       name,
+      productId: String(payload?.productId || "").trim(),
       categoryId: String(payload?.categoryId || "").trim(),
       platform: String(payload?.platform || "other").trim(),
       merchant: String(payload?.merchant || "").trim(),
       targetUrl,
       smartLinkId: String(payload?.smartLinkId || "").trim(),
       commissionRate: Math.max(0, Number(payload?.commissionRate || 0)),
+      price: Math.max(0, Number(payload?.price || 0)),
+      priority: Math.max(1, Number(payload?.priority || 100)),
       healthStatus: String(payload?.healthStatus || "needs_check").trim(),
       active: payload?.active !== false,
       tags: Array.isArray(payload?.tags)
@@ -167,7 +233,7 @@ export class CmsV6Repository {
       lastCheckedAt: payload?.lastCheckedAt || null,
       lastHttpStatus: payload?.lastHttpStatus || null,
       consecutiveFailures: Math.max(0, Number(payload?.consecutiveFailures || 0)),
-      cmsVersion: "mina-cms-v6.4-affiliate-preview",
+      cmsVersion: "mina-cms-v6.5-affiliate-products",
       updatedAt: serverTimestamp()
     };
 
