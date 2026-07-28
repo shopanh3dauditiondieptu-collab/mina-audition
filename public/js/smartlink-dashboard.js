@@ -596,9 +596,12 @@ function renderDashboard(data) {
 
   const warning = $("#smartAnalyticsWarning");
   if (warning) {
-    warning.hidden = !data.summary?.scanLimitReached;
-    warning.textContent = data.summary?.scanLimitReached
-      ? "Dữ liệu đã chạm giới hạn quét. CSV vẫn có giới hạn riêng; nên dùng bộ lọc hoặc khoảng ngày ngắn hơn."
+    const scanLimitReached = Boolean(data.summary?.scanLimitReached);
+    const scanLimit = Number(data.summary?.scanLimit || 0);
+
+    warning.hidden = !scanLimitReached;
+    warning.textContent = scanLimitReached
+      ? `Đang hiển thị ${number(scanLimit)} click gần nhất trong khoảng đã chọn. Hãy lọc theo nguồn, mã bài, campaign hoặc chọn khoảng ngày ngắn hơn để xem chính xác hơn.`
       : "";
   }
 }
