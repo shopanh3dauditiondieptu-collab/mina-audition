@@ -542,6 +542,35 @@ function renderDashboard(data) {
     data.breakdowns?.devices || [],
     "Chưa có dữ liệu thiết bị."
   );
+
+  // ===== Mina Smart Link Analytics v6.4 =====
+  renderBars(
+    "#smartModuleBreakdown",
+    normalizeBreakdownRows(
+      getRows(data, "breakdowns.modules", "modules")
+    ),
+    "Các lượt click cũ chưa được gắn module."
+  );
+  renderBars(
+    "#smartCategoryBreakdown",
+    normalizeBreakdownRows(
+      getRows(data, "breakdowns.categories", "categories")
+    ),
+    "Các lượt click cũ chưa được gắn danh mục."
+  );
+  renderBars(
+    "#smartTrafficChannelBreakdown",
+    normalizeBreakdownRows(
+      getRows(
+        data,
+        "breakdowns.trafficChannels",
+        "breakdowns.trafficChannel",
+        "trafficChannels"
+      )
+    ),
+    "Các lượt click cũ chưa lưu kênh truy cập."
+  );
+
   renderBars(
     "#smartPostBreakdown",
     data.breakdowns?.posts || [],
