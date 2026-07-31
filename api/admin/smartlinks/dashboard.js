@@ -265,6 +265,14 @@ module.exports = async function handler(req, res) {
 
     const sourceMap = new Map();
     const deviceMap = new Map();
+
+    // ===== Mina Smart Link Analytics v6.4 =====
+    // Các Map này chỉ tổng hợp trên chính tập click đã tải ở request hiện tại.
+    // Không tạo thêm truy vấn hoặc lượt đọc Firestore.
+    const moduleMap = new Map();
+    const categoryMap = new Map();
+    const trafficChannelMap = new Map();
+
     const postMap = new Map();
     const campaignMap = new Map();
     const linkMap = new Map();
@@ -307,6 +315,12 @@ module.exports = async function handler(req, res) {
         source: clean(data.source || "direct", 80),
         postCode: clean(data.postCode, 80),
         campaign: clean(data.campaign, 80),
+
+        // Tracking Schema v2
+        module: clean(data.module || data.moduleName, 100),
+        category: clean(data.category || data.linkType || data.type, 120),
+        trafficChannel: clean(data.trafficChannel, 80),
+
         deviceType: clean(data.deviceType || "unknown", 40),
         browser: clean(data.browser || browserFromUserAgent(data.userAgent), 80),
         country: clean(data.country || "UNKNOWN", 20).toUpperCase(),
@@ -334,6 +348,15 @@ module.exports = async function handler(req, res) {
 
       increment(sourceMap, row.source || "direct");
       increment(deviceMap, row.deviceType || "unknown");
+
+      // ===== Mina Smart Link Analytics v6.4 =====
+      increment(moduleMap, row.module || "Chưa gắn module");
+      increment(categoryMap, row.category || "Chưa gắn danh mục");
+      increment(
+        trafficChannelMap,
+        row.trafficChannel || row.source || "direct"
+      );
+
       increment(postMap, row.postCode || "Không có mã bài");
       increment(campaignMap, row.campaign || "Không có campaign");
       increment(linkMap, row.linkTitle || row.linkSlug || row.linkId);
@@ -393,6 +416,12 @@ module.exports = async function handler(req, res) {
       breakdowns: {
         sources: topEntries(sourceMap),
         devices: topEntries(deviceMap),
+
+        // Tracking Schema v2 breakdowns
+        modules: topEntries(moduleMap),
+        categories: topEntries(categoryMap),
+        trafficChannels: topEntries(trafficChannelMap),
+
         posts: topEntries(postMap),
         campaigns: topEntries(campaignMap),
         links: topEntries(linkMap),
