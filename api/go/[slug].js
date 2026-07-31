@@ -1,10 +1,14 @@
 const admin = require("firebase-admin");
+const crypto = require("crypto");
+
+const TRACKING_SCHEMA_VERSION = 2;
+const SESSION_COOKIE_NAME = "mina_sid";
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 180;
 
 const LINK_CACHE_TTL_MS = 10 * 60 * 1000;
 const LINK_CACHE_MAX_ITEMS = 500;
 const linkCache = global.__MINA_SMARTLINK_REDIRECT_CACHE__ || new Map();
 global.__MINA_SMARTLINK_REDIRECT_CACHE__ = linkCache;
-
 
 function getAdminApp() {
   if (admin.apps.length) return admin.app();
@@ -76,6 +80,122 @@ function getCountry(req) {
   ).toUpperCase();
 }
 
+function parseCookies(cookieHeader = "") {
+  return String(cookieHeader)
+    .split(";")
+    .map(part => part.trim())
+    .filter(Boolean)
+    .reduce((cookies, part) => {
+      const separatorIndex = part.indexOf("=");
+      if (separatorIndex < 1) return cookies;
+
+      const key = part.slice(0, separatorIndex).trim();
+      const value = part.slice(separatorIndex + 1).trim();
+
+      try {
+        cookies[key] = decodeURIComponent(value);
+      } catch {
+        cookies[key] = value;
+      }
+
+      return cookies;
+    }, {});
+}
+
+function isValidSessionId(value) {
+  return /^[a-zA-Z0-9_-]{16,80}$/.test(String(value || ""));
+}
+
+function getOrCreateSession(req, res) {
+  const cookies = parseCookies(req.headers.cookie || "");
+  const existing = clean(cookies[SESSION_COOKIE_NAME], 80);
+
+  if (isValidSessionId(existing)) {
+    return existing;
+  }
+
+  const sessionId = crypto.randomUUID().replace(/-/g, "");
+  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
+
+  res.setHeader(
+    "Set-Cookie",
+    `${SESSION_COOKIE_NAME}=${encodeURIComponent(sessionId)}; Path=/; Max-Age=${SESSION_MAX_AGE_SECONDS}; HttpOnly; SameSite=Lax${secure}`
+  );
+
+  return sessionId;
+}
+
+function parseReferrer(referrer = "") {
+  if (!referrer) {
+    return {
+      referrerHost: "",
+      pathname: "",
+      pageType: "direct"
+    };
+  }
+
+  try {
+    const url = new URL(referrer);
+    const pathname = clean(url.pathname || "/", 300);
+
+    return {
+      referrerHost: clean(url.hostname.replace(/^www\./i, ""), 160),
+      pathname,
+      pageType: inferPageType(pathname)
+    };
+  } catch {
+    return {
+      referrerHost: "",
+      pathname: "",
+      pageType: "unknown"
+    };
+  }
+}
+
+function inferPageType(pathname = "") {
+  const value = String(pathname || "").toLowerCase();
+
+  if (!value || value === "/") return "home";
+  if (value.startsWith("/post")) return "post";
+  if (value.includes("wiki")) return "wiki";
+  if (value.includes("academy")) return "academy";
+  if (value.includes("mix-match")) return "mix-match";
+  if (value.includes("ai-prompt") || value.includes("prompt")) return "ai-prompt";
+  if (value.includes("video")) return "video";
+  if (value.includes("blog")) return "blog";
+  if (value.startsWith("/go/")) return "smart-link";
+
+  return "page";
+}
+
+function inferTrafficChannel(source = "", referrerHost = "") {
+  const value = `${source} ${referrerHost}`.toLowerCase();
+
+  if (/facebook|fb|l\.facebook|lm\.facebook|m\.facebook/.test(value)) {
+    return "facebook";
+  }
+  if (/google|bing|yahoo|duckduckgo|search/.test(value)) {
+    return "organic-search";
+  }
+  if (/tiktok/.test(value)) return "tiktok";
+  if (/youtube|youtu\.be/.test(value)) return "youtube";
+  if (/zalo/.test(value)) return "zalo";
+  if (/email|newsletter/.test(value)) return "email";
+  if (/affiliate|partner/.test(value)) return "affiliate";
+  if (!referrerHost && (!source || source === "direct")) return "direct";
+
+  return "referral";
+}
+
+function getVietnamHour(date = new Date()) {
+  const hour = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    hour: "2-digit",
+    hour12: false
+  }).format(date);
+
+  return Number(hour) % 24;
+}
 
 function readCachedLink(slug, allowStale = false) {
   const item = linkCache.get(slug);
@@ -130,8 +250,6 @@ async function loadLinkBySlug(db, slug) {
     writeCachedLink(slug, value);
     return value;
   } catch (error) {
-    // Nếu Firestore tạm hết quota nhưng function vẫn còn cache cũ,
-    // ưu tiên chuyển hướng thay vì làm hỏng Smart Link.
     const stale = readCachedLink(slug, true);
 
     if (stale) {
@@ -173,9 +291,6 @@ module.exports = async function handler(req, res) {
       return res.status(404).send("Liên kết không tồn tại.");
     }
 
-    const documentSnapshot = {
-      id: loaded.id
-    };
     const linkRef = db.collection("smartLinks").doc(loaded.id);
     const link = loaded.link || {};
 
@@ -213,7 +328,12 @@ module.exports = async function handler(req, res) {
     );
 
     const postCode = clean(
-      req.query.post || req.query.postCode || link.postCode || "",
+      req.query.post ||
+      req.query.postCode ||
+      req.query.internalId ||
+      link.postCode ||
+      link.internalId ||
+      "",
       80
     );
 
@@ -222,28 +342,67 @@ module.exports = async function handler(req, res) {
       80
     );
 
-    const referrer = clean(req.headers.referer || "", 500);
+    const moduleName = clean(
+      req.query.module || link.module || link.moduleName || "",
+      100
+    );
+
+    const category = clean(
+      req.query.category ||
+      link.category ||
+      link.type ||
+      link.linkType ||
+      "",
+      120
+    );
+
+    const rawReferrer = clean(req.headers.referer || "", 500);
+    const referrerData = parseReferrer(rawReferrer);
+    const pageType = clean(
+      req.query.pageType ||
+      link.pageType ||
+      referrerData.pageType,
+      60
+    );
+
     const userAgent = clean(req.headers["user-agent"] || "", 500);
 
     if (req.method === "GET") {
       try {
+        const sessionId = getOrCreateSession(req, res);
         const clickRef = db.collection("smartLinkClicks").doc();
         const batch = db.batch();
         const now = new Date();
 
         batch.set(clickRef, {
-          linkId: documentSnapshot.id,
+          schemaVersion: TRACKING_SCHEMA_VERSION,
+          linkId: loaded.id,
           linkSlug: slug,
           linkTitle: clean(link.name || link.title || slug, 160),
           targetUrl: targetUrl.toString(),
+
           postCode,
+          internalId: postCode,
           campaign,
+          module: moduleName,
+          category,
+          pageType,
+
           source,
-          referrer,
+          trafficChannel: inferTrafficChannel(
+            source,
+            referrerData.referrerHost
+          ),
+          referrer: rawReferrer,
+          referrerHost: referrerData.referrerHost,
+          pathname: referrerData.pathname,
+
+          sessionId,
           deviceType: getDeviceType(userAgent),
           browser: getBrowser(userAgent),
           country: getCountry(req),
           hourUtc: now.getUTCHours(),
+          hourVietnam: getVietnamHour(now),
           userAgent,
           clickedAt: admin.firestore.FieldValue.serverTimestamp()
         });
