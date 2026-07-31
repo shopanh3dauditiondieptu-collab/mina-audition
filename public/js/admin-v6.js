@@ -2008,8 +2008,11 @@ function openView(name) {
 
   if (name === "smartlinks") {
     loadSmartLinks({ silent: false });
-    import("/js/smartlink-dashboard.js?v=1.1.0")
-      .then(module => module.loadSmartLinkAnalytics())
+    import("/js/smartlink-dashboard.js?v=1.3.0-full")
+      .then(module => {
+        module.bindSmartLinkAnalytics?.();
+        return module.loadSmartLinkAnalytics({ force: true });
+      })
       .catch(error => console.error("Smart Link Dashboard:", error));
   }
 }
