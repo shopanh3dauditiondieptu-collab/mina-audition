@@ -1996,11 +1996,16 @@ function renderCmsAnalytics() {
 function openView(name) {
   $$(".view").forEach(view => view.classList.toggle("active", view.id === `view-${name}`));
   $$(".nav-item[data-view]").forEach(button => button.classList.toggle("active", button.dataset.view === name));
-  const titles = { editor: "Đăng bài viết", posts: "Quản lý bài viết", featured: "Bài viết nổi bật", analytics: "Phân tích", excel: "Import Excel", smartlinks: "Smart Link Analytics", affiliate: "Kho tiếp thị liên kết" };
+  const titles = { editor: "Đăng bài viết", posts: "Quản lý bài viết", featured: "Bài viết nổi bật", wiki: "Wiki Skill Manager", analytics: "Phân tích", excel: "Import Excel", smartlinks: "Smart Link Analytics", affiliate: "Kho tiếp thị liên kết" };
   $("#pageTitle").textContent = titles[name] || "Mina CMS";
   const editing = name === "editor";
   $("#savePostTopButton").hidden = !editing;
   $("#newPostButton").hidden = !editing;
+
+  if (name === "wiki") {
+    const frame = $("#wikiManagerFrame");
+    if (frame && frame.src === "about:blank") frame.src = frame.dataset.src || "/admin-wiki.html?embed=1";
+  }
 
   if (name === "featured") renderFeaturedManager();
   if (name === "analytics") renderCmsAnalytics();
@@ -2068,6 +2073,12 @@ function bindEvents() {
   });
 
   $$(".nav-item[data-view]").forEach(button => button.addEventListener("click", () => openView(button.dataset.view)));
+  $("#reloadWikiManagerButton")?.addEventListener("click", () => {
+    const frame = $("#wikiManagerFrame");
+    if (!frame) return;
+    const target = frame.dataset.src || "/admin-wiki.html?embed=1";
+    frame.src = `${target}${target.includes("?") ? "&" : "?"}v=${Date.now()}`;
+  });
   $("#refreshCmsAnalyticsButton")?.addEventListener("click", async event => {
     setBusy(event.currentTarget, true, "Đang tải…");
     try { await refreshData(); renderCmsAnalytics(); showNotice("Đã cập nhật Analytics."); }
