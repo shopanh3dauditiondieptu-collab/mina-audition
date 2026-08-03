@@ -111,6 +111,39 @@
         width: 100%;
       }
     }
+
+
+    .wiki-native-shell{display:grid;gap:18px}
+    .wiki-native-header{display:flex;align-items:center;justify-content:space-between;gap:18px}
+    .wiki-native-header h2{margin:4px 0 7px}.wiki-native-header p{margin:0;color:#aeb6d8}
+    .wiki-native-header-actions{display:flex;gap:9px;flex-wrap:wrap}
+    .wiki-native-loading{padding:12px 16px;border:1px solid rgba(103,224,255,.28);border-radius:14px;background:rgba(103,224,255,.08);color:#7eeaff;font-weight:800}
+    .wiki-native-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+    .wiki-native-stats article{padding:17px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:rgba(16,14,43,.75)}
+    .wiki-native-stats strong{display:block;color:#72eaff;font-size:27px}.wiki-native-stats span{color:#aeb6d8;font-size:13px}
+    .wiki-native-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+    .wiki-native-form label{display:grid;gap:7px}.wiki-native-form label>span{font-size:13px;font-weight:800;color:#dfe4ff}
+    .wiki-native-form .wide{grid-column:span 2}.wiki-native-form textarea{resize:vertical}
+    .wiki-native-check{display:flex!important;align-items:center;gap:10px;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:12px}
+    .wiki-native-check input{width:19px;height:19px}
+    .wiki-native-warning{margin-bottom:14px;padding:12px 14px;border:1px solid rgba(255,193,73,.35);border-radius:12px;background:rgba(255,193,73,.08);color:#ffd166}
+    .wiki-native-toolbar{display:grid;grid-template-columns:minmax(260px,2fr) repeat(4,minmax(130px,1fr));gap:10px;margin-bottom:15px}
+    .wiki-native-table{display:grid;gap:10px}
+    .wiki-native-row{display:grid;grid-template-columns:76px minmax(260px,2fr) minmax(180px,1fr) 130px 210px;gap:14px;align-items:center;padding:13px;border:1px solid rgba(255,255,255,.09);border-radius:15px;background:rgba(9,8,30,.6)}
+    .wiki-native-thumb{width:70px;height:70px;border-radius:13px;overflow:hidden;display:grid;place-items:center;background:#171936;color:#7eeaff;font-weight:900}
+    .wiki-native-thumb img{width:100%;height:100%;object-fit:cover}
+    .wiki-native-main strong{display:block;font-size:16px}.wiki-native-main small{display:block;margin:5px 0;color:#7eeaff}
+    .wiki-native-main p{margin:0;color:#aeb6d8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .wiki-native-meta{display:flex;flex-wrap:wrap;gap:6px}.wiki-native-meta span{padding:5px 8px;border-radius:999px;background:rgba(103,224,255,.08);color:#7eeaff;font-size:11px;font-weight:800}
+    .wiki-native-status{display:inline-flex;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:900}
+    .wiki-native-status.verified{color:#70f3c2;background:rgba(30,190,130,.12)}.wiki-native-status.needs_review{color:#ffd166;background:rgba(255,193,73,.12)}
+    .wiki-native-status.draft{color:#7eeaff;background:rgba(103,224,255,.1)}.wiki-native-status.hidden{color:#ff8da8;background:rgba(255,92,132,.1)}
+    .wiki-native-actions{display:flex;gap:7px;flex-wrap:wrap}
+    .wiki-native-empty{padding:35px;text-align:center;color:#aeb6d8}
+    .wiki-native-pagination{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:16px}
+    @media(max-width:1200px){.wiki-native-stats{grid-template-columns:repeat(3,1fr)}.wiki-native-form{grid-template-columns:repeat(2,1fr)}.wiki-native-toolbar{grid-template-columns:repeat(2,1fr)}.wiki-native-row{grid-template-columns:70px 1fr 1fr}.wiki-native-actions{grid-column:2/-1}}
+    @media(max-width:760px){.wiki-native-header{align-items:stretch;flex-direction:column}.wiki-native-stats{grid-template-columns:repeat(2,1fr)}.wiki-native-form,.wiki-native-toolbar{grid-template-columns:1fr}.wiki-native-form .wide{grid-column:auto}.wiki-native-row{grid-template-columns:60px 1fr}.wiki-native-meta,.wiki-native-row>div:nth-child(4),.wiki-native-actions{grid-column:1/-1}}
+
   </style>
 
 </head>
@@ -121,6 +154,7 @@
       <button class="nav-item active" data-view="editor">✦ Đăng bài</button>
       <button class="nav-item" data-view="posts">▦ Quản lý bài</button>
       <button class="nav-item" data-view="featured">⭐ Bài nổi bật</button>
+      <button class="nav-item" data-view="wiki">📚 Wiki Manager</button>
       <button class="nav-item" data-view="analytics">📈 Phân tích</button>
       <button class="nav-item" data-view="excel">📥 Import Excel</button>
       <button class="nav-item" data-view="smartlinks">📊 Smart Link Analytics</button>
@@ -888,6 +922,88 @@
       </section>
     </section>
 
+    <section id="view-wiki" class="view">
+      <section class="wiki-native-shell">
+        <div class="panel wiki-native-header">
+          <div>
+            <p class="eyebrow">Nguồn dữ liệu Wiki chung</p>
+            <h2>📚 Wiki Skill Manager v2</h2>
+            <p>Quản lý Skill trực tiếp trong CMS. Skill không được lưu vào Firestore <code>posts</code>.</p>
+          </div>
+          <div class="wiki-native-header-actions">
+            <button id="wikiNativeReload" class="btn ghost" type="button">↻ Tải lại</button>
+            <button id="wikiNativeExport" class="btn ghost" type="button">Xuất JSON</button>
+            <a class="btn primary" href="/wiki.html" target="_blank" rel="noopener">Xem Wiki</a>
+          </div>
+        </div>
+
+        <div id="wikiNativeLoading" class="wiki-native-loading" hidden>Đang tải dữ liệu…</div>
+
+        <div class="wiki-native-stats">
+          <article><strong id="wikiNativeTotal">0</strong><span>Tổng Skill</span></article>
+          <article><strong id="wikiNativeVerified">0</strong><span>Đã xác minh</span></article>
+          <article><strong id="wikiNativeReview">0</strong><span>Cần review</span></article>
+          <article><strong id="wikiNativeVideos">0</strong><span>Có YouTube</span></article>
+          <article><strong id="wikiNativePinned">0</strong><span>Đang ghim</span></article>
+        </div>
+
+        <section class="panel wiki-native-editor">
+          <div class="panel-head">
+            <div>
+              <h3 id="wikiNativeFormTitle">Thêm Skill mới</h3>
+              <p>ID Wiki chính là mã Skill, ví dụ <b>3734</b>.</p>
+            </div>
+            <button id="wikiNativeCancelEdit" class="btn ghost" type="button" hidden>Hủy sửa</button>
+          </div>
+
+          <div id="wikiNativeLegacyWarning" class="wiki-native-warning" hidden></div>
+
+          <form id="wikiNativeForm" class="wiki-native-form">
+            <label><span>Mã Skill / ID *</span><input name="id" inputmode="numeric" pattern="[0-9]+" required placeholder="3734"></label>
+            <label><span>Loại phím *</span><select name="type" required><option value="">Chọn</option><option value="4K">4K</option><option value="8K">8K</option></select></label>
+            <label><span>Level *</span><select name="level" required><option value="">Chọn</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option></select></label>
+            <label><span>Style</span><input name="style" placeholder="Poppin-H, Sexy Girl…"></label>
+            <label><span>BPM đẹp</span><input name="bpm" type="number" min="1" max="999" placeholder="110"></label>
+            <label><span>Độ hiếm</span><select name="rarity"><option value="">Chưa chọn</option><option>S</option><option>A</option><option>B</option><option>C</option></select></label>
+            <label><span>Điểm</span><input name="rating" type="number" min="0" max="10" step="0.1" placeholder="9.5"></label>
+            <label><span>Trạng thái</span><select name="status"><option value="needs_review">Cần review</option><option value="verified">Đã xác minh</option><option value="draft">Bản nháp</option><option value="hidden">Ẩn</option></select></label>
+            <label class="wide"><span>URL ảnh</span><input name="image" placeholder="https://res.cloudinary.com/..."></label>
+            <label class="wide"><span>URL YouTube</span><input name="youtube" placeholder="https://www.youtube.com/shorts/..."></label>
+            <label><span>Bài nhạc đề xuất</span><input name="song"></label>
+            <label><span>Góc quay</span><input name="camera"></label>
+            <label class="wide"><span>Mô tả</span><textarea name="description" rows="3"></textarea></label>
+            <label class="wide"><span>Ghi chú sản xuất</span><textarea name="note" rows="2"></textarea></label>
+            <label class="wide"><span>Tags, phân cách bằng dấu phẩy</span><input name="tags" placeholder="D8, Audition, Poppin"></label>
+            <label class="wiki-native-check"><input name="hot" type="checkbox"><span>Đánh dấu HOT</span></label>
+            <label class="wiki-native-check"><input name="homePinned" type="checkbox"><span>Ghim trang chủ</span></label>
+            <label><span>Vị trí ghim</span><select name="homeOrder"><option value="">Tự động</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
+            <div class="wide form-actions"><button class="btn primary" type="submit">Lưu Skill</button></div>
+          </form>
+        </section>
+
+        <section class="panel wiki-native-manager">
+          <div class="panel-head">
+            <div><h3>Danh sách Skill</h3><p>Tìm, lọc, sửa hoặc xóa dữ liệu Wiki.</p></div>
+          </div>
+
+          <div class="wiki-native-toolbar">
+            <input id="wikiNativeSearch" type="search" placeholder="Tìm mã Skill, style, level, BPM…">
+            <select id="wikiNativeStatusFilter"><option value="all">Tất cả trạng thái</option><option value="verified">Đã xác minh</option><option value="needs_review">Cần review</option><option value="draft">Bản nháp</option><option value="hidden">Ẩn</option></select>
+            <select id="wikiNativeLevelFilter"><option value="">Tất cả level</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option></select>
+            <select id="wikiNativeTypeFilter"><option value="">Tất cả 4K/8K</option><option value="4K">4K</option><option value="8K">8K</option></select>
+            <select id="wikiNativePageSize"><option value="12">12/trang</option><option value="24" selected>24/trang</option><option value="48">48/trang</option></select>
+          </div>
+
+          <div id="wikiNativeTable" class="wiki-native-table"></div>
+
+          <nav class="wiki-native-pagination">
+            <button id="wikiNativePrev" class="btn ghost" type="button">← Trước</button>
+            <strong id="wikiNativeRange">Hiển thị 0/0 Skill</strong>
+            <button id="wikiNativeNext" class="btn ghost" type="button">Sau →</button>
+          </nav>
+        </section>
+      </section>
+    </section>
 
     <section id="view-analytics" class="view">
       <section class="panel cms-analytics-panel">
@@ -971,7 +1087,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script type="module" src="/js/smartlink-dashboard.js?v=1.3.0-full"></script>
   <script type="module">
-    import("/js/admin-v6.js?v=6.0.2-enterprise-editor").catch(error => {
+    import("/js/admin-v6.js?v=6.4.1-wiki-native-fix").catch(error => {
       console.error("Không tải được admin-v6.js", error);
       const badge = document.getElementById("authBadge");
       const notice = document.getElementById("notice");
