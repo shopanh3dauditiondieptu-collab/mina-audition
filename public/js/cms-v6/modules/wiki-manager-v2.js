@@ -1,24 +1,20 @@
 /* =========================================================
-   MINA CMS WIKI MANAGER V2.1 — SINGLE SOURCE READER
+   MINA CMS WIKI MANAGER V2.2 — SINGLE SOURCE
    - Không iframe
    - Không lưu Skill vào Firestore posts
-   - Nguồn đọc ưu tiên: /database/master-skills.json
-   - Fallback: /api/wiki-admin-data, /api/wiki-skills
-   - Ghi dữ liệu: /api/save-wiki-skill
-   - Skill mới dùng mã Skill làm ID
+   - Đọc ưu tiên: /database/master-skills.json
+   - API đọc/ghi: /api/wiki-skills
+   - Admin data: /api/wiki-admin-data
+   - Skill ID chính là mã Skill
 ========================================================= */
 
-const DATA_SOURCES = [
-  "/database/master-skills.json",
-  "/api/wiki-admin-data",
-  "/api/wiki-skills",
-  "/database/wiki-skills.json",
-  "/data/skills.json"
-];
-
 const API = {
-  save: "/api/save-wiki-skill"
+  publicData: "/database/master-skills.json",
+  adminData: "/api/wiki-admin-data",
+  skills: "/api/wiki-skills"
 };
+
+const ADMIN_KEY_STORAGE = "mina-wiki-admin-api-key";
 
 const STATUS = {
   verified: "Đã xác minh",
@@ -65,24 +61,22 @@ function numberOrBlank(value) {
 }
 
 function normalize(raw = {}) {
-  const legacyId = cleanText(raw.id || raw.skillId || raw.skill_id);
+  const legacyId = cleanText(raw.legacyId || raw.id || raw.skillId || raw.skill_id);
   const skillCode = cleanText(
-    raw.skillCode || raw.code || raw.skill_code || raw.name || legacyId
+    raw.skillCode || raw.code || raw.skill_code || raw.name || raw.id
   );
   const canonicalId = /^\d+$/.test(skillCode) ? skillCode : legacyId;
-
   const legacyMode = (legacyId.match(/^(4K|8K)[_-]/i) || [])[1] || "";
-  const normalizedType = cleanText(
-    raw.type || raw.quality || raw.keyMode || raw.key_mode || legacyMode
-  ).toUpperCase();
 
   return {
     ...raw,
     id: canonicalId,
-    sourceId: legacyId || canonicalId,
+    sourceId: cleanText(raw.id || legacyId || canonicalId),
+    legacyId: cleanText(raw.legacyId || (legacyId !== canonicalId ? legacyId : "")),
     name: skillCode || canonicalId,
+    skillCode: canonicalId,
     alias: cleanText(raw.alias),
-    type: normalizedType,
+    type: cleanText(raw.type || raw.quality || raw.keyMode || legacyMode).toUpperCase(),
     style: cleanText(raw.style || raw.category),
     level: numberOrBlank(raw.level),
     bpm: numberOrBlank(raw.bpm ?? raw.bpmBest),
@@ -146,10 +140,57 @@ async function request(url, options = {}) {
   return payload;
 }
 
-async function loadFromSources(force = false) {
+function getStoredAdminKey() {
+  return sessionStorage.getItem(ADMIN_KEY_STORAGE) || "";
+}
+
+function requireAdminKey() {
+  let key = getStoredAdminKey();
+
+  if (!key) {
+    key = window.prompt("Nhập MINA_ADMIN_API_KEY để lưu dữ liệu Wiki:", "") || "";
+    key = key.trim();
+
+    if (key) sessionStorage.setItem(ADMIN_KEY_STORAGE, key);
+  }
+
+  if (!key) throw new Error("Bạn chưa nhập khóa quản trị Wiki.");
+  return key;
+}
+
+function clearAdminKey() {
+  sessionStorage.removeItem(ADMIN_KEY_STORAGE);
+}
+
+async function adminRequest(url, options = {}) {
+  const key = requireAdminKey();
+
+  try {
+    return await request(url, {
+      ...options,
+      headers: {
+        ...(options.headers || {}),
+        "x-mina-admin-key": key
+      }
+    });
+  } catch (error) {
+    if (/401|sai khóa quản trị/i.test(String(error?.message || ""))) {
+      clearAdminKey();
+      throw new Error("Khóa quản trị Wiki không đúng. Hãy thao tác lại và nhập đúng khóa.");
+    }
+    throw error;
+  }
+}
+
+async function loadFirstAvailable(force = false) {
+  const sources = [
+    API.publicData,
+    API.skills,
+    API.adminData
+  ];
   const errors = [];
 
-  for (const source of DATA_SOURCES) {
+  for (const source of sources) {
     try {
       const separator = source.includes("?") ? "&" : "?";
       const payload = await request(
@@ -157,9 +198,7 @@ async function loadFromSources(force = false) {
       );
       const skills = unwrap(payload);
 
-      if (!skills.length) {
-        throw new Error("Nguồn không chứa Skill.");
-      }
+      if (!skills.length) throw new Error("Nguồn trả về 0 Skill.");
 
       return {
         source,
@@ -203,7 +242,7 @@ async function load(force = false) {
   setLoading(true, "Đang tải dữ liệu Wiki…");
 
   try {
-    const result = await loadFromSources(force);
+    const result = await loadFirstAvailable(force);
 
     state.trash = result.trash.map(normalize);
     state.history = result.history;
@@ -212,16 +251,13 @@ async function load(force = false) {
 
     render();
 
-    const sourceLabel = result.source === "/database/master-skills.json"
+    const sourceName = result.source === API.publicData
       ? "master-skills.json"
       : result.source;
 
-    notify(
-      `Đã tải ${state.skills.length} Skill từ ${sourceLabel}.`,
-      "success"
-    );
+    notify(`Đã tải ${state.skills.length} Skill từ ${sourceName}.`, "success");
   } catch (error) {
-    console.error("[Wiki Manager V2.1]", error);
+    console.error("[Wiki Manager V2.2]", error);
     state.skills = [];
     state.trash = [];
     state.history = [];
@@ -388,8 +424,8 @@ function validate(skill) {
 
 async function save(event) {
   event.preventDefault();
-  let skill;
 
+  let skill;
   try {
     skill = readForm();
     validate(skill);
@@ -399,50 +435,54 @@ async function save(event) {
   }
 
   setLoading(true, "Đang lưu Skill…");
+
   try {
-    const payload = {
-      action: "upsert",
-      originalId: state.editingOriginalId || undefined,
-      skillData: {
-        ...skill,
-        id: skill.id,
-        name: skill.id,
-        bpmBest: skill.bpm,
-        imageUrl: skill.image,
-        youtubeUrl: skill.youtube,
-        cameraAngle: skill.camera,
-        notes: skill.description,
-        hasYoutube: Boolean(skill.youtube),
-        hasWiki: true
-      }
+    const originalId = state.editingOriginalId;
+    const isEditing = Boolean(originalId);
+    const endpointMethod = isEditing && originalId === skill.id ? "PUT" : "POST";
+
+    const skillData = {
+      ...skill,
+      id: skill.id,
+      name: skill.id,
+      skillCode: skill.id,
+      bpmBest: skill.bpm,
+      imageUrl: skill.image,
+      youtubeUrl: skill.youtube,
+      cameraAngle: skill.camera,
+      notes: skill.description,
+      hasYoutube: Boolean(skill.youtube),
+      hasWiki: true
     };
 
-    await request(API.save, {
-      method: "POST",
-      body: JSON.stringify(payload)
+    await adminRequest(API.skills, {
+      method: endpointMethod,
+      body: JSON.stringify({ skillData })
     });
 
-    const oldId = state.editingOriginalId;
+    // Khi dữ liệu cũ vẫn dùng ID dạng 8K_9_0051:
+    // tạo bản mới theo mã Skill rồi xóa ID cũ.
+    if (isEditing && originalId !== skill.id) {
+      try {
+        await adminRequest(`${API.skills}?id=${encodeURIComponent(originalId)}`, {
+          method: "DELETE",
+          body: JSON.stringify({ id: originalId })
+        });
+      } catch (cleanupError) {
+        console.warn("[Wiki Manager legacy cleanup]", cleanupError);
+        notify(
+          `Đã lưu Skill ${skill.id}, nhưng chưa xóa được ID cũ ${originalId}.`,
+          "warning"
+        );
+      }
+    }
+
     resetForm();
     await load(true);
-
-    if (oldId && oldId !== skill.id) {
-      notify(`Đã lưu mã Skill ${skill.id}. API cần hỗ trợ originalId để xóa ID cũ ${oldId}.`, "warning");
-    } else {
-      notify(`Đã lưu Skill ${skill.id}.`, "success");
-    }
+    notify(`Đã lưu Skill ${skill.id}.`, "success");
   } catch (error) {
     console.error("[Wiki Manager save]", error);
-
-    const missingApi =
-      /404|not found|không hợp lệ/i.test(String(error?.message || ""));
-
-    notify(
-      missingApi
-        ? "Đã đọc được master-skills.json nhưng API /api/save-wiki-skill chưa hoạt động. Hãy dùng Xuất JSON để backup hoặc bổ sung API lưu."
-        : (error.message || "Không lưu được Skill."),
-      "error"
-    );
+    notify(error.message || "Không lưu được Skill.", "error");
   } finally {
     setLoading(false);
   }
@@ -513,9 +553,9 @@ async function removeSkill(sourceId) {
 
   setLoading(true, "Đang xóa Skill…");
   try {
-    await request(API.save, {
-      method: "POST",
-      body: JSON.stringify({ action: "trash", id: sourceId })
+    await adminRequest(`${API.skills}?id=${encodeURIComponent(sourceId)}`, {
+      method: "DELETE",
+      body: JSON.stringify({ id: sourceId })
     });
     await load(true);
     notify(`Đã đưa Skill ${skill.id} vào thùng rác.`, "success");
@@ -528,9 +568,8 @@ async function removeSkill(sourceId) {
 
 function exportJson() {
   const payload = {
-    version: 12,
+    version: 13,
     updatedAt: new Date().toISOString(),
-    source: "Mina CMS Wiki Manager v2.1",
     skills: state.skills.map(skill => ({
       ...skill,
       id: skill.id,
