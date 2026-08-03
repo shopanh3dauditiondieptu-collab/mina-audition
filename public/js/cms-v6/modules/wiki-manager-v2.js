@@ -1,20 +1,31 @@
 /* =========================================================
-   MINA CMS WIKI MANAGER V2.2 — SINGLE SOURCE
-   - Không iframe
-   - Không lưu Skill vào Firestore posts
-   - Đọc ưu tiên: /database/master-skills.json
-   - API đọc/ghi: /api/wiki-skills
-   - Admin data: /api/wiki-admin-data
-   - Skill ID chính là mã Skill
+   MINA CMS WIKI MANAGER V2.3 — IMAGE UPLOAD EDITION
+   - Đọc ưu tiên /database/master-skills.json
+   - Fallback /api/wiki-skills và /api/wiki-admin-data
+   - Lưu/Sửa/Xóa qua /api/wiki-skills
+   - ID chính là mã Skill
+   - Chọn ảnh PC, kéo-thả, preview, nén WebP, upload Cloudinary
 ========================================================= */
 
 const API = {
   publicData: "/database/master-skills.json",
-  adminData: "/api/wiki-admin-data",
-  skills: "/api/wiki-skills"
+  skills: "/api/wiki-skills",
+  adminData: "/api/wiki-admin-data"
 };
 
+const CLOUDINARY = {
+  cloudName: "rpwcnrfg",
+  uploadPreset: "mina-upload",
+  folder: "mina/wiki/skills"
+};
+
+const CLOUDINARY_ENDPOINT =
+  `https://api.cloudinary.com/v1_1/${CLOUDINARY.cloudName}/image/upload`;
+
 const ADMIN_KEY_STORAGE = "mina-wiki-admin-api-key";
+const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
+const MAX_IMAGE_EDGE = 1800;
+const WEBP_QUALITY = 0.88;
 
 const STATUS = {
   verified: "Đã xác minh",
@@ -35,7 +46,11 @@ const state = {
   keyMode: "",
   page: 1,
   pageSize: 24,
-  editingOriginalId: ""
+  editingOriginalId: "",
+  selectedImageFile: null,
+  selectedImageObjectUrl: "",
+  processedImageFile: null,
+  uploadedImageUrl: ""
 };
 
 const $ = selector => document.querySelector(selector);
@@ -71,7 +86,7 @@ function normalize(raw = {}) {
   return {
     ...raw,
     id: canonicalId,
-    sourceId: cleanText(raw.id || legacyId || canonicalId),
+    sourceId: cleanText(raw.sourceId || raw.id || legacyId || canonicalId),
     legacyId: cleanText(raw.legacyId || (legacyId !== canonicalId ? legacyId : "")),
     name: skillCode || canonicalId,
     skillCode: canonicalId,
@@ -102,16 +117,11 @@ function normalize(raw = {}) {
 
 function unwrap(payload) {
   if (Array.isArray(payload)) return payload;
-
-  for (const key of [
-    "skills", "wikiSkills", "masterSkills", "data", "items", "records"
-  ]) {
+  for (const key of ["skills", "wikiSkills", "masterSkills", "data", "items", "records"]) {
     if (Array.isArray(payload?.[key])) return payload[key];
   }
-
   if (Array.isArray(payload?.result?.skills)) return payload.result.skills;
   if (Array.isArray(payload?.data?.skills)) return payload.data.skills;
-
   return [];
 }
 
@@ -140,31 +150,18 @@ async function request(url, options = {}) {
   return payload;
 }
 
-function getStoredAdminKey() {
-  return sessionStorage.getItem(ADMIN_KEY_STORAGE) || "";
-}
-
-function requireAdminKey() {
-  let key = getStoredAdminKey();
-
+function getAdminKey() {
+  let key = sessionStorage.getItem(ADMIN_KEY_STORAGE) || "";
   if (!key) {
-    key = window.prompt("Nhập MINA_ADMIN_API_KEY để lưu dữ liệu Wiki:", "") || "";
-    key = key.trim();
-
+    key = cleanText(window.prompt("Nhập MINA_ADMIN_API_KEY để lưu dữ liệu Wiki:", ""));
     if (key) sessionStorage.setItem(ADMIN_KEY_STORAGE, key);
   }
-
   if (!key) throw new Error("Bạn chưa nhập khóa quản trị Wiki.");
   return key;
 }
 
-function clearAdminKey() {
-  sessionStorage.removeItem(ADMIN_KEY_STORAGE);
-}
-
 async function adminRequest(url, options = {}) {
-  const key = requireAdminKey();
-
+  const key = getAdminKey();
   try {
     return await request(url, {
       ...options,
@@ -174,20 +171,44 @@ async function adminRequest(url, options = {}) {
       }
     });
   } catch (error) {
-    if (/401|sai khóa quản trị/i.test(String(error?.message || ""))) {
-      clearAdminKey();
+    if (/401|sai khóa|unauthorized/i.test(String(error?.message || ""))) {
+      sessionStorage.removeItem(ADMIN_KEY_STORAGE);
       throw new Error("Khóa quản trị Wiki không đúng. Hãy thao tác lại và nhập đúng khóa.");
     }
     throw error;
   }
 }
 
+function notify(message, type = "success") {
+  const notice = $("#notice");
+  if (!notice) return;
+  notice.textContent = message;
+  notice.className = `notice ${type}`;
+  notice.hidden = false;
+  clearTimeout(notify.timer);
+  notify.timer = setTimeout(() => { notice.hidden = true; }, 6500);
+}
+
+function setLoading(value, message = "Đang xử lý…") {
+  state.loading = value;
+  const node = $("#wikiNativeLoading");
+  if (node) {
+    node.hidden = !value;
+    node.textContent = message;
+  }
+
+  document
+    .querySelectorAll("#view-wiki button, #view-wiki input, #view-wiki select, #view-wiki textarea")
+    .forEach(element => {
+      if (
+        element.id !== "wikiNativeCancelEdit" &&
+        element.id !== "wikiNativeReload"
+      ) element.disabled = value;
+    });
+}
+
 async function loadFirstAvailable(force = false) {
-  const sources = [
-    API.publicData,
-    API.skills,
-    API.adminData
-  ];
+  const sources = [API.publicData, API.skills, API.adminData];
   const errors = [];
 
   for (const source of sources) {
@@ -197,7 +218,6 @@ async function loadFirstAvailable(force = false) {
         `${source}${separator}v=${Date.now()}${force ? "&force=1" : ""}`
       );
       const skills = unwrap(payload);
-
       if (!skills.length) throw new Error("Nguồn trả về 0 Skill.");
 
       return {
@@ -215,61 +235,26 @@ async function loadFirstAvailable(force = false) {
   throw new Error(`Không đọc được dữ liệu Wiki. ${errors.join(" | ")}`);
 }
 
-function notify(message, type = "success") {
-  const notice = $("#notice");
-  if (!notice) return;
-  notice.textContent = message;
-  notice.className = `notice ${type}`;
-  notice.hidden = false;
-  clearTimeout(notify.timer);
-  notify.timer = setTimeout(() => { notice.hidden = true; }, 6000);
-}
-
-function setLoading(value, message = "Đang xử lý…") {
-  state.loading = value;
-  const node = $("#wikiNativeLoading");
-  if (node) {
-    node.hidden = !value;
-    node.textContent = message;
-  }
-  document.querySelectorAll("#view-wiki button, #view-wiki input, #view-wiki select, #view-wiki textarea")
-    .forEach(element => {
-      if (element.id !== "wikiNativeCancelEdit") element.disabled = value;
-    });
-}
-
 async function load(force = false) {
   setLoading(true, "Đang tải dữ liệu Wiki…");
 
   try {
     const result = await loadFirstAvailable(force);
-
+    state.skills = result.skills.map(normalize).filter(skill => skill.id);
     state.trash = result.trash.map(normalize);
     state.history = result.history;
-    state.skills = result.skills.map(normalize).filter(skill => skill.id);
     state.page = 1;
-
     render();
 
-    const sourceName = result.source === API.publicData
-      ? "master-skills.json"
-      : result.source;
+    const sourceName =
+      result.source === API.publicData ? "master-skills.json" : result.source;
 
     notify(`Đã tải ${state.skills.length} Skill từ ${sourceName}.`, "success");
   } catch (error) {
-    console.error("[Wiki Manager V2.2]", error);
+    console.error("[Wiki Manager V2.3 load]", error);
     state.skills = [];
-    state.trash = [];
-    state.history = [];
     render();
-
     notify(error.message || "Không tải được dữ liệu Wiki.", "error");
-
-    const table = $("#wikiNativeTable");
-    if (table) {
-      table.innerHTML =
-        `<div class="wiki-native-empty">Không tải được dữ liệu: ${esc(error.message)}</div>`;
-    }
   } finally {
     setLoading(false);
   }
@@ -277,6 +262,7 @@ async function load(force = false) {
 
 function currentItems() {
   const query = cleanText(state.search).toLowerCase();
+
   return state.skills.filter(skill => {
     const haystack = [
       skill.id, skill.name, skill.style, skill.type, skill.level,
@@ -294,18 +280,14 @@ function currentItems() {
 }
 
 function stats() {
-  const verified = state.skills.filter(item => item.status === "verified").length;
-  const review = state.skills.filter(item => item.status === "needs_review").length;
-  const videos = state.skills.filter(item => item.youtube).length;
-  const pinned = state.skills.filter(item => item.homePinned).length;
-
   const values = {
     wikiNativeTotal: state.skills.length,
-    wikiNativeVerified: verified,
-    wikiNativeReview: review,
-    wikiNativeVideos: videos,
-    wikiNativePinned: pinned
+    wikiNativeVerified: state.skills.filter(item => item.status === "verified").length,
+    wikiNativeReview: state.skills.filter(item => item.status === "needs_review").length,
+    wikiNativeVideos: state.skills.filter(item => item.youtube).length,
+    wikiNativePinned: state.skills.filter(item => item.homePinned).length
   };
+
   Object.entries(values).forEach(([id, value]) => {
     const node = document.getElementById(id);
     if (node) node.textContent = String(value);
@@ -324,11 +306,10 @@ function renderTable() {
   const start = (state.page - 1) * state.pageSize;
   const pageItems = filtered.slice(start, start + state.pageSize);
   const table = $("#wikiNativeTable");
+  if (!table) return;
 
-  if (!pageItems.length) {
-    table.innerHTML = '<div class="wiki-native-empty">Không tìm thấy Skill phù hợp.</div>';
-  } else {
-    table.innerHTML = pageItems.map(skill => `
+  table.innerHTML = pageItems.length
+    ? pageItems.map(skill => `
       <article class="wiki-native-row" data-id="${esc(skill.sourceId)}">
         <div class="wiki-native-thumb">
           ${skill.image
@@ -337,10 +318,7 @@ function renderTable() {
         </div>
         <div class="wiki-native-main">
           <strong>${esc(skill.name)}</strong>
-          <small>
-            ID dùng trên Wiki: <b>${esc(skill.id)}</b>
-            ${skill.sourceId !== skill.id ? ` · ID cũ: ${esc(skill.sourceId)}` : ""}
-          </small>
+          <small>ID dùng trên Wiki: <b>${esc(skill.id)}</b></small>
           <p>${esc(skill.description || "Chưa có mô tả.")}</p>
         </div>
         <div class="wiki-native-meta">
@@ -356,20 +334,17 @@ function renderTable() {
           <button class="btn danger" type="button" data-wiki-delete="${esc(skill.sourceId)}">Xóa</button>
         </div>
       </article>
-    `).join("");
-  }
+    `).join("")
+    : '<div class="wiki-native-empty">Không tìm thấy Skill phù hợp.</div>';
 
-  const range = $("#wikiNativeRange");
-  if (range) {
-    const from = filtered.length ? start + 1 : 0;
-    const to = Math.min(start + state.pageSize, filtered.length);
-    range.textContent = `Hiển thị ${from}–${to}/${filtered.length} Skill · Trang ${state.page}/${totalPages}`;
+  const from = filtered.length ? start + 1 : 0;
+  const to = Math.min(start + state.pageSize, filtered.length);
+  if ($("#wikiNativeRange")) {
+    $("#wikiNativeRange").textContent =
+      `Hiển thị ${from}–${to}/${filtered.length} Skill · Trang ${state.page}/${totalPages}`;
   }
-
-  const prev = $("#wikiNativePrev");
-  const next = $("#wikiNativeNext");
-  if (prev) prev.disabled = state.page <= 1;
-  if (next) next.disabled = state.page >= totalPages;
+  if ($("#wikiNativePrev")) $("#wikiNativePrev").disabled = state.page <= 1;
+  if ($("#wikiNativeNext")) $("#wikiNativeNext").disabled = state.page >= totalPages;
 }
 
 function render() {
@@ -377,41 +352,55 @@ function render() {
   renderTable();
 }
 
+function getFormField(name) {
+  const form = $("#wikiNativeForm");
+  return form?.elements?.namedItem(name) || null;
+}
+
 function readForm() {
   const form = $("#wikiNativeForm");
-  const data = new FormData(form);
-  const code = cleanText(data.get("id"));
+  if (!form) throw new Error("Không tìm thấy form Wiki.");
+
+  // Đọc trực tiếp field thay vì phụ thuộc hoàn toàn vào FormData.
+  const code = cleanText(getFormField("id")?.value);
 
   return normalize({
     id: code,
     name: code,
-    type: data.get("type"),
-    style: data.get("style"),
-    level: data.get("level"),
-    bpm: data.get("bpm"),
-    rarity: data.get("rarity"),
-    rating: data.get("rating"),
-    status: data.get("status"),
-    image: data.get("image"),
-    youtube: data.get("youtube"),
-    song: data.get("song"),
-    camera: data.get("camera"),
-    description: data.get("description"),
-    note: data.get("note"),
-    tags: data.get("tags"),
-    hot: form.elements.hot.checked,
-    homePinned: form.elements.homePinned.checked,
-    homeOrder: form.elements.homePinned.checked ? data.get("homeOrder") : ""
+    skillCode: code,
+    type: getFormField("type")?.value,
+    style: getFormField("style")?.value,
+    level: getFormField("level")?.value,
+    bpm: getFormField("bpm")?.value,
+    rarity: getFormField("rarity")?.value,
+    rating: getFormField("rating")?.value,
+    status: getFormField("status")?.value,
+    image: getFormField("image")?.value,
+    youtube: getFormField("youtube")?.value,
+    song: getFormField("song")?.value,
+    camera: getFormField("camera")?.value,
+    description: getFormField("description")?.value,
+    note: getFormField("note")?.value,
+    tags: getFormField("tags")?.value,
+    hot: Boolean(getFormField("hot")?.checked),
+    homePinned: Boolean(getFormField("homePinned")?.checked),
+    homeOrder: getFormField("homePinned")?.checked
+      ? getFormField("homeOrder")?.value
+      : ""
   });
 }
 
 function validate(skill) {
-  if (!skill.id) throw new Error("Bạn chưa nhập mã Skill.");
-  if (!/^\d+$/.test(skill.id)) throw new Error("ID Wiki phải chính là mã Skill và chỉ chứa số, ví dụ 3734.");
+  if (!skill.id) throw new Error("Thiếu ID skill.");
+  if (!/^\d+$/.test(skill.id)) {
+    throw new Error("ID Wiki phải là mã Skill chỉ chứa số, ví dụ 3734.");
+  }
   if (!skill.level || Number(skill.level) < 1 || Number(skill.level) > 20) {
     throw new Error("Level Skill không hợp lệ.");
   }
-  if (!["4K", "8K"].includes(skill.type)) throw new Error("Hãy chọn loại phím 4K hoặc 8K.");
+  if (!["4K", "8K"].includes(skill.type)) {
+    throw new Error("Hãy chọn loại phím 4K hoặc 8K.");
+  }
   if (skill.bpm !== "" && (Number(skill.bpm) < 1 || Number(skill.bpm) > 999)) {
     throw new Error("BPM phải nằm trong khoảng 1–999.");
   }
@@ -422,11 +411,198 @@ function validate(skill) {
   if (duplicate) throw new Error(`Skill ${skill.id} đã tồn tại.`);
 }
 
+function setSaveButtonMode(mode = "create", id = "") {
+  const button = $("#wikiNativeSaveButton");
+  if (!button) return;
+
+  button.dataset.mode = mode;
+  button.textContent = mode === "edit"
+    ? `Cập nhật Skill ${id}`
+    : "Lưu Skill";
+}
+
+function revokeSelectedObjectUrl() {
+  if (state.selectedImageObjectUrl) {
+    URL.revokeObjectURL(state.selectedImageObjectUrl);
+    state.selectedImageObjectUrl = "";
+  }
+}
+
+function humanFileSize(bytes = 0) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 ** 2).toFixed(2)} MB`;
+}
+
+function setUploadProgress(percent = 0, message = "", kind = "") {
+  const bar = $("#wikiImageProgressBar");
+  const status = $("#wikiImageUploadStatus");
+  if (bar) bar.style.width = `${Math.max(0, Math.min(100, percent))}%`;
+  if (status) {
+    status.textContent = message;
+    status.className = `wiki-upload-status ${kind}`.trim();
+  }
+}
+
+function renderImagePreview(url = "", file = null) {
+  const box = $("#wikiImagePreview");
+  const image = $("#wikiImagePreviewImg");
+  const info = $("#wikiImageFileInfo");
+  if (!box || !image || !info) return;
+
+  if (!url) {
+    box.hidden = true;
+    image.removeAttribute("src");
+    info.textContent = "Chưa chọn ảnh.";
+    return;
+  }
+
+  box.hidden = false;
+  image.src = url;
+  info.textContent = file
+    ? `${file.name} · ${humanFileSize(file.size)} · ${file.type || "image"}`
+    : "Ảnh hiện tại từ URL đã lưu.";
+}
+
+async function canvasToBlob(canvas, type, quality) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+      if (blob) resolve(blob);
+      else reject(new Error("Không thể nén ảnh."));
+    }, type, quality);
+  });
+}
+
+async function loadBitmap(file) {
+  if ("createImageBitmap" in window) return createImageBitmap(file);
+
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("Không đọc được ảnh."));
+      img.src = objectUrl;
+    });
+    return image;
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
+async function compressToWebp(file) {
+  if (!file?.type?.startsWith("image/")) {
+    throw new Error("Tệp được chọn không phải hình ảnh.");
+  }
+  if (file.size > MAX_IMAGE_BYTES) {
+    throw new Error(`${file.name} vượt quá giới hạn 12MB.`);
+  }
+
+  const bitmap = await loadBitmap(file);
+  const sourceWidth = bitmap.width || bitmap.naturalWidth;
+  const sourceHeight = bitmap.height || bitmap.naturalHeight;
+  const ratio = Math.min(1, MAX_IMAGE_EDGE / Math.max(sourceWidth, sourceHeight));
+  const width = Math.max(1, Math.round(sourceWidth * ratio));
+  const height = Math.max(1, Math.round(sourceHeight * ratio));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+
+  const context = canvas.getContext("2d", { alpha: false });
+  context.imageSmoothingEnabled = true;
+  context.imageSmoothingQuality = "high";
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, width, height);
+  context.drawImage(bitmap, 0, 0, width, height);
+
+  if (typeof bitmap.close === "function") bitmap.close();
+
+  const blob = await canvasToBlob(canvas, "image/webp", WEBP_QUALITY);
+  const baseName = file.name.replace(/\.[^.]+$/, "") || "wiki-skill";
+  return new File([blob], `${baseName}.webp`, {
+    type: "image/webp",
+    lastModified: Date.now()
+  });
+}
+
+async function selectImageFile(file) {
+  if (!file) return;
+
+  setUploadProgress(10, "Đang kiểm tra và nén ảnh…");
+  const processed = await compressToWebp(file);
+
+  revokeSelectedObjectUrl();
+  state.selectedImageFile = file;
+  state.processedImageFile = processed;
+  state.selectedImageObjectUrl = URL.createObjectURL(processed);
+  state.uploadedImageUrl = "";
+
+  renderImagePreview(state.selectedImageObjectUrl, processed);
+  setUploadProgress(
+    35,
+    `Đã nén: ${humanFileSize(file.size)} → ${humanFileSize(processed.size)}. Sẵn sàng upload.`,
+    "success"
+  );
+}
+
+async function uploadSelectedImage() {
+  const file = state.processedImageFile;
+  if (!file) throw new Error("Bạn chưa chọn ảnh từ máy.");
+
+  const skillId = cleanText(getFormField("id")?.value) || "new";
+  setUploadProgress(45, "Đang upload ảnh lên Cloudinary…");
+
+  const form = new FormData();
+  form.append("file", file);
+  form.append("upload_preset", CLOUDINARY.uploadPreset);
+  form.append("folder", CLOUDINARY.folder);
+  form.append("public_id", `skill-${skillId}-${Date.now()}`);
+
+  const response = await fetch(CLOUDINARY_ENDPOINT, {
+    method: "POST",
+    body: form
+  });
+
+  const result = await response.json();
+  if (!response.ok || !result.secure_url) {
+    throw new Error(result?.error?.message || "Không upload được ảnh lên Cloudinary.");
+  }
+
+  const imageField = getFormField("image");
+  if (imageField) imageField.value = result.secure_url;
+  state.uploadedImageUrl = result.secure_url;
+
+  renderImagePreview(result.secure_url, file);
+  setUploadProgress(100, "Upload thành công. URL ảnh đã được điền tự động.", "success");
+  notify("Đã upload ảnh Skill thành công.", "success");
+  return result.secure_url;
+}
+
+function clearImageSelection({ clearUrl = true } = {}) {
+  revokeSelectedObjectUrl();
+  state.selectedImageFile = null;
+  state.processedImageFile = null;
+  state.uploadedImageUrl = "";
+
+  const input = $("#wikiNativeImageFile");
+  if (input) input.value = "";
+  if (clearUrl && getFormField("image")) getFormField("image").value = "";
+
+  renderImagePreview("", null);
+  setUploadProgress(0, "");
+}
+
 async function save(event) {
   event.preventDefault();
 
   let skill;
   try {
+    // Nếu đã chọn ảnh nhưng chưa upload, upload tự động trước khi lưu.
+    if (state.processedImageFile && !state.uploadedImageUrl) {
+      await uploadSelectedImage();
+    }
+
     skill = readForm();
     validate(skill);
   } catch (error) {
@@ -439,13 +615,14 @@ async function save(event) {
   try {
     const originalId = state.editingOriginalId;
     const isEditing = Boolean(originalId);
-    const endpointMethod = isEditing && originalId === skill.id ? "PUT" : "POST";
+    const sameId = !isEditing || originalId === skill.id;
 
     const skillData = {
       ...skill,
       id: skill.id,
       name: skill.id,
       skillCode: skill.id,
+      legacyId: isEditing && !sameId ? originalId : skill.legacyId,
       bpmBest: skill.bpm,
       imageUrl: skill.image,
       youtubeUrl: skill.youtube,
@@ -456,32 +633,23 @@ async function save(event) {
     };
 
     await adminRequest(API.skills, {
-      method: endpointMethod,
+      method: isEditing && sameId ? "PUT" : "POST",
       body: JSON.stringify({ skillData })
     });
 
-    // Khi dữ liệu cũ vẫn dùng ID dạng 8K_9_0051:
-    // tạo bản mới theo mã Skill rồi xóa ID cũ.
-    if (isEditing && originalId !== skill.id) {
-      try {
-        await adminRequest(`${API.skills}?id=${encodeURIComponent(originalId)}`, {
-          method: "DELETE",
-          body: JSON.stringify({ id: originalId })
-        });
-      } catch (cleanupError) {
-        console.warn("[Wiki Manager legacy cleanup]", cleanupError);
-        notify(
-          `Đã lưu Skill ${skill.id}, nhưng chưa xóa được ID cũ ${originalId}.`,
-          "warning"
-        );
-      }
+    // Nếu đổi mã ID, tạo mã mới thành công rồi mới xóa mã cũ.
+    if (isEditing && !sameId) {
+      await adminRequest(`${API.skills}?id=${encodeURIComponent(originalId)}`, {
+        method: "DELETE",
+        body: JSON.stringify({ id: originalId })
+      });
     }
 
     resetForm();
     await load(true);
-    notify(`Đã lưu Skill ${skill.id}.`, "success");
+    notify(`Đã ${isEditing ? "cập nhật" : "lưu"} Skill ${skill.id}.`, "success");
   } catch (error) {
-    console.error("[Wiki Manager save]", error);
+    console.error("[Wiki Manager V2.3 save]", error);
     notify(error.message || "Không lưu được Skill.", "error");
   } finally {
     setLoading(false);
@@ -492,7 +660,6 @@ function editSkill(sourceId) {
   const skill = state.skills.find(item => item.sourceId === sourceId);
   if (!skill) return;
 
-  const form = $("#wikiNativeForm");
   const values = {
     id: skill.id,
     type: skill.type,
@@ -513,43 +680,60 @@ function editSkill(sourceId) {
   };
 
   Object.entries(values).forEach(([name, value]) => {
-    const field = form.elements.namedItem(name);
+    const field = getFormField(name);
     if (field) field.value = value ?? "";
   });
 
-  form.elements.hot.checked = Boolean(skill.hot);
-  form.elements.homePinned.checked = Boolean(skill.homePinned);
-  state.editingOriginalId = skill.sourceId;
-
-  $("#wikiNativeFormTitle").textContent = `Sửa Skill ${skill.id}`;
-  $("#wikiNativeCancelEdit").hidden = false;
-  $("#wikiNativeLegacyWarning").hidden = skill.sourceId === skill.id;
-  if (skill.sourceId !== skill.id) {
-    $("#wikiNativeLegacyWarning").textContent =
-      `Skill này đang có ID cũ “${skill.sourceId}”. Khi lưu, Wiki Manager sẽ gửi mã “${skill.id}” làm ID mới.`;
+  if (getFormField("hot")) getFormField("hot").checked = Boolean(skill.hot);
+  if (getFormField("homePinned")) {
+    getFormField("homePinned").checked = Boolean(skill.homePinned);
   }
 
-  form.scrollIntoView({ behavior: "smooth", block: "start" });
-  form.elements.id.focus();
+  state.editingOriginalId = skill.sourceId;
+  clearImageSelection({ clearUrl: false });
+
+  if (skill.image) {
+    renderImagePreview(skill.image, null);
+    setUploadProgress(0, "Đang dùng ảnh hiện tại. Chọn ảnh mới để thay thế.");
+  }
+
+  if ($("#wikiNativeFormTitle")) {
+    $("#wikiNativeFormTitle").textContent = `Sửa Skill ${skill.id}`;
+  }
+  if ($("#wikiNativeCancelEdit")) $("#wikiNativeCancelEdit").hidden = false;
+  if ($("#wikiNativeLegacyWarning")) {
+    $("#wikiNativeLegacyWarning").hidden = skill.sourceId === skill.id;
+    if (skill.sourceId !== skill.id) {
+      $("#wikiNativeLegacyWarning").textContent =
+        `Skill đang có ID cũ “${skill.sourceId}”. Khi cập nhật sẽ dùng mã “${skill.id}”.`;
+    }
+  }
+
+  setSaveButtonMode("edit", skill.id);
+
+  $("#wikiNativeForm")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  getFormField("id")?.focus();
 }
 
 function resetForm() {
   const form = $("#wikiNativeForm");
   form?.reset();
-  if (form?.elements.status) form.elements.status.value = "needs_review";
+
+  if (getFormField("status")) getFormField("status").value = "needs_review";
   state.editingOriginalId = "";
-  const title = $("#wikiNativeFormTitle");
-  if (title) title.textContent = "Thêm Skill mới";
-  const cancel = $("#wikiNativeCancelEdit");
-  if (cancel) cancel.hidden = true;
-  const warning = $("#wikiNativeLegacyWarning");
-  if (warning) warning.hidden = true;
+  clearImageSelection();
+
+  if ($("#wikiNativeFormTitle")) $("#wikiNativeFormTitle").textContent = "Thêm Skill mới";
+  if ($("#wikiNativeCancelEdit")) $("#wikiNativeCancelEdit").hidden = true;
+  if ($("#wikiNativeLegacyWarning")) $("#wikiNativeLegacyWarning").hidden = true;
+
+  setSaveButtonMode("create");
 }
 
 async function removeSkill(sourceId) {
   const skill = state.skills.find(item => item.sourceId === sourceId);
   if (!skill) return;
-  if (!confirm(`Đưa Skill ${skill.id} vào thùng rác?`)) return;
+  if (!confirm(`Xóa Skill ${skill.id}? Dữ liệu sẽ được cập nhật trên GitHub.`)) return;
 
   setLoading(true, "Đang xóa Skill…");
   try {
@@ -558,7 +742,7 @@ async function removeSkill(sourceId) {
       body: JSON.stringify({ id: sourceId })
     });
     await load(true);
-    notify(`Đã đưa Skill ${skill.id} vào thùng rác.`, "success");
+    notify(`Đã xóa Skill ${skill.id}.`, "success");
   } catch (error) {
     notify(error.message || "Không xóa được Skill.", "error");
   } finally {
@@ -570,10 +754,12 @@ function exportJson() {
   const payload = {
     version: 13,
     updatedAt: new Date().toISOString(),
+    source: "Mina Wiki Manager v2.3",
     skills: state.skills.map(skill => ({
       ...skill,
       id: skill.id,
-      name: skill.name,
+      name: skill.id,
+      skillCode: skill.id,
       bpmBest: skill.bpm,
       imageUrl: skill.image,
       youtubeUrl: skill.youtube,
@@ -584,7 +770,9 @@ function exportJson() {
     history: state.history
   };
 
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: "application/json"
+  });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
@@ -593,11 +781,72 @@ function exportJson() {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+function bindImageUpload() {
+  const fileInput = $("#wikiNativeImageFile");
+  const dropzone = $("#wikiImageDropzone");
+  const imageUrl = getFormField("image");
+
+  fileInput?.addEventListener("change", async event => {
+    try {
+      await selectImageFile(event.target.files?.[0]);
+    } catch (error) {
+      setUploadProgress(0, error.message, "error");
+      notify(error.message, "error");
+    }
+  });
+
+  $("#wikiImageChooseAgain")?.addEventListener("click", () => fileInput?.click());
+
+  $("#wikiImageUploadButton")?.addEventListener("click", async () => {
+    try {
+      await uploadSelectedImage();
+    } catch (error) {
+      setUploadProgress(0, error.message, "error");
+      notify(error.message, "error");
+    }
+  });
+
+  $("#wikiImageClear")?.addEventListener("click", () => clearImageSelection());
+
+  imageUrl?.addEventListener("input", event => {
+    const url = cleanText(event.target.value);
+    if (state.processedImageFile) return;
+    renderImagePreview(url, null);
+    if (url) setUploadProgress(0, "Đang dùng URL ảnh nhập thủ công.");
+  });
+
+  ["dragenter", "dragover"].forEach(type => {
+    dropzone?.addEventListener(type, event => {
+      event.preventDefault();
+      dropzone.classList.add("is-dragover");
+    });
+  });
+
+  ["dragleave", "drop"].forEach(type => {
+    dropzone?.addEventListener(type, event => {
+      event.preventDefault();
+      dropzone.classList.remove("is-dragover");
+    });
+  });
+
+  dropzone?.addEventListener("drop", async event => {
+    try {
+      const file = event.dataTransfer?.files?.[0];
+      await selectImageFile(file);
+    } catch (error) {
+      setUploadProgress(0, error.message, "error");
+      notify(error.message, "error");
+    }
+  });
+}
+
 function bind() {
   $("#wikiNativeForm")?.addEventListener("submit", save);
   $("#wikiNativeCancelEdit")?.addEventListener("click", resetForm);
   $("#wikiNativeReload")?.addEventListener("click", () => load(true));
   $("#wikiNativeExport")?.addEventListener("click", exportJson);
+
+  bindImageUpload();
 
   $("#wikiNativeSearch")?.addEventListener("input", event => {
     state.search = event.target.value;
@@ -651,6 +900,7 @@ export function initWikiManager() {
   if (state.initialized) return;
   state.initialized = true;
   bind();
+  setSaveButtonMode("create");
 }
 
 export async function openWikiManager() {
