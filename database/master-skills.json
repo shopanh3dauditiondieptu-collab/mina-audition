@@ -1,9 +1,9 @@
 {
-  "version": 10,
+  "version": 12,
   "updatedAt": "2026-07-12T04:03:56.098Z",
   "skills": [
     {
-      "id": "4K_6_0002",
+      "id": "264866",
       "name": "264866",
       "alias": "",
       "type": "4K",
@@ -31,10 +31,12 @@
       "createdAt": "2026-07-10T09:34:56.684Z",
       "updatedAt": "2026-07-12T04:03:56.098Z",
       "homePinned": true,
-      "homeOrder": 2
+      "homeOrder": 2,
+      "legacyId": "4K_6_0002",
+      "skillCode": "264866"
     },
     {
-      "id": "4K_8_0044",
+      "id": "642848",
       "name": "642848",
       "alias": "",
       "type": "4K",
@@ -56,10 +58,12 @@
       "createdAt": "2026-07-11T13:34:23.451Z",
       "updatedAt": "2026-07-12T04:03:56.098Z",
       "homePinned": true,
-      "homeOrder": 3
+      "homeOrder": 3,
+      "legacyId": "4K_8_0044",
+      "skillCode": "642848"
     },
     {
-      "id": "4K_8_0045",
+      "id": "2646244",
       "name": "2646244",
       "alias": "",
       "type": "Dance",
@@ -86,13 +90,15 @@
       ],
       "notes": "Ghi chú quay video hoặc chỉnh CapCut.",
       "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-07-12T04:03:56.098Z"
+      "updatedAt": "2026-07-12T04:03:56.098Z",
+      "legacyId": "4K_8_0045",
+      "skillCode": "2646244"
     },
     {
-      "id": "4K_8_0046",
+      "id": "6284642",
       "name": "6284642",
       "alias": "",
-      "type": "",
+      "type": "4K",
       "style": "Poppin-H",
       "level": 8,
       "bpmBest": 110,
@@ -111,13 +117,15 @@
       "tags": [],
       "notes": "🔥 6284642 Có Thật Sự Là Skill Popping Đẹp Nhất? 😍 | Audition VTC | 8K Dance Showcase | Mina",
       "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-07-12T04:03:56.098Z"
+      "updatedAt": "2026-07-12T04:03:56.098Z",
+      "legacyId": "4K_8_0046",
+      "skillCode": "6284642"
     },
     {
-      "id": "4K_7_0047",
+      "id": "822286",
       "name": "822286",
       "alias": "",
-      "type": "",
+      "type": "4K",
       "style": "Poppin-H",
       "level": 7,
       "bpmBest": 110,
@@ -136,13 +144,15 @@
       "tags": [],
       "notes": "822286 - BEST Popping Skill? 🔥 D8 Popping LV7 - 4K | Audition VTC | Mina viết mô tả",
       "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-07-12T04:03:56.098Z"
+      "updatedAt": "2026-07-12T04:03:56.098Z",
+      "legacyId": "4K_7_0047",
+      "skillCode": "822286"
     },
     {
-      "id": "8K_9_0048",
+      "id": "6389",
       "name": "6389",
       "alias": "",
-      "type": "",
+      "type": "8K",
       "style": "Poppin-H",
       "level": 9,
       "bpmBest": 110,
@@ -161,13 +171,15 @@
       "tags": [],
       "notes": "D8 Skill Popping 6389 | S+ Popping Siêu Đẹp | LV9 - 8K | Audition VTC | Mina",
       "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-07-12T04:03:56.098Z"
+      "updatedAt": "2026-07-12T04:03:56.098Z",
+      "legacyId": "8K_9_0048",
+      "skillCode": "6389"
     },
     {
-      "id": "8K_9_0049",
+      "id": "47767",
       "name": "47767",
       "alias": "",
-      "type": "",
+      "type": "8K",
       "style": "Poppin-H",
       "level": 9,
       "bpmBest": 110,
@@ -186,13 +198,15 @@
       "tags": [],
       "notes": "🔥 47767 - BEST WALK Poppin? ⭐ S+ | D8 Skill LV9 - 8K | Audition VTC | Mina",
       "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-07-12T04:03:56.098Z"
+      "updatedAt": "2026-07-12T04:03:56.098Z",
+      "legacyId": "8K_9_0049",
+      "skillCode": "47767"
     },
     {
-      "id": "8K_9_0050",
+      "id": "49421",
       "name": "49421",
       "alias": "",
-      "type": "",
+      "type": "8K",
       "style": "Poppin-H",
       "level": 9,
       "bpmBest": 110,
@@ -211,13 +225,15 @@
       "tags": [],
       "notes": "🔥 D8 Skill Poppin 49421 | BEST MOVE? ⭐ S+ | LV9 - 8K | Audition VTC | Mina",
       "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-07-12T04:03:56.098Z"
+      "updatedAt": "2026-07-12T04:03:56.098Z",
+      "legacyId": "8K_9_0050",
+      "skillCode": "49421"
     },
     {
-      "id": "8K_9_0051",
+      "id": "3734",
       "name": "3734",
       "alias": "",
-      "type": "",
+      "type": "8K",
       "style": "Groove",
       "level": 9,
       "bpmBest": 110,
@@ -236,7 +252,9 @@
       "tags": [],
       "notes": "Best D8 Popping Cool LV9 Skill \"3734\" ⭐ | Audition VTC | 8K Dance Showcase | Mina",
       "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-07-12T04:03:56.098Z"
+      "updatedAt": "2026-07-12T04:03:56.098Z",
+      "legacyId": "8K_9_0051",
+      "skillCode": "3734"
     }
   ],
   "trash": [],
@@ -247,5 +265,9 @@
       "totalBefore": 2,
       "totalAfter": 9
     }
-  ]
+  ],
+  "migration": {
+    "type": "canonical-skill-id-preview",
+    "note": "ID được chuẩn hóa theo mã Skill từ trường name; chỉ dùng sau khi Preview đã test."
+  }
 }
