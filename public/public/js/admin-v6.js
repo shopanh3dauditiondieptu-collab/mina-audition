@@ -5,7 +5,7 @@
 import { auth, db } from "/js/firebase-config.js";
 import { CmsV6Repository } from "/js/cms-v6/services/repository.js";
 import { createAffiliateManager } from "/js/cms-v6/modules/affiliate-manager.js";
-import { initWikiManager, openWikiManager } from "/js/cms-v6/modules/wiki-manager-v2.js";
+import { initWikiManager, openWikiManager } from "/js/cms-v6/modules/wiki-manager-v2.js?v=2.0.1";
 import {
   onAuthStateChanged,
   signOut
