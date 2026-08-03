@@ -1,5 +1,5 @@
 /* =========================================================
-   MINA CMS WIKI MANAGER V2.3 — IMAGE UPLOAD EDITION
+   MINA CMS WIKI MANAGER V2.5 — SAFE SYNC & IMAGE UPLOAD
    - Đọc ưu tiên /database/master-skills.json
    - Fallback /api/wiki-skills và /api/wiki-admin-data
    - Lưu/Sửa/Xóa qua /api/wiki-skills
@@ -208,7 +208,9 @@ function setLoading(value, message = "Đang xử lý…") {
 }
 
 async function loadFirstAvailable(force = false) {
-  const sources = [API.publicData, API.skills, API.adminData];
+  // Luôn ưu tiên API GitHub để nhận dữ liệu mới nhất ngay sau khi lưu.
+  // File tĩnh chỉ là fallback khi API tạm thời không hoạt động.
+  const sources = [API.skills, API.publicData];
   const errors = [];
 
   for (const source of sources) {
@@ -251,7 +253,7 @@ async function load(force = false) {
 
     notify(`Đã tải ${state.skills.length} Skill từ ${sourceName}.`, "success");
   } catch (error) {
-    console.error("[Wiki Manager V2.3 load]", error);
+    console.error("[Wiki Manager V2.5 load]", error);
     state.skills = [];
     render();
     notify(error.message || "Không tải được dữ liệu Wiki.", "error");
@@ -615,14 +617,16 @@ async function save(event) {
   try {
     const originalId = state.editingOriginalId;
     const isEditing = Boolean(originalId);
-    const sameId = !isEditing || originalId === skill.id;
 
     const skillData = {
       ...skill,
       id: skill.id,
       name: skill.id,
       skillCode: skill.id,
-      legacyId: isEditing && !sameId ? originalId : skill.legacyId,
+      originalId,
+      legacyId: isEditing && originalId !== skill.id
+        ? originalId
+        : skill.legacyId,
       bpmBest: skill.bpm,
       imageUrl: skill.image,
       youtubeUrl: skill.youtube,
@@ -632,24 +636,18 @@ async function save(event) {
       hasWiki: true
     };
 
+    // Khi sửa, API đổi ID trong một commit duy nhất. Không còn tạo mới rồi xóa cũ,
+    // nhờ đó tránh mất dữ liệu nếu request thứ hai gặp lỗi.
     await adminRequest(API.skills, {
-      method: isEditing && sameId ? "PUT" : "POST",
-      body: JSON.stringify({ skillData })
+      method: isEditing ? "PUT" : "POST",
+      body: JSON.stringify({ skillData, originalId })
     });
-
-    // Nếu đổi mã ID, tạo mã mới thành công rồi mới xóa mã cũ.
-    if (isEditing && !sameId) {
-      await adminRequest(`${API.skills}?id=${encodeURIComponent(originalId)}`, {
-        method: "DELETE",
-        body: JSON.stringify({ id: originalId })
-      });
-    }
 
     resetForm();
     await load(true);
     notify(`Đã ${isEditing ? "cập nhật" : "lưu"} Skill ${skill.id}.`, "success");
   } catch (error) {
-    console.error("[Wiki Manager V2.3 save]", error);
+    console.error("[Wiki Manager V2.5 save]", error);
     notify(error.message || "Không lưu được Skill.", "error");
   } finally {
     setLoading(false);
@@ -754,7 +752,7 @@ function exportJson() {
   const payload = {
     version: 13,
     updatedAt: new Date().toISOString(),
-    source: "Mina Wiki Manager v2.3",
+    source: "Mina Wiki Manager v2.5",
     skills: state.skills.map(skill => ({
       ...skill,
       id: skill.id,

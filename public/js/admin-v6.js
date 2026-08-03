@@ -18,7 +18,7 @@ let wikiManagerModulePromise = null;
 async function getWikiManagerModule() {
   if (!wikiManagerModulePromise) {
     wikiManagerModulePromise = import(
-      "/js/cms-v6/modules/wiki-manager-v2.js?v=2.2.2"
+      "/js/cms-v6/modules/wiki-manager-v2.js?v=2.5.0"
     ).catch(error => {
       wikiManagerModulePromise = null;
       throw error;
@@ -42,7 +42,7 @@ async function launchWikiManager({ forceReload = false } = {}) {
 }
 
 window.__MINA_WIKI_DEBUG__ = {
-  version: "2.2.2",
+  version: "2.5.0",
   load: () => launchWikiManager({ forceReload: true })
 };
 
