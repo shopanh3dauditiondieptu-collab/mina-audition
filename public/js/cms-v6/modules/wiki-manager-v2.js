@@ -1,5 +1,5 @@
 /* =========================================================
-   MINA CMS WIKI MANAGER V3.1 — SAVE FIX — STABLE INTERNAL ID
+   MINA CMS WIKI MANAGER V3.2 — VIEW & COPY LINK — STABLE INTERNAL ID
    - Đọc ưu tiên /database/master-skills.json
    - Fallback /api/wiki-skills và /api/wiki-admin-data
    - Lưu/Sửa/Xóa qua /api/wiki-skills
@@ -63,6 +63,33 @@ function esc(value = "") {
 
 function cleanText(value = "") {
   return String(value ?? "").trim();
+}
+
+function getWikiUrl(skillId) {
+  return `${window.location.origin}/wiki.html?skill=${encodeURIComponent(cleanText(skillId))}`;
+}
+
+async function copyText(value) {
+  const text = cleanText(value);
+  if (!text) throw new Error("Không có liên kết để sao chép.");
+
+  if (navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  textarea.style.pointerEvents = "none";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  const copied = document.execCommand("copy");
+  textarea.remove();
+  if (!copied) throw new Error("Trình duyệt không cho phép sao chép tự động.");
 }
 
 function bool(value) {
@@ -334,8 +361,21 @@ function renderTable() {
         </div>
         <div>${statusBadge(skill.status)}</div>
         <div class="wiki-native-actions">
+          <a
+            class="btn ghost"
+            href="${esc(getWikiUrl(skill.id))}"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Xem Skill trên website"
+          >👁 Xem</a>
           <button class="btn ghost" type="button" data-wiki-edit="${esc(skill.internalId)}">Sửa</button>
-          ${skill.youtube ? `<a class="btn ghost" href="${esc(skill.youtube)}" target="_blank" rel="noopener">Video</a>` : ""}
+          ${skill.youtube ? `<a class="btn ghost" href="${esc(skill.youtube)}" target="_blank" rel="noopener noreferrer">Video</a>` : ""}
+          <button
+            class="btn ghost"
+            type="button"
+            data-wiki-copy="${esc(skill.id)}"
+            title="Sao chép liên kết Skill"
+          >📋 Copy link</button>
           <button class="btn danger" type="button" data-wiki-delete="${esc(skill.internalId)}">Xóa</button>
         </div>
       </article>
@@ -883,11 +923,22 @@ function bind() {
     renderTable();
   });
 
-  $("#view-wiki")?.addEventListener("click", event => {
+  $("#view-wiki")?.addEventListener("click", async event => {
     const edit = event.target.closest("[data-wiki-edit]")?.dataset.wikiEdit;
     const remove = event.target.closest("[data-wiki-delete]")?.dataset.wikiDelete;
+    const copySkillId = event.target.closest("[data-wiki-copy]")?.dataset.wikiCopy;
+
     if (edit) editSkill(edit);
     if (remove) removeSkill(remove);
+
+    if (copySkillId) {
+      try {
+        await copyText(getWikiUrl(copySkillId));
+        notify(`Đã sao chép liên kết Skill ${copySkillId}.`, "success");
+      } catch (error) {
+        notify(error.message || "Không sao chép được liên kết Skill.", "error");
+      }
+    }
   });
 }
 
