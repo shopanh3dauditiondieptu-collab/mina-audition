@@ -1,7 +1,40 @@
 {
-  "version": 13,
-  "updatedAt": "2026-08-04T00:05:22.088Z",
-  "skills": [],
+  "version": 15,
+  "updatedAt": "2026-08-04T02:23:27.627Z",
+  "skills": [
+    {
+      "id": "wiki_232b7760ce8f42ff92b3844f595981aa",
+      "internalId": "wiki_232b7760ce8f42ff92b3844f595981aa",
+      "skillCode": "8988",
+      "skillName": "⭐ DC8 Boy LV11 Skill 8988 | 8K Dance Showcase 💜 | Audition VTC | Mina",
+      "name": "⭐ DC8 Boy LV11 Skill 8988 | 8K Dance Showcase 💜 | Audition VTC | Mina",
+      "title": "⭐ DC8 Boy LV11 Skill 8988 | 8K Dance Showcase 💜 | Audition VTC | Mina",
+      "legacyId": "",
+      "alias": "",
+      "type": "8K",
+      "style": "B-Boy",
+      "level": 11,
+      "bpmBest": 110,
+      "rarity": "A",
+      "rating": "",
+      "status": "needs_review",
+      "imageUrl": "https://res.cloudinary.com/rpwcnrfg/image/upload/v1785810106/mina/wiki/skills/skill-8988-1785810105218.webp",
+      "youtubeUrl": "https://youtube.com/shorts/HARH9b9I9b0",
+      "cameraAngle": "",
+      "song": "",
+      "hasYoutube": true,
+      "hasWiki": true,
+      "hot": false,
+      "homePinned": false,
+      "homeOrder": "",
+      "tags": [],
+      "notes": "",
+      "productionNote": "",
+      "schemaVersion": 4,
+      "createdAt": "2026-08-04T02:23:27.627Z",
+      "updatedAt": "2026-08-04T02:23:27.627Z"
+    }
+  ],
   "trash": [
     {
       "id": "8K_9_0051",
@@ -300,6 +333,16 @@
       "label": "Delete skill 4K_8_0045 - 2646244",
       "createdAt": "2026-08-04T00:05:22.088Z",
       "totalAfter": 0
+    },
+    {
+      "label": "Add skill 8988 - ⭐ DC8 Boy LV11 Skill 8988 | 8K Dance Showcase 💜 | Audition VTC | Mina",
+      "createdAt": "2026-08-04T02:23:27.627Z",
+      "totalAfter": 1
     }
-  ]
+  ],
+  "migration": {
+    "type": "stable-internal-id-v4",
+    "note": "CRUD dùng internalId; Wiki công khai tiếp tục dùng skillCode.",
+    "migratedTotal": 1
+  }
 }
