@@ -1,5 +1,5 @@
 /* =========================================================
-   MINA CMS WIKI MANAGER V3.2 — VIEW & COPY LINK — STABLE INTERNAL ID
+   MINA CMS WIKI MANAGER V3.3 — ENTERPRISE TABLE UI — STABLE INTERNAL ID
    - Đọc ưu tiên /database/master-skills.json
    - Fallback /api/wiki-skills và /api/wiki-admin-data
    - Lưu/Sửa/Xóa qua /api/wiki-skills
@@ -94,36 +94,201 @@ async function copyText(value) {
 
 
 function ensureCompactActionStyles() {
-  if (document.getElementById("mina-wiki-compact-actions-v1")) return;
+  if (document.getElementById("mina-wiki-enterprise-table-v2")) return;
 
   const style = document.createElement("style");
-  style.id = "mina-wiki-compact-actions-v1";
+  style.id = "mina-wiki-enterprise-table-v2";
   style.textContent = `
-    /* MINA WIKI MANAGER — COMPACT ACTION BAR */
+    /* =====================================================
+       MINA WIKI MANAGER — ENTERPRISE TABLE UI V2
+       Chỉ tác động khu vực Wiki Manager.
+    ====================================================== */
+    #view-wiki #wikiNativeTable {
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      background:
+        linear-gradient(180deg, rgba(8,8,25,.82), rgba(9,8,24,.62));
+    }
+
+    #view-wiki .wiki-native-table-head,
     #view-wiki .wiki-native-row {
+      display: grid;
       grid-template-columns:
-        64px
-        minmax(340px, 1fr)
-        minmax(190px, auto)
-        minmax(100px, auto)
-        max-content;
-      gap: 12px;
-      padding: 14px 16px;
+        minmax(410px, 1.55fr)
+        minmax(170px, .72fr)
+        minmax(165px, .68fr)
+        minmax(115px, .46fr)
+        minmax(315px, 1.08fr);
+      align-items: center;
+      gap: 0;
+    }
+
+    #view-wiki .wiki-native-table-head {
+      min-height: 54px;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(255,255,255,.09);
+      background: rgba(255,255,255,.018);
+      color: #d8d4e4;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    #view-wiki .wiki-native-table-head > span {
+      padding: 0 14px;
+    }
+
+    #view-wiki .wiki-native-row {
+      min-height: 154px;
+      padding: 18px 16px;
+      border: 0;
+      border-bottom: 1px solid rgba(255,255,255,.075);
+      border-radius: 0;
+      background: transparent;
+    }
+
+    #view-wiki .wiki-native-row:last-child {
+      border-bottom: 0;
+    }
+
+    #view-wiki .wiki-native-cell {
+      min-width: 0;
+      height: 100%;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+    }
+
+    #view-wiki .wiki-native-cell + .wiki-native-cell {
+      border-left: 1px solid rgba(255,255,255,.07);
+    }
+
+    #view-wiki .wiki-native-skill-cell {
+      display: grid;
+      grid-template-columns: 104px minmax(0, 1fr);
+      gap: 18px;
+      align-items: center;
     }
 
     #view-wiki .wiki-native-thumb {
-      width: 60px;
-      height: 60px;
-      border-radius: 12px;
+      width: 104px;
+      height: 104px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+      background: #0b0a1a;
+      box-shadow: 0 14px 34px rgba(0,0,0,.25);
+    }
+
+    #view-wiki .wiki-native-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #view-wiki .wiki-native-main {
+      min-width: 0;
+    }
+
+    #view-wiki .wiki-native-main strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #fff;
+      font-size: 15px;
+      line-height: 1.45;
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+
+    #view-wiki .wiki-native-main small {
+      display: block;
+      color: #c6c0d3;
+      font-size: 11px;
+      line-height: 1.55;
+      overflow-wrap: anywhere;
+    }
+
+    #view-wiki .wiki-native-main small b,
+    #view-wiki .wiki-native-main code {
+      color: #59e6f8;
+    }
+
+    #view-wiki .wiki-native-main p {
+      margin: 8px 0 0;
+      color: #aaa4b7;
+      font-size: 12px;
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    #view-wiki .wiki-native-info-stack,
+    #view-wiki .wiki-native-property-stack,
+    #view-wiki .wiki-native-status-stack {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 9px;
+    }
+
+    #view-wiki .wiki-native-info-item,
+    #view-wiki .wiki-native-property-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 31px;
+      padding: 5px 10px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 9px;
+      background: rgba(255,255,255,.035);
+      color: #e8e4f0;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    #view-wiki .wiki-native-info-item b,
+    #view-wiki .wiki-native-property-item b {
+      color: #fff;
+    }
+
+    #view-wiki .wiki-native-info-icon {
+      color: #64e8ff;
+    }
+
+    #view-wiki .wiki-native-property-item:nth-child(1) .wiki-native-info-icon {
+      color: #c48cff;
+    }
+
+    #view-wiki .wiki-native-property-item:nth-child(2) .wiki-native-info-icon {
+      color: #ffbf4c;
+    }
+
+    #view-wiki .wiki-native-status-stack small {
+      color: #8f899b;
+      font-size: 10px;
+      line-height: 1.55;
+    }
+
+    #view-wiki .wiki-native-status {
+      min-height: 30px;
+      padding: 6px 11px;
+      border-radius: 9px;
+      font-size: 10px;
+      font-weight: 900;
     }
 
     #view-wiki .wiki-native-actions {
+      width: 100%;
       display: flex;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: flex-start;
       flex-wrap: nowrap;
       gap: 7px;
-      min-width: max-content;
     }
 
     #view-wiki .wiki-native-actions > .btn,
@@ -132,12 +297,12 @@ function ensureCompactActionStyles() {
       flex: 0 0 auto;
       width: auto;
       min-width: 0;
-      min-height: 34px;
-      height: 34px;
-      padding: 0 11px;
-      border-radius: 10px;
-      font-size: 11px;
-      font-weight: 800;
+      min-height: 36px;
+      height: 36px;
+      padding: 0 10px;
+      border-radius: 9px;
+      font-size: 10px;
+      font-weight: 850;
       line-height: 1;
       white-space: nowrap;
       box-shadow: none;
@@ -147,40 +312,145 @@ function ensureCompactActionStyles() {
       transform: translateY(-1px);
     }
 
-    #view-wiki .wiki-native-actions > .danger {
-      padding-inline: 13px;
+    #view-wiki .wiki-native-actions > [data-wiki-edit] {
+      border-color: rgba(139,92,255,.34);
     }
 
-    @media (max-width: 1380px) {
+    #view-wiki .wiki-native-actions > a[href*="youtube"],
+    #view-wiki .wiki-native-actions > a[href*="youtu.be"] {
+      border-color: rgba(255,76,114,.35);
+    }
+
+    #view-wiki .wiki-native-actions > [data-wiki-copy] {
+      border-color: rgba(98,232,255,.34);
+    }
+
+    #view-wiki .wiki-native-actions > .danger {
+      border-color: rgba(255,86,125,.44);
+      background: rgba(255,86,125,.11);
+      color: #ff9cb9;
+    }
+
+    #view-wiki .wiki-native-empty {
+      padding: 42px 20px;
+    }
+
+    @media (max-width: 1450px) {
+      #view-wiki .wiki-native-table-head,
       #view-wiki .wiki-native-row {
-        grid-template-columns: 64px minmax(280px, 1fr) minmax(180px, auto) auto;
+        grid-template-columns:
+          minmax(360px, 1.45fr)
+          minmax(145px, .62fr)
+          minmax(145px, .62fr)
+          minmax(105px, .42fr)
+          minmax(290px, 1.05fr);
+      }
+
+      #view-wiki .wiki-native-thumb {
+        width: 86px;
+        height: 86px;
+      }
+
+      #view-wiki .wiki-native-skill-cell {
+        grid-template-columns: 86px minmax(0, 1fr);
+        gap: 14px;
+      }
+
+      #view-wiki .wiki-native-actions > .btn,
+      #view-wiki .wiki-native-actions > a.btn,
+      #view-wiki .wiki-native-actions > button.btn {
+        padding-inline: 8px;
+        font-size: 9px;
+      }
+    }
+
+    @media (max-width: 1180px) {
+      #view-wiki .wiki-native-table-head {
+        display: none;
+      }
+
+      #view-wiki .wiki-native-row {
+        grid-template-columns: minmax(0, 1fr) minmax(250px, auto);
+        gap: 16px;
+        padding: 18px;
+      }
+
+      #view-wiki .wiki-native-cell {
+        padding: 0;
+        border-left: 0 !important;
+      }
+
+      #view-wiki .wiki-native-skill-cell {
+        grid-column: 1;
+        grid-row: 1 / span 3;
+      }
+
+      #view-wiki .wiki-native-info-cell,
+      #view-wiki .wiki-native-property-cell,
+      #view-wiki .wiki-native-status-cell {
+        grid-column: 2;
+      }
+
+      #view-wiki .wiki-native-info-stack,
+      #view-wiki .wiki-native-property-stack {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+
+      #view-wiki .wiki-native-action-cell {
+        grid-column: 1 / -1;
       }
 
       #view-wiki .wiki-native-actions {
-        grid-column: 2 / -1;
         justify-content: flex-end;
       }
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 760px) {
       #view-wiki .wiki-native-row {
-        grid-template-columns: 60px minmax(0, 1fr);
+        grid-template-columns: 1fr;
       }
 
-      #view-wiki .wiki-native-meta,
-      #view-wiki .wiki-native-row > div:nth-child(4),
-      #view-wiki .wiki-native-actions {
-        grid-column: 1 / -1;
+      #view-wiki .wiki-native-skill-cell,
+      #view-wiki .wiki-native-info-cell,
+      #view-wiki .wiki-native-property-cell,
+      #view-wiki .wiki-native-status-cell,
+      #view-wiki .wiki-native-action-cell {
+        grid-column: 1;
+        grid-row: auto;
+      }
+
+      #view-wiki .wiki-native-skill-cell {
+        grid-template-columns: 72px minmax(0, 1fr);
+      }
+
+      #view-wiki .wiki-native-thumb {
+        width: 72px;
+        height: 72px;
+      }
+
+      #view-wiki .wiki-native-status-stack {
+        flex-direction: row;
+        align-items: center;
+        flex-wrap: wrap;
       }
 
       #view-wiki .wiki-native-actions {
         justify-content: flex-start;
         flex-wrap: wrap;
-        min-width: 0;
       }
     }
 
-    @media (max-width: 520px) {
+    @media (max-width: 480px) {
+      #view-wiki .wiki-native-skill-cell {
+        grid-template-columns: 1fr;
+      }
+
+      #view-wiki .wiki-native-thumb {
+        width: 100%;
+        height: 170px;
+      }
+
       #view-wiki .wiki-native-actions {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -431,6 +701,18 @@ function stats() {
   });
 }
 
+
+function formatWikiDate(value = "") {
+  if (!value) return "Chưa có ngày";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Chưa có ngày";
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric"
+  }).format(date);
+}
+
 function statusBadge(status) {
   return `<span class="wiki-native-status ${esc(status)}">${esc(STATUS[status] || status)}</span>`;
 }
@@ -446,53 +728,121 @@ function renderTable() {
   if (!table) return;
 
   table.innerHTML = pageItems.length
-    ? pageItems.map(skill => `
-      <article class="wiki-native-row" data-id="${esc(skill.internalId)}">
-        <div class="wiki-native-thumb">
-          ${skill.image
-            ? `<img src="${esc(skill.image)}" alt="${esc(skill.name)}" loading="lazy">`
-            : `<span>${esc(skill.type || "D8")}</span>`}
-        </div>
-        <div class="wiki-native-main">
-          <strong>${esc(skill.name)}</strong>
-          <small>Mã Skill: <b>${esc(skill.id)}</b> · ID hệ thống: <code>${esc(skill.internalId)}</code></small>
-          <p>${esc(skill.description || "Chưa có mô tả.")}</p>
-        </div>
-        <div class="wiki-native-meta">
-          <span>Lv${esc(skill.level || "—")}</span>
-          <span>${esc(skill.type || "—")}</span>
-          <span>${esc(skill.style || "—")}</span>
-          <span>${skill.bpm !== "" ? `${esc(skill.bpm)} BPM` : "— BPM"}</span>
-        </div>
-        <div>${statusBadge(skill.status)}</div>
-        <div class="wiki-native-actions">
-          <a
-            class="btn ghost"
-            href="${esc(getWikiUrl(skill.id))}"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Xem Skill trên website"
-          >👁 Xem</a>
-          <button class="btn ghost" type="button" data-wiki-edit="${esc(skill.internalId)}">✏️ Sửa</button>
-          ${skill.youtube ? `<a class="btn ghost" href="${esc(skill.youtube)}" target="_blank" rel="noopener noreferrer">▶ Video</a>` : ""}
-          <button
-            class="btn ghost"
-            type="button"
-            data-wiki-copy="${esc(skill.id)}"
-            title="Sao chép liên kết Skill"
-          >📋 Copy link</button>
-          <button class="btn danger" type="button" data-wiki-delete="${esc(skill.internalId)}">🗑 Xóa</button>
-        </div>
-      </article>
-    `).join("")
+    ? `
+      <div class="wiki-native-table-head" aria-hidden="true">
+        <span>Skill</span>
+        <span>Thông tin</span>
+        <span>Thuộc tính</span>
+        <span>Trạng thái</span>
+        <span>Thao tác</span>
+      </div>
+
+      ${pageItems.map(skill => `
+        <article class="wiki-native-row" data-id="${esc(skill.internalId)}">
+          <div class="wiki-native-cell wiki-native-skill-cell">
+            <div class="wiki-native-thumb">
+              ${skill.image
+                ? `<img src="${esc(skill.image)}" alt="${esc(skill.name)}" loading="lazy">`
+                : `<span>${esc(skill.type || "D8")}</span>`}
+            </div>
+
+            <div class="wiki-native-main">
+              <strong>${esc(skill.name)}</strong>
+              <small>
+                Mã Skill: <b>${esc(skill.id)}</b>
+                &nbsp;•&nbsp;
+                ID hệ thống: <code>${esc(skill.internalId)}</code>
+              </small>
+              <p>${esc(skill.description || "Chưa có mô tả.")}</p>
+            </div>
+          </div>
+
+          <div class="wiki-native-cell wiki-native-info-cell">
+            <div class="wiki-native-info-stack">
+              <span class="wiki-native-info-item">
+                <span class="wiki-native-info-icon">↳</span>
+                Level: <b>Lv${esc(skill.level || "—")}</b>
+              </span>
+              <span class="wiki-native-info-item">
+                <span class="wiki-native-info-icon">⌨</span>
+                Type: <b>${esc(skill.type || "—")}</b>
+              </span>
+            </div>
+          </div>
+
+          <div class="wiki-native-cell wiki-native-property-cell">
+            <div class="wiki-native-property-stack">
+              <span class="wiki-native-property-item">
+                <span class="wiki-native-info-icon">♟</span>
+                Style: <b>${esc(skill.style || "—")}</b>
+              </span>
+              <span class="wiki-native-property-item">
+                <span class="wiki-native-info-icon">◉</span>
+                BPM: <b>${skill.bpm !== "" ? esc(skill.bpm) : "—"}</b>
+              </span>
+            </div>
+          </div>
+
+          <div class="wiki-native-cell wiki-native-status-cell">
+            <div class="wiki-native-status-stack">
+              ${statusBadge(skill.status)}
+              <small>Tạo: ${esc(formatWikiDate(skill.createdAt))}</small>
+              <small>Cập nhật: ${esc(formatWikiDate(skill.updatedAt))}</small>
+            </div>
+          </div>
+
+          <div class="wiki-native-cell wiki-native-action-cell">
+            <div class="wiki-native-actions">
+              <a
+                class="btn ghost"
+                href="${esc(getWikiUrl(skill.id))}"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Xem Skill trên website"
+              >👁 Xem</a>
+
+              <button
+                class="btn ghost"
+                type="button"
+                data-wiki-edit="${esc(skill.internalId)}"
+              >✏️ Sửa</button>
+
+              ${skill.youtube ? `
+                <a
+                  class="btn ghost"
+                  href="${esc(skill.youtube)}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >▶ Video</a>
+              ` : ""}
+
+              <button
+                class="btn ghost"
+                type="button"
+                data-wiki-copy="${esc(skill.id)}"
+                title="Sao chép liên kết Skill"
+              >📋 Copy link</button>
+
+              <button
+                class="btn danger"
+                type="button"
+                data-wiki-delete="${esc(skill.internalId)}"
+              >🗑 Xóa</button>
+            </div>
+          </div>
+        </article>
+      `).join("")}
+    `
     : '<div class="wiki-native-empty">Không tìm thấy Skill phù hợp.</div>';
 
   const from = filtered.length ? start + 1 : 0;
   const to = Math.min(start + state.pageSize, filtered.length);
+
   if ($("#wikiNativeRange")) {
     $("#wikiNativeRange").textContent =
       `Hiển thị ${from}–${to}/${filtered.length} Skill · Trang ${state.page}/${totalPages}`;
   }
+
   if ($("#wikiNativePrev")) $("#wikiNativePrev").disabled = state.page <= 1;
   if ($("#wikiNativeNext")) $("#wikiNativeNext").disabled = state.page >= totalPages;
 }
