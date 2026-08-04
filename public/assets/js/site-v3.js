@@ -1284,11 +1284,6 @@ async function blog() {
       }, 180);
     });
 
-    sortSelect?.addEventListener("change", () => {
-      currentPage = 1;
-      render({ historyMode: "replace" });
-    });
-
     pageSizeSelect?.addEventListener("change", () => {
       const selected = positiveInteger(pageSizeSelect.value, 24);
       pageSize = PAGE_SIZE_OPTIONS.includes(selected) ? selected : 24;
