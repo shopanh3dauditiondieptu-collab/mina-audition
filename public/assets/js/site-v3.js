@@ -1284,6 +1284,11 @@ async function blog() {
       }, 180);
     });
 
+    sortSelect?.addEventListener("change", () => {
+      currentPage = 1;
+      render({ historyMode: "replace" });
+    });
+
     pageSizeSelect?.addEventListener("change", () => {
       const selected = positiveInteger(pageSizeSelect.value, 24);
       pageSize = PAGE_SIZE_OPTIONS.includes(selected) ? selected : 24;
@@ -2044,6 +2049,7 @@ async function wiki() {
   const resultCount = document.querySelector("#wikiResultCount");
   const activeFilters = document.querySelector("#wikiActiveFilters");
   const pageSizeSelect = document.querySelector("#wikiPageSize");
+  const sortSelect = document.querySelector("#wikiSort");
   const pagination = document.querySelector("#wikiPagination");
   const prevPageButton = document.querySelector("#wikiPrevPage");
   const nextPageButton = document.querySelector("#wikiNextPage");
@@ -2194,6 +2200,7 @@ async function wiki() {
 
           <div class="wiki-skill-tools">
             ${id ? `<button type="button" data-skill-copy-id>📋 Copy ID</button>` : ""}
+            <button type="button" data-skill-copy-link>🔗 Copy link</button>
             <button type="button" data-skill-like class="${liked ? "is-liked" : ""}">
               ${liked ? "♥ Đã thích" : "♡ Yêu thích"}
             </button>
@@ -2246,6 +2253,16 @@ async function wiki() {
         await copyText(skillIdentity(skill));
       } catch {
         toast("Không thể copy ID Skill.");
+      }
+      return;
+    }
+
+    if (event.target.closest("[data-skill-copy-link]")) {
+      try {
+        await navigator.clipboard.writeText(location.href);
+        toast(`Đã sao chép liên kết Skill ${skillIdentity(skill) || ""}.`);
+      } catch {
+        toast("Không thể copy liên kết Skill.");
       }
       return;
     }
@@ -2375,6 +2392,12 @@ async function wiki() {
       pageSize = allowedPageSizes.includes(requestedSize) ? requestedSize : 24;
       if (pageSizeSelect) pageSizeSelect.value = String(pageSize);
 
+      const requestedSort = params.get("sort") || "default";
+      if (sortSelect) {
+        const validSorts = [...sortSelect.options].map(option => option.value);
+        sortSelect.value = validSorts.includes(requestedSort) ? requestedSort : "default";
+      }
+
       const requestedPage = Number.parseInt(params.get("page") || "1", 10);
       currentPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
       return params.get("skill") || "";
@@ -2387,7 +2410,8 @@ async function wiki() {
         level: levelSelect.value,
         keyMode: keyModeSelect.value,
         style: styleSelect.value,
-        bpm: bpmSelect.value
+        bpm: bpmSelect.value,
+        sort: sortSelect?.value && sortSelect.value !== "default" ? sortSelect.value : ""
       };
       Object.entries(values).forEach(([key, val]) => {
         if (val) url.searchParams.set(key, val);
@@ -2429,6 +2453,36 @@ async function wiki() {
       ).join("");
     };
 
+    const skillUpdatedTime = skill => {
+      const raw = skillValue(skill, ["updatedAt", "createdAt", "publishedAt"], "");
+      if (!raw) return 0;
+      if (typeof raw?.toMillis === "function") return raw.toMillis();
+      if (typeof raw?.seconds === "number") return raw.seconds * 1000;
+      const parsed = new Date(raw).getTime();
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
+
+    const sortSkills = skills => {
+      const mode = sortSelect?.value || "default";
+      const sorted = [...skills];
+      const numericId = skill => Number.parseInt(skillIdentity(skill), 10) || 0;
+      const numericLevel = skill => Number(canonicalLevel(skill)) || 0;
+      const numericBpm = skill => Number(canonicalBpm(skill)) || 0;
+
+      if (mode === "newest") {
+        sorted.sort((a, b) => skillUpdatedTime(b) - skillUpdatedTime(a));
+      } else if (mode === "level-desc") {
+        sorted.sort((a, b) => numericLevel(b) - numericLevel(a) || numericId(a) - numericId(b));
+      } else if (mode === "bpm-asc") {
+        sorted.sort((a, b) => numericBpm(a) - numericBpm(b) || numericId(a) - numericId(b));
+      } else if (mode === "bpm-desc") {
+        sorted.sort((a, b) => numericBpm(b) - numericBpm(a) || numericId(a) - numericId(b));
+      } else if (mode === "id-asc") {
+        sorted.sort((a, b) => numericId(a) - numericId(b));
+      }
+      return sorted;
+    };
+
     const render = ({ historyMode = "replace", scroll = false } = {}) => {
       const term = normalize(search.value);
       const selectedLevel = levelSelect.value;
@@ -2436,14 +2490,14 @@ async function wiki() {
       const selectedStyle = styleSelect.value;
       const selectedBpm = bpmSelect.value;
 
-      filteredSkills = all.filter(skill => {
+      filteredSkills = sortSkills(all.filter(skill => {
         const levelOk = !selectedLevel || canonicalLevel(skill) === selectedLevel;
         const keyModeOk = !selectedKeyMode || canonicalKeyMode(skill) === selectedKeyMode;
         const styleOk = !selectedStyle || canonicalStyle(skill) === selectedStyle;
         const bpmOk = !selectedBpm || canonicalBpm(skill) === selectedBpm;
         const searchOk = !term || getSkillSearchText(skill).includes(term);
         return levelOk && keyModeOk && styleOk && bpmOk && searchOk;
-      });
+      }));
 
       const totalPages = Math.max(1, Math.ceil(filteredSkills.length / pageSize));
       currentPage = Math.min(Math.max(1, currentPage), totalPages);
@@ -2455,7 +2509,10 @@ async function wiki() {
         selectedLevel ? `Cấp ${selectedLevel}` : "",
         selectedKeyMode,
         selectedStyle,
-        selectedBpm ? `${selectedBpm} BPM` : ""
+        selectedBpm ? `${selectedBpm} BPM` : "",
+        sortSelect?.value && sortSelect.value !== "default"
+          ? `Sắp xếp: ${sortSelect.options[sortSelect.selectedIndex]?.text || sortSelect.value}`
+          : ""
       ].filter(Boolean);
 
       if (resultCount) {
@@ -2471,6 +2528,8 @@ async function wiki() {
           : `Có thể kết hợp Level, 4K/8K, Style và BPM • Trang ${currentPage}/${totalPages}`;
       }
       resetButton?.classList.toggle("is-visible", selectedLabels.length > 0);
+      box.classList.toggle("is-single", currentSkills.length === 1);
+      box.classList.toggle("is-sparse", currentSkills.length > 1 && currentSkills.length < 4);
 
       box.innerHTML = currentSkills.length ? currentSkills.map((skill, index) => {
         const id = skillIdentity(skill);
@@ -2484,20 +2543,25 @@ async function wiki() {
         return `
           <article class="wiki-card-v3" data-skill-index="${index}" tabindex="0"
             role="button" aria-label="Xem chi tiết Skill ${esc(name)}">
-            <img loading="lazy" src="${esc(skillImage(skill))}" alt="${esc(name || id)}"
-              onerror="this.src='${placeholder}'">
+            <div class="wiki-card-media">
+              <img loading="lazy" src="${esc(skillImage(skill))}" alt="${esc(name || id)}"
+                onerror="this.src='${placeholder}'">
+              <span class="wiki-card-keymode">${esc(keyMode || type || "D8")}</span>
+              ${id ? `<span class="wiki-card-id">#${esc(id)}</span>` : ""}
+            </div>
             <div class="card-body">
               <span class="eyebrow">${esc(type)}</span>
               <h3>${esc(name)}</h3>
               <div class="skill-meta">
                 ${id ? `<span>ID ${esc(id)}</span>` : ""}
                 ${level ? `<span>Cấp ${esc(level)}</span>` : ""}
-                ${keyMode ? `<span>${esc(keyMode)}</span>` : ""}
                 ${style ? `<span>${esc(style)}</span>` : ""}
                 ${bpm ? `<span>${esc(bpm)} BPM</span>` : ""}
               </div>
               <p>${esc(skillDescription(skill))}</p>
-              <button class="wiki-card-detail-button" type="button" tabindex="-1">Xem chi tiết</button>
+              <button class="wiki-card-detail-button" type="button" tabindex="-1">
+                <span>Xem chi tiết</span><b aria-hidden="true">→</b>
+              </button>
             </div>
           </article>
         `;
@@ -2575,6 +2639,7 @@ async function wiki() {
       keyModeSelect.value = "";
       styleSelect.value = "";
       bpmSelect.value = "";
+      if (sortSelect) sortSelect.value = "default";
       currentPage = 1;
       render({ historyMode: "replace" });
       search.focus();

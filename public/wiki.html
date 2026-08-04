@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/app-v3.css?v=8.2.0-wiki-enterprise">
+<link rel="stylesheet" href="/assets/css/app-v3.css?v=8.3.0-wiki-enterprise-ui-v4">
 
 <title>Wikipedia D8 | Mina Audition</title>
 </head>
@@ -84,7 +84,19 @@
 
       <div class="wiki-filter-summary">
         <strong id="wikiResultCount">Đang tải Skill…</strong>
-        <div class="wiki-page-size">
+        <div class="wiki-summary-controls">
+          <div class="wiki-sort-control">
+            <label for="wikiSort">Sắp xếp</label>
+            <select id="wikiSort" aria-label="Sắp xếp Skill">
+              <option value="default">Mặc định</option>
+              <option value="newest">Mới cập nhật</option>
+              <option value="level-desc">Level cao trước</option>
+              <option value="bpm-asc">BPM thấp đến cao</option>
+              <option value="bpm-desc">BPM cao đến thấp</option>
+              <option value="id-asc">Mã Skill tăng dần</option>
+            </select>
+          </div>
+          <div class="wiki-page-size">
           <label for="wikiPageSize">Hiển thị</label>
           <select id="wikiPageSize" aria-label="Số Skill mỗi trang">
             <option value="12">12 Skill</option>
@@ -92,6 +104,7 @@
             <option value="36">36 Skill</option>
             <option value="48">48 Skill</option>
           </select>
+          </div>
         </div>
         <span id="wikiActiveFilters">Có thể kết hợp nhiều bộ lọc cùng lúc</span>
       </div>
@@ -193,6 +206,6 @@
   </div>
 </footer>
 
-<script type="module" src="/assets/js/site-v3.js?v=8.2.0-wiki-enterprise"></script>
+<script type="module" src="/assets/js/site-v3.js?v=8.3.0-wiki-enterprise-ui-v4"></script>
 </body>
 </html>
