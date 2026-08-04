@@ -1,6 +1,6 @@
 {
   "version": 15,
-  "updatedAt": "2026-08-04T02:23:27.627Z",
+  "updatedAt": "2026-08-04T04:31:31.774Z",
   "skills": [
     {
       "id": "wiki_232b7760ce8f42ff92b3844f595981aa",
@@ -32,7 +32,39 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T02:23:27.627Z",
-      "updatedAt": "2026-08-04T02:23:27.627Z"
+      "updatedAt": "2026-08-04T04:31:31.773Z"
+    },
+    {
+      "id": "wiki_3bea5d555e0840ea96f19242b2d0dc84",
+      "internalId": "wiki_3bea5d555e0840ea96f19242b2d0dc84",
+      "skillCode": "3734",
+      "skillName": "⭐ D8 Poppin Sexy LV9 Skill 3734 💜 | 8K Dance Showcase | Audition VTC | Mina",
+      "name": "⭐ D8 Poppin Sexy LV9 Skill 3734 💜 | 8K Dance Showcase | Audition VTC | Mina",
+      "title": "⭐ D8 Poppin Sexy LV9 Skill 3734 💜 | 8K Dance Showcase | Audition VTC | Mina",
+      "legacyId": "",
+      "alias": "",
+      "type": "8K",
+      "style": "Groove",
+      "level": 9,
+      "bpmBest": 120,
+      "rarity": "B",
+      "rating": "",
+      "status": "needs_review",
+      "imageUrl": "https://res.cloudinary.com/rpwcnrfg/image/upload/v1785817852/mina/wiki/skills/skill-3734-1785817851372.webp",
+      "youtubeUrl": "https://www.youtube.com/shorts/5GLCLNs3Uho",
+      "cameraAngle": "",
+      "song": "",
+      "hasYoutube": true,
+      "hasWiki": true,
+      "hot": false,
+      "homePinned": false,
+      "homeOrder": "",
+      "tags": [],
+      "notes": "",
+      "productionNote": "",
+      "schemaVersion": 4,
+      "createdAt": "2026-08-04T04:31:31.774Z",
+      "updatedAt": "2026-08-04T04:31:31.774Z"
     }
   ],
   "trash": [
@@ -338,11 +370,16 @@
       "label": "Add skill 8988 - ⭐ DC8 Boy LV11 Skill 8988 | 8K Dance Showcase 💜 | Audition VTC | Mina",
       "createdAt": "2026-08-04T02:23:27.627Z",
       "totalAfter": 1
+    },
+    {
+      "label": "Add skill 3734 - ⭐ D8 Poppin Sexy LV9 Skill 3734 💜 | 8K Dance Showcase | Audition VTC | Mina",
+      "createdAt": "2026-08-04T04:31:31.774Z",
+      "totalAfter": 2
     }
   ],
   "migration": {
     "type": "stable-internal-id-v4",
     "note": "CRUD dùng internalId; Wiki công khai tiếp tục dùng skillCode.",
-    "migratedTotal": 1
+    "migratedTotal": 2
   }
 }
