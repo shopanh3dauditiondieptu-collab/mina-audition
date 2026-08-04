@@ -1,5 +1,5 @@
 /* =========================================================
-   MINA CMS WIKI MANAGER V2.5 — SAFE SYNC & IMAGE UPLOAD
+   MINA CMS WIKI MANAGER V3.0 — STABLE INTERNAL ID
    - Đọc ưu tiên /database/master-skills.json
    - Fallback /api/wiki-skills và /api/wiki-admin-data
    - Lưu/Sửa/Xóa qua /api/wiki-skills
@@ -46,7 +46,7 @@ const state = {
   keyMode: "",
   page: 1,
   pageSize: 24,
-  editingOriginalId: "",
+  editingInternalId: "",
   selectedImageFile: null,
   selectedImageObjectUrl: "",
   processedImageFile: null,
@@ -76,20 +76,21 @@ function numberOrBlank(value) {
 }
 
 function normalize(raw = {}) {
-  const legacyId = cleanText(raw.legacyId || raw.id || raw.skillId || raw.skill_id);
-  const skillCode = cleanText(
-    raw.skillCode || raw.code || raw.skill_code || raw.name || raw.id
-  );
-  const canonicalId = /^\d+$/.test(skillCode) ? skillCode : legacyId;
-  const legacyMode = (legacyId.match(/^(4K|8K)[_-]/i) || [])[1] || "";
+  const skillCode = cleanText(raw.skillCode || raw.code || raw.skill_id || raw.wikiId || (!String(raw.id || "").startsWith("skill_") ? raw.id : ""));
+  const internalId = cleanText(raw.internalId || (String(raw.id || "").startsWith("skill_") ? raw.id : "") || raw.sourceId || (skillCode ? `skill_${skillCode}` : ""));
+  const skillName = cleanText(raw.skillName || raw.title || raw.name) || (skillCode ? `Skill ${skillCode}` : "Skill chưa đặt tên");
+  const legacyMode = (cleanText(raw.legacyId).match(/^(4K|8K)[_-]/i) || [])[1] || "";
 
   return {
     ...raw,
-    id: canonicalId,
-    sourceId: cleanText(raw.sourceId || raw.id || legacyId || canonicalId),
-    legacyId: cleanText(raw.legacyId || (legacyId !== canonicalId ? legacyId : "")),
-    name: skillCode || canonicalId,
-    skillCode: canonicalId,
+    id: skillCode,
+    internalId,
+    sourceId: internalId,
+    skillCode,
+    name: skillName,
+    skillName,
+    title: skillName,
+    legacyId: cleanText(raw.legacyId),
     alias: cleanText(raw.alias),
     type: cleanText(raw.type || raw.quality || raw.keyMode || legacyMode).toUpperCase(),
     style: cleanText(raw.style || raw.category),
@@ -103,13 +104,14 @@ function normalize(raw = {}) {
     song: cleanText(raw.song),
     camera: cleanText(raw.camera || raw.cameraAngle),
     description: cleanText(raw.description || raw.notes || raw.desc),
-    note: cleanText(raw.note),
+    note: cleanText(raw.note || raw.productionNote),
     tags: Array.isArray(raw.tags)
       ? raw.tags.map(cleanText).filter(Boolean)
       : cleanText(raw.tags).split(",").map(cleanText).filter(Boolean),
     hot: bool(raw.hot),
     homePinned: bool(raw.homePinned || raw.pinned),
     homeOrder: numberOrBlank(raw.homeOrder ?? raw.pinOrder),
+    schemaVersion: Number(raw.schemaVersion || 0),
     createdAt: raw.createdAt || "",
     updatedAt: raw.updatedAt || ""
   };
@@ -220,7 +222,6 @@ async function loadFirstAvailable(force = false) {
         `${source}${separator}v=${Date.now()}${force ? "&force=1" : ""}`
       );
       const skills = unwrap(payload);
-      if (!skills.length) throw new Error("Nguồn trả về 0 Skill.");
 
       return {
         source,
@@ -253,7 +254,7 @@ async function load(force = false) {
 
     notify(`Đã tải ${state.skills.length} Skill từ ${sourceName}.`, "success");
   } catch (error) {
-    console.error("[Wiki Manager V2.5 load]", error);
+    console.error("[Wiki Manager V3 load]", error);
     state.skills = [];
     render();
     notify(error.message || "Không tải được dữ liệu Wiki.", "error");
@@ -267,7 +268,7 @@ function currentItems() {
 
   return state.skills.filter(skill => {
     const haystack = [
-      skill.id, skill.name, skill.style, skill.type, skill.level,
+      skill.id, skill.internalId, skill.name, skill.style, skill.type, skill.level,
       skill.bpm, skill.rarity, skill.description, ...(skill.tags || [])
     ].join(" ").toLowerCase();
 
@@ -287,7 +288,8 @@ function stats() {
     wikiNativeVerified: state.skills.filter(item => item.status === "verified").length,
     wikiNativeReview: state.skills.filter(item => item.status === "needs_review").length,
     wikiNativeVideos: state.skills.filter(item => item.youtube).length,
-    wikiNativePinned: state.skills.filter(item => item.homePinned).length
+    wikiNativePinned: state.skills.filter(item => item.homePinned).length,
+    wikiNativeStructured: state.skills.filter(item => item.internalId && item.skillCode && item.skillName).length
   };
 
   Object.entries(values).forEach(([id, value]) => {
@@ -312,7 +314,7 @@ function renderTable() {
 
   table.innerHTML = pageItems.length
     ? pageItems.map(skill => `
-      <article class="wiki-native-row" data-id="${esc(skill.sourceId)}">
+      <article class="wiki-native-row" data-id="${esc(skill.internalId)}">
         <div class="wiki-native-thumb">
           ${skill.image
             ? `<img src="${esc(skill.image)}" alt="${esc(skill.name)}" loading="lazy">`
@@ -320,7 +322,7 @@ function renderTable() {
         </div>
         <div class="wiki-native-main">
           <strong>${esc(skill.name)}</strong>
-          <small>ID dùng trên Wiki: <b>${esc(skill.id)}</b></small>
+          <small>Mã Skill: <b>${esc(skill.id)}</b> · ID hệ thống: <code>${esc(skill.internalId)}</code></small>
           <p>${esc(skill.description || "Chưa có mô tả.")}</p>
         </div>
         <div class="wiki-native-meta">
@@ -331,9 +333,9 @@ function renderTable() {
         </div>
         <div>${statusBadge(skill.status)}</div>
         <div class="wiki-native-actions">
-          <button class="btn ghost" type="button" data-wiki-edit="${esc(skill.sourceId)}">Sửa</button>
+          <button class="btn ghost" type="button" data-wiki-edit="${esc(skill.internalId)}">Sửa</button>
           ${skill.youtube ? `<a class="btn ghost" href="${esc(skill.youtube)}" target="_blank" rel="noopener">Video</a>` : ""}
-          <button class="btn danger" type="button" data-wiki-delete="${esc(skill.sourceId)}">Xóa</button>
+          <button class="btn danger" type="button" data-wiki-delete="${esc(skill.internalId)}">Xóa</button>
         </div>
       </article>
     `).join("")
@@ -363,13 +365,10 @@ function readForm() {
   const form = $("#wikiNativeForm");
   if (!form) throw new Error("Không tìm thấy form Wiki.");
 
-  // Đọc trực tiếp field thay vì phụ thuộc hoàn toàn vào FormData.
-  const code = cleanText(getFormField("id")?.value);
-
   return normalize({
-    id: code,
-    name: code,
-    skillCode: code,
+    internalId: cleanText(getFormField("internalId")?.value),
+    skillCode: cleanText(getFormField("skillCode")?.value),
+    skillName: cleanText(getFormField("skillName")?.value),
     type: getFormField("type")?.value,
     style: getFormField("style")?.value,
     level: getFormField("level")?.value,
@@ -386,31 +385,22 @@ function readForm() {
     tags: getFormField("tags")?.value,
     hot: Boolean(getFormField("hot")?.checked),
     homePinned: Boolean(getFormField("homePinned")?.checked),
-    homeOrder: getFormField("homePinned")?.checked
-      ? getFormField("homeOrder")?.value
-      : ""
+    homeOrder: getFormField("homePinned")?.checked ? getFormField("homeOrder")?.value : ""
   });
 }
 
 function validate(skill) {
-  if (!skill.id) throw new Error("Thiếu ID skill.");
-  if (!/^\d+$/.test(skill.id)) {
-    throw new Error("ID Wiki phải là mã Skill chỉ chứa số, ví dụ 3734.");
-  }
-  if (!skill.level || Number(skill.level) < 1 || Number(skill.level) > 20) {
-    throw new Error("Level Skill không hợp lệ.");
-  }
-  if (!["4K", "8K"].includes(skill.type)) {
-    throw new Error("Hãy chọn loại phím 4K hoặc 8K.");
-  }
-  if (skill.bpm !== "" && (Number(skill.bpm) < 1 || Number(skill.bpm) > 999)) {
-    throw new Error("BPM phải nằm trong khoảng 1–999.");
-  }
+  if (!skill.skillCode) throw new Error("Thiếu mã Skill.");
+  if (!/^\d+$/.test(skill.skillCode)) throw new Error("Mã Skill chỉ được chứa số, ví dụ 3734.");
+  if (!skill.skillName) throw new Error("Thiếu tên Skill.");
+  if (!skill.level || Number(skill.level) < 1 || Number(skill.level) > 20) throw new Error("Level Skill không hợp lệ.");
+  if (!["4K", "8K"].includes(skill.type)) throw new Error("Hãy chọn loại phím 4K hoặc 8K.");
+  if (skill.bpm !== "" && (Number(skill.bpm) < 1 || Number(skill.bpm) > 999)) throw new Error("BPM phải nằm trong khoảng 1–999.");
 
   const duplicate = state.skills.find(item =>
-    item.id === skill.id && item.sourceId !== state.editingOriginalId
+    item.skillCode === skill.skillCode && item.internalId !== state.editingInternalId
   );
-  if (duplicate) throw new Error(`Skill ${skill.id} đã tồn tại.`);
+  if (duplicate) throw new Error(`Skill ${skill.skillCode} đã tồn tại.`);
 }
 
 function setSaveButtonMode(mode = "create", id = "") {
@@ -552,7 +542,7 @@ async function uploadSelectedImage() {
   const file = state.processedImageFile;
   if (!file) throw new Error("Bạn chưa chọn ảnh từ máy.");
 
-  const skillId = cleanText(getFormField("id")?.value) || "new";
+  const skillId = cleanText(getFormField("skillCode")?.value) || "new";
   setUploadProgress(45, "Đang upload ảnh lên Cloudinary…");
 
   const form = new FormData();
@@ -615,18 +605,17 @@ async function save(event) {
   setLoading(true, "Đang lưu Skill…");
 
   try {
-    const originalId = state.editingOriginalId;
-    const isEditing = Boolean(originalId);
+    const internalId = state.editingInternalId;
+    const isEditing = Boolean(internalId);
 
     const skillData = {
       ...skill,
-      id: skill.id,
-      name: skill.id,
-      skillCode: skill.id,
-      originalId,
-      legacyId: isEditing && originalId !== skill.id
-        ? originalId
-        : skill.legacyId,
+      internalId,
+      skillCode: skill.skillCode,
+      skillName: skill.skillName,
+      name: skill.skillName,
+      title: skill.skillName,
+      legacyId: skill.legacyId,
       bpmBest: skill.bpm,
       imageUrl: skill.image,
       youtubeUrl: skill.youtube,
@@ -640,26 +629,28 @@ async function save(event) {
     // nhờ đó tránh mất dữ liệu nếu request thứ hai gặp lỗi.
     await adminRequest(API.skills, {
       method: isEditing ? "PUT" : "POST",
-      body: JSON.stringify({ skillData, originalId })
+      body: JSON.stringify({ skillData, internalId })
     });
 
     resetForm();
     await load(true);
-    notify(`Đã ${isEditing ? "cập nhật" : "lưu"} Skill ${skill.id}.`, "success");
+    notify(`Đã ${isEditing ? "cập nhật" : "lưu"} Skill ${skill.skillCode}.`, "success");
   } catch (error) {
-    console.error("[Wiki Manager V2.5 save]", error);
+    console.error("[Wiki Manager V3 save]", error);
     notify(error.message || "Không lưu được Skill.", "error");
   } finally {
     setLoading(false);
   }
 }
 
-function editSkill(sourceId) {
-  const skill = state.skills.find(item => item.sourceId === sourceId);
+function editSkill(internalId) {
+  const skill = state.skills.find(item => item.internalId === internalId);
   if (!skill) return;
 
   const values = {
-    id: skill.id,
+    internalId: skill.internalId,
+    skillCode: skill.skillCode,
+    skillName: skill.skillName,
     type: skill.type,
     style: skill.style,
     level: skill.level,
@@ -687,7 +678,7 @@ function editSkill(sourceId) {
     getFormField("homePinned").checked = Boolean(skill.homePinned);
   }
 
-  state.editingOriginalId = skill.sourceId;
+  state.editingInternalId = skill.internalId;
   clearImageSelection({ clearUrl: false });
 
   if (skill.image) {
@@ -700,17 +691,13 @@ function editSkill(sourceId) {
   }
   if ($("#wikiNativeCancelEdit")) $("#wikiNativeCancelEdit").hidden = false;
   if ($("#wikiNativeLegacyWarning")) {
-    $("#wikiNativeLegacyWarning").hidden = skill.sourceId === skill.id;
-    if (skill.sourceId !== skill.id) {
-      $("#wikiNativeLegacyWarning").textContent =
-        `Skill đang có ID cũ “${skill.sourceId}”. Khi cập nhật sẽ dùng mã “${skill.id}”.`;
-    }
+    $("#wikiNativeLegacyWarning").hidden = true;
   }
 
   setSaveButtonMode("edit", skill.id);
 
   $("#wikiNativeForm")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  getFormField("id")?.focus();
+  getFormField("skillCode")?.focus();
 }
 
 function resetForm() {
@@ -718,7 +705,7 @@ function resetForm() {
   form?.reset();
 
   if (getFormField("status")) getFormField("status").value = "needs_review";
-  state.editingOriginalId = "";
+  state.editingInternalId = "";
   clearImageSelection();
 
   if ($("#wikiNativeFormTitle")) $("#wikiNativeFormTitle").textContent = "Thêm Skill mới";
@@ -728,16 +715,16 @@ function resetForm() {
   setSaveButtonMode("create");
 }
 
-async function removeSkill(sourceId) {
-  const skill = state.skills.find(item => item.sourceId === sourceId);
+async function removeSkill(internalId) {
+  const skill = state.skills.find(item => item.internalId === internalId);
   if (!skill) return;
   if (!confirm(`Xóa Skill ${skill.id}? Dữ liệu sẽ được cập nhật trên GitHub.`)) return;
 
   setLoading(true, "Đang xóa Skill…");
   try {
-    await adminRequest(`${API.skills}?id=${encodeURIComponent(sourceId)}`, {
+    await adminRequest(`${API.skills}?internalId=${encodeURIComponent(internalId)}`, {
       method: "DELETE",
-      body: JSON.stringify({ id: sourceId })
+      body: JSON.stringify({ internalId })
     });
     await load(true);
     notify(`Đã xóa Skill ${skill.id}.`, "success");
@@ -750,14 +737,17 @@ async function removeSkill(sourceId) {
 
 function exportJson() {
   const payload = {
-    version: 13,
+    version: 14,
     updatedAt: new Date().toISOString(),
-    source: "Mina Wiki Manager v2.5",
+    source: "Mina Wiki Manager v3.0",
     skills: state.skills.map(skill => ({
       ...skill,
-      id: skill.id,
-      name: skill.id,
-      skillCode: skill.id,
+      id: skill.internalId,
+      internalId: skill.internalId,
+      name: skill.skillName,
+      skillName: skill.skillName,
+      title: skill.skillName,
+      skillCode: skill.skillCode,
       bpmBest: skill.bpm,
       imageUrl: skill.image,
       youtubeUrl: skill.youtube,
