@@ -1,6 +1,6 @@
 {
   "version": 15,
-  "updatedAt": "2026-08-04T04:31:31.774Z",
+  "updatedAt": "2026-08-04T05:05:02.816Z",
   "skills": [
     {
       "id": "wiki_232b7760ce8f42ff92b3844f595981aa",
@@ -32,7 +32,7 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T02:23:27.627Z",
-      "updatedAt": "2026-08-04T04:31:31.773Z"
+      "updatedAt": "2026-08-04T05:05:02.815Z"
     },
     {
       "id": "wiki_3bea5d555e0840ea96f19242b2d0dc84",
@@ -64,7 +64,39 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T04:31:31.774Z",
-      "updatedAt": "2026-08-04T04:31:31.774Z"
+      "updatedAt": "2026-08-04T05:05:02.816Z"
+    },
+    {
+      "id": "wiki_614289d13c054543b0c7e60a68532598",
+      "internalId": "wiki_614289d13c054543b0c7e60a68532598",
+      "skillCode": "49421",
+      "skillName": "🔥 D8 Poppin LV9 Skill 49421 ⭐ S+ | 8K Dance Showcase | Audition VTC | Mina",
+      "name": "🔥 D8 Poppin LV9 Skill 49421 ⭐ S+ | 8K Dance Showcase | Audition VTC | Mina",
+      "title": "🔥 D8 Poppin LV9 Skill 49421 ⭐ S+ | 8K Dance Showcase | Audition VTC | Mina",
+      "legacyId": "",
+      "alias": "",
+      "type": "8K",
+      "style": "Poppin-H",
+      "level": 9,
+      "bpmBest": 110,
+      "rarity": "S",
+      "rating": "",
+      "status": "needs_review",
+      "imageUrl": "https://res.cloudinary.com/rpwcnrfg/image/upload/v1785819792/mina/wiki/skills/skill-49421-1785819791411.webp",
+      "youtubeUrl": "https://youtube.com/shorts/hN3ashP3aEU",
+      "cameraAngle": "",
+      "song": "",
+      "hasYoutube": true,
+      "hasWiki": true,
+      "hot": true,
+      "homePinned": true,
+      "homeOrder": "",
+      "tags": [],
+      "notes": "💥Poppin-H 💥\n💥 Hit nhịp mạnh, rõ ràng.\n🎵 Bắt beat tốt, chuyển động mượt.\n⚡ Phong cách hiện đại, cá tính.\n🎭 Phù hợp với nhạc EDM, Dance Pop và các bài BPM trung bình đến nhanh.\n⭐ Thích hợp cho người chơi yêu thích biểu diễn kỹ thuật và năng lượng cao.",
+      "productionNote": "",
+      "schemaVersion": 4,
+      "createdAt": "2026-08-04T05:05:02.816Z",
+      "updatedAt": "2026-08-04T05:05:02.816Z"
     }
   ],
   "trash": [
@@ -375,11 +407,16 @@
       "label": "Add skill 3734 - ⭐ D8 Poppin Sexy LV9 Skill 3734 💜 | 8K Dance Showcase | Audition VTC | Mina",
       "createdAt": "2026-08-04T04:31:31.774Z",
       "totalAfter": 2
+    },
+    {
+      "label": "Add skill 49421 - 🔥 D8 Poppin LV9 Skill 49421 ⭐ S+ | 8K Dance Showcase | Audition VTC | Mina",
+      "createdAt": "2026-08-04T05:05:02.816Z",
+      "totalAfter": 3
     }
   ],
   "migration": {
     "type": "stable-internal-id-v4",
     "note": "CRUD dùng internalId; Wiki công khai tiếp tục dùng skillCode.",
-    "migratedTotal": 2
+    "migratedTotal": 3
   }
 }
