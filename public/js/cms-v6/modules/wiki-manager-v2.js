@@ -1103,6 +1103,10 @@ async function save(event) {
   try {
     const internalId = state.editingInternalId;
     const isEditing = Boolean(internalId);
+    const editingSkill = isEditing
+      ? state.skills.find(item => item.internalId === internalId)
+      : null;
+    const originalSkillCode = cleanText(editingSkill?.skillCode);
 
     const skillData = {
       ...skill,
@@ -1125,7 +1129,7 @@ async function save(event) {
     // nhờ đó tránh mất dữ liệu nếu request thứ hai gặp lỗi.
     await adminRequest(API.skills, {
       method: isEditing ? "PUT" : "POST",
-      body: JSON.stringify({ skillData, internalId })
+      body: JSON.stringify({ skillData, internalId, originalSkillCode })
     });
 
     resetForm();
