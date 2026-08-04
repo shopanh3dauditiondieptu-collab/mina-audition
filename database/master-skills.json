@@ -1,6 +1,6 @@
 {
   "version": 15,
-  "updatedAt": "2026-08-04T05:05:02.816Z",
+  "updatedAt": "2026-08-04T05:28:58.748Z",
   "skills": [
     {
       "id": "wiki_232b7760ce8f42ff92b3844f595981aa",
@@ -32,7 +32,7 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T02:23:27.627Z",
-      "updatedAt": "2026-08-04T05:05:02.815Z"
+      "updatedAt": "2026-08-04T05:28:58.747Z"
     },
     {
       "id": "wiki_3bea5d555e0840ea96f19242b2d0dc84",
@@ -64,7 +64,7 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T04:31:31.774Z",
-      "updatedAt": "2026-08-04T05:05:02.816Z"
+      "updatedAt": "2026-08-04T05:28:58.748Z"
     },
     {
       "id": "wiki_614289d13c054543b0c7e60a68532598",
@@ -96,7 +96,39 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T05:05:02.816Z",
-      "updatedAt": "2026-08-04T05:05:02.816Z"
+      "updatedAt": "2026-08-04T05:28:58.748Z"
+    },
+    {
+      "id": "wiki_ceb15a1e766d49818df5fe49ae127281",
+      "internalId": "wiki_ceb15a1e766d49818df5fe49ae127281",
+      "skillCode": "47767",
+      "skillName": "🔥 D8 Poppin LV9 Skill 47767 ⭐ BEST WALK? | 8K | Audition VTC | Mina",
+      "name": "🔥 D8 Poppin LV9 Skill 47767 ⭐ BEST WALK? | 8K | Audition VTC | Mina",
+      "title": "🔥 D8 Poppin LV9 Skill 47767 ⭐ BEST WALK? | 8K | Audition VTC | Mina",
+      "legacyId": "",
+      "alias": "",
+      "type": "8K",
+      "style": "Poppin-H",
+      "level": 9,
+      "bpmBest": 100,
+      "rarity": "S",
+      "rating": "",
+      "status": "needs_review",
+      "imageUrl": "https://res.cloudinary.com/rpwcnrfg/image/upload/v1785821251/mina/wiki/skills/skill-47767-1785821249657.webp",
+      "youtubeUrl": "https://youtube.com/shorts/7gd_VN3D_UA",
+      "cameraAngle": "",
+      "song": "",
+      "hasYoutube": true,
+      "hasWiki": true,
+      "hot": true,
+      "homePinned": false,
+      "homeOrder": "",
+      "tags": [],
+      "notes": "Skill 47767 nằm ở phần Walk cực kỳ mượt mà",
+      "productionNote": "",
+      "schemaVersion": 4,
+      "createdAt": "2026-08-04T05:28:58.748Z",
+      "updatedAt": "2026-08-04T05:28:58.748Z"
     }
   ],
   "trash": [
@@ -412,11 +444,16 @@
       "label": "Add skill 49421 - 🔥 D8 Poppin LV9 Skill 49421 ⭐ S+ | 8K Dance Showcase | Audition VTC | Mina",
       "createdAt": "2026-08-04T05:05:02.816Z",
       "totalAfter": 3
+    },
+    {
+      "label": "Add skill 47767 - 🔥 D8 Poppin LV9 Skill 47767 ⭐ BEST WALK? | 8K | Audition VTC | Mina",
+      "createdAt": "2026-08-04T05:28:58.748Z",
+      "totalAfter": 4
     }
   ],
   "migration": {
     "type": "stable-internal-id-v4",
     "note": "CRUD dùng internalId; Wiki công khai tiếp tục dùng skillCode.",
-    "migratedTotal": 3
+    "migratedTotal": 4
   }
 }
