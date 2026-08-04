@@ -92,6 +92,111 @@ async function copyText(value) {
   if (!copied) throw new Error("Trình duyệt không cho phép sao chép tự động.");
 }
 
+
+function ensureCompactActionStyles() {
+  if (document.getElementById("mina-wiki-compact-actions-v1")) return;
+
+  const style = document.createElement("style");
+  style.id = "mina-wiki-compact-actions-v1";
+  style.textContent = `
+    /* MINA WIKI MANAGER — COMPACT ACTION BAR */
+    #view-wiki .wiki-native-row {
+      grid-template-columns:
+        64px
+        minmax(340px, 1fr)
+        minmax(190px, auto)
+        minmax(100px, auto)
+        max-content;
+      gap: 12px;
+      padding: 14px 16px;
+    }
+
+    #view-wiki .wiki-native-thumb {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+    }
+
+    #view-wiki .wiki-native-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: nowrap;
+      gap: 7px;
+      min-width: max-content;
+    }
+
+    #view-wiki .wiki-native-actions > .btn,
+    #view-wiki .wiki-native-actions > a.btn,
+    #view-wiki .wiki-native-actions > button.btn {
+      flex: 0 0 auto;
+      width: auto;
+      min-width: 0;
+      min-height: 34px;
+      height: 34px;
+      padding: 0 11px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
+      box-shadow: none;
+    }
+
+    #view-wiki .wiki-native-actions > .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    #view-wiki .wiki-native-actions > .danger {
+      padding-inline: 13px;
+    }
+
+    @media (max-width: 1380px) {
+      #view-wiki .wiki-native-row {
+        grid-template-columns: 64px minmax(280px, 1fr) minmax(180px, auto) auto;
+      }
+
+      #view-wiki .wiki-native-actions {
+        grid-column: 2 / -1;
+        justify-content: flex-end;
+      }
+    }
+
+    @media (max-width: 900px) {
+      #view-wiki .wiki-native-row {
+        grid-template-columns: 60px minmax(0, 1fr);
+      }
+
+      #view-wiki .wiki-native-meta,
+      #view-wiki .wiki-native-row > div:nth-child(4),
+      #view-wiki .wiki-native-actions {
+        grid-column: 1 / -1;
+      }
+
+      #view-wiki .wiki-native-actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 520px) {
+      #view-wiki .wiki-native-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      #view-wiki .wiki-native-actions > .btn,
+      #view-wiki .wiki-native-actions > a.btn,
+      #view-wiki .wiki-native-actions > button.btn {
+        width: 100%;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+}
+
 function bool(value) {
   return value === true || value === "true" || value === "1" || value === "on";
 }
@@ -368,15 +473,15 @@ function renderTable() {
             rel="noopener noreferrer"
             title="Xem Skill trên website"
           >👁 Xem</a>
-          <button class="btn ghost" type="button" data-wiki-edit="${esc(skill.internalId)}">Sửa</button>
-          ${skill.youtube ? `<a class="btn ghost" href="${esc(skill.youtube)}" target="_blank" rel="noopener noreferrer">Video</a>` : ""}
+          <button class="btn ghost" type="button" data-wiki-edit="${esc(skill.internalId)}">✏️ Sửa</button>
+          ${skill.youtube ? `<a class="btn ghost" href="${esc(skill.youtube)}" target="_blank" rel="noopener noreferrer">▶ Video</a>` : ""}
           <button
             class="btn ghost"
             type="button"
             data-wiki-copy="${esc(skill.id)}"
             title="Sao chép liên kết Skill"
           >📋 Copy link</button>
-          <button class="btn danger" type="button" data-wiki-delete="${esc(skill.internalId)}">Xóa</button>
+          <button class="btn danger" type="button" data-wiki-delete="${esc(skill.internalId)}">🗑 Xóa</button>
         </div>
       </article>
     `).join("")
@@ -943,6 +1048,7 @@ function bind() {
 }
 
 export function initWikiManager() {
+  ensureCompactActionStyles();
   if (state.initialized) return;
   state.initialized = true;
   bind();
