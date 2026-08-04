@@ -1,5 +1,5 @@
 /* =========================================================
-   MINA CMS WIKI MANAGER V3.2 — VIEW & COPY LINK — STABLE INTERNAL ID
+   MINA CMS WIKI MANAGER V4.0 — STABLE INTERNAL ID
    - Đọc ưu tiên /database/master-skills.json
    - Fallback /api/wiki-skills và /api/wiki-admin-data
    - Lưu/Sửa/Xóa qua /api/wiki-skills
@@ -65,138 +65,6 @@ function cleanText(value = "") {
   return String(value ?? "").trim();
 }
 
-function getWikiUrl(skillId) {
-  return `${window.location.origin}/wiki.html?skill=${encodeURIComponent(cleanText(skillId))}`;
-}
-
-async function copyText(value) {
-  const text = cleanText(value);
-  if (!text) throw new Error("Không có liên kết để sao chép.");
-
-  if (navigator.clipboard && window.isSecureContext) {
-    await navigator.clipboard.writeText(text);
-    return;
-  }
-
-  const textarea = document.createElement("textarea");
-  textarea.value = text;
-  textarea.setAttribute("readonly", "");
-  textarea.style.position = "fixed";
-  textarea.style.opacity = "0";
-  textarea.style.pointerEvents = "none";
-  document.body.appendChild(textarea);
-  textarea.select();
-
-  const copied = document.execCommand("copy");
-  textarea.remove();
-  if (!copied) throw new Error("Trình duyệt không cho phép sao chép tự động.");
-}
-
-
-function ensureCompactActionStyles() {
-  if (document.getElementById("mina-wiki-compact-actions-v1")) return;
-
-  const style = document.createElement("style");
-  style.id = "mina-wiki-compact-actions-v1";
-  style.textContent = `
-    /* MINA WIKI MANAGER — COMPACT ACTION BAR */
-    #view-wiki .wiki-native-row {
-      grid-template-columns:
-        64px
-        minmax(340px, 1fr)
-        minmax(190px, auto)
-        minmax(100px, auto)
-        max-content;
-      gap: 12px;
-      padding: 14px 16px;
-    }
-
-    #view-wiki .wiki-native-thumb {
-      width: 60px;
-      height: 60px;
-      border-radius: 12px;
-    }
-
-    #view-wiki .wiki-native-actions {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      flex-wrap: nowrap;
-      gap: 7px;
-      min-width: max-content;
-    }
-
-    #view-wiki .wiki-native-actions > .btn,
-    #view-wiki .wiki-native-actions > a.btn,
-    #view-wiki .wiki-native-actions > button.btn {
-      flex: 0 0 auto;
-      width: auto;
-      min-width: 0;
-      min-height: 34px;
-      height: 34px;
-      padding: 0 11px;
-      border-radius: 10px;
-      font-size: 11px;
-      font-weight: 800;
-      line-height: 1;
-      white-space: nowrap;
-      box-shadow: none;
-    }
-
-    #view-wiki .wiki-native-actions > .btn:hover {
-      transform: translateY(-1px);
-    }
-
-    #view-wiki .wiki-native-actions > .danger {
-      padding-inline: 13px;
-    }
-
-    @media (max-width: 1380px) {
-      #view-wiki .wiki-native-row {
-        grid-template-columns: 64px minmax(280px, 1fr) minmax(180px, auto) auto;
-      }
-
-      #view-wiki .wiki-native-actions {
-        grid-column: 2 / -1;
-        justify-content: flex-end;
-      }
-    }
-
-    @media (max-width: 900px) {
-      #view-wiki .wiki-native-row {
-        grid-template-columns: 60px minmax(0, 1fr);
-      }
-
-      #view-wiki .wiki-native-meta,
-      #view-wiki .wiki-native-row > div:nth-child(4),
-      #view-wiki .wiki-native-actions {
-        grid-column: 1 / -1;
-      }
-
-      #view-wiki .wiki-native-actions {
-        justify-content: flex-start;
-        flex-wrap: wrap;
-        min-width: 0;
-      }
-    }
-
-    @media (max-width: 520px) {
-      #view-wiki .wiki-native-actions {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      #view-wiki .wiki-native-actions > .btn,
-      #view-wiki .wiki-native-actions > a.btn,
-      #view-wiki .wiki-native-actions > button.btn {
-        width: 100%;
-      }
-    }
-  `;
-
-  document.head.appendChild(style);
-}
-
 function bool(value) {
   return value === true || value === "true" || value === "1" || value === "on";
 }
@@ -243,7 +111,7 @@ function normalize(raw = {}) {
     hot: bool(raw.hot),
     homePinned: bool(raw.homePinned || raw.pinned),
     homeOrder: numberOrBlank(raw.homeOrder ?? raw.pinOrder),
-    schemaVersion: Number(raw.schemaVersion || 0),
+    schemaVersion: Number(raw.schemaVersion || 4),
     createdAt: raw.createdAt || "",
     updatedAt: raw.updatedAt || ""
   };
@@ -260,16 +128,15 @@ function unwrap(payload) {
 }
 
 async function request(url, options = {}) {
-  const { headers: customHeaders = {}, ...fetchOptions } = options;
   const response = await fetch(url, {
     credentials: "same-origin",
     cache: "no-store",
-    ...fetchOptions,
     headers: {
       Accept: "application/json",
-      ...(options.body ? { "Content-Type": "application/json; charset=utf-8" } : {}),
-      ...customHeaders
-    }
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(options.headers || {})
+    },
+    ...options
   });
 
   let payload = null;
@@ -387,7 +254,7 @@ async function load(force = false) {
 
     notify(`Đã tải ${state.skills.length} Skill từ ${sourceName}.`, "success");
   } catch (error) {
-    console.error("[Wiki Manager V3 load]", error);
+    console.error("[Wiki Manager V4 load]", error);
     state.skills = [];
     render();
     notify(error.message || "Không tải được dữ liệu Wiki.", "error");
@@ -466,22 +333,9 @@ function renderTable() {
         </div>
         <div>${statusBadge(skill.status)}</div>
         <div class="wiki-native-actions">
-          <a
-            class="btn ghost"
-            href="${esc(getWikiUrl(skill.id))}"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Xem Skill trên website"
-          >👁 Xem</a>
-          <button class="btn ghost" type="button" data-wiki-edit="${esc(skill.internalId)}">✏️ Sửa</button>
-          ${skill.youtube ? `<a class="btn ghost" href="${esc(skill.youtube)}" target="_blank" rel="noopener noreferrer">▶ Video</a>` : ""}
-          <button
-            class="btn ghost"
-            type="button"
-            data-wiki-copy="${esc(skill.id)}"
-            title="Sao chép liên kết Skill"
-          >📋 Copy link</button>
-          <button class="btn danger" type="button" data-wiki-delete="${esc(skill.internalId)}">🗑 Xóa</button>
+          <button class="btn ghost" type="button" data-wiki-edit="${esc(skill.internalId)}">Sửa</button>
+          ${skill.youtube ? `<a class="btn ghost" href="${esc(skill.youtube)}" target="_blank" rel="noopener">Video</a>` : ""}
+          <button class="btn danger" type="button" data-wiki-delete="${esc(skill.internalId)}">Xóa</button>
         </div>
       </article>
     `).join("")
@@ -782,7 +636,7 @@ async function save(event) {
     await load(true);
     notify(`Đã ${isEditing ? "cập nhật" : "lưu"} Skill ${skill.skillCode}.`, "success");
   } catch (error) {
-    console.error("[Wiki Manager V3 save]", error);
+    console.error("[Wiki Manager V4 save]", error);
     notify(error.message || "Không lưu được Skill.", "error");
   } finally {
     setLoading(false);
@@ -883,9 +737,9 @@ async function removeSkill(internalId) {
 
 function exportJson() {
   const payload = {
-    version: 14,
+    version: 15,
     updatedAt: new Date().toISOString(),
-    source: "Mina Wiki Manager v3.0",
+    source: "Mina Wiki Manager v4.0",
     skills: state.skills.map(skill => ({
       ...skill,
       id: skill.internalId,
@@ -975,13 +829,7 @@ function bindImageUpload() {
 }
 
 function bind() {
-  const form = $("#wikiNativeForm");
-  if (form) {
-    // Dùng validate riêng của Wiki Manager để luôn hiển thị lỗi trên thanh thông báo.
-    // Tránh trình duyệt chặn submit âm thầm vì pattern/type trước khi hàm save chạy.
-    form.noValidate = true;
-    form.addEventListener("submit", save);
-  }
+  $("#wikiNativeForm")?.addEventListener("submit", save);
   $("#wikiNativeCancelEdit")?.addEventListener("click", resetForm);
   $("#wikiNativeReload")?.addEventListener("click", () => load(true));
   $("#wikiNativeExport")?.addEventListener("click", exportJson);
@@ -1028,27 +876,15 @@ function bind() {
     renderTable();
   });
 
-  $("#view-wiki")?.addEventListener("click", async event => {
+  $("#view-wiki")?.addEventListener("click", event => {
     const edit = event.target.closest("[data-wiki-edit]")?.dataset.wikiEdit;
     const remove = event.target.closest("[data-wiki-delete]")?.dataset.wikiDelete;
-    const copySkillId = event.target.closest("[data-wiki-copy]")?.dataset.wikiCopy;
-
     if (edit) editSkill(edit);
     if (remove) removeSkill(remove);
-
-    if (copySkillId) {
-      try {
-        await copyText(getWikiUrl(copySkillId));
-        notify(`Đã sao chép liên kết Skill ${copySkillId}.`, "success");
-      } catch (error) {
-        notify(error.message || "Không sao chép được liên kết Skill.", "error");
-      }
-    }
   });
 }
 
 export function initWikiManager() {
-  ensureCompactActionStyles();
   if (state.initialized) return;
   state.initialized = true;
   bind();
