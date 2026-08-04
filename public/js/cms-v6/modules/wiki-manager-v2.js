@@ -1,5 +1,5 @@
 /* =========================================================
-   MINA CMS WIKI MANAGER V3.0 — STABLE INTERNAL ID
+   MINA CMS WIKI MANAGER V3.1 — SAVE FIX — STABLE INTERNAL ID
    - Đọc ưu tiên /database/master-skills.json
    - Fallback /api/wiki-skills và /api/wiki-admin-data
    - Lưu/Sửa/Xóa qua /api/wiki-skills
@@ -128,15 +128,16 @@ function unwrap(payload) {
 }
 
 async function request(url, options = {}) {
+  const { headers: customHeaders = {}, ...fetchOptions } = options;
   const response = await fetch(url, {
     credentials: "same-origin",
     cache: "no-store",
+    ...fetchOptions,
     headers: {
       Accept: "application/json",
-      ...(options.body ? { "Content-Type": "application/json" } : {}),
-      ...(options.headers || {})
-    },
-    ...options
+      ...(options.body ? { "Content-Type": "application/json; charset=utf-8" } : {}),
+      ...customHeaders
+    }
   });
 
   let payload = null;
@@ -829,7 +830,13 @@ function bindImageUpload() {
 }
 
 function bind() {
-  $("#wikiNativeForm")?.addEventListener("submit", save);
+  const form = $("#wikiNativeForm");
+  if (form) {
+    // Dùng validate riêng của Wiki Manager để luôn hiển thị lỗi trên thanh thông báo.
+    // Tránh trình duyệt chặn submit âm thầm vì pattern/type trước khi hàm save chạy.
+    form.noValidate = true;
+    form.addEventListener("submit", save);
+  }
   $("#wikiNativeCancelEdit")?.addEventListener("click", resetForm);
   $("#wikiNativeReload")?.addEventListener("click", () => load(true));
   $("#wikiNativeExport")?.addEventListener("click", exportJson);
