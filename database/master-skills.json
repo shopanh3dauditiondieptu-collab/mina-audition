@@ -1,6 +1,6 @@
 {
   "version": 13,
-  "updatedAt": "2026-08-04T00:04:50.053Z",
+  "updatedAt": "2026-08-04T00:04:53.944Z",
   "skills": [
     {
       "id": "4K_6_0002",
@@ -137,31 +137,6 @@
       "notes": "822286 - BEST Popping Skill? 🔥 D8 Popping LV7 - 4K | Audition VTC | Mina viết mô tả",
       "createdAt": "2026-07-12T04:03:56.098Z",
       "updatedAt": "2026-07-12T04:03:56.098Z"
-    },
-    {
-      "id": "8K_9_0050",
-      "name": "49421",
-      "alias": "",
-      "type": "",
-      "style": "Poppin-H",
-      "level": 9,
-      "bpmBest": 110,
-      "rarity": "",
-      "rating": "",
-      "status": "needs_review",
-      "imageUrl": "",
-      "youtubeUrl": "https://www.youtube.com/shorts/hN3ashP3aEU",
-      "cameraAngle": "",
-      "song": "",
-      "hasYoutube": true,
-      "hasWiki": true,
-      "hot": false,
-      "homePinned": false,
-      "homeOrder": "",
-      "tags": [],
-      "notes": "🔥 D8 Skill Poppin 49421 | BEST MOVE? ⭐ S+ | LV9 - 8K | Audition VTC | Mina",
-      "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-07-12T04:03:56.098Z"
     }
   ],
   "trash": [
@@ -242,6 +217,32 @@
       "createdAt": "2026-07-12T04:03:56.098Z",
       "updatedAt": "2026-07-12T04:03:56.098Z",
       "deletedAt": "2026-08-04T00:04:50.053Z"
+    },
+    {
+      "id": "8K_9_0050",
+      "name": "49421",
+      "alias": "",
+      "type": "",
+      "style": "Poppin-H",
+      "level": 9,
+      "bpmBest": 110,
+      "rarity": "",
+      "rating": "",
+      "status": "needs_review",
+      "imageUrl": "",
+      "youtubeUrl": "https://www.youtube.com/shorts/hN3ashP3aEU",
+      "cameraAngle": "",
+      "song": "",
+      "hasYoutube": true,
+      "hasWiki": true,
+      "hot": false,
+      "homePinned": false,
+      "homeOrder": "",
+      "tags": [],
+      "notes": "🔥 D8 Skill Poppin 49421 | BEST MOVE? ⭐ S+ | LV9 - 8K | Audition VTC | Mina",
+      "createdAt": "2026-07-12T04:03:56.098Z",
+      "updatedAt": "2026-07-12T04:03:56.098Z",
+      "deletedAt": "2026-08-04T00:04:53.944Z"
     }
   ],
   "history": [
@@ -265,6 +266,11 @@
       "label": "Delete skill 8K_9_0049 - 47767",
       "createdAt": "2026-08-04T00:04:50.053Z",
       "totalAfter": 6
+    },
+    {
+      "label": "Delete skill 8K_9_0050 - 49421",
+      "createdAt": "2026-08-04T00:04:53.944Z",
+      "totalAfter": 5
     }
   ]
 }
