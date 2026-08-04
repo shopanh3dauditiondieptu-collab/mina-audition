@@ -1,6 +1,6 @@
 {
   "version": 15,
-  "updatedAt": "2026-08-04T05:30:13.466Z",
+  "updatedAt": "2026-08-04T05:43:56.615Z",
   "skills": [
     {
       "id": "wiki_232b7760ce8f42ff92b3844f595981aa",
@@ -32,7 +32,7 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T02:23:27.627Z",
-      "updatedAt": "2026-08-04T05:30:13.465Z"
+      "updatedAt": "2026-08-04T05:43:56.613Z"
     },
     {
       "id": "wiki_3bea5d555e0840ea96f19242b2d0dc84",
@@ -64,7 +64,7 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T04:31:31.774Z",
-      "updatedAt": "2026-08-04T05:30:13.466Z"
+      "updatedAt": "2026-08-04T05:43:56.614Z"
     },
     {
       "id": "wiki_614289d13c054543b0c7e60a68532598",
@@ -96,7 +96,7 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T05:05:02.816Z",
-      "updatedAt": "2026-08-04T05:30:13.466Z"
+      "updatedAt": "2026-08-04T05:43:56.614Z"
     },
     {
       "id": "wiki_ceb15a1e766d49818df5fe49ae127281",
@@ -128,7 +128,39 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T05:28:58.748Z",
-      "updatedAt": "2026-08-04T05:30:13.466Z"
+      "updatedAt": "2026-08-04T05:43:56.614Z"
+    },
+    {
+      "id": "wiki_4321f19968944765ac34b49306b6450a",
+      "internalId": "wiki_4321f19968944765ac34b49306b6450a",
+      "skillCode": "6389",
+      "skillName": "🔥 D8 Popping LV9 Skill 6389 ⭐ S+ Siêu Đẹp | 8K | Audition VTC | Mina",
+      "name": "🔥 D8 Popping LV9 Skill 6389 ⭐ S+ Siêu Đẹp | 8K | Audition VTC | Mina",
+      "title": "🔥 D8 Popping LV9 Skill 6389 ⭐ S+ Siêu Đẹp | 8K | Audition VTC | Mina",
+      "legacyId": "",
+      "alias": "",
+      "type": "8K",
+      "style": "Poppin-H",
+      "level": 9,
+      "bpmBest": 110,
+      "rarity": "S",
+      "rating": "",
+      "status": "needs_review",
+      "imageUrl": "https://res.cloudinary.com/rpwcnrfg/image/upload/v1785822162/mina/wiki/skills/skill-6389-1785822161168.webp",
+      "youtubeUrl": "https://youtube.com/shorts/6N18sC34ig8",
+      "cameraAngle": "",
+      "song": "",
+      "hasYoutube": true,
+      "hasWiki": true,
+      "hot": true,
+      "homePinned": true,
+      "homeOrder": "",
+      "tags": [],
+      "notes": "6389 -  skill nổi bật với động tác soạc chân thấp kết hợp các nhịp hit đặc trưng của Poppin, tạo cảm giác mạnh mẽ và đầy năng lượng",
+      "productionNote": "",
+      "schemaVersion": 4,
+      "createdAt": "2026-08-04T05:43:56.614Z",
+      "updatedAt": "2026-08-04T05:43:56.614Z"
     }
   ],
   "trash": [
@@ -454,11 +486,16 @@
       "label": "Update skill 47767 - 🔥 D8 Poppin LV9 Skill 47767 ⭐ BEST WALK? | 8K | Audition VTC | Mina",
       "createdAt": "2026-08-04T05:30:13.466Z",
       "totalAfter": 4
+    },
+    {
+      "label": "Add skill 6389 - 🔥 D8 Popping LV9 Skill 6389 ⭐ S+ Siêu Đẹp | 8K | Audition VTC | Mina",
+      "createdAt": "2026-08-04T05:43:56.615Z",
+      "totalAfter": 5
     }
   ],
   "migration": {
     "type": "stable-internal-id-v4",
     "note": "CRUD dùng internalId; Wiki công khai tiếp tục dùng skillCode.",
-    "migratedTotal": 4
+    "migratedTotal": 5
   }
 }
