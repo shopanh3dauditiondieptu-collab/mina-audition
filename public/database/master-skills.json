@@ -1,5 +1,5 @@
 {
-  "version": 14,
+  "version": 15,
   "updatedAt": "2026-07-12T04:03:56.098Z",
   "skills": [
     {
@@ -37,7 +37,7 @@
       "internalId": "skill_264866",
       "skillName": "D8 Skill Sexy Girl Lv6 \"264866\" 💙 | Audition VTC | 4K Dance Showcase | Mina",
       "title": "D8 Skill Sexy Girl Lv6 \"264866\" 💙 | Audition VTC | 4K Dance Showcase | Mina",
-      "schemaVersion": 3,
+      "schemaVersion": 4,
       "productionNote": ""
     },
     {
@@ -69,7 +69,7 @@
       "internalId": "skill_642848",
       "skillName": "⭐ Best D8 Popping Cool LV8 \"642848\" | 4K Skill Showcase | Audition VTC | Mina",
       "title": "⭐ Best D8 Popping Cool LV8 \"642848\" | 4K Skill Showcase | Audition VTC | Mina",
-      "schemaVersion": 3,
+      "schemaVersion": 4,
       "productionNote": ""
     },
     {
@@ -106,7 +106,7 @@
       "internalId": "skill_2646244",
       "skillName": "Ghi chú quay video hoặc chỉnh CapCut.",
       "title": "Ghi chú quay video hoặc chỉnh CapCut.",
-      "schemaVersion": 3,
+      "schemaVersion": 4,
       "productionNote": ""
     },
     {
@@ -138,7 +138,7 @@
       "internalId": "skill_6284642",
       "skillName": "🔥 6284642 Có Thật Sự Là Skill Popping Đẹp Nhất? 😍 | Audition VTC | 8K Dance Showcase | Mina",
       "title": "🔥 6284642 Có Thật Sự Là Skill Popping Đẹp Nhất? 😍 | Audition VTC | 8K Dance Showcase | Mina",
-      "schemaVersion": 3,
+      "schemaVersion": 4,
       "productionNote": ""
     },
     {
@@ -170,7 +170,7 @@
       "internalId": "skill_822286",
       "skillName": "822286 - BEST Popping Skill? 🔥 D8 Popping LV7 - 4K | Audition VTC | Mina viết mô tả",
       "title": "822286 - BEST Popping Skill? 🔥 D8 Popping LV7 - 4K | Audition VTC | Mina viết mô tả",
-      "schemaVersion": 3,
+      "schemaVersion": 4,
       "productionNote": ""
     },
     {
@@ -202,7 +202,7 @@
       "internalId": "skill_6389",
       "skillName": "D8 Skill Popping 6389 | S+ Popping Siêu Đẹp | LV9 - 8K | Audition VTC | Mina",
       "title": "D8 Skill Popping 6389 | S+ Popping Siêu Đẹp | LV9 - 8K | Audition VTC | Mina",
-      "schemaVersion": 3,
+      "schemaVersion": 4,
       "productionNote": ""
     },
     {
@@ -234,7 +234,7 @@
       "internalId": "skill_47767",
       "skillName": "🔥 47767 - BEST WALK Poppin? ⭐ S+ | D8 Skill LV9 - 8K | Audition VTC | Mina",
       "title": "🔥 47767 - BEST WALK Poppin? ⭐ S+ | D8 Skill LV9 - 8K | Audition VTC | Mina",
-      "schemaVersion": 3,
+      "schemaVersion": 4,
       "productionNote": ""
     },
     {
@@ -266,7 +266,7 @@
       "internalId": "skill_49421",
       "skillName": "🔥 D8 Skill Poppin 49421 | BEST MOVE? ⭐ S+ | LV9 - 8K | Audition VTC | Mina",
       "title": "🔥 D8 Skill Poppin 49421 | BEST MOVE? ⭐ S+ | LV9 - 8K | Audition VTC | Mina",
-      "schemaVersion": 3,
+      "schemaVersion": 4,
       "productionNote": ""
     },
     {
@@ -298,7 +298,7 @@
       "internalId": "skill_3734",
       "skillName": "Best D8 Popping Cool LV9 Skill \"3734\" ⭐ | Audition VTC | 8K Dance Showcase | Mina",
       "title": "Best D8 Popping Cool LV9 Skill \"3734\" ⭐ | Audition VTC | 8K Dance Showcase | Mina",
-      "schemaVersion": 3,
+      "schemaVersion": 4,
       "productionNote": ""
     }
   ],
@@ -317,7 +317,7 @@
     }
   ],
   "migration": {
-    "type": "stable-internal-id-v3",
+    "type": "stable-internal-id-v4",
     "note": "CRUD dùng internalId; Wiki công khai tiếp tục dùng skillCode.",
     "migratedTotal": 9
   }
