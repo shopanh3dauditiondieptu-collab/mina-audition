@@ -5,6 +5,7 @@
 import { auth, db } from "/js/firebase-config.js";
 import { CmsV6Repository } from "/js/cms-v6/services/repository.js";
 import { createAffiliateManager } from "/js/cms-v6/modules/affiliate-manager.js";
+import { initWikiManager, openWikiManager } from "/js/cms-v6/modules/wiki-manager-v2.js?v=2.0.1";
 import {
   onAuthStateChanged,
   signOut
@@ -12,41 +13,6 @@ import {
 
 const repo = new CmsV6Repository(db);
 let affiliateManager = null;
-
-let wikiManagerModulePromise = null;
-
-async function getWikiManagerModule() {
-  if (!wikiManagerModulePromise) {
-    wikiManagerModulePromise = import(
-      "/js/cms-v6/modules/wiki-manager-v2.js?v=3.1.0-save-fix"
-    ).catch(error => {
-      wikiManagerModulePromise = null;
-      throw error;
-    });
-  }
-
-  return wikiManagerModulePromise;
-}
-
-async function launchWikiManager({ forceReload = false } = {}) {
-  const module = await getWikiManagerModule();
-
-  module.initWikiManager?.();
-
-  if (forceReload && typeof module.reloadWikiManager === "function") {
-    await module.reloadWikiManager();
-    return;
-  }
-
-  await module.openWikiManager();
-}
-
-window.__MINA_WIKI_DEBUG__ = {
-  version: "3.1.0-save-fix",
-  load: () => launchWikiManager({ forceReload: true })
-};
-
-
 const CLOUDINARY_CLOUD_NAME = "rpwcnrfg";
 const CLOUDINARY_UPLOAD_PRESET = "mina-upload";
 const CLOUDINARY_ENDPOINT = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
@@ -2038,12 +2004,9 @@ function openView(name) {
   $("#newPostButton").hidden = !editing;
 
   if (name === "wiki") {
-    launchWikiManager().catch(error => {
-      console.error("[Wiki Manager launch]", error);
-      showNotice(
-        error.message || "Không mở được Wiki Manager.",
-        "error"
-      );
+    openWikiManager().catch(error => {
+      console.error("Wiki Manager:", error);
+      showNotice(error.message || "Không mở được Wiki Manager.", "error");
     });
   }
 
@@ -2111,13 +2074,8 @@ function bindEvents() {
     const value = Number.parseInt(event.currentTarget.value, 10);
     if (Number.isFinite(value) && value < 1) event.currentTarget.value = "1";
   });
-  $("#wikiNativeReload")?.addEventListener("click", () => {
-    launchWikiManager({ forceReload: true }).catch(error => {
-      console.error("[Wiki Manager reload]", error);
-      showNotice(error.message || "Không tải lại được dữ liệu Wiki.", "error");
-    });
-  });
 
+  initWikiManager();
   $$(".nav-item[data-view]").forEach(button => button.addEventListener("click", () => openView(button.dataset.view)));
   $("#refreshCmsAnalyticsButton")?.addEventListener("click", async event => {
     setBusy(event.currentTarget, true, "Đang tải…");
