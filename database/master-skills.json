@@ -1,6 +1,6 @@
 {
   "version": 15,
-  "updatedAt": "2026-08-04T07:03:23.978Z",
+  "updatedAt": "2026-08-04T07:14:20.282Z",
   "skills": [
     {
       "id": "wiki_232b7760ce8f42ff92b3844f595981aa",
@@ -32,7 +32,7 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T02:23:27.627Z",
-      "updatedAt": "2026-08-04T07:03:23.977Z"
+      "updatedAt": "2026-08-04T07:14:20.281Z"
     },
     {
       "id": "wiki_3bea5d555e0840ea96f19242b2d0dc84",
@@ -64,7 +64,7 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T04:31:31.774Z",
-      "updatedAt": "2026-08-04T07:03:23.977Z"
+      "updatedAt": "2026-08-04T07:14:20.281Z"
     },
     {
       "id": "wiki_614289d13c054543b0c7e60a68532598",
@@ -96,7 +96,7 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T05:05:02.816Z",
-      "updatedAt": "2026-08-04T07:03:23.978Z"
+      "updatedAt": "2026-08-04T07:14:20.281Z"
     },
     {
       "id": "wiki_ceb15a1e766d49818df5fe49ae127281",
@@ -128,7 +128,7 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T05:28:58.748Z",
-      "updatedAt": "2026-08-04T07:03:23.978Z"
+      "updatedAt": "2026-08-04T07:14:20.281Z"
     },
     {
       "id": "wiki_4321f19968944765ac34b49306b6450a",
@@ -160,7 +160,7 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T05:43:56.614Z",
-      "updatedAt": "2026-08-04T07:03:23.978Z"
+      "updatedAt": "2026-08-04T07:14:20.281Z"
     },
     {
       "id": "wiki_08de9492382646b8b75165e8b02fbd09",
@@ -192,7 +192,39 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T07:03:23.978Z",
-      "updatedAt": "2026-08-04T07:03:23.978Z"
+      "updatedAt": "2026-08-04T07:14:20.281Z"
+    },
+    {
+      "id": "wiki_b27e19e05c7f4327823228cde49e31b4",
+      "internalId": "wiki_b27e19e05c7f4327823228cde49e31b4",
+      "skillCode": "6284642",
+      "skillName": "🔥 D8 Poppin-H LV8 Skill 6284642 ⭐ BEST Skill S+ | 4K | Audition VTC | Mina",
+      "name": "🔥 D8 Poppin-H LV8 Skill 6284642 ⭐ BEST Skill S+ | 4K | Audition VTC | Mina",
+      "title": "🔥 D8 Poppin-H LV8 Skill 6284642 ⭐ BEST Skill S+ | 4K | Audition VTC | Mina",
+      "legacyId": "",
+      "alias": "",
+      "type": "4K",
+      "style": "Poppin-H",
+      "level": 8,
+      "bpmBest": 120,
+      "rarity": "",
+      "rating": "",
+      "status": "needs_review",
+      "imageUrl": "https://res.cloudinary.com/rpwcnrfg/image/upload/v1785827596/mina/wiki/skills/skill-6284642-1785827595244.webp",
+      "youtubeUrl": "https://www.youtube.com/shorts/S_T_yo4EjFs",
+      "cameraAngle": "",
+      "song": "",
+      "hasYoutube": true,
+      "hasWiki": true,
+      "hot": true,
+      "homePinned": true,
+      "homeOrder": 1,
+      "tags": [],
+      "notes": "✨ Những bước lướt mềm mại, tự nhiên là điểm nhấn giúp Skill 6284642 trở thành một trong những combo Poppin-H đáng trải nghiệm ở LV8.",
+      "productionNote": "",
+      "schemaVersion": 4,
+      "createdAt": "2026-08-04T07:14:20.282Z",
+      "updatedAt": "2026-08-04T07:14:20.282Z"
     }
   ],
   "trash": [
@@ -528,11 +560,16 @@
       "label": "Add skill 822286 - 🔥 D8 Poppin-H LV7 Skill 822286 ⭐ MUST TRY? | 4K | Audition VTC | Mina",
       "createdAt": "2026-08-04T07:03:23.978Z",
       "totalAfter": 6
+    },
+    {
+      "label": "Add skill 6284642 - 🔥 D8 Poppin-H LV8 Skill 6284642 ⭐ BEST Skill S+ | 4K | Audition VTC | Mina",
+      "createdAt": "2026-08-04T07:14:20.282Z",
+      "totalAfter": 7
     }
   ],
   "migration": {
     "type": "stable-internal-id-v4",
     "note": "CRUD dùng internalId; Wiki công khai tiếp tục dùng skillCode.",
-    "migratedTotal": 6
+    "migratedTotal": 7
   }
 }
