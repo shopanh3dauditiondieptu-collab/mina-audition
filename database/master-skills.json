@@ -1,38 +1,7 @@
 {
   "version": 13,
-  "updatedAt": "2026-08-04T00:05:18.581Z",
-  "skills": [
-    {
-      "id": "4K_8_0045",
-      "name": "2646244",
-      "alias": "",
-      "type": "Dance",
-      "style": "Poppin-H",
-      "level": 8,
-      "bpmBest": 110,
-      "rarity": "S",
-      "rating": 9.5,
-      "status": "needs_review",
-      "imageUrl": "/images/wiki/skills/47767.webp",
-      "youtubeUrl": "https://www.youtube.com/shorts/S_T_yo4EjFs",
-      "cameraAngle": "Toàn thân / góc chính diện",
-      "song": "Tên bài nhạc đề xuất",
-      "hasYoutube": true,
-      "hasWiki": true,
-      "hot": false,
-      "homePinned": false,
-      "homeOrder": "",
-      "tags": [
-        "D8",
-        "Audition",
-        "Poppin",
-        "Skill đẹp"
-      ],
-      "notes": "Ghi chú quay video hoặc chỉnh CapCut.",
-      "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-07-12T04:03:56.098Z"
-    }
-  ],
+  "updatedAt": "2026-08-04T00:05:22.088Z",
+  "skills": [],
   "trash": [
     {
       "id": "8K_9_0051",
@@ -247,6 +216,37 @@
       "createdAt": "2026-07-12T04:03:56.098Z",
       "updatedAt": "2026-07-12T04:03:56.098Z",
       "deletedAt": "2026-08-04T00:05:18.581Z"
+    },
+    {
+      "id": "4K_8_0045",
+      "name": "2646244",
+      "alias": "",
+      "type": "Dance",
+      "style": "Poppin-H",
+      "level": 8,
+      "bpmBest": 110,
+      "rarity": "S",
+      "rating": 9.5,
+      "status": "needs_review",
+      "imageUrl": "/images/wiki/skills/47767.webp",
+      "youtubeUrl": "https://www.youtube.com/shorts/S_T_yo4EjFs",
+      "cameraAngle": "Toàn thân / góc chính diện",
+      "song": "Tên bài nhạc đề xuất",
+      "hasYoutube": true,
+      "hasWiki": true,
+      "hot": false,
+      "homePinned": false,
+      "homeOrder": "",
+      "tags": [
+        "D8",
+        "Audition",
+        "Poppin",
+        "Skill đẹp"
+      ],
+      "notes": "Ghi chú quay video hoặc chỉnh CapCut.",
+      "createdAt": "2026-07-12T04:03:56.098Z",
+      "updatedAt": "2026-07-12T04:03:56.098Z",
+      "deletedAt": "2026-08-04T00:05:22.088Z"
     }
   ],
   "history": [
@@ -295,6 +295,11 @@
       "label": "Delete skill 4K_8_0046 - 6284642",
       "createdAt": "2026-08-04T00:05:18.581Z",
       "totalAfter": 1
+    },
+    {
+      "label": "Delete skill 4K_8_0045 - 2646244",
+      "createdAt": "2026-08-04T00:05:22.088Z",
+      "totalAfter": 0
     }
   ]
 }
