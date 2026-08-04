@@ -1,6 +1,6 @@
 {
-  "version": 10,
-  "updatedAt": "2026-07-12T04:03:56.098Z",
+  "version": 13,
+  "updatedAt": "2026-08-04T00:02:24.288Z",
   "skills": [
     {
       "id": "4K_6_0002",
@@ -212,7 +212,9 @@
       "notes": "🔥 D8 Skill Poppin 49421 | BEST MOVE? ⭐ S+ | LV9 - 8K | Audition VTC | Mina",
       "createdAt": "2026-07-12T04:03:56.098Z",
       "updatedAt": "2026-07-12T04:03:56.098Z"
-    },
+    }
+  ],
+  "trash": [
     {
       "id": "8K_9_0051",
       "name": "3734",
@@ -236,16 +238,21 @@
       "tags": [],
       "notes": "Best D8 Popping Cool LV9 Skill \"3734\" ⭐ | Audition VTC | 8K Dance Showcase | Mina",
       "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-07-12T04:03:56.098Z"
+      "updatedAt": "2026-07-12T04:03:56.098Z",
+      "deletedAt": "2026-08-04T00:02:24.288Z"
     }
   ],
-  "trash": [],
   "history": [
     {
       "label": "Đồng bộ toàn bộ 9 skill",
       "createdAt": "2026-07-12T04:03:56.098Z",
       "totalBefore": 2,
       "totalAfter": 9
+    },
+    {
+      "label": "Delete skill 8K_9_0051 - 3734",
+      "createdAt": "2026-08-04T00:02:24.288Z",
+      "totalAfter": 8
     }
   ]
 }
