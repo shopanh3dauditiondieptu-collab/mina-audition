@@ -1,6 +1,6 @@
 {
   "version": 13,
-  "updatedAt": "2026-08-04T00:04:46.118Z",
+  "updatedAt": "2026-08-04T00:04:50.053Z",
   "skills": [
     {
       "id": "4K_6_0002",
@@ -139,31 +139,6 @@
       "updatedAt": "2026-07-12T04:03:56.098Z"
     },
     {
-      "id": "8K_9_0049",
-      "name": "47767",
-      "alias": "",
-      "type": "",
-      "style": "Poppin-H",
-      "level": 9,
-      "bpmBest": 110,
-      "rarity": "",
-      "rating": "",
-      "status": "needs_review",
-      "imageUrl": "",
-      "youtubeUrl": "https://www.youtube.com/shorts/7gd_VN3D_UA",
-      "cameraAngle": "",
-      "song": "",
-      "hasYoutube": true,
-      "hasWiki": true,
-      "hot": false,
-      "homePinned": false,
-      "homeOrder": "",
-      "tags": [],
-      "notes": "🔥 47767 - BEST WALK Poppin? ⭐ S+ | D8 Skill LV9 - 8K | Audition VTC | Mina",
-      "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-07-12T04:03:56.098Z"
-    },
-    {
       "id": "8K_9_0050",
       "name": "49421",
       "alias": "",
@@ -241,6 +216,32 @@
       "createdAt": "2026-07-12T04:03:56.098Z",
       "updatedAt": "2026-07-12T04:03:56.098Z",
       "deletedAt": "2026-08-04T00:04:46.118Z"
+    },
+    {
+      "id": "8K_9_0049",
+      "name": "47767",
+      "alias": "",
+      "type": "",
+      "style": "Poppin-H",
+      "level": 9,
+      "bpmBest": 110,
+      "rarity": "",
+      "rating": "",
+      "status": "needs_review",
+      "imageUrl": "",
+      "youtubeUrl": "https://www.youtube.com/shorts/7gd_VN3D_UA",
+      "cameraAngle": "",
+      "song": "",
+      "hasYoutube": true,
+      "hasWiki": true,
+      "hot": false,
+      "homePinned": false,
+      "homeOrder": "",
+      "tags": [],
+      "notes": "🔥 47767 - BEST WALK Poppin? ⭐ S+ | D8 Skill LV9 - 8K | Audition VTC | Mina",
+      "createdAt": "2026-07-12T04:03:56.098Z",
+      "updatedAt": "2026-07-12T04:03:56.098Z",
+      "deletedAt": "2026-08-04T00:04:50.053Z"
     }
   ],
   "history": [
@@ -259,6 +260,11 @@
       "label": "Delete skill 8K_9_0048 - 6389",
       "createdAt": "2026-08-04T00:04:46.118Z",
       "totalAfter": 7
+    },
+    {
+      "label": "Delete skill 8K_9_0049 - 47767",
+      "createdAt": "2026-08-04T00:04:50.053Z",
+      "totalAfter": 6
     }
   ]
 }
