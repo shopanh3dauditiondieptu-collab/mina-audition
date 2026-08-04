@@ -1,6 +1,6 @@
 {
   "version": 15,
-  "updatedAt": "2026-08-04T13:02:33.623Z",
+  "updatedAt": "2026-08-04T13:03:53.520Z",
   "skills": [
     {
       "id": "wiki_ee1fb3cfa3184826972296d54ba45b74",
@@ -29,7 +29,7 @@
       ],
       "notes": "",
       "createdAt": "2026-07-10T09:34:56.684Z",
-      "updatedAt": "2026-08-04T13:02:33.621Z",
+      "updatedAt": "2026-08-04T13:03:53.519Z",
       "homePinned": true,
       "homeOrder": 1,
       "legacyId": "",
@@ -61,7 +61,7 @@
       "tags": [],
       "notes": "⭐ BEST MOVIE ⭐",
       "createdAt": "2026-07-11T13:34:23.451Z",
-      "updatedAt": "2026-08-04T13:02:33.622Z",
+      "updatedAt": "2026-08-04T13:03:53.519Z",
       "homePinned": true,
       "homeOrder": "",
       "legacyId": "",
@@ -100,7 +100,7 @@
       ],
       "notes": "🔥Lướt Ngang mượt mà 🔥",
       "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-08-04T13:02:33.622Z",
+      "updatedAt": "2026-08-04T13:03:53.519Z",
       "legacyId": "",
       "skillCode": "2646244",
       "internalId": "wiki_577bfbe50f6243c89e284a23d47517cb",
@@ -132,7 +132,7 @@
       "tags": [],
       "notes": "🔥 Lướt lên trước Skill Poppin-H cực đẹp 😍",
       "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-08-04T13:02:33.622Z",
+      "updatedAt": "2026-08-04T13:03:53.519Z",
       "legacyId": "",
       "skillCode": "6284642",
       "internalId": "wiki_58e327b0656246d4a12d814dc6dbfea4",
@@ -164,7 +164,7 @@
       "tags": [],
       "notes": "BEST Poppin-H Skill? 🔥 4K",
       "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-08-04T13:02:33.622Z",
+      "updatedAt": "2026-08-04T13:03:53.519Z",
       "legacyId": "",
       "skillCode": "822286",
       "internalId": "wiki_8025dff5b6924f94ae74c6a5c8ae786c",
@@ -196,7 +196,7 @@
       "tags": [],
       "notes": "⭐ S+ Poppin-H Siêu Đẹp ⭐",
       "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-08-04T13:02:33.622Z",
+      "updatedAt": "2026-08-04T13:03:53.519Z",
       "legacyId": "",
       "skillCode": "6389",
       "internalId": "wiki_d96cab6c6dbf4eb6b3565f41a38025e4",
@@ -228,7 +228,7 @@
       "tags": [],
       "notes": "🔥 BEST WALK Poppin? ⭐ S+",
       "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-08-04T13:02:33.622Z",
+      "updatedAt": "2026-08-04T13:03:53.519Z",
       "legacyId": "",
       "skillCode": "47767",
       "internalId": "wiki_b42d987a7e8e44899cceae3c083c5e6b",
@@ -260,7 +260,7 @@
       "tags": [],
       "notes": "🔥BEST MOVE? ⭐ S+ Poppin-H",
       "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-08-04T13:02:33.622Z",
+      "updatedAt": "2026-08-04T13:03:53.519Z",
       "legacyId": "",
       "skillCode": "49421",
       "internalId": "wiki_f5d4c69967774c01ab4a19ddaf270cc0",
@@ -292,7 +292,7 @@
       "tags": [],
       "notes": "",
       "createdAt": "2026-07-12T04:03:56.098Z",
-      "updatedAt": "2026-08-04T13:02:33.622Z",
+      "updatedAt": "2026-08-04T13:03:53.519Z",
       "legacyId": "",
       "skillCode": "3734",
       "internalId": "wiki_3a1bf9233cf74dc1913460dfabe84635",
@@ -331,7 +331,39 @@
       "productionNote": "",
       "schemaVersion": 4,
       "createdAt": "2026-08-04T13:02:33.622Z",
-      "updatedAt": "2026-08-04T13:02:33.622Z"
+      "updatedAt": "2026-08-04T13:03:53.519Z"
+    },
+    {
+      "id": "wiki_ce9480b171bf48e8a659e4833cb1f5fe",
+      "internalId": "wiki_ce9480b171bf48e8a659e4833cb1f5fe",
+      "skillCode": "8988",
+      "skillName": "⭐ DC8 Bboy Santo LV11 Skill 8988 | 8K Dance Showcase 💜 | Audition VTC | Mina",
+      "name": "⭐ DC8 Bboy Santo LV11 Skill 8988 | 8K Dance Showcase 💜 | Audition VTC | Mina",
+      "title": "⭐ DC8 Bboy Santo LV11 Skill 8988 | 8K Dance Showcase 💜 | Audition VTC | Mina",
+      "legacyId": "",
+      "alias": "",
+      "type": "8K",
+      "style": "B-Boy_SanTo",
+      "level": 11,
+      "bpmBest": 110,
+      "rarity": "S",
+      "rating": "",
+      "status": "needs_review",
+      "imageUrl": "https://res.cloudinary.com/rpwcnrfg/image/upload/v1785848625/mina/wiki/skills/skill-8988-1785848624243.webp",
+      "youtubeUrl": "https://www.youtube.com/shorts/HARH9b9I9b0",
+      "cameraAngle": "",
+      "song": "",
+      "hasYoutube": true,
+      "hasWiki": true,
+      "hot": false,
+      "homePinned": false,
+      "homeOrder": "",
+      "tags": [],
+      "notes": "",
+      "productionNote": "",
+      "schemaVersion": 4,
+      "createdAt": "2026-08-04T13:03:53.520Z",
+      "updatedAt": "2026-08-04T13:03:53.520Z"
     }
   ],
   "trash": [],
@@ -411,11 +443,16 @@
       "label": "Add skill 6891 - ⭐ DC8 Bboy LV11 Skill 6891 | Santo Jump | 8K Dance Showcase | Audition VTC | Mina",
       "createdAt": "2026-08-04T13:02:33.623Z",
       "totalAfter": 10
+    },
+    {
+      "label": "Add skill 8988 - ⭐ DC8 Bboy Santo LV11 Skill 8988 | 8K Dance Showcase 💜 | Audition VTC | Mina",
+      "createdAt": "2026-08-04T13:03:53.520Z",
+      "totalAfter": 11
     }
   ],
   "migration": {
     "type": "stable-internal-id-v4",
     "note": "CRUD dùng internalId; Wiki công khai tiếp tục dùng skillCode.",
-    "migratedTotal": 10
+    "migratedTotal": 11
   }
 }
