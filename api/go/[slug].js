@@ -45,6 +45,85 @@ function clean(value, max = 160) {
   return String(value || "").trim().slice(0, max);
 }
 
+
+function escapeHtml(value = "") {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function isSocialPreviewCrawler(userAgent = "") {
+  return /facebookexternalhit|facebot|meta-externalagent|meta-externalfetcher|whatsapp|twitterbot|linkedinbot|pinterest|telegrambot|zalo/i.test(
+    String(userAgent)
+  );
+}
+
+function getAbsoluteImageUrl(value = "") {
+  const fallback = "https://www.minaaudition.vn/assets/images/mixmatchoutfit.png";
+  const candidate = clean(value, 2000);
+
+  if (!candidate) return fallback;
+
+  try {
+    return new URL(candidate, "https://www.minaudition.vn").toString();
+  } catch {
+    return fallback;
+  }
+}
+
+function sendSocialPreview(req, res, slug, link, targetUrl) {
+  const title = clean(
+    link.ogTitle || link.shareTitle || link.name || link.title ||
+      "Mix & Match Outfit Audition - Mina",
+    160
+  );
+  const description = clean(
+    link.ogDescription || link.shareDescription || link.description ||
+      "Xem mix & match full item ẩn ingame trên trình duyệt nhanh, tiện và dễ dàng. Ai cần có thể xem tại đây nhé.",
+    300
+  );
+  const image = getAbsoluteImageUrl(
+    link.ogImage || link.shareImage || link.imageUrl || link.image || link.thumbnail
+  );
+  const canonical = `https://www.minaaudition.vn/go/${encodeURIComponent(slug)}`;
+
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("Cache-Control", "public, s-maxage=300, stale-while-revalidate=86400");
+
+  if (req.method === "HEAD") {
+    return res.status(200).end();
+  }
+
+  return res.status(200).send(`<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>${escapeHtml(title)}</title>
+  <link rel="canonical" href="${escapeHtml(canonical)}">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="vi_VN">
+  <meta property="og:site_name" content="Mina Audition">
+  <meta property="og:title" content="${escapeHtml(title)}">
+  <meta property="og:description" content="${escapeHtml(description)}">
+  <meta property="og:url" content="${escapeHtml(canonical)}">
+  <meta property="og:image" content="${escapeHtml(image)}">
+  <meta property="og:image:secure_url" content="${escapeHtml(image)}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${escapeHtml(title)}">
+  <meta name="twitter:description" content="${escapeHtml(description)}">
+  <meta name="twitter:image" content="${escapeHtml(image)}">
+</head>
+<body>
+  <p><a href="${escapeHtml(targetUrl.toString())}">Mở liên kết</a></p>
+</body>
+</html>`);
+}
+
 function getDeviceType(userAgent = "") {
   const value = String(userAgent).toLowerCase();
   if (/tablet|ipad/.test(value)) return "tablet";
@@ -224,6 +303,12 @@ module.exports = async function handler(req, res) {
 
     const referrer = clean(req.headers.referer || "", 500);
     const userAgent = clean(req.headers["user-agent"] || "", 500);
+
+    // Facebook và các mạng xã hội cần nhận HTML chứa Open Graph của Mina.
+    // Trình duyệt người dùng vẫn được chuyển hướng 302 như cũ.
+    if (isSocialPreviewCrawler(userAgent)) {
+      return sendSocialPreview(req, res, slug, link, targetUrl);
+    }
 
     if (req.method === "GET") {
       try {
