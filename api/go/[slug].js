@@ -55,23 +55,43 @@ function escapeHtml(value) {
 }
 
 function isSocialPreviewBot(userAgent = "") {
-  return /(facebookexternalhit|facebot|twitterbot|linkedinbot|telegrambot|whatsapp|discordbot|slackbot|pinterest|vkshare|skypeuripreview)/i.test(
+  return /(facebookexternalhit|facebot|meta-externalagent|meta-externalfetcher|twitterbot|linkedinbot|telegrambot|whatsapp|discordbot|slackbot|pinterest|vkshare|skypeuripreview|zalo)/i.test(
     String(userAgent)
   );
 }
 
 function getPublicUrl(req, slug) {
   const forwardedProto = clean(req.headers["x-forwarded-proto"] || "https", 10);
-  const host = clean(req.headers["x-forwarded-host"] || req.headers.host || "www.minaaudition.vn", 255);
+  const host = clean(
+    req.headers["x-forwarded-host"] ||
+      req.headers.host ||
+      "www.minaaudition.vn",
+    255
+  );
   const protocol = forwardedProto === "http" ? "http" : "https";
   return `${protocol}://${host}/go/${encodeURIComponent(slug)}`;
 }
 
-function renderSocialPreviewHtml({ url, title, description, image }) {
-  const safeUrl = escapeHtml(url);
+function safeJsonForScript(value) {
+  return JSON.stringify(String(value || "")).replace(/</g, "\\u003c");
+}
+
+function renderSmartLinkHtml({
+  canonicalUrl,
+  title,
+  description,
+  image,
+  destination,
+  shouldRedirect
+}) {
+  const safeCanonicalUrl = escapeHtml(canonicalUrl);
   const safeTitle = escapeHtml(title);
   const safeDescription = escapeHtml(description);
   const safeImage = escapeHtml(image);
+  const safeDestination = escapeHtml(destination);
+  const redirectScript = shouldRedirect
+    ? `<script>window.location.replace(${safeJsonForScript(destination)});</script>`
+    : "";
 
   return `<!doctype html>
 <html lang="vi">
@@ -80,22 +100,26 @@ function renderSocialPreviewHtml({ url, title, description, image }) {
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>${safeTitle}</title>
   <meta name="description" content="${safeDescription}">
-  <link rel="canonical" href="${safeUrl}">
+  <link rel="canonical" href="${safeCanonicalUrl}">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Mina Audition">
   <meta property="og:locale" content="vi_VN">
-  <meta property="og:url" content="${safeUrl}">
+  <meta property="og:url" content="${safeCanonicalUrl}">
   <meta property="og:title" content="${safeTitle}">
   <meta property="og:description" content="${safeDescription}">
   <meta property="og:image" content="${safeImage}">
-  <meta property="og:image:width" content="960">
-  <meta property="og:image:height" content="540">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${safeTitle}">
   <meta name="twitter:description" content="${safeDescription}">
   <meta name="twitter:image" content="${safeImage}">
+  ${redirectScript}
 </head>
-<body></body>
+<body>
+  <p>Đang chuyển đến liên kết…</p>
+  <p><a href="${safeDestination}" rel="noreferrer">Bấm vào đây nếu trình duyệt không tự chuyển.</a></p>
+</body>
 </html>`;
 }
 
@@ -278,49 +302,10 @@ module.exports = async function handler(req, res) {
 
     const referrer = clean(req.headers.referer || "", 500);
     const userAgent = clean(req.headers["user-agent"] || "", 500);
+    const isPreviewBot = isSocialPreviewBot(userAgent);
 
-    // Mạng xã hội phải đọc metadata của Mina thay vì đi theo redirect
-    // và lấy tiêu đề/ảnh của website đích. Các request preview cũng
-    // không được tính là click thật.
-    if (isSocialPreviewBot(userAgent)) {
-      const publicUrl = getPublicUrl(req, slug);
-      const previewTitle = clean(
-        link.ogTitle || link.name || link.title || "Mina Audition",
-        160
-      );
-      const previewDescription = clean(
-        link.ogDescription ||
-          link.description ||
-          link.note ||
-          "Khám phá nội dung Audition được Mina chọn lọc và chia sẻ.",
-        200
-      );
-      const previewImage = clean(
-        link.ogImage ||
-          link.image ||
-          link.thumbnail ||
-          "https://www.minaaudition.vn/assets/images/mixmatchoutfit.png",
-        2000
-      );
-
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.setHeader("Vary", "User-Agent");
-
-      if (req.method === "HEAD") {
-        return res.status(200).end();
-      }
-
-      return res.status(200).send(
-        renderSocialPreviewHtml({
-          url: publicUrl,
-          title: previewTitle,
-          description: previewDescription,
-          image: previewImage
-        })
-      );
-    }
-
-    if (req.method === "GET") {
+    // Không tính request quét preview của Facebook/Zalo/... là click thật.
+    if (req.method === "GET" && !isPreviewBot) {
       try {
         const clickRef = db.collection("smartLinkClicks").doc();
         const batch = db.batch();
@@ -360,7 +345,47 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    return res.redirect(302, targetUrl.toString());
+    const canonicalUrl = getPublicUrl(req, slug);
+    const previewTitle = clean(
+      link.ogTitle || link.name || link.title || "Mina Audition",
+      160
+    );
+    const previewDescription = clean(
+      link.ogDescription ||
+        link.description ||
+        link.note ||
+        "Khám phá nội dung Audition được Mina chọn lọc và chia sẻ.",
+      220
+    );
+    const previewImage = clean(
+      link.ogImage ||
+        link.imageUrl ||
+        link.image ||
+        link.thumbnail ||
+        "https://www.minaaudition.vn/images/mixmatchoutfit.png",
+      2000
+    );
+
+    // Trả HTML có Open Graph cho MỌI request thay vì HTTP 302.
+    // Bot mạng xã hội đọc metadata Mina và không chạy JavaScript.
+    // Trình duyệt người dùng chạy JavaScript rồi chuyển ngay sang URL đích.
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Vary", "User-Agent");
+
+    if (req.method === "HEAD") {
+      return res.status(200).end();
+    }
+
+    return res.status(200).send(
+      renderSmartLinkHtml({
+        canonicalUrl,
+        title: previewTitle,
+        description: previewDescription,
+        image: previewImage,
+        destination: targetUrl.toString(),
+        shouldRedirect: !isPreviewBot
+      })
+    );
   } catch (error) {
     console.error("[Mina Smart Link]", error);
     return res
