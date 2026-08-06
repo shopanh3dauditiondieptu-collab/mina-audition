@@ -45,6 +45,60 @@ function clean(value, max = 160) {
   return String(value || "").trim().slice(0, max);
 }
 
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function isSocialPreviewBot(userAgent = "") {
+  return /(facebookexternalhit|facebot|twitterbot|linkedinbot|telegrambot|whatsapp|discordbot|slackbot|pinterest|vkshare|skypeuripreview)/i.test(
+    String(userAgent)
+  );
+}
+
+function getPublicUrl(req, slug) {
+  const forwardedProto = clean(req.headers["x-forwarded-proto"] || "https", 10);
+  const host = clean(req.headers["x-forwarded-host"] || req.headers.host || "www.minaaudition.vn", 255);
+  const protocol = forwardedProto === "http" ? "http" : "https";
+  return `${protocol}://${host}/go/${encodeURIComponent(slug)}`;
+}
+
+function renderSocialPreviewHtml({ url, title, description, image }) {
+  const safeUrl = escapeHtml(url);
+  const safeTitle = escapeHtml(title);
+  const safeDescription = escapeHtml(description);
+  const safeImage = escapeHtml(image);
+
+  return `<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${safeTitle}</title>
+  <meta name="description" content="${safeDescription}">
+  <link rel="canonical" href="${safeUrl}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Mina Audition">
+  <meta property="og:locale" content="vi_VN">
+  <meta property="og:url" content="${safeUrl}">
+  <meta property="og:title" content="${safeTitle}">
+  <meta property="og:description" content="${safeDescription}">
+  <meta property="og:image" content="${safeImage}">
+  <meta property="og:image:width" content="960">
+  <meta property="og:image:height" content="540">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${safeTitle}">
+  <meta name="twitter:description" content="${safeDescription}">
+  <meta name="twitter:image" content="${safeImage}">
+</head>
+<body></body>
+</html>`;
+}
+
 function getDeviceType(userAgent = "") {
   const value = String(userAgent).toLowerCase();
   if (/tablet|ipad/.test(value)) return "tablet";
@@ -224,6 +278,47 @@ module.exports = async function handler(req, res) {
 
     const referrer = clean(req.headers.referer || "", 500);
     const userAgent = clean(req.headers["user-agent"] || "", 500);
+
+    // Mạng xã hội phải đọc metadata của Mina thay vì đi theo redirect
+    // và lấy tiêu đề/ảnh của website đích. Các request preview cũng
+    // không được tính là click thật.
+    if (isSocialPreviewBot(userAgent)) {
+      const publicUrl = getPublicUrl(req, slug);
+      const previewTitle = clean(
+        link.ogTitle || link.name || link.title || "Mina Audition",
+        160
+      );
+      const previewDescription = clean(
+        link.ogDescription ||
+          link.description ||
+          link.note ||
+          "Khám phá nội dung Audition được Mina chọn lọc và chia sẻ.",
+        200
+      );
+      const previewImage = clean(
+        link.ogImage ||
+          link.image ||
+          link.thumbnail ||
+          "https://www.minaaudition.vn/assets/images/mixmatchoutfit.png",
+        2000
+      );
+
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.setHeader("Vary", "User-Agent");
+
+      if (req.method === "HEAD") {
+        return res.status(200).end();
+      }
+
+      return res.status(200).send(
+        renderSocialPreviewHtml({
+          url: publicUrl,
+          title: previewTitle,
+          description: previewDescription,
+          image: previewImage
+        })
+      );
+    }
 
     if (req.method === "GET") {
       try {
