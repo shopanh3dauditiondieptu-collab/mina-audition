@@ -2545,6 +2545,37 @@ body[data-page="post"] .post-video-frame iframe{
   border:0;
   border-radius:0;
 }
+
+/* Facebook Video — nhận tỷ lệ thật từ Facebook SDK, không ép 16:9 như YouTube */
+body[data-page="post"] .post-video-card--facebook .post-video-frame--facebook{
+  aspect-ratio:var(--facebook-video-ratio,16/9);
+  transition:aspect-ratio .2s ease;
+}
+body[data-page="post"] .post-video-frame--facebook .fb-video,
+body[data-page="post"] .post-video-frame--facebook .fb-video > span{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+}
+body[data-page="post"] .post-video-frame--facebook iframe{
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+}
+body[data-page="post"] .post-video-frame--facebook .fb-video > a{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  padding:24px;
+  color:#fff;
+  background:#05040c;
+  text-align:center;
+  font-weight:800;
+}
 body[data-page="post"] .post-video-badge{
   position:absolute;
   top:13px;
