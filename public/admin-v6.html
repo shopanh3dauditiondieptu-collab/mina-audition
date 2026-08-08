@@ -330,7 +330,7 @@
           <div class="panel-head">
             <div>
               <h2>Nội dung bài viết</h2>
-              <p>Sắp xếp bài theo từng khối: Đoạn văn → Ảnh → Gallery → YouTube → Trích dẫn.</p>
+              <p>Sắp xếp bài theo từng khối: Đoạn văn → Ảnh → Gallery → YouTube → Facebook → Trích dẫn.</p>
             </div>
           </div>
 
@@ -339,6 +339,7 @@
             <button type="button" data-add-block="image">+ Ảnh</button>
             <button type="button" data-add-block="gallery">+ Gallery</button>
             <button type="button" data-add-block="youtube">+ YouTube</button>
+            <button type="button" data-add-block="facebook">+ Facebook</button>
             <button type="button" data-add-block="quote">+ Trích dẫn</button>
           </div>
 
@@ -1148,7 +1149,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script type="module" src="/js/smartlink-dashboard.js?v=1.3.0-full"></script>
   <script type="module">
-    import("/js/admin-v6.js?v=6.4.3-wiki-v3").catch(error => {
+    import("/js/admin-v6.js?v=6.4.4-facebook-video").catch(error => {
       console.error("Không tải được admin-v6.js", error);
       const badge = document.getElementById("authBadge");
       const notice = document.getElementById("notice");

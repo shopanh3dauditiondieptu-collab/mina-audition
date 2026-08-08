@@ -360,6 +360,7 @@ function defaultBlock(type) {
   if (type === "image") return { ...base, url: "", caption: "", file: null };
   if (type === "gallery") return { ...base, images: [], files: [] };
   if (type === "youtube") return { ...base, url: "", caption: "" };
+  if (type === "facebook") return { ...base, url: "", caption: "" };
   if (type === "quote") return { ...base, text: "", author: "" };
   return base;
 }
@@ -370,6 +371,7 @@ function blockLabel(type) {
     image: "Ảnh",
     gallery: "Gallery",
     youtube: "YouTube",
+    facebook: "Facebook",
     quote: "Trích dẫn"
   }[type] || type;
 }
@@ -468,6 +470,12 @@ function renderBlocks() {
       body = `
         <input data-field="url" type="url" value="${escapeHtml(block.url || "")}" placeholder="https://www.youtube.com/watch?v=...">
         <input data-field="caption" value="${escapeHtml(block.caption || "")}" placeholder="Chú thích video">`;
+    }
+    if (block.type === "facebook") {
+      body = `
+        <input data-field="url" type="url" value="${escapeHtml(block.url || "")}" placeholder="https://www.facebook.com/.../videos/...">
+        <input data-field="caption" value="${escapeHtml(block.caption || "")}" placeholder="Chú thích video Facebook">
+        <small class="muted">Video cần ở chế độ Công khai (Public) để có thể phát trực tiếp trong bài viết.</small>`;
     }
     if (block.type === "quote") {
       body = `

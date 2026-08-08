@@ -1457,6 +1457,51 @@ function renderContentBlocks(post) {
           </div>
         </section>`;
     }
+    if (type === "facebook") {
+      const rawUrl = String(block.url || block.facebookUrl || "").trim();
+      if (!rawUrl) return "";
+
+      let facebookUrl = "";
+      try {
+        const parsed = new URL(rawUrl);
+        const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
+        if (host === "facebook.com" || host === "m.facebook.com" || host === "fb.watch") {
+          facebookUrl = parsed.href;
+        }
+      } catch {
+        return "";
+      }
+      if (!facebookUrl) return "";
+
+      const videoTitle = block.title || block.caption || "Video Facebook tham khảo";
+      const embedUrl = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(facebookUrl)}&show_text=false&width=1280`;
+
+      return `
+        <section class="post-video-card post-video-card--facebook" aria-label="${esc(videoTitle)}">
+          <div class="post-video-frame">
+            <iframe
+              loading="lazy"
+              src="${esc(embedUrl)}"
+              title="${esc(videoTitle)}"
+              style="border:none;overflow:hidden"
+              scrolling="no"
+              frameborder="0"
+              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+              allowfullscreen></iframe>
+            <span class="post-video-badge">FACEBOOK</span>
+          </div>
+          <div class="post-video-actions">
+            <div class="post-video-info">
+              <span>MINA AUDITION • VIDEO THAM KHẢO</span>
+              <strong>${esc(videoTitle)}</strong>
+            </div>
+            <a href="${esc(facebookUrl)}" target="_blank" rel="noopener noreferrer">
+              <b aria-hidden="true">▶</b>
+              <i>Xem ngay trên Facebook ↗</i>
+            </a>
+          </div>
+        </section>`;
+    }
     return "";
   }).join("");
 }
