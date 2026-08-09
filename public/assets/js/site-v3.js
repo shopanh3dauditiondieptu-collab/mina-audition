@@ -1465,9 +1465,8 @@ function renderContentBlocks(post) {
       try {
         const parsed = new URL(rawUrl);
         const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
-        if (host === "facebook.com" || host === "m.facebook.com" || host === "fb.watch") {
-          facebookUrl = parsed.href;
-        }
+        const allowedHosts = ["facebook.com", "m.facebook.com", "web.facebook.com", "fb.watch"];
+        if (allowedHosts.includes(host)) facebookUrl = parsed.href;
       } catch {
         return "";
       }
@@ -1477,14 +1476,17 @@ function renderContentBlocks(post) {
 
       return `
         <section class="post-video-card post-video-card--facebook" aria-label="${esc(videoTitle)}">
-          <div class="post-video-frame post-video-frame--facebook" data-facebook-video-frame>
+          <div
+            class="post-video-frame post-video-frame--facebook"
+            data-facebook-video-frame
+            data-facebook-url="${esc(facebookUrl)}">
             <div
               class="fb-video"
               data-href="${esc(facebookUrl)}"
               data-width="860"
               data-show-text="false"
               data-allowfullscreen="true">
-              <a href="${esc(facebookUrl)}" target="_blank" rel="noopener noreferrer">Xem video trên Facebook</a>
+              <a class="post-facebook-fallback-link" href="${esc(facebookUrl)}" target="_blank" rel="noopener noreferrer">Đang tải video Facebook…</a>
             </div>
             <span class="post-video-badge">FACEBOOK</span>
           </div>
@@ -1564,35 +1566,111 @@ function setupFacebookVideoEmbeds() {
   const frames = [...document.querySelectorAll("[data-facebook-video-frame]")];
   if (!frames.length) return;
 
-  const syncFrameRatio = frame => {
-    const applyRatio = () => {
+  const DEFAULT_RATIO = 16 / 9;
+
+  const setRatio = (frame, width, height) => {
+    width = Number(width);
+    height = Number(height);
+    if (!(width > 0 && height > 0)) return false;
+
+    // Chặn các giá trị lỗi do Facebook/extension trả về.
+    const ratio = width / height;
+    if (!Number.isFinite(ratio) || ratio < 0.35 || ratio > 2.5) return false;
+
+    frame.style.setProperty("--facebook-video-ratio", `${width} / ${height}`);
+    frame.dataset.facebookRatio = String(ratio);
+    frame.classList.add("is-facebook-ready");
+    return true;
+  };
+
+  const readNaturalIframeRatio = frame => {
+    const iframe = frame.querySelector("iframe");
+    if (!iframe) return false;
+
+    // Ưu tiên width/height HTML mà Facebook SDK tự sinh. Không dùng
+    // offsetWidth/offsetHeight vì CSS của website có thể đã thay đổi chúng.
+    const attrWidth = parseFloat(iframe.getAttribute("width") || "0");
+    const attrHeight = parseFloat(iframe.getAttribute("height") || "0");
+    if (setRatio(frame, attrWidth, attrHeight)) return true;
+
+    const styleWidth = parseFloat(iframe.style.width || "0");
+    const styleHeight = parseFloat(iframe.style.height || "0");
+    if (setRatio(frame, styleWidth, styleHeight)) return true;
+
+    return false;
+  };
+
+  const makeDirectIframeFallback = frame => {
+    if (frame.querySelector("iframe[data-mina-facebook-fallback]")) return;
+
+    const facebookUrl = frame.dataset.facebookUrl || "";
+    if (!facebookUrl) return;
+
+    const fbNode = frame.querySelector(".fb-video");
+    if (fbNode) fbNode.remove();
+
+    const iframe = document.createElement("iframe");
+    iframe.dataset.minaFacebookFallback = "1";
+    iframe.title = "Video Facebook";
+    iframe.loading = "lazy";
+    iframe.allowFullscreen = true;
+    iframe.allow = "autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share";
+    iframe.referrerPolicy = "strict-origin-when-cross-origin";
+    iframe.src = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(facebookUrl)}&show_text=false&width=860`;
+    iframe.setAttribute("width", "860");
+    iframe.setAttribute("height", "484");
+
+    const badge = frame.querySelector(".post-video-badge");
+    frame.insertBefore(iframe, badge || null);
+
+    // Fallback trực tiếp luôn có khung ổn định. Nếu Facebook tự thay đổi
+    // width/height sau đó MutationObserver bên dưới sẽ cập nhật lại tỷ lệ.
+    setRatio(frame, 860, 484);
+  };
+
+  const watchFrame = frame => {
+    let settled = false;
+    const finishIfReady = () => {
       const iframe = frame.querySelector("iframe");
       if (!iframe) return false;
 
-      const width = Number(iframe.getAttribute("width")) || iframe.offsetWidth || iframe.clientWidth;
-      const height = Number(iframe.getAttribute("height")) || iframe.offsetHeight || iframe.clientHeight;
-      if (!(width > 0 && height > 0)) return false;
-
-      frame.style.setProperty("--facebook-video-ratio", `${width} / ${height}`);
-      frame.classList.add("is-facebook-ready");
+      readNaturalIframeRatio(frame);
+      frame.classList.add("has-facebook-iframe");
+      settled = true;
       return true;
     };
 
-    if (applyRatio()) return;
+    if (finishIfReady()) return;
 
     const observer = new MutationObserver(() => {
-      if (applyRatio()) observer.disconnect();
+      if (finishIfReady()) {
+        // Facebook đôi lúc cập nhật height sau lần render đầu tiên.
+        window.setTimeout(() => readNaturalIframeRatio(frame), 250);
+        window.setTimeout(() => readNaturalIframeRatio(frame), 900);
+      }
     });
+
     observer.observe(frame, {
       childList: true,
       subtree: true,
       attributes: true,
       attributeFilter: ["width", "height", "style"]
     });
+
+    // Nếu SDK bị chặn / parse lỗi, tự chuyển sang iframe plugin trực tiếp
+    // thay vì để một khung đen chỉ có chữ "Xem video trên Facebook".
+    window.setTimeout(() => {
+      if (!settled && !frame.querySelector("iframe")) makeDirectIframeFallback(frame);
+      finishIfReady();
+    }, 2800);
+
     window.setTimeout(() => observer.disconnect(), 12000);
   };
 
-  frames.forEach(syncFrameRatio);
+  frames.forEach(frame => {
+    frame.style.setProperty("--facebook-video-ratio", `${DEFAULT_RATIO}`);
+    watchFrame(frame);
+  });
 
   const parseFacebook = () => {
     if (!window.FB?.XFBML?.parse) return false;
@@ -1606,20 +1684,28 @@ function setupFacebookVideoEmbeds() {
     return true;
   };
 
-  if (parseFacebook()) return;
+  if (!parseFacebook()) {
+    let sdk = document.getElementById("facebook-jssdk");
+    if (!sdk) {
+      sdk = document.createElement("script");
+      sdk.id = "facebook-jssdk";
+      sdk.async = true;
+      sdk.defer = true;
+      sdk.crossOrigin = "anonymous";
+      sdk.src = "https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v24.0";
+      document.body.appendChild(sdk);
+    }
 
-  let sdk = document.getElementById("facebook-jssdk");
-  if (!sdk) {
-    sdk = document.createElement("script");
-    sdk.id = "facebook-jssdk";
-    sdk.async = true;
-    sdk.defer = true;
-    sdk.crossOrigin = "anonymous";
-    sdk.src = "https://connect.facebook.net/vi_VN/sdk.js#xfbml=1";
-    document.body.appendChild(sdk);
+    sdk.addEventListener("load", parseFacebook, { once: true });
   }
 
-  sdk.addEventListener("load", parseFacebook, { once: true });
+  // Một số trình duyệt/extension báo SDK đã load nhưng không render iframe.
+  // Fallback bảo đảm video vẫn hiển thị.
+  window.setTimeout(() => {
+    frames.forEach(frame => {
+      if (!frame.querySelector("iframe")) makeDirectIframeFallback(frame);
+    });
+  }, 3500);
 }
 
 function estimateReadingTime(post) {

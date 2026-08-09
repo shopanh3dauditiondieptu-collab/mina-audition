@@ -2546,12 +2546,21 @@ body[data-page="post"] .post-video-frame iframe{
   border-radius:0;
 }
 
-/* Facebook Video — nhận tỷ lệ thật từ Facebook SDK, không ép 16:9 như YouTube */
+/* Facebook Video — SDK trước, iframe plugin dự phòng; tỷ lệ lấy từ iframe thật */
 body[data-page="post"] .post-video-card--facebook .post-video-frame--facebook{
   aspect-ratio:var(--facebook-video-ratio,16/9);
+  min-height:260px;
   transition:aspect-ratio .2s ease;
+  background:#05040c;
 }
-body[data-page="post"] .post-video-frame--facebook .fb-video,
+body[data-page="post"] .post-video-frame--facebook .fb-video{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+}
 body[data-page="post"] .post-video-frame--facebook .fb-video > span{
   position:absolute!important;
   inset:0!important;
@@ -2561,11 +2570,16 @@ body[data-page="post"] .post-video-frame--facebook .fb-video > span{
   max-width:none!important;
 }
 body[data-page="post"] .post-video-frame--facebook iframe{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
   width:100%!important;
   height:100%!important;
   max-width:none!important;
+  border:0!important;
+  background:#05040c;
 }
-body[data-page="post"] .post-video-frame--facebook .fb-video > a{
+body[data-page="post"] .post-video-frame--facebook .post-facebook-fallback-link{
   position:absolute;
   inset:0;
   display:grid;
@@ -2575,6 +2589,14 @@ body[data-page="post"] .post-video-frame--facebook .fb-video > a{
   background:#05040c;
   text-align:center;
   font-weight:800;
+}
+body[data-page="post"] .post-video-frame--facebook.has-facebook-iframe .post-facebook-fallback-link{
+  display:none!important;
+}
+@media(max-width:640px){
+  body[data-page="post"] .post-video-card--facebook .post-video-frame--facebook{
+    min-height:190px;
+  }
 }
 
 /* TikTok Video — khung dọc 9:16, giới hạn chiều rộng để không bị phóng quá lớn */
