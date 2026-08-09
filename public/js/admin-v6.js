@@ -361,6 +361,7 @@ function defaultBlock(type) {
   if (type === "gallery") return { ...base, images: [], files: [] };
   if (type === "youtube") return { ...base, url: "", caption: "" };
   if (type === "facebook") return { ...base, url: "", caption: "" };
+  if (type === "facebook-reel") return { ...base, url: "", caption: "" };
   if (type === "tiktok") return { ...base, url: "", caption: "" };
   if (type === "quote") return { ...base, text: "", author: "" };
   return base;
@@ -373,6 +374,7 @@ function blockLabel(type) {
     gallery: "Gallery",
     youtube: "YouTube",
     facebook: "Facebook",
+    "facebook-reel": "Facebook Reel",
     tiktok: "TikTok",
     quote: "Trích dẫn"
   }[type] || type;
@@ -478,6 +480,12 @@ function renderBlocks() {
         <input data-field="url" type="url" value="${escapeHtml(block.url || "")}" placeholder="https://www.facebook.com/.../videos/...">
         <input data-field="caption" value="${escapeHtml(block.caption || "")}" placeholder="Chú thích video Facebook">
         <small class="muted">Video cần ở chế độ Công khai (Public) để có thể phát trực tiếp trong bài viết.</small>`;
+    }
+    if (block.type === "facebook-reel") {
+      body = `
+        <input data-field="url" type="url" value="${escapeHtml(block.url || "")}" placeholder="https://www.facebook.com/reel/123456789...">
+        <input data-field="caption" value="${escapeHtml(block.caption || "")}" placeholder="Chú thích Facebook Reel">
+        <small class="muted">Dán link Reel Facebook công khai dạng facebook.com/reel/ID. Website sẽ tự hiển thị theo khung video dọc.</small>`;
     }
     if (block.type === "tiktok") {
       body = `
