@@ -1474,18 +1474,24 @@ function renderContentBlocks(post) {
       if (!facebookUrl) return "";
 
       const videoTitle = block.title || block.caption || "Video Facebook tham khảo";
+      const facebookEmbedUrl =
+        `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(facebookUrl)}` +
+        `&show_text=false&width=860&allowfullscreen=true&autoplay=false`;
 
       return `
         <section class="post-video-card post-video-card--facebook" aria-label="${esc(videoTitle)}">
-          <div class="post-video-frame post-video-frame--facebook" data-facebook-video-frame>
-            <div
-              class="fb-video"
-              data-href="${esc(facebookUrl)}"
-              data-width="860"
-              data-show-text="false"
-              data-allowfullscreen="true">
-              <a href="${esc(facebookUrl)}" target="_blank" rel="noopener noreferrer">Xem video trên Facebook</a>
-            </div>
+          <div class="post-video-frame post-video-frame--facebook is-facebook-ready" data-facebook-video-frame>
+            <iframe
+              loading="lazy"
+              src="${esc(facebookEmbedUrl)}"
+              title="${esc(videoTitle)}"
+              width="860"
+              height="484"
+              style="border:none;overflow:hidden"
+              scrolling="no"
+              frameborder="0"
+              allowfullscreen="true"
+              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
             <span class="post-video-badge">FACEBOOK</span>
           </div>
           <div class="post-video-actions">
@@ -1508,62 +1514,15 @@ function setupFacebookVideoEmbeds() {
   const frames = [...document.querySelectorAll("[data-facebook-video-frame]")];
   if (!frames.length) return;
 
-  const syncFrameRatio = frame => {
-    const applyRatio = () => {
-      const iframe = frame.querySelector("iframe");
-      if (!iframe) return false;
+  frames.forEach(frame => {
+    const iframe = frame.querySelector("iframe");
+    if (!iframe) return;
 
-      const width = Number(iframe.getAttribute("width")) || iframe.offsetWidth || iframe.clientWidth;
-      const height = Number(iframe.getAttribute("height")) || iframe.offsetHeight || iframe.clientHeight;
-      if (!(width > 0 && height > 0)) return false;
-
-      frame.style.setProperty("--facebook-video-ratio", `${width} / ${height}`);
-      frame.classList.add("is-facebook-ready");
-      return true;
-    };
-
-    if (applyRatio()) return;
-
-    const observer = new MutationObserver(() => {
-      if (applyRatio()) observer.disconnect();
-    });
-    observer.observe(frame, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["width", "height", "style"]
-    });
-    window.setTimeout(() => observer.disconnect(), 12000);
-  };
-
-  frames.forEach(syncFrameRatio);
-
-  const parseFacebook = () => {
-    if (!window.FB?.XFBML?.parse) return false;
-    frames.forEach(frame => {
-      try {
-        window.FB.XFBML.parse(frame);
-      } catch (error) {
-        console.warn("Mina: Facebook video parse failed", error);
-      }
-    });
-    return true;
-  };
-
-  if (parseFacebook()) return;
-
-  let sdk = document.getElementById("facebook-jssdk");
-  if (!sdk) {
-    sdk = document.createElement("script");
-    sdk.id = "facebook-jssdk";
-    sdk.async = true;
-    sdk.defer = true;
-    sdk.crossOrigin = "anonymous";
-    sdk.src = "https://connect.facebook.net/vi_VN/sdk.js#xfbml=1";
-    document.body.appendChild(sdk);
-  }
-
-  sdk.addEventListener("load", parseFacebook, { once: true });
+    const width = Number(iframe.getAttribute("width")) || 860;
+    const height = Number(iframe.getAttribute("height")) || 484;
+    frame.style.setProperty("--facebook-video-ratio", `${width} / ${height}`);
+    frame.classList.add("is-facebook-ready");
+  });
 }
 
 function estimateReadingTime(post) {
