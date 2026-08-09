@@ -1474,24 +1474,18 @@ function renderContentBlocks(post) {
       if (!facebookUrl) return "";
 
       const videoTitle = block.title || block.caption || "Video Facebook tham khảo";
-      const facebookEmbedUrl =
-        `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(facebookUrl)}` +
-        `&show_text=false&width=860&allowfullscreen=true&autoplay=false`;
 
       return `
         <section class="post-video-card post-video-card--facebook" aria-label="${esc(videoTitle)}">
-          <div class="post-video-frame post-video-frame--facebook is-facebook-ready" data-facebook-video-frame>
-            <iframe
-              loading="lazy"
-              src="${esc(facebookEmbedUrl)}"
-              title="${esc(videoTitle)}"
-              width="860"
-              height="484"
-              style="border:none;overflow:hidden"
-              scrolling="no"
-              frameborder="0"
-              allowfullscreen="true"
-              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+          <div class="post-video-frame post-video-frame--facebook" data-facebook-video-frame>
+            <div
+              class="fb-video"
+              data-href="${esc(facebookUrl)}"
+              data-width="860"
+              data-show-text="false"
+              data-allowfullscreen="true">
+              <a href="${esc(facebookUrl)}" target="_blank" rel="noopener noreferrer">Xem video trên Facebook</a>
+            </div>
             <span class="post-video-badge">FACEBOOK</span>
           </div>
           <div class="post-video-actions">
@@ -1506,6 +1500,62 @@ function renderContentBlocks(post) {
           </div>
         </section>`;
     }
+    if (type === "tiktok") {
+      const rawUrl = String(block.url || block.tiktokUrl || "").trim();
+      if (!rawUrl) return "";
+
+      let tiktokUrl = "";
+      let videoId = "";
+      try {
+        const parsed = new URL(rawUrl);
+        const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
+        const allowedHosts = ["tiktok.com", "m.tiktok.com", "vm.tiktok.com", "vt.tiktok.com"];
+        if (!allowedHosts.includes(host)) return "";
+        tiktokUrl = parsed.href;
+        videoId = parsed.pathname.match(/\/video\/(\d+)/)?.[1] || "";
+      } catch {
+        return "";
+      }
+
+      const videoTitle = block.title || block.caption || "Video TikTok tham khảo";
+
+      if (!videoId) {
+        return `
+          <section class="post-video-card post-video-card--tiktok post-video-card--tiktok-link" aria-label="${esc(videoTitle)}">
+            <div class="post-tiktok-link-fallback">
+              <span class="post-video-badge">TIKTOK</span>
+              <strong>${esc(videoTitle)}</strong>
+              <p>Link TikTok rút gọn không chứa Video ID nên chưa thể nhúng trực tiếp.</p>
+              <a href="${esc(tiktokUrl)}" target="_blank" rel="noopener noreferrer">Mở video trên TikTok ↗</a>
+            </div>
+          </section>`;
+      }
+
+      const playerUrl = `https://www.tiktok.com/player/v1/${videoId}?autoplay=0&loop=0&music_info=1&description=1`;
+      return `
+        <section class="post-video-card post-video-card--tiktok" aria-label="${esc(videoTitle)}">
+          <div class="post-video-frame post-video-frame--tiktok">
+            <iframe
+              loading="lazy"
+              src="${esc(playerUrl)}"
+              title="${esc(videoTitle)}"
+              allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allowfullscreen></iframe>
+            <span class="post-video-badge">TIKTOK</span>
+          </div>
+          <div class="post-video-actions">
+            <div class="post-video-info">
+              <span>MINA AUDITION • TIKTOK</span>
+              <strong>${esc(videoTitle)}</strong>
+            </div>
+            <a href="${esc(tiktokUrl)}" target="_blank" rel="noopener noreferrer">
+              <b aria-hidden="true">▶</b>
+              <i>Xem trên TikTok ↗</i>
+            </a>
+          </div>
+        </section>`;
+    }
     return "";
   }).join("");
 }
@@ -1514,15 +1564,62 @@ function setupFacebookVideoEmbeds() {
   const frames = [...document.querySelectorAll("[data-facebook-video-frame]")];
   if (!frames.length) return;
 
-  frames.forEach(frame => {
-    const iframe = frame.querySelector("iframe");
-    if (!iframe) return;
+  const syncFrameRatio = frame => {
+    const applyRatio = () => {
+      const iframe = frame.querySelector("iframe");
+      if (!iframe) return false;
 
-    const width = Number(iframe.getAttribute("width")) || 860;
-    const height = Number(iframe.getAttribute("height")) || 484;
-    frame.style.setProperty("--facebook-video-ratio", `${width} / ${height}`);
-    frame.classList.add("is-facebook-ready");
-  });
+      const width = Number(iframe.getAttribute("width")) || iframe.offsetWidth || iframe.clientWidth;
+      const height = Number(iframe.getAttribute("height")) || iframe.offsetHeight || iframe.clientHeight;
+      if (!(width > 0 && height > 0)) return false;
+
+      frame.style.setProperty("--facebook-video-ratio", `${width} / ${height}`);
+      frame.classList.add("is-facebook-ready");
+      return true;
+    };
+
+    if (applyRatio()) return;
+
+    const observer = new MutationObserver(() => {
+      if (applyRatio()) observer.disconnect();
+    });
+    observer.observe(frame, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["width", "height", "style"]
+    });
+    window.setTimeout(() => observer.disconnect(), 12000);
+  };
+
+  frames.forEach(syncFrameRatio);
+
+  const parseFacebook = () => {
+    if (!window.FB?.XFBML?.parse) return false;
+    frames.forEach(frame => {
+      try {
+        window.FB.XFBML.parse(frame);
+      } catch (error) {
+        console.warn("Mina: Facebook video parse failed", error);
+      }
+    });
+    return true;
+  };
+
+  if (parseFacebook()) return;
+
+  let sdk = document.getElementById("facebook-jssdk");
+  if (!sdk) {
+    sdk = document.createElement("script");
+    sdk.id = "facebook-jssdk";
+    sdk.async = true;
+    sdk.defer = true;
+    sdk.crossOrigin = "anonymous";
+    sdk.src = "https://connect.facebook.net/vi_VN/sdk.js#xfbml=1";
+    document.body.appendChild(sdk);
+  }
+
+  sdk.addEventListener("load", parseFacebook, { once: true });
 }
 
 function estimateReadingTime(post) {
