@@ -2546,9 +2546,9 @@ body[data-page="post"] .post-video-frame iframe{
   border-radius:0;
 }
 
-/* Facebook Video — khung 4:3 riêng, không ảnh hưởng YouTube 16:9 */
+/* Facebook Video — nhận tỷ lệ thật từ Facebook SDK, không ép 16:9 như YouTube */
 body[data-page="post"] .post-video-card--facebook .post-video-frame--facebook{
-  aspect-ratio:var(--facebook-video-ratio,4/3);
+  aspect-ratio:var(--facebook-video-ratio,16/9);
   transition:aspect-ratio .2s ease;
 }
 body[data-page="post"] .post-video-frame--facebook .fb-video,
@@ -2940,4 +2940,42 @@ body.wiki-modal-open{overflow:hidden}
   body[data-page="wiki"] .wiki-card-v3,
   body[data-page="wiki"] .wiki-card-media img,
   .wiki-skill-modal,.wiki-skill-dialog{transition:none!important}
+}
+
+
+/* =========================================================
+   MINA FB REELS — EMBED DỌC 9:16
+   Tự nhận link facebook.com/reel/... và hiển thị khung dọc.
+   Không ảnh hưởng YouTube hoặc Facebook video thường.
+========================================================= */
+body[data-page="post"] .post-video-card--facebook-reel{
+  width:min(460px,100%);
+  margin-left:auto;
+  margin-right:auto;
+}
+
+body[data-page="post"] .post-video-card--facebook-reel .post-video-frame--facebook-reel{
+  width:100%;
+  aspect-ratio:9/16!important;
+  background:#05040c;
+}
+
+body[data-page="post"] .post-video-card--facebook-reel .post-video-frame--facebook-reel iframe{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  border:0!important;
+}
+
+body[data-page="post"] .post-video-card--facebook-reel .post-video-actions{
+  width:100%;
+}
+
+@media(max-width:560px){
+  body[data-page="post"] .post-video-card--facebook-reel{
+    width:min(100%,420px);
+  }
 }

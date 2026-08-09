@@ -1457,51 +1457,64 @@ function renderContentBlocks(post) {
           </div>
         </section>`;
     }
-    if (type === "facebook") {
-      const rawUrl = String(block.url || block.facebookUrl || "").trim();
+    if (["facebook", "facebook-reel", "facebook_reel", "facebookreel", "fb-reel", "reel"].includes(type)) {
+      const rawUrl = String(block.url || block.facebookUrl || block.reelUrl || "").trim();
       if (!rawUrl) return "";
 
       let facebookUrl = "";
+      let isFacebookReel = false;
+
       try {
         const parsed = new URL(rawUrl);
         const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
         if (host === "facebook.com" || host === "m.facebook.com" || host === "fb.watch") {
           facebookUrl = parsed.href;
+          isFacebookReel =
+            /^\/reel(?:s)?\//i.test(parsed.pathname) ||
+            ["facebook-reel", "facebook_reel", "facebookreel", "fb-reel", "reel"].includes(type);
         }
       } catch {
         return "";
       }
+
       if (!facebookUrl) return "";
 
-      const videoTitle = block.title || block.caption || "Video Facebook tham khảo";
+      const videoTitle = block.title || block.caption ||
+        (isFacebookReel ? "Facebook Reel tham khảo" : "Video Facebook tham khảo");
+
+      const embedWidth = isFacebookReel ? 420 : 860;
+      const embedHeight = isFacebookReel ? 747 : 645;
       const facebookEmbedUrl =
         `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(facebookUrl)}` +
-        `&show_text=false&width=860&height=645&allowfullscreen=true&autoplay=false`;
+        `&show_text=false&width=${embedWidth}&height=${embedHeight}&allowfullscreen=true&autoplay=false`;
 
       return `
-        <section class="post-video-card post-video-card--facebook" aria-label="${esc(videoTitle)}">
-          <div class="post-video-frame post-video-frame--facebook is-facebook-ready" data-facebook-video-frame>
+        <section class="post-video-card post-video-card--facebook ${isFacebookReel ? "post-video-card--facebook-reel" : ""}" aria-label="${esc(videoTitle)}">
+          <div
+            class="post-video-frame post-video-frame--facebook ${isFacebookReel ? "post-video-frame--facebook-reel" : ""} is-facebook-ready"
+            data-facebook-video-frame
+            data-facebook-reel="${isFacebookReel ? "true" : "false"}">
             <iframe
               loading="lazy"
               src="${esc(facebookEmbedUrl)}"
               title="${esc(videoTitle)}"
-              width="860"
-              height="645"
+              width="${embedWidth}"
+              height="${embedHeight}"
               style="border:none;overflow:hidden"
               scrolling="no"
               frameborder="0"
               allowfullscreen="true"
               allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
-            <span class="post-video-badge">FACEBOOK</span>
+            <span class="post-video-badge">${isFacebookReel ? "FB REEL" : "FACEBOOK"}</span>
           </div>
           <div class="post-video-actions">
             <div class="post-video-info">
-              <span>MINA AUDITION • VIDEO THAM KHẢO</span>
+              <span>MINA AUDITION • ${isFacebookReel ? "FACEBOOK REEL" : "VIDEO THAM KHẢO"}</span>
               <strong>${esc(videoTitle)}</strong>
             </div>
             <a href="${esc(facebookUrl)}" target="_blank" rel="noopener noreferrer">
               <b aria-hidden="true">▶</b>
-              <i>Xem ngay trên Facebook ↗</i>
+              <i>${isFacebookReel ? "Xem Reel trên Facebook ↗" : "Xem ngay trên Facebook ↗"}</i>
             </a>
           </div>
         </section>`;
@@ -1518,8 +1531,10 @@ function setupFacebookVideoEmbeds() {
     const iframe = frame.querySelector("iframe");
     if (!iframe) return;
 
-    const width = Number(iframe.getAttribute("width")) || 860;
-    const height = Number(iframe.getAttribute("height")) || 645;
+    const isReel = frame.dataset.facebookReel === "true";
+    const width = Number(iframe.getAttribute("width")) || (isReel ? 420 : 860);
+    const height = Number(iframe.getAttribute("height")) || (isReel ? 747 : 645);
+
     frame.style.setProperty("--facebook-video-ratio", `${width} / ${height}`);
     frame.classList.add("is-facebook-ready");
   });
