@@ -134,6 +134,55 @@ function renderBars(containerSelector, rows = [], emptyLabel) {
   }).join("");
 }
 
+
+function renderDataQualityStatus(data) {
+  const status = $("#smartAnalyticsStatus");
+  if (!status) return;
+
+  const quality = data.summary?.dataQuality;
+  const total = Number(data.summary?.filteredClicks || 0);
+  if (!quality || !total) return;
+
+  const postRate = Math.round((Number(quality.withPostCode || 0) / total) * 100);
+  const sourceRate = Math.round((Number(quality.withExplicitSource || 0) / total) * 100);
+  const campaignRate = Math.round((Number(quality.withCampaign || 0) / total) * 100);
+
+  status.dataset.qualityText =
+    `Tracking: mã bài ${postRate}% • nguồn cụ thể ${sourceRate}% • campaign ${campaignRate}%`;
+}
+
+function appendDataQualityStatus() {
+  const status = $("#smartAnalyticsStatus");
+  const qualityText = status?.dataset.qualityText || "";
+  if (!status || !qualityText) return;
+  if (!status.textContent.includes(qualityText)) {
+    status.textContent += ` • ${qualityText}`;
+  }
+}
+
+function bindTopSmartLinkQuickFilter(data) {
+  const container = $("#smartTopLinks");
+  const select = $("#smartAnalyticsLink");
+  if (!container || !select) return;
+
+  container.querySelectorAll(".analytics-bar-row").forEach(row => {
+    row.classList.add("analytics-bar-row-action");
+    row.title = "Bấm để lọc Smart Link này";
+    row.addEventListener("click", () => {
+      const label = row.querySelector(".analytics-bar-label span")?.textContent?.trim() || "";
+      const match = (data.links || []).find(link => String(link.name || "").trim() === label);
+      if (!match) return;
+      select.value = match.id;
+      const status = $("#smartAnalyticsStatus");
+      if (status) {
+        status.textContent = `Đã chọn “${label}”. Bấm “Tải thống kê” để xem chi tiết.`;
+        status.className = "analytics-status";
+      }
+      select.scrollIntoView?.({ behavior: "smooth", block: "center" });
+    });
+  });
+}
+
 function renderDailyChart(daily = []) {
   const container = $("#smartDailyChart");
   if (!container) return;
@@ -593,6 +642,8 @@ function renderDashboard(data) {
   renderPostPerformance(data);
   populateLinkFilter(data.links || []);
   renderRecentClicks(data.recentClicks || []);
+  renderDataQualityStatus(data);
+  bindTopSmartLinkQuickFilter(data);
 
   const warning = $("#smartAnalyticsWarning");
   if (warning) {
@@ -697,6 +748,7 @@ export async function loadSmartLinkAnalytics(options = {}) {
       status.textContent =
         `Dữ liệu đã cập nhật • quét ${number(scanned)} click${cached}.`;
       status.className = "analytics-status success";
+      appendDataQualityStatus();
     }
   } catch (error) {
     console.error("Smart Link Analytics:", error);
