@@ -1,3 +1,5 @@
+import { auth } from "/js/firebase-config.js";
+
 const API_KEY_STORAGE_KEYS = [
   "mina_admin_api_key_session",
   "minaAdminApiKey",
@@ -46,15 +48,51 @@ function getApiKey() {
   return "";
 }
 
-function authHeaders() {
-  const apiKey = getApiKey();
+async function getAdminAuthHeaders(forceRefresh = false) {
+  // Ưu tiên Firebase ID Token vì CMS đã đăng nhập bằng Firebase Auth.
+  // Backend requireAdmin() xác minh trực tiếp token này.
+  const user = auth?.currentUser;
 
-  return apiKey
-    ? {
-        "X-Mina-Admin-Key": apiKey,
-        Authorization: `Bearer ${apiKey}`
-      }
-    : {};
+  if (user) {
+    try {
+      const token = await user.getIdToken(forceRefresh);
+      if (token) return { Authorization: `Bearer ${token}` };
+    } catch (error) {
+      console.warn("[Smart Link Analytics] Không lấy được Firebase ID Token:", error?.message || error);
+    }
+  }
+
+  // Giữ tương thích ngược với API key cũ nếu môi trường Production vẫn dùng.
+  const apiKey = getApiKey();
+  return apiKey ? { "X-Mina-Admin-Key": apiKey } : {};
+}
+
+async function authenticatedFetch(url, options = {}) {
+  let authHeaders = await getAdminAuthHeaders(false);
+
+  if (!Object.keys(authHeaders).length) {
+    throw new Error(
+      "Không tìm thấy phiên Firebase quản trị hoặc API key. Hãy đăng nhập lại CMS trên đúng domain đang mở."
+    );
+  }
+
+  const buildOptions = headers => ({
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      ...headers
+    }
+  });
+
+  let response = await fetch(url, buildOptions(authHeaders));
+
+  // Token Firebase có thể vừa hết hạn. Refresh đúng 1 lần rồi thử lại.
+  if (response.status === 401 && auth?.currentUser) {
+    authHeaders = await getAdminAuthHeaders(true);
+    response = await fetch(url, buildOptions(authHeaders));
+  }
+
+  return response;
 }
 
 function queryParams() {
@@ -132,6 +170,55 @@ function renderBars(containerSelector, rows = [], emptyLabel) {
         </div>
       </div>`;
   }).join("");
+}
+
+
+function renderDataQualityStatus(data) {
+  const status = $("#smartAnalyticsStatus");
+  if (!status) return;
+
+  const quality = data.summary?.dataQuality;
+  const total = Number(data.summary?.filteredClicks || 0);
+  if (!quality || !total) return;
+
+  const postRate = Math.round((Number(quality.withPostCode || 0) / total) * 100);
+  const sourceRate = Math.round((Number(quality.withExplicitSource || 0) / total) * 100);
+  const campaignRate = Math.round((Number(quality.withCampaign || 0) / total) * 100);
+
+  status.dataset.qualityText =
+    `Tracking: mã bài ${postRate}% • nguồn cụ thể ${sourceRate}% • campaign ${campaignRate}%`;
+}
+
+function appendDataQualityStatus() {
+  const status = $("#smartAnalyticsStatus");
+  const qualityText = status?.dataset.qualityText || "";
+  if (!status || !qualityText) return;
+  if (!status.textContent.includes(qualityText)) {
+    status.textContent += ` • ${qualityText}`;
+  }
+}
+
+function bindTopSmartLinkQuickFilter(data) {
+  const container = $("#smartTopLinks");
+  const select = $("#smartAnalyticsLink");
+  if (!container || !select) return;
+
+  container.querySelectorAll(".analytics-bar-row").forEach(row => {
+    row.classList.add("analytics-bar-row-action");
+    row.title = "Bấm để lọc Smart Link này";
+    row.addEventListener("click", () => {
+      const label = row.querySelector(".analytics-bar-label span")?.textContent?.trim() || "";
+      const match = (data.links || []).find(link => String(link.name || "").trim() === label);
+      if (!match) return;
+      select.value = match.id;
+      const status = $("#smartAnalyticsStatus");
+      if (status) {
+        status.textContent = `Đã chọn “${label}”. Bấm “Tải thống kê” để xem chi tiết.`;
+        status.className = "analytics-status";
+      }
+      select.scrollIntoView?.({ behavior: "smooth", block: "center" });
+    });
+  });
 }
 
 function renderDailyChart(daily = []) {
@@ -506,12 +593,9 @@ async function fetchAnalyticsForDays(days) {
   const params = queryParams();
   params.set("days", String(days));
 
-  const response = await fetch(
+  const response = await authenticatedFetch(
     `/api/admin/smartlinks/dashboard?${params}`,
-    {
-      cache: "no-store",
-      headers: authHeaders()
-    }
+    { cache: "no-store" }
   );
 
   const result = await response.json();
@@ -593,6 +677,8 @@ function renderDashboard(data) {
   renderPostPerformance(data);
   populateLinkFilter(data.links || []);
   renderRecentClicks(data.recentClicks || []);
+  renderDataQualityStatus(data);
+  bindTopSmartLinkQuickFilter(data);
 
   const warning = $("#smartAnalyticsWarning");
   if (warning) {
@@ -623,16 +709,10 @@ function setLoading(loading) {
 
 export async function loadSmartLinkAnalytics(options = {}) {
   const status = $("#smartAnalyticsStatus");
-  const apiKey = getApiKey();
 
-  if (!apiKey) {
-    if (status) {
-      status.textContent =
-        "Không tìm thấy API key quản trị trong phiên đăng nhập. Hãy đăng xuất rồi đăng nhập lại CMS.";
-      status.className = "analytics-status error";
-    }
-    return;
-  }
+  // Không bắt buộc API key ở trình duyệt nữa.
+  // authenticatedFetch() sẽ dùng Firebase ID Token của phiên CMS hiện tại,
+  // và chỉ fallback về API key cũ khi có sẵn.
 
   if (dashboardRequestState.loading) {
     if (status) {
@@ -664,12 +744,9 @@ export async function loadSmartLinkAnalytics(options = {}) {
   setLoading(true);
 
   try {
-    const response = await fetch(
+    const response = await authenticatedFetch(
       `/api/admin/smartlinks/dashboard?${params}`,
-      {
-        cache: "no-store",
-        headers: authHeaders()
-      }
+      { cache: "no-store" }
     );
 
     const result = await response.json();
@@ -697,6 +774,7 @@ export async function loadSmartLinkAnalytics(options = {}) {
       status.textContent =
         `Dữ liệu đã cập nhật • quét ${number(scanned)} click${cached}.`;
       status.className = "analytics-status success";
+      appendDataQualityStatus();
     }
   } catch (error) {
     console.error("Smart Link Analytics:", error);
@@ -715,7 +793,7 @@ function exportCsv() {
   const apiKey = getApiKey();
 
   if (!apiKey) {
-    alert("Không tìm thấy API key quản trị. Hãy đăng nhập lại.");
+    alert("Dashboard Preview đã dùng Firebase ID Token. Riêng Xuất CSV hiện vẫn dùng API key cũ; chức năng này chưa được thay đổi trong bản patch an toàn.");
     return;
   }
 

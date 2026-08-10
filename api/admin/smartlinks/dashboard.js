@@ -30,6 +30,112 @@ global.__MINA_SMARTLINK_LINKS_CACHE__ = linksCache;
 
 const LINKS_CACHE_TTL_MS = 15 * 60 * 1000;
 
+
+// ===== Preview-safe metadata enrichment v1.1 =====
+// Chỉ phục vụ Dashboard quản trị. Không ghi Firestore, không thay dữ liệu click cũ.
+const POST_META_CACHE_TTL_MS = 30 * 60 * 1000;
+const postMetaCache = global.__MINA_SMARTLINK_POST_META_CACHE__ || new Map();
+global.__MINA_SMARTLINK_POST_META_CACHE__ = postMetaCache;
+
+function normalizeReferrerLabel(referrer = "") {
+  if (!referrer) return "Direct / không có referrer";
+
+  let host = "";
+  try {
+    host = new URL(referrer).hostname.toLowerCase().replace(/^www\./, "");
+  } catch {
+    host = clean(referrer, 120).toLowerCase();
+  }
+
+  if (!host) return "Direct / không có referrer";
+  if (host === "facebook.com" || host.endsWith(".facebook.com")) return "Facebook";
+  if (host === "tiktok.com" || host.endsWith(".tiktok.com")) return "TikTok";
+  if (host === "youtube.com" || host.endsWith(".youtube.com") || host === "youtu.be") return "YouTube";
+  if (host === "google.com" || host.endsWith(".google.com")) return "Google";
+  if (host === "zalo.me" || host.endsWith(".zalo.me")) return "Zalo";
+  if (host === "minaaudition.vn" || host.endsWith(".minaaudition.vn")) return "Mina Audition";
+  return host;
+}
+
+function getCachedPostMeta(code) {
+  const key = String(code || "").toLowerCase();
+  const item = postMetaCache.get(key);
+  if (!item) return null;
+  if (Date.now() - item.createdAt > POST_META_CACHE_TTL_MS) {
+    postMetaCache.delete(key);
+    return null;
+  }
+  return item.value;
+}
+
+function setCachedPostMeta(code, value) {
+  const key = String(code || "").toLowerCase();
+  if (!key) return;
+  postMetaCache.set(key, { createdAt: Date.now(), value });
+}
+
+async function loadPostMetaForCodes(db, codes = []) {
+  const cleanCodes = [...new Set(codes.map(code => clean(code, 80)).filter(Boolean))]
+    .filter(code => code !== "Không có mã bài")
+    .slice(0, 20);
+
+  const result = new Map();
+  const missing = [];
+
+  for (const code of cleanCodes) {
+    const cached = getCachedPostMeta(code);
+    if (cached) result.set(code.toLowerCase(), cached);
+    else missing.push(code);
+  }
+
+  if (!missing.length) return result;
+
+  const fields = ["internalId", "aiId", "postCode"];
+  const unresolved = new Set(missing.map(code => code.toLowerCase()));
+
+  // Batch tối đa 10 mã/lần để giảm số query và Firestore Reads.
+  for (const field of fields) {
+    if (!unresolved.size) break;
+    const wanted = missing.filter(code => unresolved.has(code.toLowerCase()));
+
+    for (let index = 0; index < wanted.length; index += 10) {
+      const batch = wanted.slice(index, index + 10);
+      if (!batch.length) continue;
+
+      try {
+        const snapshot = await db.collection("posts")
+          .where(field, "in", batch)
+          .limit(20)
+          .get();
+
+        for (const doc of snapshot.docs) {
+          const data = doc.data() || {};
+          const code = clean(data.internalId || data.aiId || data.postCode, 80);
+          if (!code) continue;
+
+          const views = Number(data.views || data.viewCount || data.viewsCount || 0);
+          const meta = {
+            code,
+            title: clean(data.title || code, 180),
+            views: Number.isFinite(views) ? views : 0
+          };
+
+          result.set(code.toLowerCase(), meta);
+          setCachedPostMeta(code, meta);
+          unresolved.delete(code.toLowerCase());
+        }
+      } catch (error) {
+        console.warn(`[Mina Smart Link Dashboard] Không đọc batch post theo ${field}:`, error.message);
+      }
+    }
+  }
+
+  // Cache miss ngắn hạn bằng object rỗng để tránh query lặp lại cùng mã trong một phiên server.
+  for (const key of unresolved) setCachedPostMeta(key, { code: key, title: key, views: 0 });
+
+  return result;
+}
+
 function clean(value, max = 160) {
   return String(value || "").trim().slice(0, max);
 }
@@ -242,7 +348,7 @@ module.exports = async function handler(req, res) {
     const db = getFirestore();
     const clickScanLimit = scanLimitForDays(days);
 
-    const [linksResult, clicksSnapshot, postViews] = await Promise.all([
+    const [linksResult, clicksSnapshot] = await Promise.all([
       loadSmartLinks(db),
       db.collection("smartLinkClicks")
         .where("clickedAt", ">=", rangeStart)
@@ -250,8 +356,7 @@ module.exports = async function handler(req, res) {
         // Lấy thêm 1 document để xác định chính xác còn dữ liệu bị cắt hay không.
         // Tránh báo giới hạn giả khi tổng document vừa đúng bằng giới hạn.
         .limit(clickScanLimit + 1)
-        .get(),
-      loadFilteredPostMeta(db, postFilter)
+        .get()
     ]);
 
     const links = linksResult.rows;
@@ -278,6 +383,9 @@ module.exports = async function handler(req, res) {
     let thirtyDayClicks = 0;
     let filteredClicks = 0;
     let newestClickAt = null;
+    let clicksWithPostCode = 0;
+    let clicksWithCampaign = 0;
+    let clicksWithExplicitSource = 0;
 
     const sevenDayStart = new Date(todayStart);
     sevenDayStart.setUTCDate(sevenDayStart.getUTCDate() - 6);
@@ -321,6 +429,9 @@ module.exports = async function handler(req, res) {
 
       filteredClicks += 1;
       clickRows.push(row);
+      if (row.postCode) clicksWithPostCode += 1;
+      if (row.campaign) clicksWithCampaign += 1;
+      if (row.source && row.source.toLowerCase() !== "direct") clicksWithExplicitSource += 1;
       if (!newestClickAt || clickedAt > newestClickAt) newestClickAt = clickedAt;
       if (clickedAt >= todayStart) todayClicks += 1;
       if (clickedAt >= sevenDayStart) sevenDayClicks += 1;
@@ -340,18 +451,19 @@ module.exports = async function handler(req, res) {
       increment(browserMap, row.browser || "Khác");
       increment(countryMap, row.country || "UNKNOWN");
 
-      if (row.referrer) {
-        try {
-          increment(referrerMap, new URL(row.referrer).hostname);
-        } catch {
-          increment(referrerMap, row.referrer);
-        }
-      } else {
-        increment(referrerMap, "Direct / không có referrer");
-      }
+      increment(referrerMap, normalizeReferrerLabel(row.referrer));
     }
 
-    const postPerformance = topEntries(postMap, 50)
+    const performanceCandidates = topEntries(postMap, 50)
+      .filter(item => item.label !== "Không có mã bài");
+
+    // Chỉ enrich tối đa 20 mã bài đang có click nhiều nhất.
+    // Đây là read-only, cache 30 phút và không quét toàn bộ collection posts.
+    const postViews = postFilter
+      ? await loadFilteredPostMeta(db, postFilter)
+      : await loadPostMetaForCodes(db, performanceCandidates.map(item => item.label));
+
+    const postPerformance = performanceCandidates
       .map(item => {
         const meta = postViews.get(item.label.toLowerCase());
         const views = meta?.views || 0;
@@ -386,7 +498,15 @@ module.exports = async function handler(req, res) {
         scannedDocuments: clickDocuments.length,
         fetchedDocuments: clicksSnapshot.size,
         scanLimit: clickScanLimit,
-        scanLimitReached
+        scanLimitReached,
+        dataQuality: {
+          withPostCode: clicksWithPostCode,
+          missingPostCode: Math.max(0, filteredClicks - clicksWithPostCode),
+          withCampaign: clicksWithCampaign,
+          missingCampaign: Math.max(0, filteredClicks - clicksWithCampaign),
+          withExplicitSource: clicksWithExplicitSource,
+          directOrMissingSource: Math.max(0, filteredClicks - clicksWithExplicitSource)
+        }
       },
       daily: [...dailyMap.entries()].map(([date, clicks]) => ({ date, clicks })),
       hourly: [...hourMap.entries()].map(([hour, clicks]) => ({ hour: Number(hour), clicks })),
