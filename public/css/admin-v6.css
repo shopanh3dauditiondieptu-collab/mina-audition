@@ -485,28 +485,28 @@ mark{background:rgba(255,214,110,.3);color:#fff3b3;border-radius:4px;padding:0 2
 .seo-health-toolbar select{margin:0;padding:10px 12px;border-radius:12px}
 .seo-health-result-count{justify-self:end;color:var(--muted);font-size:12px;font-weight:800}
 .seo-health-guide{display:flex;gap:10px 18px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;border:1px dashed rgba(125,232,255,.28);border-radius:12px;background:rgba(125,232,255,.04);color:#b8b4cf;font-size:11px;line-height:1.45}
-.cms-seo-table{display:grid;gap:9px}
-.cms-seo-row{display:grid;grid-template-columns:68px minmax(250px,1.25fr) minmax(300px,1fr) auto;gap:12px;align-items:center;padding:13px;border:1px solid #31516e;border-radius:14px;background:#0d0d22}
+.cms-seo-table{display:grid;gap:7px}
+.cms-seo-row{display:grid;grid-template-columns:58px minmax(330px,1.45fr) minmax(280px,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid #31516e;border-radius:14px;background:#0d0d22}
 .cms-seo-row.seo-status-critical{border-color:rgba(255,107,139,.46)}
 .cms-seo-row.seo-status-warning{border-color:rgba(246,198,91,.28)}
 .cms-seo-row.seo-status-good{border-color:rgba(89,217,142,.24)}
-.seo-score-box{width:58px;height:58px;display:grid;place-content:center;justify-items:center;border:1px solid #355f78;border-radius:16px;background:#14142b}
-.seo-score-box strong{font-size:20px;line-height:1}
+.seo-score-box{width:50px;height:50px;display:grid;place-content:center;justify-items:center;border:1px solid #355f78;border-radius:16px;background:#14142b}
+.seo-score-box strong{font-size:18px;line-height:1}
 .seo-score-box span{margin-top:3px;color:var(--muted);font-size:9px;font-weight:800}
 .seo-score-box.good{border-color:rgba(89,217,142,.45);color:#70e7a1;background:rgba(89,217,142,.07)}
 .seo-score-box.warning{border-color:rgba(246,198,91,.5);color:#f6c65b;background:rgba(246,198,91,.07)}
 .seo-score-box.critical{border-color:rgba(255,107,139,.55);color:#ff8aa3;background:rgba(255,107,139,.07)}
-.seo-post-info{min-width:0;display:grid;gap:5px}
-.seo-post-info>strong{overflow-wrap:anywhere;font-size:13px;line-height:1.45;color:#fff}
+.seo-post-info{min-width:0;display:grid;gap:3px}
+.seo-post-info>strong{overflow-wrap:anywhere;font-size:13px;line-height:1.35;color:#fff}
 .seo-post-info>small{color:#a7a2bb;font-size:10px}
-.seo-length-line{display:flex;gap:6px 12px;align-items:center;flex-wrap:wrap;color:#9a96ad;font-size:10px}
+.seo-length-line{display:flex;gap:5px 10px;align-items:center;flex-wrap:wrap;color:#9a96ad;font-size:10px}
 .seo-length-line b{color:#fff}
 .seo-status-label{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:900}
 .seo-status-label.critical{color:#ff9ab4;background:rgba(255,107,139,.12)}
 .seo-status-label.warning{color:#ffd66e;background:rgba(246,198,91,.12)}
 .seo-status-label.good{color:#85ffd4;background:rgba(89,217,142,.12)}
 .cms-seo-tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.seo-issue-tag{display:inline-grid;gap:2px;width:max-content;max-width:100%;padding:6px 9px;border-radius:999px;background:#2d1730;color:#ffb5ec;font-size:10px;line-height:1.15}
+.seo-issue-tag{display:inline-grid;gap:1px;width:max-content;max-width:100%;padding:5px 8px;border-radius:999px;background:#2d1730;color:#ffb5ec;font-size:10px;line-height:1.15}
 .seo-issue-tag b{font-weight:900}
 .seo-issue-tag small{color:inherit;font-size:8px;opacity:.82}
 .seo-issue-tag.critical{background:rgba(255,107,139,.15);color:#ff9ab4}
