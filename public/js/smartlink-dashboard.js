@@ -611,6 +611,169 @@ async function fetchAnalyticsForDays(days) {
 }
 
 
+
+// ===== Mina Analytics Safe Upgrade v1.4 =====
+// Chỉ phân tích dữ liệu đã có trong response dashboard.
+// Không tạo event mới, không ghi Firestore, không tự phát sinh request bổ sung.
+function safeRows(rows = []) {
+  return normalizeBreakdownRows(Array.isArray(rows) ? rows : [])
+    .map(row => ({ label: String(row.label || "Không xác định"), value: Number(row.value || 0) }))
+    .filter(row => row.value > 0);
+}
+
+function sourceLabel(value = "") {
+  const key = String(value).trim().toLowerCase();
+  const labels = {
+    "website-card": "Card bài viết",
+    "website-header": "Header",
+    "website-home-banner": "Banner trang chủ",
+    "website-footer": "Footer",
+    "facebook": "Facebook",
+    "facebook-page": "Facebook Page",
+    "facebook-fanpage": "Facebook Fanpage",
+    "facebook-group": "Facebook Group",
+    "facebook-profile": "Facebook Profile",
+    "facebook-comment": "Facebook Comment",
+    "facebook-messenger": "Facebook Messenger"
+  };
+  return labels[key] || value;
+}
+
+function renderSafeInsights(data) {
+  const topLinks = safeRows(data.breakdowns?.links || []);
+  const sources = safeRows(data.breakdowns?.sources || []);
+  const websiteSources = sources.filter(row => /^website-/i.test(row.label));
+  const externalSources = sources.filter(row =>
+    !/^direct$/i.test(row.label) && !/^website-/i.test(row.label)
+  );
+
+  const hourlyRaw = getRows(
+    data,
+    "hourly",
+    "hourlyHeatmap",
+    "breakdowns.hours",
+    "breakdowns.hourly"
+  );
+  const hourly = hourlyRaw.map(row => ({
+    hour: Number(String(row.hour ?? row.label ?? row.key ?? row.name ?? "").replace("h", "").replace(":00", "").trim()),
+    value: Number(row.clicks ?? row.value ?? row.count ?? row.total ?? 0)
+  })).filter(row => Number.isInteger(row.hour) && row.hour >= 0 && row.hour <= 23);
+
+  const topLink = [...topLinks].sort((a, b) => b.value - a.value)[0];
+  const topExternal = [...externalSources].sort((a, b) => b.value - a.value)[0];
+  const topPosition = [...websiteSources].sort((a, b) => b.value - a.value)[0];
+  const peakHour = [...hourly].sort((a, b) => b.value - a.value)[0];
+
+  const setInsight = (id, title, value, note) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = `
+      <span>${escapeHtml(title)}</span>
+      <strong>${escapeHtml(value || "—")}</strong>
+      <small>${escapeHtml(note || "Chưa đủ dữ liệu")}</small>`;
+  };
+
+  setInsight(
+    "smartInsightTopLink",
+    "🔥 Smart Link nổi bật",
+    topLink?.label || "Chưa có dữ liệu",
+    topLink ? `${number(topLink.value)} click trong bộ lọc` : ""
+  );
+  setInsight(
+    "smartInsightTopSource",
+    "📣 Nguồn ngoài web tốt nhất",
+    topExternal ? sourceLabel(topExternal.label) : "Chưa có nguồn cụ thể",
+    topExternal ? `${number(topExternal.value)} click` : "Không tính Direct"
+  );
+  setInsight(
+    "smartInsightPeakHour",
+    "⏰ Giờ click cao nhất",
+    peakHour ? `${String(peakHour.hour).padStart(2, "0")}h` : "Chưa đủ dữ liệu",
+    peakHour ? `${number(peakHour.value)} click` : ""
+  );
+  setInsight(
+    "smartInsightTopPosition",
+    "🧭 Vị trí web hiệu quả nhất",
+    topPosition ? sourceLabel(topPosition.label) : "Chưa đủ dữ liệu",
+    topPosition ? `${number(topPosition.value)} click` : "Chỉ dùng source website-*"
+  );
+}
+
+function renderTrendLineChart(daily = []) {
+  const container = document.getElementById("smartTrendChart");
+  if (!container) return;
+
+  const rows = (daily || []).map(item => ({
+    date: String(item.date || ""),
+    clicks: Number(item.clicks || 0)
+  })).filter(item => item.date);
+
+  if (rows.length < 2) {
+    container.innerHTML = `<div class="analytics-empty">Cần ít nhất 2 ngày dữ liệu để vẽ xu hướng.</div>`;
+    return;
+  }
+
+  const width = 1000;
+  const height = 220;
+  const padX = 34;
+  const padY = 24;
+  const max = Math.max(...rows.map(item => item.clicks), 1);
+  const usableW = width - padX * 2;
+  const usableH = height - padY * 2;
+  const points = rows.map((item, index) => {
+    const x = padX + (rows.length === 1 ? 0 : (index / (rows.length - 1)) * usableW);
+    const y = padY + usableH - (item.clicks / max) * usableH;
+    return { ...item, x, y };
+  });
+  const polyline = points.map(point => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
+  const first = rows[0];
+  const last = rows[rows.length - 1];
+  const diff = last.clicks - first.clicks;
+  const trendText = diff > 0 ? `↑ ${number(diff)}` : diff < 0 ? `↓ ${number(Math.abs(diff))}` : "→ 0";
+
+  container.innerHTML = `
+    <div class="smart-trend-summary">
+      <span>${rows.length} ngày đang hiển thị</span>
+      <strong>${trendText} click từ ngày đầu đến ngày cuối</strong>
+    </div>
+    <svg class="smart-trend-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Xu hướng click theo ngày">
+      <line x1="${padX}" y1="${height - padY}" x2="${width - padX}" y2="${height - padY}" class="trend-axis" />
+      <polyline points="${polyline}" class="trend-line" />
+      ${points.map(point => `<circle cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="4" class="trend-dot"><title>${escapeHtml(point.date)}: ${number(point.clicks)} click</title></circle>`).join("")}
+    </svg>
+    <div class="smart-trend-labels">
+      <span>${escapeHtml(first.date)}</span>
+      <span>Cao nhất: ${number(max)}</span>
+      <span>${escapeHtml(last.date)}</span>
+    </div>`;
+}
+
+function renderPositionPerformance(data) {
+  const rows = safeRows(data.breakdowns?.sources || [])
+    .filter(row => /^website-/i.test(row.label))
+    .map(row => ({ ...row, label: sourceLabel(row.label) }))
+    .sort((a, b) => b.value - a.value);
+
+  renderBars(
+    "#smartPositionPerformance",
+    rows,
+    "Chưa có click mang source website-*. Dashboard không tạo thêm impression tracking."
+  );
+}
+
+function renderFacebookSources(data) {
+  const rows = safeRows(data.breakdowns?.sources || [])
+    .filter(row => /^(facebook|fb)(-|$)/i.test(row.label))
+    .map(row => ({ ...row, label: sourceLabel(row.label) }))
+    .sort((a, b) => b.value - a.value);
+
+  renderBars(
+    "#smartFacebookSources",
+    rows,
+    "Chưa có nguồn Facebook chi tiết. Khi link dùng source facebook-page/group/profile/comment/messenger, dữ liệu sẽ tự hiện ở đây."
+  );
+}
+
 function renderDashboard(data) {
   chartState.data = data;
   renderSummary(data);
@@ -646,6 +809,11 @@ function renderDashboard(data) {
     data.breakdowns?.referrers || [],
     "Chưa có dữ liệu referrer."
   );
+
+  renderSafeInsights(data);
+  renderTrendLineChart(data.daily || []);
+  renderPositionPerformance(data);
+  renderFacebookSources(data);
 
   renderBars(
     "#smartBrowserBreakdown",
