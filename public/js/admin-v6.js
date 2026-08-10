@@ -1927,7 +1927,7 @@ async function saveSmartLink(event) {
 }
 
 
-// ===== Mina Analytics Center v1.0 =====
+// ===== Mina Analytics Center v1.1 + SEO Health Center v2.0 =====
 function analyticsPostDate(post) {
   const raw = post?.publishedAt || post?.updatedAt || post?.createdAt;
   if (!raw) return 0;
@@ -1949,22 +1949,83 @@ function analyticsFeatured(post) {
   return isHomeFeatured(post) || isModuleFeatured(post) || isCategoryFeatured(post);
 }
 
-function analyticsSeoIssuesForPost(post) {
-  const issues = [];
-  const title = String(post.title || "").trim();
+// ===== SEO Health Center v2.0 =====
+// Chỉ đọc dữ liệu CMS để chấm điểm/cảnh báo. Không tự sửa hoặc ghi Firestore.
+function analyticsSeoAuditForPost(post) {
+  const rawTitle = String(post.title || "").trim();
+  const seoTitle = String(post.seoTitle || rawTitle).trim();
   const description = String(post.seoDescription || post.excerpt || post.description || "").trim();
   const image = String(post.coverImage || post.coverUrl || post.image || post.thumbnail || "").trim();
   const slug = String(post.slug || "").trim();
   const category = getPostCategoryLabel(post);
-  if (!image) issues.push("Thiếu ảnh đại diện");
-  if (!slug) issues.push("Thiếu slug");
-  if (title.length < 25) issues.push("Tiêu đề quá ngắn");
-  if (title.length > 70) issues.push("Tiêu đề quá dài");
-  if (!description) issues.push("Thiếu mô tả SEO");
-  else if (description.length < 70) issues.push("Mô tả SEO quá ngắn");
-  if (!category || category === "Chưa phân loại") issues.push("Thiếu danh mục");
-  if (!post.internalId && !post.aiId) issues.push("Thiếu mã nội bộ");
-  return issues;
+  const internalId = String(post.internalId || post.aiId || "").trim();
+  const issues = [];
+  let score = 100;
+
+  const addIssue = (label, severity, penalty, detail = "") => {
+    issues.push({ label, severity, detail });
+    score -= penalty;
+  };
+
+  if (!seoTitle) {
+    addIssue("Thiếu tiêu đề SEO", "critical", 25, "0/60 ký tự");
+  } else if (seoTitle.length < 25) {
+    addIssue("Tiêu đề quá ngắn", "warning", 10, `${seoTitle.length}/25+ ký tự`);
+  } else if (seoTitle.length <= 60) {
+    // Vùng tốt — không trừ điểm.
+  } else if (seoTitle.length <= 70) {
+    addIssue("Tiêu đề hơi dài", "notice", 3, `${seoTitle.length}/60 ký tự`);
+  } else if (seoTitle.length <= 85) {
+    addIssue("Tiêu đề dài", "warning", 7, `${seoTitle.length}/60 ký tự`);
+  } else {
+    addIssue("Tiêu đề quá dài", "warning", 12, `${seoTitle.length}/60 ký tự`);
+  }
+
+  if (!description) {
+    addIssue("Thiếu mô tả SEO", "critical", 20, "0/120–160 ký tự");
+  } else if (description.length < 70) {
+    addIssue("Mô tả SEO quá ngắn", "warning", 10, `${description.length}/120–160 ký tự`);
+  } else if (description.length < 120) {
+    addIssue("Mô tả SEO hơi ngắn", "notice", 4, `${description.length}/120–160 ký tự`);
+  } else if (description.length > 180) {
+    addIssue("Mô tả SEO quá dài", "warning", 6, `${description.length}/120–160 ký tự`);
+  } else if (description.length > 160) {
+    addIssue("Mô tả SEO hơi dài", "notice", 3, `${description.length}/120–160 ký tự`);
+  }
+
+  if (!image) addIssue("Thiếu ảnh đại diện", "critical", 20);
+  if (!slug) addIssue("Thiếu slug", "critical", 20);
+  if (!category || category === "Chưa phân loại") addIssue("Thiếu danh mục", "critical", 12);
+  if (!internalId) addIssue("Thiếu mã nội bộ", "notice", 3);
+
+  score = Math.max(0, Math.min(100, score));
+  const hasCritical = issues.some(issue => issue.severity === "critical");
+  const hasWarning = issues.some(issue => issue.severity === "warning");
+  const status = hasCritical || score < 60 ? "critical" : hasWarning || score < 85 ? "warning" : "good";
+
+  return {
+    score,
+    status,
+    issues,
+    titleLength: seoTitle.length,
+    descriptionLength: description.length,
+    titleSource: post.seoTitle ? "SEO title" : "Tiêu đề bài",
+    descriptionSource: post.seoDescription ? "SEO description" : (post.excerpt ? "Excerpt" : "Mô tả bài")
+  };
+}
+
+function analyticsSeoIssuesForPost(post) {
+  return analyticsSeoAuditForPost(post).issues.map(issue => issue.label);
+}
+
+function analyticsSeoStatusLabel(status) {
+  return status === "critical" ? "Cần xử lý" : status === "warning" ? "Cần cải thiện" : "Đạt tốt";
+}
+
+function analyticsSeoScoreClass(score) {
+  if (score >= 85) return "good";
+  if (score >= 60) return "warning";
+  return "critical";
 }
 
 function analyticsFilteredPosts() {
@@ -2007,7 +2068,14 @@ function renderCmsAnalytics() {
   const featured = posts.filter(analyticsFeatured);
   const smartLinks = posts.filter(analyticsHasSmartLink);
   const zeroViews = posts.filter(post => analyticsViews(post) === 0);
-  const seoRows = posts.map(post => ({ post, issues: analyticsSeoIssuesForPost(post) })).filter(row => row.issues.length);
+  const seoAudits = posts.map(post => ({ post, audit: analyticsSeoAuditForPost(post) }));
+  const seoRows = seoAudits.filter(row => row.audit.issues.length);
+  const seoCriticalCount = seoAudits.filter(row => row.audit.status === "critical").length;
+  const seoWarningCount = seoAudits.filter(row => row.audit.status === "warning").length;
+  const seoGoodCount = seoAudits.filter(row => row.audit.status === "good").length;
+  const seoAverageScore = seoAudits.length
+    ? Math.round(seoAudits.reduce((sum, row) => sum + row.audit.score, 0) / seoAudits.length)
+    : 100;
 
   $("#analyticsTotalPosts").textContent = posts.length.toLocaleString("vi-VN");
   $("#analyticsTotalViews").textContent = totalViews.toLocaleString("vi-VN");
@@ -2015,6 +2083,13 @@ function renderCmsAnalytics() {
   $("#analyticsSmartLinks").textContent = smartLinks.length.toLocaleString("vi-VN");
   $("#analyticsZeroViews").textContent = zeroViews.length.toLocaleString("vi-VN");
   $("#analyticsSeoIssues").textContent = seoRows.length.toLocaleString("vi-VN");
+
+  if ($("#seoHealthScore")) $("#seoHealthScore").textContent = `${seoAverageScore}/100`;
+  if ($("#seoHealthBar")) $("#seoHealthBar").style.width = `${seoAverageScore}%`;
+  if ($("#seoHealthCritical")) $("#seoHealthCritical").textContent = seoCriticalCount.toLocaleString("vi-VN");
+  if ($("#seoHealthWarning")) $("#seoHealthWarning").textContent = seoWarningCount.toLocaleString("vi-VN");
+  if ($("#seoHealthGood")) $("#seoHealthGood").textContent = seoGoodCount.toLocaleString("vi-VN");
+  if ($("#seoHealthTotal")) $("#seoHealthTotal").textContent = posts.length.toLocaleString("vi-VN");
 
   const moduleMap = new Map();
   posts.forEach(post => {
@@ -2043,7 +2118,36 @@ function renderCmsAnalytics() {
     <div><span>🗂️ Theo danh mục</span><strong>${categoryCount}</strong></div>
     <div><span>⭐ Tổng bài khác nhau</span><strong>${featured.length}</strong></div>`;
 
-  $("#analyticsSeoTable").innerHTML = seoRows.length ? seoRows.slice(0,20).map(({post,issues})=>`<article class="cms-seo-row"><div><strong>${escapeHtml(post.title || "Không tiêu đề")}</strong><small>${escapeHtml(getFeaturedModuleName(post))} · ${escapeHtml(post.internalId || post.aiId || post.slug || "Không mã")}</small></div><div class="cms-seo-tags">${issues.map(issue=>`<span>${escapeHtml(issue)}</span>`).join("")}</div>${analyticsPostAction(post)}</article>`).join("") : '<div class="manager-empty">Không phát hiện lỗi SEO trong bộ lọc hiện tại.</div>';
+  const seoStatusFilter = $("#seoHealthStatusFilter")?.value || "issues";
+  const seoLimit = Number($("#seoHealthLimit")?.value || 20);
+  const seoFilteredRows = seoAudits
+    .filter(({ audit }) => {
+      if (seoStatusFilter === "all") return true;
+      if (seoStatusFilter === "issues") return audit.issues.length > 0;
+      return audit.status === seoStatusFilter;
+    })
+    .sort((a, b) => a.audit.score - b.audit.score || analyticsPostDate(b.post) - analyticsPostDate(a.post));
+
+  if ($("#seoHealthResultCount")) {
+    $("#seoHealthResultCount").textContent = `${seoFilteredRows.length.toLocaleString("vi-VN")} bài phù hợp`;
+  }
+
+  $("#analyticsSeoTable").innerHTML = seoFilteredRows.length ? seoFilteredRows.slice(0, seoLimit).map(({ post, audit }) => {
+    const scoreClass = analyticsSeoScoreClass(audit.score);
+    const issueTags = audit.issues.length
+      ? audit.issues.map(issue => `<span class="seo-issue-tag ${escapeHtml(issue.severity)}"><b>${escapeHtml(issue.label)}</b>${issue.detail ? `<small>${escapeHtml(issue.detail)}</small>` : ""}</span>`).join("")
+      : '<span class="seo-issue-tag good"><b>✓ Đạt các kiểm tra chính</b></span>';
+    return `<article class="cms-seo-row seo-status-${escapeHtml(audit.status)}">
+      <div class="seo-score-box ${scoreClass}" title="Điểm SEO chỉ là chỉ báo nội bộ của CMS"><strong>${audit.score}</strong><span>/100</span></div>
+      <div class="seo-post-info">
+        <strong>${escapeHtml(post.title || "Không tiêu đề")}</strong>
+        <small>${escapeHtml(getFeaturedModuleName(post))} · ${escapeHtml(post.internalId || post.aiId || post.slug || "Không mã")}</small>
+        <div class="seo-length-line"><span>Title <b>${audit.titleLength}</b> ký tự</span><span>Meta <b>${audit.descriptionLength}</b> ký tự</span><span class="seo-status-label ${escapeHtml(audit.status)}">${analyticsSeoStatusLabel(audit.status)}</span></div>
+      </div>
+      <div class="cms-seo-tags">${issueTags}</div>
+      ${analyticsPostAction(post)}
+    </article>`;
+  }).join("") : '<div class="manager-empty">Không có bài phù hợp với bộ lọc SEO hiện tại.</div>';
 
   $("#analyticsZeroViewPosts").innerHTML = zeroViews.length ? zeroViews.slice(0,10).map((post,index)=>`<article class="cms-ranking-item"><b>${index+1}</b><div><strong>${escapeHtml(post.title || "Không tiêu đề")}</strong><small>${escapeHtml(getFeaturedModuleName(post))} · ${escapeHtml(getPostCategoryLabel(post))}</small></div>${analyticsPostAction(post)}</article>`).join("") : '<div class="manager-empty">Không có bài 0 lượt xem.</div>';
 
@@ -2151,6 +2255,8 @@ function bindEvents() {
   $("#cmsAnalyticsModuleFilter")?.addEventListener("change", renderCmsAnalytics);
   $("#cmsAnalyticsRangeFilter")?.addEventListener("change", renderCmsAnalytics);
   $("#cmsAnalyticsSearch")?.addEventListener("input", renderCmsAnalytics);
+  $("#seoHealthStatusFilter")?.addEventListener("change", renderCmsAnalytics);
+  $("#seoHealthLimit")?.addEventListener("change", renderCmsAnalytics);
   $("#view-analytics")?.addEventListener("click", event => {
     const moduleButton = event.target.closest("[data-analytics-module]");
     if (moduleButton) {
