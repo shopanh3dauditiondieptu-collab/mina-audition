@@ -1970,27 +1970,27 @@ function analyticsSeoAuditForPost(post) {
   if (!seoTitle) {
     addIssue("Thiếu tiêu đề SEO", "critical", 25, "0/60 ký tự");
   } else if (seoTitle.length < 25) {
-    addIssue("Tiêu đề quá ngắn", "warning", 10, `${seoTitle.length}/25+ ký tự`);
+    addIssue("Tiêu đề quá ngắn", "warning", 12, `${seoTitle.length}/25+ ký tự`);
   } else if (seoTitle.length <= 60) {
     // Vùng tốt — không trừ điểm.
   } else if (seoTitle.length <= 70) {
-    addIssue("Tiêu đề hơi dài", "notice", 3, `${seoTitle.length}/60 ký tự`);
+    addIssue("Tiêu đề hơi dài", "notice", 4, `${seoTitle.length}/60 ký tự`);
   } else if (seoTitle.length <= 85) {
-    addIssue("Tiêu đề dài", "warning", 7, `${seoTitle.length}/60 ký tự`);
+    addIssue("Tiêu đề dài", "warning", 10, `${seoTitle.length}/60 ký tự`);
   } else {
-    addIssue("Tiêu đề quá dài", "warning", 12, `${seoTitle.length}/60 ký tự`);
+    addIssue("Tiêu đề quá dài", "warning", 18, `${seoTitle.length}/60 ký tự`);
   }
 
   if (!description) {
-    addIssue("Thiếu mô tả SEO", "critical", 20, "0/120–160 ký tự");
+    addIssue("Thiếu mô tả SEO", "critical", 25, "0/120–160 ký tự");
   } else if (description.length < 70) {
-    addIssue("Mô tả SEO quá ngắn", "warning", 10, `${description.length}/120–160 ký tự`);
+    addIssue("Mô tả SEO quá ngắn", "warning", 15, `${description.length}/120–160 ký tự`);
   } else if (description.length < 120) {
-    addIssue("Mô tả SEO hơi ngắn", "notice", 4, `${description.length}/120–160 ký tự`);
+    addIssue("Mô tả SEO hơi ngắn", "notice", 6, `${description.length}/120–160 ký tự`);
   } else if (description.length > 180) {
-    addIssue("Mô tả SEO quá dài", "warning", 6, `${description.length}/120–160 ký tự`);
+    addIssue("Mô tả SEO quá dài", "warning", 14, `${description.length}/120–160 ký tự`);
   } else if (description.length > 160) {
-    addIssue("Mô tả SEO hơi dài", "notice", 3, `${description.length}/120–160 ký tự`);
+    addIssue("Mô tả SEO hơi dài", "notice", 5, `${description.length}/120–160 ký tự`);
   }
 
   if (!image) addIssue("Thiếu ảnh đại diện", "critical", 20);
@@ -2123,13 +2123,25 @@ function renderCmsAnalytics() {
   const seoFilteredRows = seoAudits
     .filter(({ audit }) => {
       if (seoStatusFilter === "all") return true;
-      if (seoStatusFilter === "issues") return audit.issues.length > 0;
+      if (seoStatusFilter === "issues") return audit.status === "critical" || audit.status === "warning";
       return audit.status === seoStatusFilter;
     })
     .sort((a, b) => a.audit.score - b.audit.score || analyticsPostDate(b.post) - analyticsPostDate(a.post));
 
   if ($("#seoHealthResultCount")) {
-    $("#seoHealthResultCount").textContent = `${seoFilteredRows.length.toLocaleString("vi-VN")} bài phù hợp`;
+    const shownCount = Math.min(seoFilteredRows.length, seoLimit);
+    const totalLabel = posts.length.toLocaleString("vi-VN");
+    const filteredLabel = seoFilteredRows.length.toLocaleString("vi-VN");
+    const filterText = seoStatusFilter === "issues"
+      ? `${filteredLabel} bài cần chú ý / ${totalLabel} bài`
+      : seoStatusFilter === "critical"
+        ? `${filteredLabel} bài cần xử lý / ${totalLabel} bài`
+        : seoStatusFilter === "warning"
+          ? `${filteredLabel} bài cần cải thiện / ${totalLabel} bài`
+          : seoStatusFilter === "good"
+            ? `${filteredLabel} bài đạt tốt / ${totalLabel} bài`
+            : `${filteredLabel}/${totalLabel} bài`;
+    $("#seoHealthResultCount").textContent = `${filterText} · đang hiện ${shownCount.toLocaleString("vi-VN")}`;
   }
 
   $("#analyticsSeoTable").innerHTML = seoFilteredRows.length ? seoFilteredRows.slice(0, seoLimit).map(({ post, audit }) => {
