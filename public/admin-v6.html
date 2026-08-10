@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/admin-v6.css?v=6.0.2-enterprise-editor">
+  <link rel="stylesheet" href="/css/admin-v6.css?v=6.6.0-seo-health">
   <link rel="stylesheet" href="/css/smartlink-dashboard.css?v=1.3.0-full">
   <link rel="stylesheet" href="/css/admin-v6-analytics-polish.css?v=6.3.3-readability-fix">
   <link rel="stylesheet" href="/css/affiliate-manager.css?v=6.4.1-dynamic-taxonomy">
@@ -1115,8 +1115,48 @@
             <div id="analyticsFeaturedBreakdown" class="cms-breakdown-list"></div>
           </article>
 
-          <article class="cms-analytics-card wide">
-            <div class="cms-analytics-card-head"><h3>⚠ Trung tâm kiểm tra SEO</h3><small>Ưu tiên các bài thiếu dữ liệu quan trọng</small></div>
+          <article class="cms-analytics-card wide seo-health-card">
+            <div class="cms-analytics-card-head seo-health-head">
+              <div>
+                <h3>⚠ Trung tâm kiểm tra SEO</h3>
+                <small>Chấm điểm và cảnh báo — chỉ đọc dữ liệu, không tự sửa bài viết</small>
+              </div>
+              <div class="seo-health-score">
+                <strong id="seoHealthScore">100/100</strong>
+                <span>SEO Health</span>
+              </div>
+            </div>
+
+            <div class="seo-health-progress" aria-label="SEO Health"><i id="seoHealthBar" style="width:100%"></i></div>
+
+            <div class="seo-health-summary">
+              <article><strong id="seoHealthTotal">0</strong><span>Tổng bài</span></article>
+              <article class="critical"><strong id="seoHealthCritical">0</strong><span>🔴 Cần xử lý</span></article>
+              <article class="warning"><strong id="seoHealthWarning">0</strong><span>🟠 Cần cải thiện</span></article>
+              <article class="good"><strong id="seoHealthGood">0</strong><span>🟢 Đạt tốt</span></article>
+            </div>
+
+            <div class="seo-health-toolbar">
+              <select id="seoHealthStatusFilter" aria-label="Lọc trạng thái SEO">
+                <option value="issues">Các bài cần chú ý</option>
+                <option value="critical">🔴 Cần xử lý</option>
+                <option value="warning">🟠 Cần cải thiện</option>
+                <option value="good">🟢 Đạt tốt</option>
+                <option value="all">Tất cả bài</option>
+              </select>
+              <select id="seoHealthLimit" aria-label="Số bài hiển thị">
+                <option value="20">20 bài</option>
+                <option value="50">50 bài</option>
+                <option value="100">100 bài</option>
+              </select>
+              <span id="seoHealthResultCount" class="seo-health-result-count">0 bài phù hợp</span>
+            </div>
+
+            <div class="seo-health-guide">
+              <span>Title: ≤60 tốt · 61–70 hơi dài · 71–85 dài · &gt;85 quá dài</span>
+              <span>Meta: 120–160 ký tự là vùng khuyến nghị nội bộ</span>
+            </div>
+
             <div id="analyticsSeoTable" class="cms-seo-table"></div>
           </article>
 
@@ -1151,7 +1191,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script type="module" src="/js/smartlink-dashboard.js?v=1.3.0-full"></script>
   <script type="module">
-    import("/js/admin-v6.js?v=6.5.0-tiktok-video").catch(error => {
+    import("/js/admin-v6.js?v=6.6.0-seo-health").catch(error => {
       console.error("Không tải được admin-v6.js", error);
       const badge = document.getElementById("authBadge");
       const notice = document.getElementById("notice");
