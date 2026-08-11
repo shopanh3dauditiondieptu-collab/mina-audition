@@ -300,18 +300,33 @@ async function loadTopViewedPosts(db, limit = 15) {
     const rows = snapshot.docs
       .map(doc => {
         const data = doc.data() || {};
-        const code = clean(data.internalId || data.aiId || data.postCode || doc.id, 80);
-        const title = clean(data.title || code, 180);
+        const title = clean(data.title || "", 180);
+
+        // Ưu tiên mã bài Mina đã lưu trong document.
+        // Một số bài cũ chưa có internalId/aiId/postCode; khi đó chỉ thử
+        // nhận mã Mina nằm trong tiêu đề, tuyệt đối không hiện Firestore doc.id.
+        const storedCode = clean(data.internalId || data.aiId || data.postCode || "", 80);
+        const titleCodeMatch = title.match(/\b(?:AI-?\d{3,5}|[A-Z]{2,4}-?\d{3,5})\b/i);
+        const inferredCode = titleCodeMatch ? clean(titleCodeMatch[0].toUpperCase(), 80) : "";
+        const code = storedCode || inferredCode;
         const views = Number(data.views || 0);
 
+        // Nếu tiêu đề đã bắt đầu bằng chính mã bài thì không lặp lại mã hai lần.
+        const titleStartsWithCode = Boolean(
+          code && title && title.toLowerCase().startsWith(code.toLowerCase())
+        );
+        const label = code
+          ? (title && !titleStartsWithCode ? `${code} — ${title}` : (title || code))
+          : (title || "Bài viết chưa có mã");
+
         return {
-          label: title && title !== code ? `${code} — ${title}` : code,
+          label,
           value: Number.isFinite(views) ? views : 0,
           postCode: code,
-          title
+          title: title || code
         };
       })
-      .filter(row => row.postCode && row.value > 0);
+      .filter(row => row.label && row.value > 0);
 
     topViewedPostsCache.rows = rows;
     topViewedPostsCache.createdAt = Date.now();
