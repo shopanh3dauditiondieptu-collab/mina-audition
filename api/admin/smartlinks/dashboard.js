@@ -30,6 +30,16 @@ global.__MINA_SMARTLINK_LINKS_CACHE__ = linksCache;
 
 const LINKS_CACHE_TTL_MS = 15 * 60 * 1000;
 
+// ===== Mina Top Viewed Posts - read-only cache =====
+// Chỉ đọc posts.views để xếp hạng nội dung được xem nhiều.
+// Không ghi Firestore, không thay schema, không ảnh hưởng tracking hiện tại.
+const TOP_VIEWED_POSTS_CACHE_TTL_MS = 15 * 60 * 1000;
+const topViewedPostsCache = global.__MINA_TOP_VIEWED_POSTS_CACHE__ || {
+  createdAt: 0,
+  rows: null
+};
+global.__MINA_TOP_VIEWED_POSTS_CACHE__ = topViewedPostsCache;
+
 
 // ===== Preview-safe metadata enrichment v1.1 =====
 // Chỉ phục vụ Dashboard quản trị. Không ghi Firestore, không thay dữ liệu click cũ.
@@ -273,6 +283,47 @@ async function loadFilteredPostMeta(db, postFilter) {
 }
 
 
+async function loadTopViewedPosts(db, limit = 15) {
+  if (
+    Array.isArray(topViewedPostsCache.rows) &&
+    Date.now() - topViewedPostsCache.createdAt < TOP_VIEWED_POSTS_CACHE_TTL_MS
+  ) {
+    return topViewedPostsCache.rows;
+  }
+
+  try {
+    const snapshot = await db.collection("posts")
+      .orderBy("views", "desc")
+      .limit(limit)
+      .get();
+
+    const rows = snapshot.docs
+      .map(doc => {
+        const data = doc.data() || {};
+        const code = clean(data.internalId || data.aiId || data.postCode || doc.id, 80);
+        const title = clean(data.title || code, 180);
+        const views = Number(data.views || 0);
+
+        return {
+          label: title && title !== code ? `${code} — ${title}` : code,
+          value: Number.isFinite(views) ? views : 0,
+          postCode: code,
+          title
+        };
+      })
+      .filter(row => row.postCode && row.value > 0);
+
+    topViewedPostsCache.rows = rows;
+    topViewedPostsCache.createdAt = Date.now();
+    return rows;
+  } catch (error) {
+    // Dashboard Analytics không được phép làm ảnh hưởng CMS nếu query view gặp lỗi.
+    console.warn("[Mina Smart Link Dashboard] Không tải được Top bài theo lượt xem:", error.message);
+    return [];
+  }
+}
+
+
 async function loadSmartLinks(db) {
   if (
     Array.isArray(linksCache.rows) &&
@@ -477,6 +528,12 @@ module.exports = async function handler(req, res) {
       })
       .sort((a, b) => b.clicks - a.clicks);
 
+    // "Top bài viết" trong CMS dùng lượt xem thật từ posts.views.
+    // Nếu query view tạm lỗi, fallback về các bài có Smart Click để Dashboard vẫn hoạt động.
+    const topViewedPosts = await loadTopViewedPosts(db, 15);
+    const topSmartClickPosts = topEntries(postMap, 15)
+      .filter(item => item.label !== "Không có mã bài");
+
     const totalStoredClicks = links.reduce((sum, link) => sum + Number(link.clicks || 0), 0);
     const activeLinks = links.filter(link => link.active).length;
 
@@ -513,7 +570,11 @@ module.exports = async function handler(req, res) {
       breakdowns: {
         sources: topEntries(sourceMap),
         devices: topEntries(deviceMap),
-        posts: topEntries(postMap),
+        // Top bài viết = bài được xem nhiều nhất (posts.views).
+        // Không đưa "Không có mã bài" vào bảng xếp hạng nội dung.
+        posts: topViewedPosts.length ? topViewedPosts : topSmartClickPosts,
+        // Giữ riêng breakdown Smart Click để tương thích và phục vụ phân tích khi cần.
+        smartClickPosts: topSmartClickPosts,
         campaigns: topEntries(campaignMap),
         links: topEntries(linkMap),
         referrers: topEntries(referrerMap),
