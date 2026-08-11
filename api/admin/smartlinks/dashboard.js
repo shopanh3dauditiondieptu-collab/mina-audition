@@ -100,39 +100,86 @@ async function loadPostMetaForCodes(db, codes = []) {
 
   if (!missing.length) return result;
 
+  // V3: gom tất cả document có thể đại diện cho cùng một mã bài rồi giữ
+  // bản có lượt xem cao nhất. Cách này xử lý an toàn trường hợp dữ liệu cũ
+  // có document trùng mã / khác field, trong khi tracking đang tăng views
+  // ở một document khác. Chỉ đọc Firestore, tuyệt đối không ghi dữ liệu.
+  const candidates = new Map();
+
+  function addCandidate(requestedCode, data = {}) {
+    const key = String(requestedCode || "").toLowerCase();
+    if (!key) return;
+
+    const views = Number(data.views ?? data.viewCount ?? data.viewsCount ?? 0);
+    const meta = {
+      code: clean(
+        data.internalId || data.aiId || data.postCode || requestedCode,
+        80
+      ) || requestedCode,
+      title: clean(data.title || requestedCode, 180),
+      views: Number.isFinite(views) ? views : 0
+    };
+
+    const current = candidates.get(key);
+    if (!current || meta.views > current.views) {
+      candidates.set(key, meta);
+    } else if (
+      current &&
+      (!current.title || current.title === current.code) &&
+      meta.title &&
+      meta.title !== meta.code
+    ) {
+      // Giữ title đẹp hơn nhưng không làm mất số view cao nhất.
+      candidates.set(key, { ...current, title: meta.title });
+    }
+  }
+
+  // 1) Thử document ID đúng bằng mã bài. Đây là fallback quan trọng cho
+  // các bài mà website tracking views theo document id.
+  await Promise.all(
+    missing.map(async code => {
+      try {
+        const doc = await db.collection("posts").doc(code).get();
+        if (doc.exists) addCandidate(code, doc.data() || {});
+      } catch (error) {
+        console.warn(`[Mina Smart Link Dashboard] Không đọc post id ${code}:`, error.message);
+      }
+    })
+  );
+
+  // 2) Đọc theo các field mã bài đang tồn tại trong CMS.
+  // Không dừng ở field đầu tiên nữa: nếu có dữ liệu trùng, lấy document
+  // có views cao nhất thay vì vô tình chọn bản cũ views = 0.
   const fields = ["internalId", "aiId", "postCode"];
-  const unresolved = new Set(missing.map(code => code.toLowerCase()));
 
-  // Batch tối đa 10 mã/lần để giảm số query và Firestore Reads.
   for (const field of fields) {
-    if (!unresolved.size) break;
-    const wanted = missing.filter(code => unresolved.has(code.toLowerCase()));
-
-    for (let index = 0; index < wanted.length; index += 10) {
-      const batch = wanted.slice(index, index + 10);
+    for (let index = 0; index < missing.length; index += 10) {
+      const batch = missing.slice(index, index + 10);
       if (!batch.length) continue;
 
       try {
         const snapshot = await db.collection("posts")
           .where(field, "in", batch)
-          .limit(20)
+          .limit(30)
           .get();
 
         for (const doc of snapshot.docs) {
           const data = doc.data() || {};
-          const code = clean(data.internalId || data.aiId || data.postCode, 80);
-          if (!code) continue;
+          const storedCodes = [
+            clean(data.internalId, 80),
+            clean(data.aiId, 80),
+            clean(data.postCode, 80)
+          ].filter(Boolean);
 
-          const views = Number(data.views || data.viewCount || data.viewsCount || 0);
-          const meta = {
-            code,
-            title: clean(data.title || code, 180),
-            views: Number.isFinite(views) ? views : 0
-          };
-
-          result.set(code.toLowerCase(), meta);
-          setCachedPostMeta(code, meta);
-          unresolved.delete(code.toLowerCase());
+          for (const requestedCode of batch) {
+            if (
+              storedCodes.some(value =>
+                value.toLowerCase() === requestedCode.toLowerCase()
+              )
+            ) {
+              addCandidate(requestedCode, data);
+            }
+          }
         }
       } catch (error) {
         console.warn(`[Mina Smart Link Dashboard] Không đọc batch post theo ${field}:`, error.message);
@@ -140,8 +187,19 @@ async function loadPostMetaForCodes(db, codes = []) {
     }
   }
 
-  // Cache miss ngắn hạn bằng object rỗng để tránh query lặp lại cùng mã trong một phiên server.
-  for (const key of unresolved) setCachedPostMeta(key, { code: key, title: key, views: 0 });
+  // 3) Trả kết quả và cache. Miss vẫn cache ngắn hạn như bản cũ để
+  // tránh query lặp; không thay schema và không tác động tracking.
+  for (const code of missing) {
+    const key = code.toLowerCase();
+    const meta = candidates.get(key);
+
+    if (meta) {
+      result.set(key, meta);
+      setCachedPostMeta(code, meta);
+    } else {
+      setCachedPostMeta(code, { code, title: code, views: 0 });
+    }
+  }
 
   return result;
 }
@@ -248,40 +306,8 @@ function writeCache(key, data) {
 
 async function loadFilteredPostMeta(db, postFilter) {
   if (!postFilter) return new Map();
-
-  const wanted = postFilter.toLowerCase();
-  const fields = ["internalId", "aiId", "postCode"];
-  const results = new Map();
-
-  for (const field of fields) {
-    try {
-      const snapshot = await db.collection("posts")
-        .where(field, "==", postFilter)
-        .limit(2)
-        .get();
-
-      for (const doc of snapshot.docs) {
-        const data = doc.data() || {};
-        const code = clean(data.internalId || data.aiId || data.postCode, 80);
-        if (!code) continue;
-
-        const views = Number(data.views || data.viewCount || data.viewsCount || 0);
-        results.set(code.toLowerCase(), {
-          code,
-          title: clean(data.title || code, 180),
-          views: Number.isFinite(views) ? views : 0
-        });
-      }
-
-      if (results.has(wanted)) break;
-    } catch (error) {
-      console.warn(`[Mina Smart Link Dashboard] Không đọc được post theo ${field}:`, error.message);
-    }
-  }
-
-  return results;
+  return loadPostMetaForCodes(db, [postFilter]);
 }
-
 
 async function loadTopViewedPosts(db, limit = 15) {
   if (
