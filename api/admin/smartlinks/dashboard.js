@@ -569,11 +569,25 @@ module.exports = async function handler(req, res) {
       })
       .sort((a, b) => b.clicks - a.clicks);
 
-    // "Top bài viết" trong CMS dùng lượt xem thật từ posts.views.
-    // Nếu query view tạm lỗi, fallback về các bài có Smart Click để Dashboard vẫn hoạt động.
-    const topViewedPosts = await loadTopViewedPosts(db, 15);
+    // "Top bài viết" = các bài có Smart Link click nhiều nhất trong khoảng thời gian đang lọc.
+    // Click được lấy trực tiếp từ smartLinkClicks; metadata bài chỉ dùng để làm đẹp nhãn hiển thị.
+    // Không dùng posts.views ở đây để tránh trộn lượt xem với lượt click.
     const topSmartClickPosts = topEntries(postMap, 15)
-      .filter(item => item.label !== "Không có mã bài");
+      .filter(item => item.label !== "Không có mã bài")
+      .map(item => {
+        const meta = postViews.get(item.label.toLowerCase());
+        const code = meta?.code || item.label;
+        const title = meta?.title || item.label;
+        const titleStartsWithCode = Boolean(
+          code && title && title.toLowerCase().startsWith(code.toLowerCase())
+        );
+        return {
+          label: title && !titleStartsWithCode ? `${code} — ${title}` : (title || code),
+          value: item.value,
+          postCode: code,
+          title
+        };
+      });
 
     const totalStoredClicks = links.reduce((sum, link) => sum + Number(link.clicks || 0), 0);
     const activeLinks = links.filter(link => link.active).length;
@@ -611,10 +625,10 @@ module.exports = async function handler(req, res) {
       breakdowns: {
         sources: topEntries(sourceMap),
         devices: topEntries(deviceMap),
-        // Top bài viết = bài được xem nhiều nhất (posts.views).
-        // Không đưa "Không có mã bài" vào bảng xếp hạng nội dung.
-        posts: topViewedPosts.length ? topViewedPosts : topSmartClickPosts,
-        // Giữ riêng breakdown Smart Click để tương thích và phục vụ phân tích khi cần.
+        // Top bài viết = bài có Smart Link click nhiều nhất trong khoảng thời gian đang chọn.
+        // value luôn là số click, nên bảng Top đọc cùng nguồn dữ liệu với phần Hiệu năng.
+        posts: topSmartClickPosts,
+        // Giữ alias riêng để tương thích với giao diện/logic hiện có.
         smartClickPosts: topSmartClickPosts,
         campaigns: topEntries(campaignMap),
         links: topEntries(linkMap),
