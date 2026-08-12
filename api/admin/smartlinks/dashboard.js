@@ -30,6 +30,16 @@ global.__MINA_SMARTLINK_LINKS_CACHE__ = linksCache;
 
 const LINKS_CACHE_TTL_MS = 15 * 60 * 1000;
 
+// ===== Mina Top Viewed Posts - read-only cache =====
+// Chỉ đọc posts.views để xếp hạng nội dung được xem nhiều.
+// Không ghi Firestore, không thay schema, không ảnh hưởng tracking hiện tại.
+const TOP_VIEWED_POSTS_CACHE_TTL_MS = 15 * 60 * 1000;
+const topViewedPostsCache = global.__MINA_TOP_VIEWED_POSTS_CACHE__ || {
+  createdAt: 0,
+  rows: null
+};
+global.__MINA_TOP_VIEWED_POSTS_CACHE__ = topViewedPostsCache;
+
 
 // ===== Preview-safe metadata enrichment v1.1 =====
 // Chỉ phục vụ Dashboard quản trị. Không ghi Firestore, không thay dữ liệu click cũ.
@@ -90,39 +100,86 @@ async function loadPostMetaForCodes(db, codes = []) {
 
   if (!missing.length) return result;
 
+  // V3: gom tất cả document có thể đại diện cho cùng một mã bài rồi giữ
+  // bản có lượt xem cao nhất. Cách này xử lý an toàn trường hợp dữ liệu cũ
+  // có document trùng mã / khác field, trong khi tracking đang tăng views
+  // ở một document khác. Chỉ đọc Firestore, tuyệt đối không ghi dữ liệu.
+  const candidates = new Map();
+
+  function addCandidate(requestedCode, data = {}) {
+    const key = String(requestedCode || "").toLowerCase();
+    if (!key) return;
+
+    const views = Number(data.views ?? data.viewCount ?? data.viewsCount ?? 0);
+    const meta = {
+      code: clean(
+        data.internalId || data.aiId || data.postCode || requestedCode,
+        80
+      ) || requestedCode,
+      title: clean(data.title || requestedCode, 180),
+      views: Number.isFinite(views) ? views : 0
+    };
+
+    const current = candidates.get(key);
+    if (!current || meta.views > current.views) {
+      candidates.set(key, meta);
+    } else if (
+      current &&
+      (!current.title || current.title === current.code) &&
+      meta.title &&
+      meta.title !== meta.code
+    ) {
+      // Giữ title đẹp hơn nhưng không làm mất số view cao nhất.
+      candidates.set(key, { ...current, title: meta.title });
+    }
+  }
+
+  // 1) Thử document ID đúng bằng mã bài. Đây là fallback quan trọng cho
+  // các bài mà website tracking views theo document id.
+  await Promise.all(
+    missing.map(async code => {
+      try {
+        const doc = await db.collection("posts").doc(code).get();
+        if (doc.exists) addCandidate(code, doc.data() || {});
+      } catch (error) {
+        console.warn(`[Mina Smart Link Dashboard] Không đọc post id ${code}:`, error.message);
+      }
+    })
+  );
+
+  // 2) Đọc theo các field mã bài đang tồn tại trong CMS.
+  // Không dừng ở field đầu tiên nữa: nếu có dữ liệu trùng, lấy document
+  // có views cao nhất thay vì vô tình chọn bản cũ views = 0.
   const fields = ["internalId", "aiId", "postCode"];
-  const unresolved = new Set(missing.map(code => code.toLowerCase()));
 
-  // Batch tối đa 10 mã/lần để giảm số query và Firestore Reads.
   for (const field of fields) {
-    if (!unresolved.size) break;
-    const wanted = missing.filter(code => unresolved.has(code.toLowerCase()));
-
-    for (let index = 0; index < wanted.length; index += 10) {
-      const batch = wanted.slice(index, index + 10);
+    for (let index = 0; index < missing.length; index += 10) {
+      const batch = missing.slice(index, index + 10);
       if (!batch.length) continue;
 
       try {
         const snapshot = await db.collection("posts")
           .where(field, "in", batch)
-          .limit(20)
+          .limit(30)
           .get();
 
         for (const doc of snapshot.docs) {
           const data = doc.data() || {};
-          const code = clean(data.internalId || data.aiId || data.postCode, 80);
-          if (!code) continue;
+          const storedCodes = [
+            clean(data.internalId, 80),
+            clean(data.aiId, 80),
+            clean(data.postCode, 80)
+          ].filter(Boolean);
 
-          const views = Number(data.views || data.viewCount || data.viewsCount || 0);
-          const meta = {
-            code,
-            title: clean(data.title || code, 180),
-            views: Number.isFinite(views) ? views : 0
-          };
-
-          result.set(code.toLowerCase(), meta);
-          setCachedPostMeta(code, meta);
-          unresolved.delete(code.toLowerCase());
+          for (const requestedCode of batch) {
+            if (
+              storedCodes.some(value =>
+                value.toLowerCase() === requestedCode.toLowerCase()
+              )
+            ) {
+              addCandidate(requestedCode, data);
+            }
+          }
         }
       } catch (error) {
         console.warn(`[Mina Smart Link Dashboard] Không đọc batch post theo ${field}:`, error.message);
@@ -130,8 +187,19 @@ async function loadPostMetaForCodes(db, codes = []) {
     }
   }
 
-  // Cache miss ngắn hạn bằng object rỗng để tránh query lặp lại cùng mã trong một phiên server.
-  for (const key of unresolved) setCachedPostMeta(key, { code: key, title: key, views: 0 });
+  // 3) Trả kết quả và cache. Miss vẫn cache ngắn hạn như bản cũ để
+  // tránh query lặp; không thay schema và không tác động tracking.
+  for (const code of missing) {
+    const key = code.toLowerCase();
+    const meta = candidates.get(key);
+
+    if (meta) {
+      result.set(key, meta);
+      setCachedPostMeta(code, meta);
+    } else {
+      setCachedPostMeta(code, { code, title: code, views: 0 });
+    }
+  }
 
   return result;
 }
@@ -238,38 +306,62 @@ function writeCache(key, data) {
 
 async function loadFilteredPostMeta(db, postFilter) {
   if (!postFilter) return new Map();
+  return loadPostMetaForCodes(db, [postFilter]);
+}
 
-  const wanted = postFilter.toLowerCase();
-  const fields = ["internalId", "aiId", "postCode"];
-  const results = new Map();
-
-  for (const field of fields) {
-    try {
-      const snapshot = await db.collection("posts")
-        .where(field, "==", postFilter)
-        .limit(2)
-        .get();
-
-      for (const doc of snapshot.docs) {
-        const data = doc.data() || {};
-        const code = clean(data.internalId || data.aiId || data.postCode, 80);
-        if (!code) continue;
-
-        const views = Number(data.views || data.viewCount || data.viewsCount || 0);
-        results.set(code.toLowerCase(), {
-          code,
-          title: clean(data.title || code, 180),
-          views: Number.isFinite(views) ? views : 0
-        });
-      }
-
-      if (results.has(wanted)) break;
-    } catch (error) {
-      console.warn(`[Mina Smart Link Dashboard] Không đọc được post theo ${field}:`, error.message);
-    }
+async function loadTopViewedPosts(db, limit = 15) {
+  if (
+    Array.isArray(topViewedPostsCache.rows) &&
+    Date.now() - topViewedPostsCache.createdAt < TOP_VIEWED_POSTS_CACHE_TTL_MS
+  ) {
+    return topViewedPostsCache.rows;
   }
 
-  return results;
+  try {
+    const snapshot = await db.collection("posts")
+      .orderBy("views", "desc")
+      .limit(limit)
+      .get();
+
+    const rows = snapshot.docs
+      .map(doc => {
+        const data = doc.data() || {};
+        const title = clean(data.title || "", 180);
+
+        // Ưu tiên mã bài Mina đã lưu trong document.
+        // Một số bài cũ chưa có internalId/aiId/postCode; khi đó chỉ thử
+        // nhận mã Mina nằm trong tiêu đề, tuyệt đối không hiện Firestore doc.id.
+        const storedCode = clean(data.internalId || data.aiId || data.postCode || "", 80);
+        const titleCodeMatch = title.match(/\b(?:AI-?\d{3,5}|[A-Z]{2,4}-?\d{3,5})\b/i);
+        const inferredCode = titleCodeMatch ? clean(titleCodeMatch[0].toUpperCase(), 80) : "";
+        const code = storedCode || inferredCode;
+        const views = Number(data.views || 0);
+
+        // Nếu tiêu đề đã bắt đầu bằng chính mã bài thì không lặp lại mã hai lần.
+        const titleStartsWithCode = Boolean(
+          code && title && title.toLowerCase().startsWith(code.toLowerCase())
+        );
+        const label = code
+          ? (title && !titleStartsWithCode ? `${code} — ${title}` : (title || code))
+          : (title || "Bài viết chưa có mã");
+
+        return {
+          label,
+          value: Number.isFinite(views) ? views : 0,
+          postCode: code,
+          title: title || code
+        };
+      })
+      .filter(row => row.label && row.value > 0);
+
+    topViewedPostsCache.rows = rows;
+    topViewedPostsCache.createdAt = Date.now();
+    return rows;
+  } catch (error) {
+    // Dashboard Analytics không được phép làm ảnh hưởng CMS nếu query view gặp lỗi.
+    console.warn("[Mina Smart Link Dashboard] Không tải được Top bài theo lượt xem:", error.message);
+    return [];
+  }
 }
 
 
@@ -477,6 +569,26 @@ module.exports = async function handler(req, res) {
       })
       .sort((a, b) => b.clicks - a.clicks);
 
+    // "Top bài viết" = các bài có Smart Link click nhiều nhất trong khoảng thời gian đang lọc.
+    // Click được lấy trực tiếp từ smartLinkClicks; metadata bài chỉ dùng để làm đẹp nhãn hiển thị.
+    // Không dùng posts.views ở đây để tránh trộn lượt xem với lượt click.
+    const topSmartClickPosts = topEntries(postMap, 15)
+      .filter(item => item.label !== "Không có mã bài")
+      .map(item => {
+        const meta = postViews.get(item.label.toLowerCase());
+        const code = meta?.code || item.label;
+        const title = meta?.title || item.label;
+        const titleStartsWithCode = Boolean(
+          code && title && title.toLowerCase().startsWith(code.toLowerCase())
+        );
+        return {
+          label: title && !titleStartsWithCode ? `${code} — ${title}` : (title || code),
+          value: item.value,
+          postCode: code,
+          title
+        };
+      });
+
     const totalStoredClicks = links.reduce((sum, link) => sum + Number(link.clicks || 0), 0);
     const activeLinks = links.filter(link => link.active).length;
 
@@ -513,7 +625,11 @@ module.exports = async function handler(req, res) {
       breakdowns: {
         sources: topEntries(sourceMap),
         devices: topEntries(deviceMap),
-        posts: topEntries(postMap),
+        // Top bài viết = bài có Smart Link click nhiều nhất trong khoảng thời gian đang chọn.
+        // value luôn là số click, nên bảng Top đọc cùng nguồn dữ liệu với phần Hiệu năng.
+        posts: topSmartClickPosts,
+        // Giữ alias riêng để tương thích với giao diện/logic hiện có.
+        smartClickPosts: topSmartClickPosts,
         campaigns: topEntries(campaignMap),
         links: topEntries(linkMap),
         referrers: topEntries(referrerMap),
